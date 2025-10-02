@@ -28,6 +28,33 @@
   </nav>
 
   <main class="container" style="margin-top:22px">
+
+    <!-- Filtros -->
+    <div class="card z-depth-0" style="margin-bottom:12px">
+      <div class="card-content" style="padding-bottom:6px">
+        <span class="card-title" style="font-size:1.2rem">Pesquisar</span>
+        <div class="row" style="margin-bottom:0">
+          <div class="input-field col s12 m3">
+            <input id="f_nome" type="text" />
+            <label for="f_nome">Nome</label>
+          </div>
+          <div class="input-field col s12 m3">
+            <input id="f_crm" type="text" />
+            <label for="f_crm">CRM / Conselho</label>
+          </div>
+          <div class="input-field col s12 m3">
+            <input id="f_esp" type="text" />
+            <label for="f_esp">Especialidade</label>
+          </div>
+          <div class="input-field col s12 m3">
+            <input id="f_inst" type="text" />
+            <label for="f_inst">Instituição</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista -->
     <div class="card z-depth-1">
       <div class="card-content">
         <span class="card-title">Médicos</span>
@@ -138,12 +165,29 @@
       btnLogout: document.getElementById('btnLogout'),
     };
 
+    // Filtros
+    const F = {
+      nome: document.getElementById('f_nome'),
+      crm:  document.getElementById('f_crm'),
+      esp:  document.getElementById('f_esp'),
+      inst: document.getElementById('f_inst'),
+    };
+
     document.addEventListener('DOMContentLoaded', function(){
       M.Modal.init(document.querySelectorAll('.modal'));
       loadWho();
       loadTable();
       EL.btnSalvar.addEventListener('click', salvarMedico);
       EL.btnLogout.addEventListener('click', logout);
+
+      // liga os filtros com debounce
+      const onFilterChange = debounce(()=>loadTable(), 300);
+      ['input','change'].forEach(evt=>{
+        F.nome.addEventListener(evt, onFilterChange);
+        F.crm.addEventListener(evt,  onFilterChange);
+        F.esp.addEventListener(evt,  onFilterChange);
+        F.inst.addEventListener(evt, onFilterChange);
+      });
     });
 
     const API = {
@@ -170,7 +214,16 @@
     async function loadTable(){
       EL.tbody.innerHTML = '<tr><td colspan="4">Carregando...</td></tr>';
       try{
-        const r = await fetch(API.list, {credentials:'include'});
+        // monta querystring com filtros preenchidos
+        const qs = new URLSearchParams();
+        if (F.nome.value.trim()) qs.set('nome', F.nome.value.trim());
+        if (F.crm.value.trim())  qs.set('crm',  F.crm.value.trim());
+        if (F.esp.value.trim())  qs.set('esp',  F.esp.value.trim());
+        if (F.inst.value.trim()) qs.set('inst', F.inst.value.trim());
+
+        const url = qs.toString() ? `${API.list}?${qs}` : API.list;
+
+        const r = await fetch(url, {credentials:'include'});
         const j = await r.json();
         if(!j.ok) throw new Error(j.error||'Falha ao listar.');
         EL.tbody.innerHTML = j.rows.map(row=>`
@@ -228,14 +281,14 @@
     }
 
     async function logout(){
-      try{
-        await fetch(API.logout, {method:'POST', credentials:'include'});
-      }catch(e){}
-      location.href = '/cadmed/login'; // volta pro login
+      try{ await fetch(API.logout, {method:'POST', credentials:'include'}); }catch(e){}
+      location.href = '/cadmed/login';
     }
 
+    // utils
     function v(sel){ const el=document.querySelector(sel); return el?el.value.trim():''; }
     function escapeHtml(s){ return (s??'').toString().replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+    function debounce(fn, ms=350){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
   })();
   </script>
 </body>
