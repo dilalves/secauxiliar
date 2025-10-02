@@ -13,6 +13,7 @@
     .btn-brand{ background:var(--brand) }
     .fab{ position:fixed; right:24px; bottom:24px }
     .modal{ max-height: 92vh }
+    .row-click{ cursor:pointer }
   </style>
 </head>
 <body>
@@ -82,7 +83,7 @@
     </a>
   </div>
 
-  <!-- Modal de cadastro -->
+  <!-- Modal de cadastro (edição/criação) -->
   <div id="mdlNovo" class="modal">
     <div class="modal-content">
       <h5 class="brand">Novo Médico</h5>
@@ -154,6 +155,77 @@
     </div>
   </div>
 
+  <!-- Modal de visualização (somente leitura) -->
+  <div id="mdlView" class="modal">
+    <div class="modal-content">
+      <h5 class="brand">Detalhes do Médico</h5>
+
+      <div class="row">
+        <div class="input-field col s12 m6">
+          <input id="v_nome" type="text" readonly>
+          <label for="v_nome" class="active">Nome</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="v_especialidade" type="text" readonly>
+          <label for="v_especialidade" class="active">Especialidade</label>
+        </div>
+
+        <div class="input-field col s12 m3">
+          <input id="v_conselho" type="text" readonly>
+          <label for="v_conselho" class="active">Conselho</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="v_numero" type="text" readonly>
+          <label for="v_numero" class="active">Número</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="v_telefone" type="text" readonly>
+          <label for="v_telefone" class="active">Telefone</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="v_celular" type="text" readonly>
+          <label for="v_celular" class="active">Celular</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="v_email" type="text" readonly>
+          <label for="v_email" class="active">E-mail</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="v_hospital" type="text" readonly>
+          <label for="v_hospital" class="active">Hospital</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="v_instituicao" type="text" readonly>
+          <label for="v_instituicao" class="active">Instituição</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="v_cargo" type="text" readonly>
+          <label for="v_cargo" class="active">Cargo</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="v_convenio" type="text" readonly>
+          <label for="v_convenio" class="active">Convênio</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="v_data" type="text" readonly>
+          <label for="v_data" class="active">Data</label>
+        </div>
+
+        <div class="input-field col s12">
+          <textarea id="v_obs" class="materialize-textarea" rows="3" readonly style="cursor:default"></textarea>
+          <label for="v_obs" class="active">Observações</label>
+        </div>
+      </div>
+      <div id="v_err" class="card-panel red lighten-4 red-text" style="display:none;border-radius:10px"></div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close btn-flat">Fechar</a>
+    </div>
+  </div>
+
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script>
   (function(){
@@ -163,6 +235,7 @@
       err:  document.getElementById('err'),
       btnSalvar: document.getElementById('btnSalvar'),
       btnLogout: document.getElementById('btnLogout'),
+      vErr: document.getElementById('v_err'),
     };
 
     // Filtros
@@ -180,7 +253,6 @@
       EL.btnSalvar.addEventListener('click', salvarMedico);
       EL.btnLogout.addEventListener('click', logout);
 
-      // liga os filtros com debounce
       const onFilterChange = debounce(()=>loadTable(), 300);
       ['input','change'].forEach(evt=>{
         F.nome.addEventListener(evt, onFilterChange);
@@ -193,6 +265,7 @@
     const API = {
       who:   'https://apisec.secauxiliar.com.br/cadmed/whoami.php',
       list:  'https://apisec.secauxiliar.com.br/cadmed/medicos_list.php',
+      get:   'https://apisec.secauxiliar.com.br/cadmed/medicos_get.php',  // <- novo (detalhe)
       save:  'https://apisec.secauxiliar.com.br/cadmed/medicos_save.php',
       logout:'https://apisec.secauxiliar.com.br/cadmed/auth_logout.php'
     };
@@ -200,6 +273,10 @@
     function setErr(msg){
       if(!msg){ EL.err.style.display='none'; return; }
       EL.err.textContent = msg; EL.err.style.display='block';
+    }
+    function setViewErr(msg){
+      if(!msg){ EL.vErr.style.display='none'; return; }
+      EL.vErr.textContent = msg; EL.vErr.style.display='block';
     }
 
     async function loadWho(){
@@ -214,7 +291,6 @@
     async function loadTable(){
       EL.tbody.innerHTML = '<tr><td colspan="4">Carregando...</td></tr>';
       try{
-        // monta querystring com filtros preenchidos
         const qs = new URLSearchParams();
         if (F.nome.value.trim()) qs.set('nome', F.nome.value.trim());
         if (F.crm.value.trim())  qs.set('crm',  F.crm.value.trim());
@@ -226,17 +302,64 @@
         const r = await fetch(url, {credentials:'include'});
         const j = await r.json();
         if(!j.ok) throw new Error(j.error||'Falha ao listar.');
+
+        if(!Array.isArray(j.rows) || j.rows.length===0){
+          EL.tbody.innerHTML = '<tr><td colspan="4">Sem registros.</td></tr>';
+          return;
+        }
+
         EL.tbody.innerHTML = j.rows.map(row=>`
-          <tr>
-            <td>${escapeHtml(row.nome||'')}</td>
+          <tr class="row-click" data-id="${row.id}">
+            <td><a href="#!" class="row-click brand" data-id="${row.id}">${escapeHtml(row.nome||'')}</a></td>
             <td>${escapeHtml(row.telefone||'')}</td>
             <td>${escapeHtml(row.email||'')}</td>
             <td>${escapeHtml(row.especialidade||'')}</td>
           </tr>
-        `).join('') || '<tr><td colspan="4">Sem registros.</td></tr>';
+        `).join('');
+
+        // listeners para abrir a modal de visualização
+        EL.tbody.querySelectorAll('.row-click').forEach(el=>{
+          el.addEventListener('click', (ev)=>{
+            const id = ev.currentTarget.getAttribute('data-id');
+            if(id) openView(id);
+          });
+        });
       }catch(e){
         EL.tbody.innerHTML = '<tr><td colspan="4">Erro ao carregar.</td></tr>';
         console.error(e);
+      }
+    }
+
+    async function openView(id){
+      setViewErr('');
+      try{
+        const r = await fetch(`${API.get}?id=${encodeURIComponent(id)}`, {credentials:'include'});
+        const j = await r.json();
+        if(!r.ok || !j.ok) throw new Error(j.error||'Falha ao consultar.');
+
+        const m = j.row || {};
+        setVal('#v_nome',          m.nome);
+        setVal('#v_especialidade', m.especialidade);
+        setVal('#v_conselho',      m.conselho);
+        setVal('#v_numero',        m.numero);
+        setVal('#v_telefone',      m.telefone);
+        setVal('#v_celular',       m.celular);
+        setVal('#v_email',         m.email);
+        setVal('#v_hospital',      m.hospital);
+        setVal('#v_instituicao',   m.instituicao);
+        setVal('#v_cargo',         m.cargo);
+        setVal('#v_convenio',      m.convenio);
+        setVal('#v_data',          m.data);
+        setVal('#v_obs',           m.obs);
+
+        M.updateTextFields();
+        M.Modal.getInstance(document.getElementById('mdlView'))?.open()
+          || M.Modal.init(document.getElementById('mdlView')).open();
+      }catch(e){
+        console.error(e);
+        setViewErr(e.message||'Não foi possível carregar os dados.');
+        M.Modal.getInstance(document.getElementById('mdlView'))?.open()
+          || M.Modal.init(document.getElementById('mdlView')).open();
       }
     }
 
@@ -287,6 +410,7 @@
 
     // utils
     function v(sel){ const el=document.querySelector(sel); return el?el.value.trim():''; }
+    function setVal(sel, value){ const el=document.querySelector(sel); if(el){ el.value = value ?? ''; } }
     function escapeHtml(s){ return (s??'').toString().replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
     function debounce(fn, ms=350){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
   })();
