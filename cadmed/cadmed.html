@@ -7,15 +7,20 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
-    :root{ --brand:#0b3b78; }
-    body{ background:#f6f8fb }
-    .brand{ color:var(--brand) }
-    .btn-brand{ background:var(--brand) }
-    .fab{ position:fixed; right:24px; bottom:24px }
-    .modal{ max-height: 92vh }
-    .actions i{ cursor:pointer }
-    .truncate { max-width: 280px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  </style>
+  :root{ --brand:#0b3b78; }
+  body{ background:#f6f8fb }
+  .brand{ color:var(--brand) }
+  .btn-brand{ background:var(--brand) }
+  .fab{ position:fixed; right:24px; bottom:24px }
+  .modal{ max-height: 92vh }
+  .truncate { max-width: 280px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* --- alinhamento da tabela --- */
+  table.striped td, table.striped th { vertical-align: middle; }
+  th.actions-col, td.actions-col { width:110px; text-align:center; }
+  td.actions-col a { margin: 0 6px; }
+  td.actions-col i.material-icons { font-size: 20px; line-height: 20px; vertical-align: middle; }
+</style>
 </head>
 <body>
 
@@ -236,17 +241,21 @@
         const j = await r.json();
         if(!j.ok) throw new Error(j.error||'Falha ao listar.');
         EL.tbody.innerHTML = (j.rows||[]).map(row=>`
-          <tr data-id="${row.id||''}">
-            <td><a href="#!" class="lnk-view">${escapeHtml(row.nome||'')}</a></td>
-            <td class="truncate" title="${escapeHtml(row.telefone||'')}">${escapeHtml(row.telefone||'')}</td>
-            <td class="truncate" title="${escapeHtml(row.email||'')}">${escapeHtml(row.email||'')}</td>
-            <td class="truncate" title="${escapeHtml(row.especialidade||'')}">${escapeHtml(row.especialidade||'')}</td>
-            <td class="center-align actions">
-              <a class="tooltipped btn-flat lnk-edit" data-tooltip="Editar"><i class="material-icons">edit</i></a>
-              <a class="tooltipped btn-flat lnk-del"  data-tooltip="Excluir"><i class="material-icons red-text">delete</i></a>
-            </td>
-          </tr>
-        `).join('') || '<tr><td colspan="5">Sem registros.</td></tr>';
+        <tr data-id="${row.id||''}">
+          <td><a href="#!" class="lnk-view">${escapeHtml(row.nome||'')}</a></td>
+          <td class="truncate" title="${escapeHtml(row.telefone||'')}">${escapeHtml(row.telefone||'')}</td>
+          <td class="truncate" title="${escapeHtml(row.email||'')}">${escapeHtml(row.email||'')}</td>
+          <td class="truncate" title="${escapeHtml(row.especialidade||'')}">${escapeHtml(row.especialidade||'')}</td>
+          <td class="actions-col">
+            <a class="tooltipped btn-flat lnk-edit" data-tooltip="Editar" aria-label="Editar">
+              <i class="material-icons">edit</i>
+            </a>
+            <a class="tooltipped btn-flat lnk-del" data-tooltip="Excluir" aria-label="Excluir">
+              <i class="material-icons red-text">delete</i>
+            </a>
+          </td>
+        </tr>
+      `).join('') || '<tr><td colspan="5">Sem registros.</td></tr>';
 
         // tooltips e binds
         const elems = document.querySelectorAll('.tooltipped'); M.Tooltip.init(elems);
