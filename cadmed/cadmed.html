@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CadMed • Início</title>
 
-  <!-- Materialize -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
@@ -16,35 +15,33 @@
     .btn-brand{ background:var(--brand) }
     .fab{ position:fixed; right:24px; bottom:24px }
     .modal{ max-height: 92vh }
+    .search-card .input-field { margin-top: 0.8rem; }
 
     /* ===== Tabela com layout estável ===== */
-    #tbl {
-      table-layout: fixed;
-      width: 100%;
-    }
+    #tbl { table-layout: fixed; width: 100%; }
     #tbl th, #tbl td { vertical-align: middle; }
+
+    /* Larguras */
     #tbl col.col-nome      { width: 32%; }
     #tbl col.col-telefone  { width: 18%; }
     #tbl col.col-email     { width: 28%; }
     #tbl col.col-esp       { width: 16%; }
     #tbl col.col-actions   { width: 6%;  }
 
-    th.actions-col, td.actions-col {
-      text-align: center;
-      padding: 8px 6px;
-      white-space: nowrap;
-    }
+    /* Ações */
+    th.actions-col, td.actions-col { text-align: center; padding: 8px 6px; white-space: nowrap; }
     td.actions-col .icon-btn {
       display:inline-flex; align-items:center; justify-content:center;
       width:28px; height:28px; border-radius:50%;
-      border:0; background:transparent; cursor:pointer;
-      margin: 0 4px;
+      border:0; background:transparent; cursor:pointer; margin: 0 4px;
     }
     td.actions-col .icon-btn:hover { background: rgba(0,0,0,.06); }
     td.actions-col i.material-icons { font-size: 18px; line-height: 18px; }
 
-    .search-card .input-field { margin-top: 0.8rem; }
     .truncate { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* Blindagem extra: garanta que continuem como células (evita empilhamento em alguns temas “responsive”) */
+    #tbl th, #tbl td { display: table-cell !important; }
   </style>
 </head>
 <body>
@@ -132,63 +129,24 @@
       <h5 class="brand">Novo Médico</h5>
 
       <div class="row">
-        <div class="input-field col s12 m6">
-          <input id="nome" type="text" required>
-          <label for="nome">Nome*</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <input id="especialidade" type="text">
-          <label for="especialidade">Especialidade</label>
-        </div>
+        <div class="input-field col s12 m6"><input id="nome" type="text" required><label for="nome">Nome*</label></div>
+        <div class="input-field col s12 m6"><input id="especialidade" type="text"><label for="especialidade">Especialidade</label></div>
 
-        <div class="input-field col s12 m3">
-          <input id="conselho" type="text" placeholder="CRM / etc">
-          <label for="conselho">Conselho</label>
-        </div>
-        <div class="input-field col s12 m3">
-          <input id="numero" type="text">
-          <label for="numero">Número</label>
-        </div>
-        <div class="input-field col s12 m3">
-          <input id="telefone" type="text">
-          <label for="telefone">Telefone</label>
-        </div>
-        <div class="input-field col s12 m3">
-          <input id="celular" type="text">
-          <label for="celular">Celular</label>
-        </div>
+        <div class="input-field col s12 m3"><input id="conselho" type="text" placeholder="CRM / etc"><label for="conselho">Conselho</label></div>
+        <div class="input-field col s12 m3"><input id="numero" type="text"><label for="numero">Número</label></div>
+        <div class="input-field col s12 m3"><input id="telefone" type="text"><label for="telefone">Telefone</label></div>
+        <div class="input-field col s12 m3"><input id="celular" type="text"><label for="celular">Celular</label></div>
 
-        <div class="input-field col s12 m6">
-          <input id="email" type="email">
-          <label for="email">E-mail</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <input id="hospital" type="text">
-          <label for="hospital">Hospital</label>
-        </div>
+        <div class="input-field col s12 m6"><input id="email" type="email"><label for="email">E-mail</label></div>
+        <div class="input-field col s12 m6"><input id="hospital" type="text"><label for="hospital">Hospital</label></div>
 
-        <div class="input-field col s12 m6">
-          <input id="instituicao" type="text">
-          <label for="instituicao">Instituição</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <input id="cargo" type="text">
-          <label for="cargo">Cargo</label>
-        </div>
+        <div class="input-field col s12 m6"><input id="instituicao" type="text"><label for="instituicao">Instituição</label></div>
+        <div class="input-field col s12 m6"><input id="cargo" type="text"><label for="cargo">Cargo</label></div>
 
-        <div class="input-field col s12 m6">
-          <input id="convenio" type="text">
-          <label for="convenio">Convênio</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <input id="data" type="date">
-          <label for="data" class="active">Data</label>
-        </div>
+        <div class="input-field col s12 m6"><input id="convenio" type="text"><label for="convenio">Convênio</label></div>
+        <div class="input-field col s12 m6"><input id="data" type="date"><label for="data" class="active">Data</label></div>
 
-        <div class="input-field col s12">
-          <textarea id="obs" class="materialize-textarea" rows="3"></textarea>
-          <label for="obs">Observações</label>
-        </div>
+        <div class="input-field col s12"><textarea id="obs" class="materialize-textarea" rows="3"></textarea><label for="obs">Observações</label></div>
       </div>
       <div id="err" class="card-panel red lighten-4 red-text" style="display:none;border-radius:10px"></div>
     </div>
@@ -198,74 +156,28 @@
     </div>
   </div>
 
-  <!-- Modal Detalhes (Somente leitura) -->
+  <!-- Modal Detalhes (read-only) -->
   <div id="mdlView" class="modal">
     <div class="modal-content">
       <h5 class="brand">Detalhes do Médico</h5>
       <div class="row">
-        <div class="input-field col s12 m6">
-          <input id="v_nome" type="text" readonly>
-          <label class="active" for="v_nome">Nome</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <input id="v_especialidade" type="text" readonly>
-          <label class="active" for="v_especialidade">Especialidade</label>
-        </div>
-
-        <div class="input-field col s12 m3">
-          <input id="v_conselho" type="text" readonly>
-          <label class="active" for="v_conselho">Conselho</label>
-        </div>
-        <div class="input-field col s12 m3">
-          <input id="v_numero" type="text" readonly>
-          <label class="active" for="v_numero">Número</label>
-        </div>
-        <div class="input-field col s12 m3">
-          <input id="v_telefone" type="text" readonly>
-          <label class="active" for="v_telefone">Telefone</label>
-        </div>
-        <div class="input-field col s12 m3">
-          <input id="v_celular" type="text" readonly>
-          <label class="active" for="v_celular">Celular</label>
-        </div>
-
-        <div class="input-field col s12 m6">
-          <input id="v_email" type="text" readonly>
-          <label class="active" for="v_email">E-mail</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <input id="v_hospital" type="text" readonly>
-          <label class="active" for="v_hospital">Hospital</label>
-        </div>
-
-        <div class="input-field col s12 m6">
-          <input id="v_instituicao" type="text" readonly>
-          <label class="active" for="v_instituicao">Instituição</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <input id="v_cargo" type="text" readonly>
-          <label class="active" for="v_cargo">Cargo</label>
-        </div>
-
-        <div class="input-field col s12 m6">
-          <input id="v_convenio" type="text" readonly>
-          <label class="active" for="v_convenio">Convênio</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <input id="v_data" type="text" readonly>
-          <label class="active" for="v_data">Data</label>
-        </div>
-
-        <div class="input-field col s12">
-          <textarea id="v_obs" class="materialize-textarea" readonly></textarea>
-          <label class="active" for="v_obs">Observações</label>
-        </div>
+        <div class="input-field col s12 m6"><input id="v_nome" type="text" readonly><label class="active" for="v_nome">Nome</label></div>
+        <div class="input-field col s12 m6"><input id="v_especialidade" type="text" readonly><label class="active" for="v_especialidade">Especialidade</label></div>
+        <div class="input-field col s12 m3"><input id="v_conselho" type="text" readonly><label class="active" for="v_conselho">Conselho</label></div>
+        <div class="input-field col s12 m3"><input id="v_numero" type="text" readonly><label class="active" for="v_numero">Número</label></div>
+        <div class="input-field col s12 m3"><input id="v_telefone" type="text" readonly><label class="active" for="v_telefone">Telefone</label></div>
+        <div class="input-field col s12 m3"><input id="v_celular" type="text" readonly><label class="active" for="v_celular">Celular</label></div>
+        <div class="input-field col s12 m6"><input id="v_email" type="text" readonly><label class="active" for="v_email">E-mail</label></div>
+        <div class="input-field col s12 m6"><input id="v_hospital" type="text" readonly><label class="active" for="v_hospital">Hospital</label></div>
+        <div class="input-field col s12 m6"><input id="v_instituicao" type="text" readonly><label class="active" for="v_instituicao">Instituição</label></div>
+        <div class="input-field col s12 m6"><input id="v_cargo" type="text" readonly><label class="active" for="v_cargo">Cargo</label></div>
+        <div class="input-field col s12 m6"><input id="v_convenio" type="text" readonly><label class="active" for="v_convenio">Convênio</label></div>
+        <div class="input-field col s12 m6"><input id="v_data" type="text" readonly><label class="active" for="v_data">Data</label></div>
+        <div class="input-field col s12"><textarea id="v_obs" class="materialize-textarea" readonly></textarea><label class="active" for="v_obs">Observações</label></div>
       </div>
       <div id="errView" class="card-panel red lighten-4 red-text" style="display:none;border-radius:10px"></div>
     </div>
-    <div class="modal-footer">
-      <a href="#!" class="modal-close btn-flat">Fechar</a>
-    </div>
+    <div class="modal-footer"><a href="#!" class="modal-close btn-flat">Fechar</a></div>
   </div>
 
   <!-- Modal Editar -->
@@ -274,63 +186,19 @@
       <h5 class="brand">Editar Médico</h5>
       <input type="hidden" id="e_id">
       <div class="row">
-        <div class="input-field col s12 m6">
-          <input id="e_nome" type="text" required>
-          <label for="e_nome" class="active">Nome*</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <input id="e_especialidade" type="text">
-          <label for="e_especialidade" class="active">Especialidade</label>
-        </div>
-
-        <div class="input-field col s12 m3">
-          <input id="e_conselho" type="text">
-          <label for="e_conselho" class="active">Conselho</label>
-        </div>
-        <div class="input-field col s12 m3">
-          <input id="e_numero" type="text">
-          <label for="e_numero" class="active">Número</label>
-        </div>
-        <div class="input-field col s12 m3">
-          <input id="e_telefone" type="text">
-          <label for="e_telefone" class="active">Telefone</label>
-        </div>
-        <div class="input-field col s12 m3">
-          <input id="e_celular" type="text">
-          <label for="e_celular" class="active">Celular</label>
-        </div>
-
-        <div class="input-field col s12 m6">
-          <input id="e_email" type="email">
-          <label for="e_email" class="active">E-mail</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <input id="e_hospital" type="text">
-          <label for="e_hospital" class="active">Hospital</label>
-        </div>
-
-        <div class="input-field col s12 m6">
-          <input id="e_instituicao" type="text">
-          <label for="e_instituicao" class="active">Instituição</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <input id="e_cargo" type="text">
-          <label for="e_cargo" class="active">Cargo</label>
-        </div>
-
-        <div class="input-field col s12 m6">
-          <input id="e_convenio" type="text">
-          <label for="e_convenio" class="active">Convênio</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <input id="e_data" type="date">
-          <label for="e_data" class="active">Data</label>
-        </div>
-
-        <div class="input-field col s12">
-          <textarea id="e_obs" class="materialize-textarea"></textarea>
-          <label for="e_obs" class="active">Observações</label>
-        </div>
+        <div class="input-field col s12 m6"><input id="e_nome" type="text" required><label for="e_nome" class="active">Nome*</label></div>
+        <div class="input-field col s12 m6"><input id="e_especialidade" type="text"><label for="e_especialidade" class="active">Especialidade</label></div>
+        <div class="input-field col s12 m3"><input id="e_conselho" type="text"><label for="e_conselho" class="active">Conselho</label></div>
+        <div class="input-field col s12 m3"><input id="e_numero" type="text"><label for="e_numero" class="active">Número</label></div>
+        <div class="input-field col s12 m3"><input id="e_telefone" type="text"><label for="e_telefone" class="active">Telefone</label></div>
+        <div class="input-field col s12 m3"><input id="e_celular" type="text"><label for="e_celular" class="active">Celular</label></div>
+        <div class="input-field col s12 m6"><input id="e_email" type="email"><label for="e_email" class="active">E-mail</label></div>
+        <div class="input-field col s12 m6"><input id="e_hospital" type="text"><label for="e_hospital" class="active">Hospital</label></div>
+        <div class="input-field col s12 m6"><input id="e_instituicao" type="text"><label for="e_instituicao" class="active">Instituição</label></div>
+        <div class="input-field col s12 m6"><input id="e_cargo" type="text"><label for="e_cargo" class="active">Cargo</label></div>
+        <div class="input-field col s12 m6"><input id="e_convenio" type="text"><label for="e_convenio" class="active">Convênio</label></div>
+        <div class="input-field col s12 m6"><input id="e_data" type="date"><label for="e_data" class="active">Data</label></div>
+        <div class="input-field col s12"><textarea id="e_obs" class="materialize-textarea"></textarea><label for="e_obs" class="active">Observações</label></div>
       </div>
       <div id="errEdit" class="card-panel red lighten-4 red-text" style="display:none;border-radius:10px"></div>
     </div>
@@ -340,7 +208,6 @@
     </div>
   </div>
 
-  <!-- Materialize JS -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
   <script>
@@ -358,33 +225,26 @@
       q_esp: document.getElementById('q_especialidade'),
       q_inst: document.getElementById('q_instituicao'),
 
-      // Detalhes
-      v: {
-        nome: vEl('v_nome'), especialidade: vEl('v_especialidade'),
-        conselho: vEl('v_conselho'), numero: vEl('v_numero'),
-        telefone: vEl('v_telefone'), celular: vEl('v_celular'),
-        email: vEl('v_email'), hospital: vEl('v_hospital'),
-        instituicao: vEl('v_instituicao'), cargo: vEl('v_cargo'),
-        convenio: vEl('v_convenio'), data: vEl('v_data'),
-        obs: vEl('v_obs')
-      },
-      errView: document.getElementById('errView'),
+      // Detalhes (view)
+      v_nome: vEl('v_nome'), v_especialidade: vEl('v_especialidade'),
+      v_conselho: vEl('v_conselho'), v_numero: vEl('v_numero'),
+      v_telefone: vEl('v_telefone'), v_celular: vEl('v_celular'),
+      v_email: vEl('v_email'), v_hospital: vEl('v_hospital'),
+      v_instituicao: vEl('v_instituicao'), v_cargo: vEl('v_cargo'),
+      v_convenio: vEl('v_convenio'), v_data: vEl('v_data'),
+      v_obs: vEl('v_obs'), errView: vEl('errView'),
 
       // Editar
-      e_id: vEl('e_id'),
-      e: {
-        nome: vEl('e_nome'), especialidade: vEl('e_especialidade'),
-        conselho: vEl('e_conselho'), numero: vEl('e_numero'),
-        telefone: vEl('e_telefone'), celular: vEl('e_celular'),
-        email: vEl('e_email'), hospital: vEl('e_hospital'),
-        instituicao: vEl('e_instituicao'), cargo: vEl('e_cargo'),
-        convenio: vEl('e_convenio'), data: vEl('e_data'),
-        obs: vEl('e_obs')
-      },
-      errEdit: document.getElementById('errEdit'),
-      btnSalvarEdit: document.getElementById('btnSalvarEdit'),
+      e_id: vEl('e_id'), errEdit: vEl('errEdit'),
+      e_nome: vEl('e_nome'), e_especialidade: vEl('e_especialidade'),
+      e_conselho: vEl('e_conselho'), e_numero: vEl('e_numero'),
+      e_telefone: vEl('e_telefone'), e_celular: vEl('e_celular'),
+      e_email: vEl('e_email'), e_hospital: vEl('e_hospital'),
+      e_instituicao: vEl('e_instituicao'), e_cargo: vEl('e_cargo'),
+      e_convenio: vEl('e_convenio'), e_data: vEl('e_data'),
+      e_obs: vEl('e_obs'),
+      btnSalvarEdit: vEl('btnSalvarEdit'),
     };
-
     function vEl(id){ return document.getElementById(id); }
 
     document.addEventListener('DOMContentLoaded', function(){
@@ -395,21 +255,20 @@
       EL.btnSalvarEdit.addEventListener('click', salvarEdicao);
       EL.btnLogout.addEventListener('click', logout);
 
-      // busca com debounce
+      // filtros
       [EL.q_nome, EL.q_crm, EL.q_esp, EL.q_inst].forEach(inp=>{
-        inp.addEventListener('input', debounce(loadTable, 400));
+        inp.addEventListener('input', debounce(loadTable, 350));
       });
 
-      // Delegação: ver/editar/excluir
+      // Delegação de ações (ver/editar/excluir)
       EL.tbody.addEventListener('click', (ev)=>{
         const tr = ev.target.closest('tr[data-id]');
         if(!tr) return;
-        const id = tr.getAttribute('data-id');
+        const id = tr.dataset.id;
 
         if(ev.target.closest('.lnk-edit')) return openEdit(id);
         if(ev.target.closest('.lnk-del'))  return delMedico(id);
 
-        // clique no nome ou linha abre Visualizar
         if(ev.target.closest('.lnk-view') || ev.target.closest('td:first-child')){
           return openView(id);
         }
@@ -426,17 +285,13 @@
       logout: 'https://apisec.secauxiliar.com.br/cadmed/auth_logout.php'
     };
 
-    function setErr(box,msg){
-      if(!msg){ box.style.display='none'; return; }
-      box.textContent = msg; box.style.display='block';
-    }
+    function setErr(box,msg){ if(!msg){ box.style.display='none'; return; } box.textContent = msg; box.style.display='block'; }
 
     async function loadWho(){
       try{
         const r = await fetch(API.who, {credentials:'include'});
         const j = await r.json();
-        if(j.ok) EL.who.textContent = 'Olá, ' + j.user.nome;
-        else     EL.who.textContent = 'Não autenticado';
+        EL.who.textContent = j.ok ? ('Olá, ' + j.user.nome) : 'Não autenticado';
       }catch{ EL.who.textContent = 'Erro ao carregar'; }
     }
 
@@ -453,7 +308,10 @@
     }
 
     async function loadTable(){
-      EL.tbody.innerHTML = '<tr><td colspan="5">Carregando...</td></tr>';
+      // placeholder
+      EL.tbody.innerHTML = '';
+      EL.tbody.appendChild(rowLoading());
+
       try{
         const qs = currentFilters();
         const url = qs ? `${API.list}?${qs}` : API.list;
@@ -461,26 +319,73 @@
         const j = await r.json();
         if(!j.ok) throw new Error(j.error||'Falha ao listar.');
 
-        EL.tbody.innerHTML = (j.rows||[]).map(row=>`
-          <tr data-id="${row.id||''}">
-            <td><a href="#!" class="lnk-view">${escapeHtml(row.nome||'')}</a></td>
-            <td class="truncate" title="${escapeHtml(row.telefone||'')}">${escapeHtml(row.telefone||'')}</td>
-            <td class="truncate" title="${escapeHtml(row.email||'')}">${escapeHtml(row.email||'')}</td>
-            <td class="truncate" title="${escapeHtml(row.especialidade||'')}">${escapeHtml(row.especialidade||'')}</td>
-            <td class="actions-col">
-              <button class="icon-btn lnk-edit" title="Editar">
-                <i class="material-icons">edit</i></button>
-              <button class="icon-btn lnk-del" title="Excluir">
-                <i class="material-icons red-text">delete</i></button>
-            </td>
-          </tr>
-        `).join('') || '<tr><td colspan="5">Sem registros.</td></tr>';
+        renderRows(j.rows||[]);
       }catch(e){
         console.error(e);
-        EL.tbody.innerHTML = '<tr><td colspan="5">Erro ao carregar.</td></tr>';
+        EL.tbody.innerHTML = '';
+        EL.tbody.appendChild(rowMessage('Erro ao carregar.'));
       }
     }
 
+    // ===== Renderização via DOM (sem HTML concatenado) =====
+    function renderRows(rows){
+      EL.tbody.innerHTML = '';
+      if(!rows.length){
+        EL.tbody.appendChild(rowMessage('Sem registros.'));
+        return;
+      }
+
+      rows.forEach(row=>{
+        const tr = document.createElement('tr');
+        tr.dataset.id = row.id || '';
+
+        const tdNome = document.createElement('td');
+        const a = document.createElement('a');
+        a.href = '#!'; a.className = 'lnk-view';
+        a.textContent = (row.nome||'');
+        tdNome.appendChild(a);
+
+        const tdTel = document.createElement('td');
+        tdTel.className = 'truncate';
+        tdTel.title = row.telefone||'';
+        tdTel.textContent = row.telefone||'';
+
+        const tdEmail = document.createElement('td');
+        tdEmail.className = 'truncate';
+        tdEmail.title = row.email||'';
+        tdEmail.textContent = row.email||'';
+
+        const tdEsp = document.createElement('td');
+        tdEsp.className = 'truncate';
+        tdEsp.title = row.especialidade||'';
+        tdEsp.textContent = row.especialidade||'';
+
+        const tdActions = document.createElement('td');
+        tdActions.className = 'actions-col';
+
+        const btnEdit = document.createElement('button');
+        btnEdit.className = 'icon-btn lnk-edit'; btnEdit.title = 'Editar';
+        btnEdit.innerHTML = '<i class="material-icons">edit</i>';
+
+        const btnDel = document.createElement('button');
+        btnDel.className = 'icon-btn lnk-del'; btnDel.title = 'Excluir';
+        btnDel.innerHTML = '<i class="material-icons red-text">delete</i>';
+
+        tdActions.append(btnEdit, btnDel);
+        tr.append(tdNome, tdTel, tdEmail, tdEsp, tdActions);
+        EL.tbody.appendChild(tr);
+      });
+    }
+
+    function rowMessage(text){
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 5; td.textContent = text; tr.appendChild(td);
+      return tr;
+    }
+    function rowLoading(){ return rowMessage('Carregando...'); }
+
+    // ===== CRUD =====
     async function salvarMedico(){
       setErr(EL.err, '');
       const payload = collectPayload('#mdlNovo ');
@@ -488,86 +393,72 @@
 
       try{
         const r = await fetch(API.save, {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          credentials:'include',
-          body: JSON.stringify(payload)
+          method:'POST', headers:{'Content-Type':'application/json'},
+          credentials:'include', body: JSON.stringify(payload)
         });
         const j = await r.json();
         if(!r.ok || !j.ok) throw new Error(j.error||'Falha ao salvar');
 
         M.toast({html:'Médico cadastrado!'});
-        const modal = M.Modal.getInstance(document.getElementById('mdlNovo'));
-        modal?.close();
+        M.Modal.getInstance(document.getElementById('mdlNovo')).close();
         document.querySelectorAll('#mdlNovo input, #mdlNovo textarea').forEach(i=>i.value='');
         M.updateTextFields();
         loadTable();
-      }catch(e){
-        console.error(e);
-        setErr(EL.err, e.message||'Erro ao salvar.');
-      }
+      }catch(e){ console.error(e); setErr(EL.err, e.message||'Erro ao salvar.'); }
     }
 
-    // ===== Visualizar =====
     async function openView(id){
       setErr(EL.errView,'');
       try{
         const r = await fetch(`${API.get}?id=${encodeURIComponent(id)}`, {credentials:'include'});
         const j = await r.json();
         if(!j.ok) throw new Error(j.error||'Falha ao carregar.');
-        fillReadOnly(j.row||{});
+        fillView(j.row||{});
         M.Modal.getInstance(document.getElementById('mdlView')).open();
-      }catch(e){
-        console.error(e);
-        setErr(EL.errView, e.message||'Erro ao carregar.');
-      }
+      }catch(e){ console.error(e); setErr(EL.errView, e.message||'Erro ao carregar.'); }
     }
-    function fillReadOnly(row){
-      EL.v.nome.value = row.nome||'';
-      EL.v.especialidade.value = row.especialidade||'';
-      EL.v.conselho.value = row.conselho||'';
-      EL.v.numero.value = row.numero||'';
-      EL.v.telefone.value = row.telefone||'';
-      EL.v.celular.value = row.celular||'';
-      EL.v.email.value = row.email||'';
-      EL.v.hospital.value = row.hospital||'';
-      EL.v.instituicao.value = row.instituicao||'';
-      EL.v.cargo.value = row.cargo||'';
-      EL.v.convenio.value = row.convenio||'';
-      EL.v.data.value = row.data||'';
-      EL.v.obs.value = row.obs||'';
+    function fillView(row){
+      EL.v_nome.value = row.nome||'';
+      EL.v_especialidade.value = row.especialidade||'';
+      EL.v_conselho.value = row.conselho||'';
+      EL.v_numero.value = row.numero||'';
+      EL.v_telefone.value = row.telefone||'';
+      EL.v_celular.value = row.celular||'';
+      EL.v_email.value = row.email||'';
+      EL.v_hospital.value = row.hospital||'';
+      EL.v_instituicao.value = row.instituicao||'';
+      EL.v_cargo.value = row.cargo||'';
+      EL.v_convenio.value = row.convenio||'';
+      EL.v_data.value = row.data||'';
+      EL.v_obs.value = row.obs||'';
       M.updateTextFields();
     }
 
-    // ===== Editar =====
     async function openEdit(id){
       setErr(EL.errEdit,'');
       try{
         const r = await fetch(`${API.get}?id=${encodeURIComponent(id)}`, {credentials:'include'});
         const j = await r.json();
         if(!j.ok) throw new Error(j.error||'Falha ao carregar.');
-        EL.e_id.value = j.row.id||'';
         fillEdit(j.row||{});
         M.Modal.getInstance(document.getElementById('mdlEdit')).open();
-      }catch(e){
-        console.error(e);
-        setErr(EL.errEdit, e.message||'Erro ao carregar.');
-      }
+      }catch(e){ console.error(e); setErr(EL.errEdit, e.message||'Erro ao carregar.'); }
     }
     function fillEdit(row){
-      EL.e.nome.value = row.nome||'';
-      EL.e.especialidade.value = row.especialidade||'';
-      EL.e.conselho.value = row.conselho||'';
-      EL.e.numero.value = row.numero||'';
-      EL.e.telefone.value = row.telefone||'';
-      EL.e.celular.value = row.celular||'';
-      EL.e.email.value = row.email||'';
-      EL.e.hospital.value = row.hospital||'';
-      EL.e.instituicao.value = row.instituicao||'';
-      EL.e.cargo.value = row.cargo||'';
-      EL.e.convenio.value = row.convenio||'';
-      EL.e.data.value = row.data||'';
-      EL.e.obs.value = row.obs||'';
+      EL.e_id.value = row.id||'';
+      EL.e_nome.value = row.nome||'';
+      EL.e_especialidade.value = row.especialidade||'';
+      EL.e_conselho.value = row.conselho||'';
+      EL.e_numero.value = row.numero||'';
+      EL.e_telefone.value = row.telefone||'';
+      EL.e_celular.value = row.celular||'';
+      EL.e_email.value = row.email||'';
+      EL.e_hospital.value = row.hospital||'';
+      EL.e_instituicao.value = row.instituicao||'';
+      EL.e_cargo.value = row.cargo||'';
+      EL.e_convenio.value = row.convenio||'';
+      EL.e_data.value = row.data||'';
+      EL.e_obs.value = row.obs||'';
       M.updateTextFields();
     }
     async function salvarEdicao(){
@@ -579,10 +470,8 @@
 
       try{
         const r = await fetch(API.update, {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          credentials:'include',
-          body: JSON.stringify(payload)
+          method:'POST', headers:{'Content-Type':'application/json'},
+          credentials:'include', body: JSON.stringify(payload)
         });
         const j = await r.json();
         if(!r.ok || !j.ok) throw new Error(j.error||'Falha ao salvar');
@@ -590,34 +479,22 @@
         M.toast({html:'Alterações salvas!'});
         M.Modal.getInstance(document.getElementById('mdlEdit')).close();
         loadTable();
-      }catch(e){
-        console.error(e);
-        setErr(EL.errEdit, e.message||'Erro ao salvar.');
-      }
+      }catch(e){ console.error(e); setErr(EL.errEdit, e.message||'Erro ao salvar.'); }
     }
 
-    // ===== Excluir =====
     async function delMedico(id){
-      const row = Array.from(EL.tbody.querySelectorAll('tr[data-id]'))
-                       .find(tr=>tr.getAttribute('data-id')===id);
-      const nome = row ? row.querySelector('td:first-child')?.innerText.trim() : '';
-      const ok = confirm(`Excluir o médico "${nome||id}"? Essa ação não pode ser desfeita.`);
-      if(!ok) return;
+      const tr = EL.tbody.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
+      const nome = tr?.querySelector('td:first-child')?.innerText.trim() || '';
+      if(!confirm(`Excluir o médico "${nome||id}"?`)) return;
       try{
         const r = await fetch(API.del, {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          credentials:'include',
-          body: JSON.stringify({ id })
+          method:'POST', headers:{'Content-Type':'application/json'},
+          credentials:'include', body: JSON.stringify({ id })
         });
         const j = await r.json();
         if(!r.ok || !j.ok) throw new Error(j.error||'Falha ao excluir');
-        M.toast({html:'Registro excluído!'});
-        loadTable();
-      }catch(e){
-        console.error(e);
-        M.toast({html:'Erro ao excluir'});
-      }
+        M.toast({html:'Registro excluído!'}); loadTable();
+      }catch(e){ console.error(e); M.toast({html:'Erro ao excluir'}); }
     }
 
     async function logout(){
@@ -644,13 +521,7 @@
       };
     }
 
-    function escapeHtml(s){ 
-      return (s??'').toString().replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
-    }
-
-    function debounce(fn, wait=300){
-      let t; return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn.apply(this,args), wait); };
-    }
+    function debounce(fn, wait=300){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),wait); }; }
   })();
   </script>
 </body>
