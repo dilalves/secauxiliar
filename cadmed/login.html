@@ -64,68 +64,61 @@
   </div>
 
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <script>
-    (function(){
-      const form   = document.getElementById('frmLogin');
-      const errBox = document.getElementById('err');
-      const btn    = document.getElementById('btnLogin');
-      const spin   = document.getElementById('spin');
+<script>
+  (function(){
+    const form   = document.getElementById('frmLogin');
+    const errBox = document.getElementById('err');
+    const btn    = document.getElementById('btnLogin');
+    const spin   = document.getElementById('spin');
 
-      const API_LOGIN = '/auth_login.php'; // ajuste o caminho se o backend estiver em outro domínio
+    // endpoint JWT do backend
+    const API_LOGIN = '/CADEMED/auth_login.php';
 
-      function setLoading(on){
-        if(on){
-          btn.setAttribute('disabled','disabled');
-          spin.classList.add('show');
-        }else{
-          btn.removeAttribute('disabled');
-          spin.classList.remove('show');
+    function setLoading(on){
+      if(on){ btn.setAttribute('disabled','disabled'); spin.classList.add('show'); }
+      else  { btn.removeAttribute('disabled');        spin.classList.remove('show'); }
+    }
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      errBox.style.display = 'none';
+      setLoading(true);
+
+      // alinhar com o backend: login/senha
+      const payload = {
+        login: document.getElementById('user').value.trim(),
+        senha: document.getElementById('pass').value
+      };
+
+      try{
+        const res = await fetch(API_LOGIN, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          // mantém para garantir que o Set-Cookie do backend seja aceito mesmo se houver subdomínios
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(()=>({ok:false,error:'Resposta inválida do servidor.'}));
+
+        if(res.ok && data.ok){
+          // cookie HttpOnly já foi gravado; segue para a área interna
+          window.location.href = '/cademed/'; // ajuste se quiser outra página
+          return;
         }
+
+        // Erro amigável
+        errBox.textContent = data.error || 'Usuário ou senha inválidos.';
+        errBox.style.display = 'block';
+
+      }catch(err){
+        errBox.textContent = err?.message || 'Falha ao conectar. Tente novamente.';
+        errBox.style.display = 'block';
+      }finally{
+        setLoading(false);
       }
-
-      form.addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        errBox.style.display = 'none';
-        setLoading(true);
-
-        const payload = {
-          user: document.getElementById('user').value.trim(),
-          pass: document.getElementById('pass').value
-        };
-
-        try{
-          const res = await fetch(API_LOGIN, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            // se o backend estiver em outro domínio e usar cookie de sessão:
-            credentials: 'include',
-            body: JSON.stringify(payload)
-          });
-
-          if(!res.ok){
-            throw new Error('Falha na autenticação.');
-          }
-
-          const data = await res.json();
-
-          if (data.ok){
-            // Se o backend devolver redirect, usamos. Caso contrário, default: dashboard.php
-            window.location.href = data.redirect || 'dashboard.php';
-            return;
-          }
-
-          // erro amigável
-          errBox.textContent = data.error || 'Usuário ou senha inválidos.';
-          errBox.style.display = 'block';
-
-        }catch(err){
-          errBox.textContent = err.message || 'Não foi possível entrar agora.';
-          errBox.style.display = 'block';
-        }finally{
-          setLoading(false);
-        }
-      });
-    })();
-  </script>
+    });
+  })();
+</script>
 </body>
 </html>
