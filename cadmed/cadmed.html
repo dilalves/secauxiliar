@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CadMed • Início</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root{ --brand:#0b3b78; }
+    body{ background:#f6f8fb }
+    .brand{ color:var(--brand) }
+    .btn-brand{ background:var(--brand) }
+    .fab{ position:fixed; right:24px; bottom:24px }
+    .modal{ max-height: 92vh }
+  </style>
+</head>
+<body>
+
+  <nav class="white z-depth-0">
+    <div class="nav-wrapper container">
+      <a class="brand-logo brand" href="#!" style="font-size:1.4rem">CadMed</a>
+      <ul class="right">
+        <li><a id="who" class="grey-text text-darken-1" href="#!">Carregando...</a></li>
+        <li><a id="btnLogout" class="grey-text text-darken-2" href="#!" title="Sair"><i class="material-icons">exit_to_app</i></a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container" style="margin-top:22px">
+    <div class="card z-depth-1">
+      <div class="card-content">
+        <span class="card-title">Médicos</span>
+        <div class="responsive-table">
+          <table class="striped" id="tbl">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>E-mail</th>
+                <th>Especialidade</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FAB adicionar -->
+  <div class="fixed-action-btn fab">
+    <a class="btn-floating btn-large btn-brand modal-trigger" href="#mdlNovo" title="Novo médico">
+      <i class="large material-icons">add</i>
+    </a>
+  </div>
+
+  <!-- Modal de cadastro -->
+  <div id="mdlNovo" class="modal">
+    <div class="modal-content">
+      <h5 class="brand">Novo Médico</h5>
+
+      <div class="row">
+        <div class="input-field col s12 m6">
+          <input id="nome" type="text" required>
+          <label for="nome">Nome*</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="especialidade" type="text">
+          <label for="especialidade">Especialidade</label>
+        </div>
+
+        <div class="input-field col s12 m3">
+          <input id="conselho" type="text" placeholder="CRM / etc">
+          <label for="conselho">Conselho</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="numero" type="text">
+          <label for="numero">Número</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="telefone" type="text">
+          <label for="telefone">Telefone</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="celular" type="text">
+          <label for="celular">Celular</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="email" type="email">
+          <label for="email">E-mail</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="hospital" type="text">
+          <label for="hospital">Hospital</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="instituicao" type="text">
+          <label for="instituicao">Instituição</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="cargo" type="text">
+          <label for="cargo">Cargo</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="convenio" type="text">
+          <label for="convenio">Convênio</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="data" type="date">
+          <label for="data" class="active">Data</label>
+        </div>
+
+        <div class="input-field col s12">
+          <textarea id="obs" class="materialize-textarea" rows="3"></textarea>
+          <label for="obs">Observações</label>
+        </div>
+      </div>
+      <div id="err" class="card-panel red lighten-4 red-text" style="display:none;border-radius:10px"></div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close btn-flat">Cancelar</a>
+      <button id="btnSalvar" class="btn btn-brand">Salvar</button>
+    </div>
+  </div>
+
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+  (function(){
+    const EL = {
+      who:  document.getElementById('who'),
+      tbody:document.getElementById('tbody'),
+      err:  document.getElementById('err'),
+      btnSalvar: document.getElementById('btnSalvar'),
+      btnLogout: document.getElementById('btnLogout'),
+    };
+
+    document.addEventListener('DOMContentLoaded', function(){
+      M.Modal.init(document.querySelectorAll('.modal'));
+      loadWho();
+      loadTable();
+      EL.btnSalvar.addEventListener('click', salvarMedico);
+      EL.btnLogout.addEventListener('click', logout);
+    });
+
+    const API = {
+      who:   'https://apisec.secauxiliar.com.br/cadmed/whoami.php',
+      list:  'https://apisec.secauxiliar.com.br/cadmed/medicos_list.php',
+      save:  'https://apisec.secauxiliar.com.br/cadmed/medicos_save.php',
+      logout:'https://apisec.secauxiliar.com.br/cadmed/auth_logout.php'
+    };
+
+    function setErr(msg){
+      if(!msg){ EL.err.style.display='none'; return; }
+      EL.err.textContent = msg; EL.err.style.display='block';
+    }
+
+    async function loadWho(){
+      try{
+        const r = await fetch(API.who, {credentials:'include'});
+        const j = await r.json();
+        if(j.ok) EL.who.textContent = 'Olá, ' + j.user.nome;
+        else     EL.who.textContent = 'Não autenticado';
+      }catch{ EL.who.textContent = 'Erro ao carregar'; }
+    }
+
+    async function loadTable(){
+      EL.tbody.innerHTML = '<tr><td colspan="4">Carregando...</td></tr>';
+      try{
+        const r = await fetch(API.list, {credentials:'include'});
+        const j = await r.json();
+        if(!j.ok) throw new Error(j.error||'Falha ao listar.');
+        EL.tbody.innerHTML = j.rows.map(row=>`
+          <tr>
+            <td>${escapeHtml(row.nome||'')}</td>
+            <td>${escapeHtml(row.telefone||'')}</td>
+            <td>${escapeHtml(row.email||'')}</td>
+            <td>${escapeHtml(row.especialidade||'')}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="4">Sem registros.</td></tr>';
+      }catch(e){
+        EL.tbody.innerHTML = '<tr><td colspan="4">Erro ao carregar.</td></tr>';
+        console.error(e);
+      }
+    }
+
+    async function salvarMedico(){
+      setErr('');
+      const payload = {
+        nome:          v('#nome'),
+        especialidade: v('#especialidade'),
+        conselho:      v('#conselho'),
+        numero:        v('#numero'),
+        telefone:      v('#telefone'),
+        celular:       v('#celular'),
+        email:         v('#email'),
+        hospital:      v('#hospital'),
+        instituicao:   v('#instituicao'),
+        cargo:         v('#cargo'),
+        convenio:      v('#convenio'),
+        data:          v('#data'),
+        obs:           v('#obs')
+      };
+      if(!payload.nome){ setErr('Informe o nome.'); return; }
+
+      try{
+        const r = await fetch(API.save, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          credentials:'include',
+          body: JSON.stringify(payload)
+        });
+        const j = await r.json();
+        if(!r.ok || !j.ok) throw new Error(j.error||'Falha ao salvar');
+        M.toast({html:'Médico cadastrado!'});
+        const modal = M.Modal.getInstance(document.getElementById('mdlNovo'));
+        modal?.close();
+        document.querySelectorAll('#mdlNovo input, #mdlNovo textarea').forEach(i=>i.value='');
+        M.updateTextFields();
+        loadTable();
+      }catch(e){
+        console.error(e);
+        setErr(e.message||'Erro ao salvar.');
+      }
+    }
+
+    async function logout(){
+      try{
+        await fetch(API.logout, {method:'POST', credentials:'include'});
+      }catch(e){}
+      location.href = '/cadmed/login'; // volta pro login
+    }
+
+    function v(sel){ const el=document.querySelector(sel); return el?el.value.trim():''; }
+    function escapeHtml(s){ return (s??'').toString().replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+  })();
+  </script>
+</body>
+</html>
