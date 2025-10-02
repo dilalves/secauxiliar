@@ -4,75 +4,112 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CadMed • Início</title>
+
+  <!-- Materialize -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <style>
-  :root{ --brand:#0b3b78; }
-  body{ background:#f6f8fb }
-  .brand{ color:var(--brand) }
-  .btn-brand{ background:var(--brand) }
-  .fab{ position:fixed; right:24px; bottom:24px }
-  .modal{ max-height: 92vh }
-  .truncate { max-width: 280px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
-  /* --- alinhamento da tabela --- */
-  table.striped td, table.striped th { vertical-align: middle; }
-  th.actions-col, td.actions-col { width:110px; text-align:center; }
-  td.actions-col a { margin: 0 6px; }
-  td.actions-col i.material-icons { font-size: 20px; line-height: 20px; vertical-align: middle; }
-</style>
+  <style>
+    :root{ --brand:#0b3b78; }
+    body{ background:#f6f8fb }
+    .brand{ color:var(--brand) }
+    .btn-brand{ background:var(--brand) }
+    .fab{ position:fixed; right:24px; bottom:24px }
+    .modal{ max-height: 92vh }
+
+    /* ===== Tabela com layout estável ===== */
+    #tbl {
+      table-layout: fixed;
+      width: 100%;
+    }
+    #tbl th, #tbl td { vertical-align: middle; }
+    #tbl col.col-nome      { width: 32%; }
+    #tbl col.col-telefone  { width: 18%; }
+    #tbl col.col-email     { width: 28%; }
+    #tbl col.col-esp       { width: 16%; }
+    #tbl col.col-actions   { width: 6%;  }
+
+    th.actions-col, td.actions-col {
+      text-align: center;
+      padding: 8px 6px;
+      white-space: nowrap;
+    }
+    td.actions-col .icon-btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:28px; height:28px; border-radius:50%;
+      border:0; background:transparent; cursor:pointer;
+      margin: 0 4px;
+    }
+    td.actions-col .icon-btn:hover { background: rgba(0,0,0,.06); }
+    td.actions-col i.material-icons { font-size: 18px; line-height: 18px; }
+
+    .search-card .input-field { margin-top: 0.8rem; }
+    .truncate { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  </style>
 </head>
 <body>
 
+  <!-- Topbar -->
   <nav class="white z-depth-0">
     <div class="nav-wrapper container">
       <a class="brand-logo brand" href="#!" style="font-size:1.4rem">CadMed</a>
       <ul class="right">
         <li><a id="who" class="grey-text text-darken-1" href="#!">Carregando...</a></li>
-        <li><a id="btnLogout" class="grey-text text-darken-2" href="#!" title="Sair"><i class="material-icons">exit_to_app</i></a></li>
+        <li><a id="btnLogout" class="grey-text text-darken-2" href="#!" title="Sair">
+          <i class="material-icons">exit_to_app</i></a>
+        </li>
       </ul>
     </div>
   </nav>
 
   <main class="container" style="margin-top:22px">
-    <!-- Filtros -->
-    <div class="card z-depth-1">
+
+    <!-- Busca -->
+    <div class="card z-depth-1 search-card">
       <div class="card-content">
         <span class="card-title">Pesquisar</span>
-        <div class="row" id="filtros">
-          <div class="input-field col s12 m3">
-            <input id="f_nome" type="text" placeholder="Ex.: Ana">
-            <label for="f_nome" class="active">Nome</label>
+        <div class="row" id="searchRow">
+          <div class="input-field col s12 m6 l3">
+            <input id="q_nome" type="text" autocomplete="off" placeholder="Ex: Ana" />
+            <label for="q_nome">Nome</label>
           </div>
-          <div class="input-field col s12 m3">
-            <input id="f_crm" type="text" placeholder="CRM / Conselho / Nº">
-            <label for="f_crm" class="active">CRM / Conselho</label>
+          <div class="input-field col s12 m6 l3">
+            <input id="q_crm" type="text" autocomplete="off" placeholder="CRM / Conselho / Nº" />
+            <label for="q_crm">CRM / Conselho</label>
           </div>
-          <div class="input-field col s12 m3">
-            <input id="f_esp" type="text" placeholder="Ex.: Pediatria">
-            <label for="f_esp" class="active">Especialidade</label>
+          <div class="input-field col s12 m6 l3">
+            <input id="q_especialidade" type="text" autocomplete="off" placeholder="Ex: Pediatria" />
+            <label for="q_especialidade">Especialidade</label>
           </div>
-          <div class="input-field col s12 m3">
-            <input id="f_inst" type="text" placeholder="Ex.: Santa Casa">
-            <label for="f_inst" class="active">Instituição</label>
+          <div class="input-field col s12 m6 l3">
+            <input id="q_instituicao" type="text" autocomplete="off" placeholder="Ex: Santa Casa" />
+            <label for="q_instituicao">Instituição</label>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Tabela -->
+    <!-- Lista -->
     <div class="card z-depth-1">
       <div class="card-content">
         <span class="card-title">Médicos</span>
+
         <div class="responsive-table">
           <table class="striped" id="tbl">
+            <colgroup>
+              <col class="col-nome">
+              <col class="col-telefone">
+              <col class="col-email">
+              <col class="col-esp">
+              <col class="col-actions">
+            </colgroup>
             <thead>
               <tr>
                 <th>Nome</th>
                 <th>Telefone</th>
                 <th>E-mail</th>
                 <th>Especialidade</th>
-                <th class="center-align" style="width:110px">Ações</th>
+                <th class="actions-col">Ações</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -82,31 +119,76 @@
     </div>
   </main>
 
-  <!-- FAB adicionar (CADASTRAR) -->
+  <!-- FAB adicionar -->
   <div class="fixed-action-btn fab">
     <a class="btn-floating btn-large btn-brand modal-trigger" href="#mdlNovo" title="Novo médico">
       <i class="large material-icons">add</i>
     </a>
   </div>
 
-  <!-- Modal CADASTRO -->
+  <!-- Modal Novo -->
   <div id="mdlNovo" class="modal">
     <div class="modal-content">
       <h5 class="brand">Novo Médico</h5>
+
       <div class="row">
-        <div class="input-field col s12 m6"><input id="nome" type="text" required><label for="nome">Nome*</label></div>
-        <div class="input-field col s12 m6"><input id="especialidade" type="text"><label for="especialidade">Especialidade</label></div>
-        <div class="input-field col s12 m3"><input id="conselho" type="text" placeholder="CRM / etc"><label for="conselho">Conselho</label></div>
-        <div class="input-field col s12 m3"><input id="numero" type="text"><label for="numero">Número</label></div>
-        <div class="input-field col s12 m3"><input id="telefone" type="text"><label for="telefone">Telefone</label></div>
-        <div class="input-field col s12 m3"><input id="celular" type="text"><label for="celular">Celular</label></div>
-        <div class="input-field col s12 m6"><input id="email" type="email"><label for="email">E-mail</label></div>
-        <div class="input-field col s12 m6"><input id="hospital" type="text"><label for="hospital">Hospital</label></div>
-        <div class="input-field col s12 m6"><input id="instituicao" type="text"><label for="instituicao">Instituição</label></div>
-        <div class="input-field col s12 m6"><input id="cargo" type="text"><label for="cargo">Cargo</label></div>
-        <div class="input-field col s12 m6"><input id="convenio" type="text"><label for="convenio">Convênio</label></div>
-        <div class="input-field col s12 m6"><input id="data" type="date"><label for="data" class="active">Data</label></div>
-        <div class="input-field col s12"><textarea id="obs" class="materialize-textarea" rows="3"></textarea><label for="obs">Observações</label></div>
+        <div class="input-field col s12 m6">
+          <input id="nome" type="text" required>
+          <label for="nome">Nome*</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="especialidade" type="text">
+          <label for="especialidade">Especialidade</label>
+        </div>
+
+        <div class="input-field col s12 m3">
+          <input id="conselho" type="text" placeholder="CRM / etc">
+          <label for="conselho">Conselho</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="numero" type="text">
+          <label for="numero">Número</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="telefone" type="text">
+          <label for="telefone">Telefone</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="celular" type="text">
+          <label for="celular">Celular</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="email" type="email">
+          <label for="email">E-mail</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="hospital" type="text">
+          <label for="hospital">Hospital</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="instituicao" type="text">
+          <label for="instituicao">Instituição</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="cargo" type="text">
+          <label for="cargo">Cargo</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="convenio" type="text">
+          <label for="convenio">Convênio</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="data" type="date">
+          <label for="data" class="active">Data</label>
+        </div>
+
+        <div class="input-field col s12">
+          <textarea id="obs" class="materialize-textarea" rows="3"></textarea>
+          <label for="obs">Observações</label>
+        </div>
       </div>
       <div id="err" class="card-panel red lighten-4 red-text" style="display:none;border-radius:10px"></div>
     </div>
@@ -116,49 +198,151 @@
     </div>
   </div>
 
-  <!-- Modal EDIÇÃO (ALTERAR) -->
+  <!-- Modal Detalhes (Somente leitura) -->
+  <div id="mdlView" class="modal">
+    <div class="modal-content">
+      <h5 class="brand">Detalhes do Médico</h5>
+      <div class="row">
+        <div class="input-field col s12 m6">
+          <input id="v_nome" type="text" readonly>
+          <label class="active" for="v_nome">Nome</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="v_especialidade" type="text" readonly>
+          <label class="active" for="v_especialidade">Especialidade</label>
+        </div>
+
+        <div class="input-field col s12 m3">
+          <input id="v_conselho" type="text" readonly>
+          <label class="active" for="v_conselho">Conselho</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="v_numero" type="text" readonly>
+          <label class="active" for="v_numero">Número</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="v_telefone" type="text" readonly>
+          <label class="active" for="v_telefone">Telefone</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="v_celular" type="text" readonly>
+          <label class="active" for="v_celular">Celular</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="v_email" type="text" readonly>
+          <label class="active" for="v_email">E-mail</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="v_hospital" type="text" readonly>
+          <label class="active" for="v_hospital">Hospital</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="v_instituicao" type="text" readonly>
+          <label class="active" for="v_instituicao">Instituição</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="v_cargo" type="text" readonly>
+          <label class="active" for="v_cargo">Cargo</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="v_convenio" type="text" readonly>
+          <label class="active" for="v_convenio">Convênio</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="v_data" type="text" readonly>
+          <label class="active" for="v_data">Data</label>
+        </div>
+
+        <div class="input-field col s12">
+          <textarea id="v_obs" class="materialize-textarea" readonly></textarea>
+          <label class="active" for="v_obs">Observações</label>
+        </div>
+      </div>
+      <div id="errView" class="card-panel red lighten-4 red-text" style="display:none;border-radius:10px"></div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close btn-flat">Fechar</a>
+    </div>
+  </div>
+
+  <!-- Modal Editar -->
   <div id="mdlEdit" class="modal">
     <div class="modal-content">
       <h5 class="brand">Editar Médico</h5>
-      <input type="hidden" id="edit_id">
+      <input type="hidden" id="e_id">
       <div class="row">
-        <div class="input-field col s12 m6"><input id="edit_nome" type="text" required><label for="edit_nome">Nome*</label></div>
-        <div class="input-field col s12 m6"><input id="edit_especialidade" type="text"><label for="edit_especialidade">Especialidade</label></div>
-        <div class="input-field col s12 m3"><input id="edit_conselho" type="text" placeholder="CRM / etc"><label for="edit_conselho">Conselho</label></div>
-        <div class="input-field col s12 m3"><input id="edit_numero" type="text"><label for="edit_numero">Número</label></div>
-        <div class="input-field col s12 m3"><input id="edit_telefone" type="text"><label for="edit_telefone">Telefone</label></div>
-        <div class="input-field col s12 m3"><input id="edit_celular" type="text"><label for="edit_celular">Celular</label></div>
-        <div class="input-field col s12 m6"><input id="edit_email" type="email"><label for="edit_email">E-mail</label></div>
-        <div class="input-field col s12 m6"><input id="edit_hospital" type="text"><label for="edit_hospital">Hospital</label></div>
-        <div class="input-field col s12 m6"><input id="edit_instituicao" type="text"><label for="edit_instituicao">Instituição</label></div>
-        <div class="input-field col s12 m6"><input id="edit_cargo" type="text"><label for="edit_cargo">Cargo</label></div>
-        <div class="input-field col s12 m6"><input id="edit_convenio" type="text"><label for="edit_convenio">Convênio</label></div>
-        <div class="input-field col s12 m6"><input id="edit_data" type="date"><label for="edit_data" class="active">Data</label></div>
-        <div class="input-field col s12"><textarea id="edit_obs" class="materialize-textarea" rows="3"></textarea><label for="edit_obs">Observações</label></div>
+        <div class="input-field col s12 m6">
+          <input id="e_nome" type="text" required>
+          <label for="e_nome" class="active">Nome*</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="e_especialidade" type="text">
+          <label for="e_especialidade" class="active">Especialidade</label>
+        </div>
+
+        <div class="input-field col s12 m3">
+          <input id="e_conselho" type="text">
+          <label for="e_conselho" class="active">Conselho</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="e_numero" type="text">
+          <label for="e_numero" class="active">Número</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="e_telefone" type="text">
+          <label for="e_telefone" class="active">Telefone</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="e_celular" type="text">
+          <label for="e_celular" class="active">Celular</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="e_email" type="email">
+          <label for="e_email" class="active">E-mail</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="e_hospital" type="text">
+          <label for="e_hospital" class="active">Hospital</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="e_instituicao" type="text">
+          <label for="e_instituicao" class="active">Instituição</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="e_cargo" type="text">
+          <label for="e_cargo" class="active">Cargo</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="e_convenio" type="text">
+          <label for="e_convenio" class="active">Convênio</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="e_data" type="date">
+          <label for="e_data" class="active">Data</label>
+        </div>
+
+        <div class="input-field col s12">
+          <textarea id="e_obs" class="materialize-textarea"></textarea>
+          <label for="e_obs" class="active">Observações</label>
+        </div>
       </div>
-      <div id="edit_err" class="card-panel red lighten-4 red-text" style="display:none;border-radius:10px"></div>
+      <div id="errEdit" class="card-panel red lighten-4 red-text" style="display:none;border-radius:10px"></div>
     </div>
     <div class="modal-footer">
       <a href="#!" class="modal-close btn-flat">Cancelar</a>
-      <button id="btnAtualizar" class="btn btn-brand">Salvar alterações</button>
+      <button id="btnSalvarEdit" class="btn btn-brand">Salvar alterações</button>
     </div>
   </div>
 
-  <!-- Modal CONFIRMAR EXCLUSÃO -->
-  <div id="mdlDel" class="modal">
-    <div class="modal-content">
-      <h5 class="brand">Confirmar exclusão</h5>
-      <p>Você tem certeza que deseja excluir o médico <b id="del_nome"></b>?</p>
-      <input type="hidden" id="del_id">
-      <div id="del_err" class="card-panel red lighten-4 red-text" style="display:none;border-radius:10px"></div>
-    </div>
-    <div class="modal-footer">
-      <a href="#!" class="modal-close btn-flat">Cancelar</a>
-      <button id="btnExcluir" class="btn red">Excluir</button>
-    </div>
-  </div>
-
+  <!-- Materialize JS -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
   <script>
   (function(){
     const EL = {
@@ -167,48 +351,84 @@
       err:  document.getElementById('err'),
       btnSalvar: document.getElementById('btnSalvar'),
       btnLogout: document.getElementById('btnLogout'),
-      // edição
-      edit_err: document.getElementById('edit_err'),
-      btnAtualizar: document.getElementById('btnAtualizar'),
-      // exclusão
-      del_err: document.getElementById('del_err'),
-      btnExcluir: document.getElementById('btnExcluir'),
+
+      // busca
+      q_nome: document.getElementById('q_nome'),
+      q_crm: document.getElementById('q_crm'),
+      q_esp: document.getElementById('q_especialidade'),
+      q_inst: document.getElementById('q_instituicao'),
+
+      // Detalhes
+      v: {
+        nome: vEl('v_nome'), especialidade: vEl('v_especialidade'),
+        conselho: vEl('v_conselho'), numero: vEl('v_numero'),
+        telefone: vEl('v_telefone'), celular: vEl('v_celular'),
+        email: vEl('v_email'), hospital: vEl('v_hospital'),
+        instituicao: vEl('v_instituicao'), cargo: vEl('v_cargo'),
+        convenio: vEl('v_convenio'), data: vEl('v_data'),
+        obs: vEl('v_obs')
+      },
+      errView: document.getElementById('errView'),
+
+      // Editar
+      e_id: vEl('e_id'),
+      e: {
+        nome: vEl('e_nome'), especialidade: vEl('e_especialidade'),
+        conselho: vEl('e_conselho'), numero: vEl('e_numero'),
+        telefone: vEl('e_telefone'), celular: vEl('e_celular'),
+        email: vEl('e_email'), hospital: vEl('e_hospital'),
+        instituicao: vEl('e_instituicao'), cargo: vEl('e_cargo'),
+        convenio: vEl('e_convenio'), data: vEl('e_data'),
+        obs: vEl('e_obs')
+      },
+      errEdit: document.getElementById('errEdit'),
+      btnSalvarEdit: document.getElementById('btnSalvarEdit'),
     };
+
+    function vEl(id){ return document.getElementById(id); }
 
     document.addEventListener('DOMContentLoaded', function(){
       M.Modal.init(document.querySelectorAll('.modal'));
       loadWho();
       loadTable();
-
       EL.btnSalvar.addEventListener('click', salvarMedico);
-      EL.btnAtualizar.addEventListener('click', atualizarMedico);
-      EL.btnExcluir.addEventListener('click', excluirMedico);
+      EL.btnSalvarEdit.addEventListener('click', salvarEdicao);
       EL.btnLogout.addEventListener('click', logout);
 
-      // filtros: aplica ao digitar (debounce leve)
-      ['f_nome','f_crm','f_esp','f_inst'].forEach(id=>{
-        const i=document.getElementById(id);
-        let t=null;
-        i.addEventListener('input', ()=>{
-          clearTimeout(t);
-          t=setTimeout(loadTable, 300);
-        });
+      // busca com debounce
+      [EL.q_nome, EL.q_crm, EL.q_esp, EL.q_inst].forEach(inp=>{
+        inp.addEventListener('input', debounce(loadTable, 400));
+      });
+
+      // Delegação: ver/editar/excluir
+      EL.tbody.addEventListener('click', (ev)=>{
+        const tr = ev.target.closest('tr[data-id]');
+        if(!tr) return;
+        const id = tr.getAttribute('data-id');
+
+        if(ev.target.closest('.lnk-edit')) return openEdit(id);
+        if(ev.target.closest('.lnk-del'))  return delMedico(id);
+
+        // clique no nome ou linha abre Visualizar
+        if(ev.target.closest('.lnk-view') || ev.target.closest('td:first-child')){
+          return openView(id);
+        }
       });
     });
 
     const API = {
-      who:   'https://apisec.secauxiliar.com.br/cadmed/whoami.php',
-      list:  'https://apisec.secauxiliar.com.br/cadmed/medicos_list.php',
-      save:  'https://apisec.secauxiliar.com.br/cadmed/medicos_save.php',
-      get:   'https://apisec.secauxiliar.com.br/cadmed/medicos_get.php',
-      upd:   'https://apisec.secauxiliar.com.br/cadmed/medicos_update.php',
-      del:   'https://apisec.secauxiliar.com.br/cadmed/medicos_delete.php',
-      logout:'https://apisec.secauxiliar.com.br/cadmed/auth_logout.php'
+      who:    'https://apisec.secauxiliar.com.br/cadmed/whoami.php',
+      list:   'https://apisec.secauxiliar.com.br/cadmed/medicos_list.php',
+      save:   'https://apisec.secauxiliar.com.br/cadmed/medicos_save.php',
+      get:    'https://apisec.secauxiliar.com.br/cadmed/medico_get.php',
+      update: 'https://apisec.secauxiliar.com.br/cadmed/medicos_update.php',
+      del:    'https://apisec.secauxiliar.com.br/cadmed/medicos_delete.php',
+      logout: 'https://apisec.secauxiliar.com.br/cadmed/auth_logout.php'
     };
 
-    function setErr(el,msg){
-      if(!msg){ el.style.display='none'; return; }
-      el.textContent = msg; el.style.display='block';
+    function setErr(box,msg){
+      if(!msg){ box.style.display='none'; return; }
+      box.textContent = msg; box.style.display='block';
     }
 
     async function loadWho(){
@@ -220,78 +440,50 @@
       }catch{ EL.who.textContent = 'Erro ao carregar'; }
     }
 
-    function filtrosQuery(){
-      const q = new URLSearchParams();
-      const nome = v('#f_nome');
-      const crm  = v('#f_crm');
-      const esp  = v('#f_esp');
-      const inst = v('#f_inst');
-      if(nome) q.set('nome', nome);
-      if(crm)  q.set('crm', crm);
-      if(esp)  q.set('especialidade', esp);
-      if(inst) q.set('instituicao', inst);
-      return q.toString();
+    function currentFilters(){
+      const f = {
+        nome: EL.q_nome.value.trim(),
+        crm: EL.q_crm.value.trim(),
+        especialidade: EL.q_esp.value.trim(),
+        instituicao: EL.q_inst.value.trim()
+      };
+      const qs = new URLSearchParams();
+      Object.entries(f).forEach(([k,v])=>{ if(v) qs.set(k,v); });
+      return qs.toString();
     }
 
     async function loadTable(){
-      const qs = filtrosQuery();
       EL.tbody.innerHTML = '<tr><td colspan="5">Carregando...</td></tr>';
       try{
-        const r = await fetch(API.list + (qs? ('?'+qs):''), {credentials:'include'});
+        const qs = currentFilters();
+        const url = qs ? `${API.list}?${qs}` : API.list;
+        const r = await fetch(url, {credentials:'include'});
         const j = await r.json();
         if(!j.ok) throw new Error(j.error||'Falha ao listar.');
+
         EL.tbody.innerHTML = (j.rows||[]).map(row=>`
-        <tr data-id="${row.id||''}">
-          <td><a href="#!" class="lnk-view">${escapeHtml(row.nome||'')}</a></td>
-          <td class="truncate" title="${escapeHtml(row.telefone||'')}">${escapeHtml(row.telefone||'')}</td>
-          <td class="truncate" title="${escapeHtml(row.email||'')}">${escapeHtml(row.email||'')}</td>
-          <td class="truncate" title="${escapeHtml(row.especialidade||'')}">${escapeHtml(row.especialidade||'')}</td>
-          <td class="actions-col">
-            <a class="tooltipped btn-flat lnk-edit" data-tooltip="Editar" aria-label="Editar">
-              <i class="material-icons">edit</i>
-            </a>
-            <a class="tooltipped btn-flat lnk-del" data-tooltip="Excluir" aria-label="Excluir">
-              <i class="material-icons red-text">delete</i>
-            </a>
-          </td>
-        </tr>
-      `).join('') || '<tr><td colspan="5">Sem registros.</td></tr>';
-
-        // tooltips e binds
-        const elems = document.querySelectorAll('.tooltipped'); M.Tooltip.init(elems);
-
-        // ver/editar/excluir
-        EL.tbody.querySelectorAll('.lnk-view').forEach(a=>{
-          a.addEventListener('click', (ev)=>{
-            ev.preventDefault();
-            const id = a.closest('tr')?.dataset?.id;
-            if(id) abrirEdicao(id, /*somentePreencher*/ false, /*editar*/ false, /*visualizar*/ true);
-          });
-        });
-        EL.tbody.querySelectorAll('.lnk-edit').forEach(a=>{
-          a.addEventListener('click', (ev)=>{
-            ev.preventDefault(); ev.stopPropagation();
-            const id = a.closest('tr')?.dataset?.id;
-            if(id) abrirEdicao(id, false, true, false);
-          });
-        });
-        EL.tbody.querySelectorAll('.lnk-del').forEach(a=>{
-          a.addEventListener('click', (ev)=>{
-            ev.preventDefault(); ev.stopPropagation();
-            const id = a.closest('tr')?.dataset?.id;
-            if(id) abrirExclusao(id);
-          });
-        });
+          <tr data-id="${row.id||''}">
+            <td><a href="#!" class="lnk-view">${escapeHtml(row.nome||'')}</a></td>
+            <td class="truncate" title="${escapeHtml(row.telefone||'')}">${escapeHtml(row.telefone||'')}</td>
+            <td class="truncate" title="${escapeHtml(row.email||'')}">${escapeHtml(row.email||'')}</td>
+            <td class="truncate" title="${escapeHtml(row.especialidade||'')}">${escapeHtml(row.especialidade||'')}</td>
+            <td class="actions-col">
+              <button class="icon-btn lnk-edit" title="Editar">
+                <i class="material-icons">edit</i></button>
+              <button class="icon-btn lnk-del" title="Excluir">
+                <i class="material-icons red-text">delete</i></button>
+            </td>
+          </tr>
+        `).join('') || '<tr><td colspan="5">Sem registros.</td></tr>';
       }catch(e){
         console.error(e);
         EL.tbody.innerHTML = '<tr><td colspan="5">Erro ao carregar.</td></tr>';
       }
     }
 
-    // ---------- CADASTRAR ----------
     async function salvarMedico(){
-      setErr(EL.err,'');
-      const payload = coleta('#mdlNovo');
+      setErr(EL.err, '');
+      const payload = collectPayload('#mdlNovo ');
       if(!payload.nome){ setErr(EL.err,'Informe o nome.'); return; }
 
       try{
@@ -303,154 +495,162 @@
         });
         const j = await r.json();
         if(!r.ok || !j.ok) throw new Error(j.error||'Falha ao salvar');
+
         M.toast({html:'Médico cadastrado!'});
-        M.Modal.getInstance(document.getElementById('mdlNovo'))?.close();
-        limpar('#mdlNovo'); loadTable();
+        const modal = M.Modal.getInstance(document.getElementById('mdlNovo'));
+        modal?.close();
+        document.querySelectorAll('#mdlNovo input, #mdlNovo textarea').forEach(i=>i.value='');
+        M.updateTextFields();
+        loadTable();
       }catch(e){
         console.error(e);
         setErr(EL.err, e.message||'Erro ao salvar.');
       }
     }
 
-    // ---------- EDITAR / VISUALIZAR ----------
-    async function abrirEdicao(id, somentePreencher=false, editar=false, visualizar=false){
-      setErr(EL.edit_err,'');
+    // ===== Visualizar =====
+    async function openView(id){
+      setErr(EL.errView,'');
       try{
-        const r = await fetch(API.get+'?id='+encodeURIComponent(id), {credentials:'include'});
+        const r = await fetch(`${API.get}?id=${encodeURIComponent(id)}`, {credentials:'include'});
         const j = await r.json();
-        if(!r.ok || !j.ok) throw new Error(j.error||'Falha ao carregar dados.');
-        preencher('#mdlEdit', j.row);
-        document.getElementById('edit_id').value = j.row.id;
-
-        // alterna modo somente leitura
-        alternaReadonly('#mdlEdit', visualizar);
-
-        const m = M.Modal.getInstance(document.getElementById('mdlEdit'));
-        m?.open();
+        if(!j.ok) throw new Error(j.error||'Falha ao carregar.');
+        fillReadOnly(j.row||{});
+        M.Modal.getInstance(document.getElementById('mdlView')).open();
       }catch(e){
         console.error(e);
-        setErr(EL.edit_err, e.message||'Erro ao carregar.');
+        setErr(EL.errView, e.message||'Erro ao carregar.');
       }
     }
+    function fillReadOnly(row){
+      EL.v.nome.value = row.nome||'';
+      EL.v.especialidade.value = row.especialidade||'';
+      EL.v.conselho.value = row.conselho||'';
+      EL.v.numero.value = row.numero||'';
+      EL.v.telefone.value = row.telefone||'';
+      EL.v.celular.value = row.celular||'';
+      EL.v.email.value = row.email||'';
+      EL.v.hospital.value = row.hospital||'';
+      EL.v.instituicao.value = row.instituicao||'';
+      EL.v.cargo.value = row.cargo||'';
+      EL.v.convenio.value = row.convenio||'';
+      EL.v.data.value = row.data||'';
+      EL.v.obs.value = row.obs||'';
+      M.updateTextFields();
+    }
 
-    async function atualizarMedico(){
-      setErr(EL.edit_err,'');
-      const id = document.getElementById('edit_id').value;
-      if(!id) return;
-
-      const payload = coleta('#mdlEdit');
-      payload.id = +id;
-
-      if(!payload.nome){ setErr(EL.edit_err,'Informe o nome.'); return; }
+    // ===== Editar =====
+    async function openEdit(id){
+      setErr(EL.errEdit,'');
+      try{
+        const r = await fetch(`${API.get}?id=${encodeURIComponent(id)}`, {credentials:'include'});
+        const j = await r.json();
+        if(!j.ok) throw new Error(j.error||'Falha ao carregar.');
+        EL.e_id.value = j.row.id||'';
+        fillEdit(j.row||{});
+        M.Modal.getInstance(document.getElementById('mdlEdit')).open();
+      }catch(e){
+        console.error(e);
+        setErr(EL.errEdit, e.message||'Erro ao carregar.');
+      }
+    }
+    function fillEdit(row){
+      EL.e.nome.value = row.nome||'';
+      EL.e.especialidade.value = row.especialidade||'';
+      EL.e.conselho.value = row.conselho||'';
+      EL.e.numero.value = row.numero||'';
+      EL.e.telefone.value = row.telefone||'';
+      EL.e.celular.value = row.celular||'';
+      EL.e.email.value = row.email||'';
+      EL.e.hospital.value = row.hospital||'';
+      EL.e.instituicao.value = row.instituicao||'';
+      EL.e.cargo.value = row.cargo||'';
+      EL.e.convenio.value = row.convenio||'';
+      EL.e.data.value = row.data||'';
+      EL.e.obs.value = row.obs||'';
+      M.updateTextFields();
+    }
+    async function salvarEdicao(){
+      setErr(EL.errEdit,'');
+      const payload = collectPayload('#mdlEdit ');
+      payload.id = EL.e_id.value;
+      if(!payload.id){ setErr(EL.errEdit,'ID inválido.'); return; }
+      if(!payload.nome){ setErr(EL.errEdit,'Informe o nome.'); return; }
 
       try{
-        const r = await fetch(API.upd, {
+        const r = await fetch(API.update, {
           method:'POST',
           headers:{'Content-Type':'application/json'},
           credentials:'include',
           body: JSON.stringify(payload)
         });
         const j = await r.json();
-        if(!r.ok || !j.ok) throw new Error(j.error||'Falha ao atualizar');
+        if(!r.ok || !j.ok) throw new Error(j.error||'Falha ao salvar');
+
         M.toast({html:'Alterações salvas!'});
-        M.Modal.getInstance(document.getElementById('mdlEdit'))?.close();
+        M.Modal.getInstance(document.getElementById('mdlEdit')).close();
         loadTable();
       }catch(e){
         console.error(e);
-        setErr(EL.edit_err, e.message||'Erro ao atualizar.');
+        setErr(EL.errEdit, e.message||'Erro ao salvar.');
       }
     }
 
-    // ---------- EXCLUIR ----------
-    async function abrirExclusao(id){
-      setErr(EL.del_err,'');
-      try{
-        const r = await fetch(API.get+'?id='+encodeURIComponent(id), {credentials:'include'});
-        const j = await r.json();
-        if(!j.ok) throw new Error(j.error||'Falha ao carregar.');
-        document.getElementById('del_id').value = j.row.id;
-        document.getElementById('del_nome').textContent = j.row.nome || '';
-        M.Modal.getInstance(document.getElementById('mdlDel'))?.open();
-      }catch(e){
-        setErr(EL.del_err, e.message||'Erro ao carregar.');
-      }
-    }
-
-    async function excluirMedico(){
-      setErr(EL.del_err,'');
-      const id = document.getElementById('del_id').value;
-      if(!id) return;
+    // ===== Excluir =====
+    async function delMedico(id){
+      const row = Array.from(EL.tbody.querySelectorAll('tr[data-id]'))
+                       .find(tr=>tr.getAttribute('data-id')===id);
+      const nome = row ? row.querySelector('td:first-child')?.innerText.trim() : '';
+      const ok = confirm(`Excluir o médico "${nome||id}"? Essa ação não pode ser desfeita.`);
+      if(!ok) return;
       try{
         const r = await fetch(API.del, {
           method:'POST',
           headers:{'Content-Type':'application/json'},
           credentials:'include',
-          body: JSON.stringify({ id: +id })
+          body: JSON.stringify({ id })
         });
         const j = await r.json();
         if(!r.ok || !j.ok) throw new Error(j.error||'Falha ao excluir');
-        M.toast({html:'Excluído com sucesso!'});
-        M.Modal.getInstance(document.getElementById('mdlDel'))?.close();
+        M.toast({html:'Registro excluído!'});
         loadTable();
       }catch(e){
         console.error(e);
-        setErr(EL.del_err, e.message||'Erro ao excluir.');
+        M.toast({html:'Erro ao excluir'});
       }
     }
 
-    // ---------- Helpers ----------
     async function logout(){
       try{ await fetch(API.logout, {method:'POST', credentials:'include'}); }catch(e){}
       location.href = '/cadmed/login';
     }
 
-    function coleta(ctx){
-      const $ = (sel)=>document.querySelector(ctx+' '+sel);
+    function collectPayload(scope){
+      const g = sel => document.querySelector(scope + sel)?.value.trim() || '';
       return {
-        nome: v(ctx+' #nome, '+ctx+' #edit_nome'),
-        especialidade: v(ctx+' #especialidade, '+ctx+' #edit_especialidade'),
-        conselho: v(ctx+' #conselho, '+ctx+' #edit_conselho'),
-        numero: v(ctx+' #numero, '+ctx+' #edit_numero'),
-        telefone: v(ctx+' #telefone, '+ctx+' #edit_telefone'),
-        celular: v(ctx+' #celular, '+ctx+' #edit_celular'),
-        email: v(ctx+' #email, '+ctx+' #edit_email'),
-        hospital: v(ctx+' #hospital, '+ctx+' #edit_hospital'),
-        instituicao: v(ctx+' #instituicao, '+ctx+' #edit_instituicao'),
-        cargo: v(ctx+' #cargo, '+ctx+' #edit_cargo'),
-        convenio: v(ctx+' #convenio, '+ctx+' #edit_convenio'),
-        data: v(ctx+' #data, '+ctx+' #edit_data'),
-        obs: v(ctx+' #obs, '+ctx+' #edit_obs')
+        nome: g('#nome') || g('#e_nome'),
+        especialidade: g('#especialidade') || g('#e_especialidade'),
+        conselho: g('#conselho') || g('#e_conselho'),
+        numero: g('#numero') || g('#e_numero'),
+        telefone: g('#telefone') || g('#e_telefone'),
+        celular: g('#celular') || g('#e_celular'),
+        email: g('#email') || g('#e_email'),
+        hospital: g('#hospital') || g('#e_hospital'),
+        instituicao: g('#instituicao') || g('#e_instituicao'),
+        cargo: g('#cargo') || g('#e_cargo'),
+        convenio: g('#convenio') || g('#e_convenio'),
+        data: g('#data') || g('#e_data'),
+        obs: g('#obs') || g('#e_obs'),
       };
     }
 
-    function preencher(ctx, row){
-      const map = {
-        '#edit_nome':'nome', '#edit_especialidade':'especialidade', '#edit_conselho':'conselho', '#edit_numero':'numero',
-        '#edit_telefone':'telefone', '#edit_celular':'celular', '#edit_email':'email', '#edit_hospital':'hospital',
-        '#edit_instituicao':'instituicao', '#edit_cargo':'cargo', '#edit_convenio':'convenio', '#edit_data':'data', '#edit_obs':'obs'
-      };
-      for(const sel in map){
-        const el = document.querySelector(sel);
-        if(!el) continue;
-        el.value = row[map[sel]] ?? '';
-      }
-      M.updateTextFields();
+    function escapeHtml(s){ 
+      return (s??'').toString().replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
     }
 
-    function alternaReadonly(ctx, on){
-      document.querySelectorAll(ctx+' input,'+ctx+' textarea').forEach(el=>{
-        el.readOnly = !!on;
-      });
-      document.getElementById('btnAtualizar').style.display = on ? 'none' : 'inline-block';
+    function debounce(fn, wait=300){
+      let t; return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn.apply(this,args), wait); };
     }
-
-    function limpar(ctx){
-      document.querySelectorAll(ctx+' input,'+ctx+' textarea').forEach(i=>i.value='');
-      M.updateTextFields();
-    }
-
-    function v(sel){ const el=document.querySelector(sel); return el?el.value.trim():''; }
-    function escapeHtml(s){ return (s??'').toString().replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
   })();
   </script>
 </body>
