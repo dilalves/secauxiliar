@@ -72,7 +72,7 @@
           </div>
           <div class="input-field col s12 m6 l3">
             <input id="q_crm" type="text" autocomplete="off" placeholder="CRM / Conselho / Nº" />
-            <label for="q_crm">CRM / Conselho</label>
+            <label for="q_crm">Número no Conselho (CRM, etc)</label>
           </div>
           <div class="input-field col s12 m6 l3">
             <input id="q_especialidade" type="text" autocomplete="off" placeholder="Ex: Pediatria" />
@@ -296,16 +296,21 @@
     }
 
     function currentFilters(){
-      const f = {
-        nome: EL.q_nome.value.trim(),
-        crm: EL.q_crm.value.trim(),
-        especialidade: EL.q_esp.value.trim(),
-        instituicao: EL.q_inst.value.trim()
-      };
       const qs = new URLSearchParams();
-      Object.entries(f).forEach(([k,v])=>{ if(v) qs.set(k,v); });
+
+      const nome = EL.q_nome.value.trim();
+      const crm  = EL.q_crm.value.trim();
+      const esp  = EL.q_esp.value.trim();
+      const inst = EL.q_inst.value.trim();
+
+      if (nome) qs.set('nome', nome);
+      if (crm)  qs.set('crm', crm);
+      if (esp)  qs.set('esp', esp);           // <<< nome que o PHP lê
+      if (inst) qs.set('inst', inst);         // <<< nome que o PHP lê
+
       return qs.toString();
     }
+
 
     async function loadTable(){
       // placeholder
