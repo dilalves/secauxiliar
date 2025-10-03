@@ -61,147 +61,123 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   
   <script>
-  (function(){
-    const API = {
-      get: 'https://apisec.secauxiliar.com.br/cadmed/medicos_get.php'
+(async function(){
+  const EL = {
+    box: document.getElementById('box'),
+    msg: document.getElementById('msg'),
+    titulo: document.getElementById('titulo'),
+    crm: document.getElementById('crm'),
+    fields: document.getElementById('fields'),
+    btnWhats: document.getElementById('btnWhats'),
+    btnEmail: document.getElementById('btnEmail'),
+    btnVcf: document.getElementById('btnVcf'),
+    btnPrint: document.getElementById('btnPrint'),
+  };
+
+  // === usa token público ?share=... ===
+  const share = (new URLSearchParams(location.search)).get('share');
+  if(!share){ return showMsg('Link inválido ou expirado.'); }
+
+  const API_PUBLIC = `https://apisec.secauxiliar.com.br/cadmed/medicos_public.php?share=${encodeURIComponent(share)}`;
+
+  try{
+    const r = await fetch(API_PUBLIC, { credentials: 'omit', cache: 'no-store' });
+    const j = await r.json();
+    if(!j.ok || !j.row) throw new Error(j.error || 'Falha ao carregar');
+
+    const row = j.row;
+
+    // Título e CRM abaixo
+    EL.titulo.innerHTML = `${escapeHtml(row.nome||'')}
+      ${row.especialidade ? `<span class="chip k">${escapeHtml(row.especialidade)}</span>` : ''}`;
+    const crmTxt = [row.conselho, row.numero].filter(Boolean).join(' ').trim();
+    EL.crm.textContent = crmTxt ? `CRM ${crmTxt}` : '';
+
+    // Campos na ordem pedida (sem "Cargo")
+    EL.fields.innerHTML = '';
+    const items = [
+      ['phone',  'Telefone',     row.telefone],
+      ['smartphone','Celular',   row.celular],
+      ['email',  'E-mail',       row.email],
+      ['local_hospital','Hospital',     row.hospital],
+      ['school', 'Instituição',  row.instituicao],
+      ['badge',  'Convênio',     row.convenio],
+      ['event',  'Data',         row.data],
+      ['notes',  'Observações',  row.obs]
+    ];
+    items.forEach(([icon,label,value])=>{
+      if(!value) return;
+      const div = document.createElement('div');
+      div.className = 'field-row';
+      div.innerHTML = `<i class="material-icons">${icon}</i><span><b>${label}:</b> ${escapeHtml(value)}</span>`;
+      EL.fields.appendChild(div);
+    });
+
+    // Ações
+    const link = location.href.split('#')[0]; // mantém ?share= no link
+    const texto = buildTexto(row, link);
+
+    EL.btnWhats.onclick = ()=> window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+    EL.btnEmail.onclick = ()=>{
+      const assunto = `Contato – ${row.nome||''}${row.especialidade ? ` (${row.especialidade})` : ''}`;
+      location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(texto)}`;
     };
+    EL.btnVcf.onclick = ()=> downloadVcf(row);
+    EL.btnPrint.onclick = ()=> window.print();
 
-    const EL = {
-      box: document.getElementById('box'),
-      msg: document.getElementById('msg'),
-      titulo: document.getElementById('titulo'),
-      crm: document.getElementById('crm'),
-      fields: document.getElementById('fields'),
-      btnWhats: document.getElementById('btnWhats'),
-      btnEmail: document.getElementById('btnEmail'),
-      btnVcf: document.getElementById('btnVcf'),
-      btnPrint: document.getElementById('btnPrint'),
-    };
+    EL.box.style.display = 'block';
+    EL.msg.style.display = 'none';
 
-    const id = (new URLSearchParams(location.search)).get('id');
+  }catch(e){
+    console.error(e);
+    showMsg('Não foi possível carregar as informações deste médico.');
+  }
 
-    if(!id){
-      showMsg('Link inválido: nenhum ID informado.');
-      return;
-    }
+  // Utils
+  function showMsg(text){ EL.msg.textContent = text; EL.msg.style.display = 'block'; }
+  function escapeHtml(s){
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  }
+  function buildTexto(row, link){
+    return [
+      `Médico(a): ${row.nome||''}`,
+      row.especialidade ? `Especialidade: ${row.especialidade}` : '',
+      [row.conselho,row.numero].some(Boolean) ? `Conselho: ${(row.conselho||'')+' '+(row.numero||'')}`.trim() : '',
+      row.telefone ? `Telefone: ${row.telefone}` : '',
+      row.celular ? `Celular: ${row.celular}` : '',
+      row.email ? `E-mail: ${row.email}` : '',
+      row.hospital ? `Hospital: ${row.hospital}` : '',
+      row.instituicao ? `Instituição: ${row.instituicao}` : '',
+      row.convenio ? `Convênio: ${row.convenio}` : '',
+      row.data ? `Data: ${row.data}` : '',
+      row.obs ? `Observações: ${row.obs}` : '',
+      '', `Saiba mais: ${link}`
+    ].filter(Boolean).join('\n');
+  }
+  function downloadVcf(row){
+    const nome =(row.nome||'').replace(/\n/g,' ').trim();
+    const tel  =(row.celular||row.telefone||'').replace(/\s+/g,'').trim();
+    const email=(row.email||'').trim();
+    const titulo=(row.especialidade||'').trim();
+    const nota = `Conselho: ${(row.conselho||'')+' '+(row.numero||'')}`.trim();
+    const vcf = [
+      'BEGIN:VCARD','VERSION:3.0',
+      `N:${nome};;;;`,`FN:${nome}`,
+      'ORG:CadMed',`TITLE:${titulo}`,
+      tel?`TEL;TYPE=CELL:${tel}`:'',
+      email?`EMAIL;TYPE=INTERNET:${email}`:'',
+      `NOTE:${nota}`,'END:VCARD'
+    ].filter(Boolean).join('\n');
+    const blob=new Blob([vcf],{type:'text/vcard'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=`${(row.nome||'contato').replace(/\s+/g,'_')}.vcf`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+})();
+</script>
 
-    init();
-
-    async function init(){
-      try{
-        const r = await fetch(`${API.get}?id=${encodeURIComponent(id)}`, {credentials:'include'});
-        const j = await r.json();
-        if(!j.ok || !j.row){ throw new Error(j.error || 'Registro não encontrado.'); }
-
-        render(j.row);
-      }catch(e){
-        console.error(e);
-        showMsg('Não foi possível carregar as informações deste médico.');
-      }
-    }
-
-    function showMsg(text){
-      EL.msg.textContent = text;
-      EL.msg.style.display = 'block';
-    }
-
-    function render(row){
-      // título e “CRM”
-      EL.titulo.innerHTML = `${escapeHtml(row.nome||'')} <span class="chip k">${escapeHtml(row.especialidade||'')}</span>`;
-      const crm = [row.conselho, row.numero].filter(Boolean).join(' ');
-      EL.crm.textContent = crm ? crm : '';
-
-      EL.fields.innerHTML = '';
-      // mapa de campos públicos (ajuste se quiser esconder algo)
-      const items = [
-        ['phone',  'Telefone',   row.telefone],
-        ['phone',  'Celular',    row.celular],
-        ['email',  'E-mail',     row.email],
-        ['local_hospital','Hospital',   row.hospital],
-        ['school', 'Instituição',row.instituicao],
-        ['work',   'Cargo',      row.cargo],
-        ['assignment_ind','Convênio',   row.convenio],
-        ['event',  'Data',       row.data],
-        ['notes',  'Observações',row.obs]
-      ];
-      items.forEach(([icon,label,value])=>{
-        if(!value) return;
-        const div = document.createElement('div');
-        div.className = 'field-row';
-        div.innerHTML = `<i class="material-icons">${icon}</i><span><b>${label}:</b> ${escapeHtml(value)}</span>`;
-        EL.fields.appendChild(div);
-      });
-
-      // ações
-      const link = location.href.split('#')[0]; // este próprio link
-      const texto = buildTexto(row, link);
-
-      EL.btnWhats.onclick = ()=> window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
-      EL.btnEmail.onclick = ()=>{
-        const assunto = `Contato – ${row.nome||''} (${row.especialidade||''})`;
-        location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(texto)}`;
-      };
-      EL.btnVcf.onclick = ()=> downloadVcf(row);
-      EL.btnPrint.onclick = ()=> window.print();
-
-      EL.box.style.display = 'block';
-    }
-
-    function buildTexto(row, link){
-      return [
-        `Médico(a): ${row.nome||''}`,
-        `Especialidade: ${row.especialidade||''}`,
-        `Conselho: ${(row.conselho||'')+' '+(row.numero||'')}`.trim(),
-        `Telefone: ${row.telefone||''}`,
-        `Celular: ${row.celular||''}`,
-        `E-mail: ${row.email||''}`,
-        `Hospital: ${row.hospital||''}`,
-        `Instituição: ${row.instituicao||''}`,
-        `Cargo: ${row.cargo||''}`,
-        `Convênio: ${row.convenio||''}`,
-        row.data ? `Data: ${row.data}` : '',
-        row.obs ? `Obs.: ${row.obs}` : '',
-        '',
-        `Saiba mais: ${link}`
-      ].filter(Boolean).join('\n');
-    }
-
-    function downloadVcf(row){
-      const nome = (row.nome||'').replace(/\n/g,' ').trim();
-      const tel  = (row.celular||row.telefone||'').replace(/\s+/g,'').trim();
-      const email= (row.email||'').trim();
-      const titulo = (row.especialidade||'').trim();
-      const nota = `Conselho: ${row.conselho||''} ${row.numero||''} | Hospital: ${row.hospital||''} | Inst.: ${row.instituicao||''} | Cargo: ${row.cargo||''} | Convênio: ${row.convenio||''}`.trim();
-      const vcf = [
-        'BEGIN:VCARD','VERSION:3.0',
-        `N:${nome};;;;`,`FN:${nome}`,
-        'ORG:CadMed',`TITLE:${titulo}`,
-        tel   ? `TEL;TYPE=CELL:${tel}` : '',
-        email ? `EMAIL;TYPE=INTERNET:${email}` : '',
-        `NOTE:${nota}`,
-        'END:VCARD'
-      ].filter(Boolean).join('\n');
-
-      const blob = new Blob([vcf], {type:'text/vcard'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${(row.nome||'contato').replace(/\s+/g,'_')}.vcf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    function escapeHtml(s){
-      return String(s||'')
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;')
-        .replace(/'/g,'&#039;');
-    }
-  })();
-  </script>
 </body>
 </html>
