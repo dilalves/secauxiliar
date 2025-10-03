@@ -27,9 +27,11 @@
     #tbl col.col-telefone  { width: 18%; }
     #tbl col.col-email     { width: 28%; }
     #tbl col.col-esp       { width: 16%; }
+    
+    /*
     #tbl col.col-actions   { width: clamp(110px, 10%, 160px); }
     td.actions-col         { min-width: 110px; }
-    td.actions-col .icon-btn { margin: 0 3px; }
+    td.actions-col .icon-btn { margin: 0 3px; } */
 
     /* Ações */
     th.actions-col, td.actions-col { text-align: center; padding: 8px 6px; white-space: nowrap; }
@@ -45,6 +47,14 @@
 
     /* Blindagem extra: garanta que continuem como células (evita empilhamento em alguns temas “responsive”) */
     #tbl th, #tbl td { display: table-cell !important; }
+
+    /* === FIX: coluna Ações não cortar o botão excluir === */
+    #tbl col.col-actions { width: auto !important; }        /* neutraliza o 6% */
+    th.actions-col,
+    td.actions-col { width: 132px !important; min-width: 132px; }  /* cabe 3 ícones */
+    td.actions-col { overflow: visible; padding-right: 8px; }
+    td.actions-col .icon-btn { width: 26px; height: 26px; margin: 0 2px; } /* dá folga */
+
   </style>
 </head>
 <body>
