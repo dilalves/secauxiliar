@@ -308,7 +308,8 @@
       get:    'https://apisec.secauxiliar.com.br/cadmed/medicos_get.php',
       update: 'https://apisec.secauxiliar.com.br/cadmed/medicos_update.php',
       del:    'https://apisec.secauxiliar.com.br/cadmed/medicos_delete.php',
-      logout: 'https://apisec.secauxiliar.com.br/cadmed/auth_logout.php'
+      logout: 'https://apisec.secauxiliar.com.br/cadmed/auth_logout.php',
+      shareCreate: 'https://apisec.secauxiliar.com.br/cadmed/medicos_share_create.php'
     };
 
     function setErr(box,msg){ if(!msg){ box.style.display='none'; return; } box.textContent = msg; box.style.display='block'; }
@@ -616,7 +617,7 @@
         return M.toast({html:'Não foi possível preparar o compartilhamento.'});
     }
 
-    const link  = makePublicLink(id);
+    const link  = await makePublicLinkFor(id); // novo (com token)
     const texto = buildTexto(row);
     const shareText = `${texto}\nSaiba mais: ${link}`.trim();
 
@@ -661,6 +662,20 @@
         window.prompt('Copie o link:', link);
     }
     }
+
+    async function makePublicLinkFor(id){
+    const r = await fetch(API.shareCreate, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body: JSON.stringify({ id })
+    });
+    const j = await r.json();
+    if(!j.ok || !j.share) throw new Error(j.error||'Falha ao gerar link público');
+    const base = (location.origin || 'https://secauxiliar.com.br');
+    // Página estática pública (HTML): medico.html
+    return `${base}/cadmed/medico.html?share=${encodeURIComponent(j.share)}`;
+  } 
 
   })();
 
