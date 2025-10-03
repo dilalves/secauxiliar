@@ -40,138 +40,130 @@
   </main>
 
   <script>
-  (async function(){
-    const qs = new URLSearchParams(location.search);
-    const share = qs.get('share') || '';
+(async function () {
+  // ===== helpers de DOM =====
+  const $ = (id) => document.getElementById(id);
+  const BOX = $('box'), TIT = $('titulo'), CRM = $('crm'), FIELDS = $('fields');
+  const BTN_WA = $('btnWhats'), BTN_MAIL = $('btnEmail'), BTN_VCF = $('btnVcf'), BTN_PRINT = $('btnPrint');
 
-    const BOX = document.getElementById('box');
-    const API_PUBLIC = 'https://apisec.secauxiliar.com.br/cadmed/medicos_public.php?share=' + encodeURIComponent(share);
+  // pega token compartilhado
+  const share = new URLSearchParams(location.search).get('share');
+  if (!share) return showMsg('Link inválido ou expirado.');
 
-    if(!share){
-      BOX.innerHTML = cardMsg('Link inválido.');
-      return;
-    }
+  // endpoint público (sem cookies)
+  const API_PUBLIC = `https://apisec.secauxiliar.com.br/cadmed/medicos_public.php?share=${encodeURIComponent(share)}`;
 
-    try{
-      const r = await fetch(API_PUBLIC, { credentials:'omit' });
-      const j = await r.json();
-      if(!j.ok || !j.row) throw new Error(j.error||'Falha');
+  try {
+    const r = await fetch(API_PUBLIC, { credentials: 'omit' });
+    const j = await r.json();
+    if (!j.ok || !j.row) throw new Error(j.error || 'Falha ao carregar.');
 
-      render(j.row);
-    }catch(e){
-      console.warn(e);
-      BOX.innerHTML = cardMsg('Não foi possível carregar as informações deste médico.');
-    }
+    const m = j.row;
 
-    function render(m){
-      const nome  = esc(m.nome||'Médico');
-      const esp   = esc(m.especialidade||'');
-      const crm   = [m.conselho, m.numero].filter(Boolean).join(' ');
-      const link  = location.href.split('#')[0];
-      const texto = buildTexto(m, link);
+    // ===== Cabeçalho: Nome + chip e CRM logo abaixo =====
+    TIT.innerHTML = `
+      ${escapeHtml(m.nome || 'Médico')}
+      ${m.especialidade ? `<span class="chip" style="margin-left:.5rem">${escapeHtml(m.especialidade)}</span>` : ''}
+    `;
+    const crmTxt = [m.conselho || '', m.numero || ''].filter(Boolean).join(' ').trim();
+    CRM.textContent = crmTxt ? `CRM ${crmTxt}` : '';
 
-      BOX.innerHTML = `
-        <div class="card-content">
-          <span class="card-title" id="titulo">${nome} ${esp?`<span class="k">${esp}</span>`:''}</span>
-          ${crm ? `<p class="grey-text text-darken-1" id="crm">${esc(crm)}</p>` : ''}
-          <div class="divider" style="margin:10px 0 16px"></div>
-
-          <div id="fields">
-            ${field('phone', 'Telefone', m.telefone)}
-            ${field('phone', 'Celular', m.celular)}
-            ${field('email', 'E-mail', m.email)}
-            ${field('local_hospital', 'Hospital', m.hospital)}
-            ${field('school', 'Instituição', m.instituicao)}
-            ${field('work', 'Cargo', m.cargo)}
-            ${field('assignment_ind', 'Convênio', m.convenio)}
-            ${field('event', 'Data', m.data)}
-            ${field('notes', 'Observações', m.obs)}
-          </div>
-        </div>
-
-        <div class="actions">
-          <a class="btn btn-small" id="btnWhats"><i class="material-icons left">chat</i>WhatsApp</a>
-          <a class="btn btn-small green" id="btnEmail"><i class="material-icons left">email</i>E-mail</a>
-          <a class="btn btn-small amber darken-2" id="btnVcf"><i class="material-icons left">contact_mail</i>vCard</a>
-          <a class="btn btn-small grey darken-1" id="btnPrint"><i class="material-icons left">print</i>Imprimir</a>
-        </div>
+    // ===== Campos na ORDEM solicitada =====
+    FIELDS.innerHTML = '';
+    const itens = [
+      ['call'         , 'Telefone'     , m.telefone],
+      ['smartphone'   , 'Celular'      , m.celular],
+      ['email'        , 'E-mail'       , m.email],
+      ['local_hospital', 'Hospital'    , m.hospital],
+      ['school'       , 'Instituição'  , m.instituicao],
+      ['badge'        , 'Convênio'     , m.convenio],
+      ['event'        , 'Data'         , m.data],
+      ['notes'        , 'Observações'  , m.obs],
+    ];
+    itens.forEach(([icon, label, value]) => {
+      if (!value) return;
+      const row = document.createElement('div');
+      row.className = 'field-row';
+      row.innerHTML = `
+        <i class="material-icons" aria-hidden="true">${icon}</i>
+        <span><b>${label}:</b> ${escapeHtml(value)}</span>
       `;
+      FIELDS.appendChild(row);
+    });
 
-      // ações
-      document.getElementById('btnWhats').onclick = ()=> {
-        window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`,'_blank');
-      };
-      document.getElementById('btnEmail').onclick = ()=> {
-        const assunto = `Contato – ${m.nome||''} (${m.especialidade||''})`;
-        location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(texto)}`;
-      };
-      document.getElementById('btnVcf').onclick = ()=> downloadVcf(m);
-      document.getElementById('btnPrint').onclick = ()=> window.print();
-    }
+    // ===== Ações (usam o MESMO link ?share=...) =====
+    const link = location.href.split('#')[0];
+    const texto = buildTexto(m, link);
 
-    // helpers de UI
-    function field(icon, label, val){
-      if(!val) return '';
-      return `<div class="field-row"><i class="material-icons">${icon}</i><span><b>${esc(label)}:</b> ${esc(val)}</span></div>`;
-    }
-    function cardMsg(msg){
-      return `
-        <div class="card-content">
-          <div class="card-panel yellow lighten-4">${esc(msg)}</div>
-        </div>`;
-    }
-    function esc(s){
-      return String(s||'')
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-    }
+    BTN_WA.onclick   = () => window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+    BTN_MAIL.onclick = () => {
+      const assunto = `Contato – ${m.nome || ''}${m.especialidade ? ` (${m.especialidade})` : ''}`;
+      location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(texto)}`;
+    };
+    BTN_VCF.onclick  = () => downloadVcf(m);
+    BTN_PRINT.onclick= () => window.print();
 
-    // ===== Texto e vCard =====
-    function buildTexto(row, link){
-      return [
-        `Médico(a): ${row.nome||''}`,
-        `Especialidade: ${row.especialidade||''}`,
-        `Conselho: ${(row.conselho||'')+' '+(row.numero||'')}`.trim(),
-        `Telefone: ${row.telefone||''}`,
-        `Celular: ${row.celular||''}`,
-        `E-mail: ${row.email||''}`,
-        `Hospital: ${row.hospital||''}`,
-        `Instituição: ${row.instituicao||''}`,
-        `Cargo: ${row.cargo||''}`,
-        `Convênio: ${row.convenio||''}`,
-        row.data ? `Data: ${row.data}` : '',
-        row.obs ? `Obs.: ${row.obs}` : '',
-        '',
-        `Saiba mais: ${link}`
-      ].filter(Boolean).join('\n');
-    }
+    BOX.style.display = 'block';
+  } catch (e) {
+    console.error(e);
+    showMsg('Não foi possível carregar as informações deste médico.');
+  }
 
-    function downloadVcf(row){
-      const nome = (row.nome||'').replace(/\n/g,' ').trim();
-      const tel  = (row.celular||row.telefone||'').replace(/\s+/g,'').trim();
-      const email= (row.email||'').trim();
-      const titulo = (row.especialidade||'').trim();
-      const nota = `Conselho: ${row.conselho||''} ${row.numero||''} | Hospital: ${row.hospital||''} | Inst.: ${row.instituicao||''} | Cargo: ${row.cargo||''} | Convênio: ${row.convenio||''}`.trim();
+  // ===== utilitários =====
+  function showMsg(t) {
+    BOX.innerHTML = `
+      <div class="card-content">
+        <div class="card-panel yellow lighten-4">${escapeHtml(t)}</div>
+      </div>`;
+  }
+  function buildTexto(m, link) {
+    return [
+      `Médico(a): ${m.nome || ''}`,
+      m.especialidade ? `Especialidade: ${m.especialidade}` : '',
+      [m.conselho, m.numero].some(Boolean) ? `Conselho: ${(m.conselho || '') + ' ' + (m.numero || '')}`.trim() : '',
+      m.telefone    ? `Telefone: ${m.telefone}` : '',
+      m.celular     ? `Celular: ${m.celular}` : '',
+      m.email       ? `E-mail: ${m.email}` : '',
+      m.hospital    ? `Hospital: ${m.hospital}` : '',
+      m.instituicao ? `Instituição: ${m.instituicao}` : '',
+      m.cargo       ? `Cargo: ${m.cargo}` : '',
+      m.convenio    ? `Convênio: ${m.convenio}` : '',
+      m.data        ? `Data: ${m.data}` : '',
+      m.obs         ? `Observações: ${m.obs}` : '',
+      '',
+      `Saiba mais: ${link}`
+    ].filter(Boolean).join('\n');
+  }
+  function downloadVcf(m) {
+    const nome  = (m.nome || '').replace(/\n/g, ' ').trim();
+    const tel   = (m.celular || m.telefone || '').replace(/\s+/g, '').trim();
+    const email = (m.email || '').trim();
+    const titulo= (m.especialidade || '').trim();
+    const nota  = `Conselho: ${(m.conselho||'')+' '+(m.numero||'')}`.trim();
+    const vcf = [
+      'BEGIN:VCARD','VERSION:3.0',
+      `N:${nome};;;;`,`FN:${nome}`,
+      'ORG:CadMed', `TITLE:${titulo}`,
+      tel   ? `TEL;TYPE=CELL:${tel}` : '',
+      email ? `EMAIL;TYPE=INTERNET:${email}` : '',
+      `NOTE:${nota}`,
+      'END:VCARD'
+    ].filter(Boolean).join('\n');
 
-      const vcf = [
-        'BEGIN:VCARD','VERSION:3.0',
-        `N:${nome};;;;`,`FN:${nome}`,
-        'ORG:CadMed',`TITLE:${titulo}`,
-        tel   ? `TEL;TYPE=CELL:${tel}` : '',
-        email ? `EMAIL;TYPE=INTERNET:${email}` : '',
-        `NOTE:${nota}`,
-        'END:VCARD'
-      ].filter(Boolean).join('\n');
-
-      const blob = new Blob([vcf], {type:'text/vcard'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${(row.nome||'contato').replace(/\s+/g,'_')}.vcf`;
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
-    }
-  })();
-  </script>
+    const blob = new Blob([vcf], { type: 'text/vcard' });
+    const url  = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${(m.nome || 'contato').replace(/\s+/g,'_')}.vcf`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+  function escapeHtml(s) {
+    return String(s||'')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
+  }
+})();
+</script>
 </body>
 </html>

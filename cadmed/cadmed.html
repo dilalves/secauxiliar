@@ -27,7 +27,11 @@
     #tbl col.col-telefone  { width: 18%; }
     #tbl col.col-email     { width: 28%; }
     #tbl col.col-esp       { width: 16%; }
-    #tbl col.col-actions   { width: 6%;  }
+    
+    /*
+    #tbl col.col-actions   { width: clamp(110px, 10%, 160px); }
+    td.actions-col         { min-width: 110px; }
+    td.actions-col .icon-btn { margin: 0 3px; } */
 
     /* Ações */
     th.actions-col, td.actions-col { text-align: center; padding: 8px 6px; white-space: nowrap; }
@@ -43,6 +47,14 @@
 
     /* Blindagem extra: garanta que continuem como células (evita empilhamento em alguns temas “responsive”) */
     #tbl th, #tbl td { display: table-cell !important; }
+
+    /* === FIX: coluna Ações não cortar o botão excluir === */
+    #tbl col.col-actions { width: auto !important; }        /* neutraliza o 6% */
+    th.actions-col,
+    td.actions-col { width: 132px !important; min-width: 132px; }  /* cabe 3 ícones */
+    td.actions-col { overflow: visible; padding-right: 8px; }
+    td.actions-col .icon-btn { width: 26px; height: 26px; margin: 0 2px; } /* dá folga */
+
   </style>
 </head>
 <body>
@@ -176,9 +188,12 @@
         <div class="input-field col s12 m6"><input id="v_data" type="text" readonly><label class="active" for="v_data">Data</label></div>
         <div class="input-field col s12"><textarea id="v_obs" class="materialize-textarea" readonly></textarea><label class="active" for="v_obs">Observações</label></div>
       </div>
-      <div id="errView" class="card-panel red lighten-4 red-text" style="display:none;border-radius:10px"></div>
-    </div>
-    <div class="modal-footer"><a href="#!" class="modal-close btn-flat">Fechar</a></div>
+        <div id="errView" class="card-panel red lighten-4 red-text" style="display:none;border-radius:10px"></div>
+      </div>
+        <div class="modal-footer">
+            <button id="btnShareView" class="btn btn-brand">Compartilhar</button>
+            <a href="#!" class="modal-close btn-flat">Fechar</a>
+        </div>
   </div>
 
   <!-- Modal Editar -->
@@ -269,12 +284,22 @@
 
         if(ev.target.closest('.lnk-edit')) return openEdit(id);
         if(ev.target.closest('.lnk-del'))  return delMedico(id);
+        // === NOVO:
+        if(ev.target.closest('.lnk-share')) return shareMedico(id);
 
         if(ev.target.closest('.lnk-view') || ev.target.closest('td:first-child')){
           return openView(id);
         }
       });
     });
+
+    const btnShareView = document.getElementById('btnShareView');
+    if (btnShareView) {
+    btnShareView.addEventListener('click', ()=>{
+        const id = document.getElementById('mdlView')?.dataset?.viewId;
+        if (id) shareMedico(id);
+    });
+    }
 
     const API = {
       who:    'https://apisec.secauxiliar.com.br/cadmed/whoami.php',
@@ -283,7 +308,8 @@
       get:    'https://apisec.secauxiliar.com.br/cadmed/medicos_get.php',
       update: 'https://apisec.secauxiliar.com.br/cadmed/medicos_update.php',
       del:    'https://apisec.secauxiliar.com.br/cadmed/medicos_delete.php',
-      logout: 'https://apisec.secauxiliar.com.br/cadmed/auth_logout.php'
+      logout: 'https://apisec.secauxiliar.com.br/cadmed/auth_logout.php',
+      shareCreate: 'https://apisec.secauxiliar.com.br/cadmed/medicos_share_create.php'
     };
 
     function setErr(box,msg){ if(!msg){ box.style.display='none'; return; } box.textContent = msg; box.style.display='block'; }
@@ -373,11 +399,16 @@
         btnEdit.className = 'icon-btn lnk-edit'; btnEdit.title = 'Editar';
         btnEdit.innerHTML = '<i class="material-icons">edit</i>';
 
+        // === NOVO: botão compartilhar
+        const btnShare = document.createElement('button');
+        btnShare.className = 'icon-btn lnk-share'; btnShare.title = 'Compartilhar';
+        btnShare.innerHTML = '<i class="material-icons">share</i>';
+
         const btnDel = document.createElement('button');
         btnDel.className = 'icon-btn lnk-del'; btnDel.title = 'Excluir';
         btnDel.innerHTML = '<i class="material-icons red-text">delete</i>';
 
-        tdActions.append(btnEdit, btnDel);
+        tdActions.append(btnShare, btnEdit, btnDel);
         tr.append(tdNome, tdTel, tdEmail, tdEsp, tdActions);
         EL.tbody.appendChild(tr);
       });
@@ -420,6 +451,7 @@
         const j = await r.json();
         if(!j.ok) throw new Error(j.error||'Falha ao carregar.');
         fillView(j.row||{});
+        document.getElementById('mdlView').dataset.viewId = id;
         M.Modal.getInstance(document.getElementById('mdlView')).open();
       }catch(e){ console.error(e); setErr(EL.errView, e.message||'Erro ao carregar.'); }
     }
@@ -528,7 +560,126 @@
     }
 
     function debounce(fn, wait=300){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),wait); }; }
+
+// ===== Compartilhamento =====
+    const BASE_PUBLIC = (location.origin || 'https://cadmed.seusite.com');
+    // Ajuste a rota pública real do perfil:
+    const makePublicLink = (id) => `${BASE_PUBLIC}/cadmed/medico.html?id=${encodeURIComponent(id)}`;
+
+    function buildTexto(row){
+    return [
+        `Médico(a): ${row.nome||''}`,
+        `Especialidade: ${row.especialidade||''}`,
+        `Conselho: ${row.conselho||''} ${row.numero||''}`.trim(),
+        `Telefone: ${row.telefone||''}`,
+        `Celular: ${row.celular||''}`,
+        `E-mail: ${row.email||''}`,
+        `Hospital: ${row.hospital||''}`,
+        `Instituição: ${row.instituicao||''}`,
+        `Cargo: ${row.cargo||''}`,
+        `Convênio: ${row.convenio||''}`,
+        row.data ? `Data: ${row.data}` : '',
+        row.obs ? `Obs.: ${row.obs}` : ''
+    ].filter(Boolean).join('\n');
+    }
+
+    function buildVCard(row){
+    const nome = (row.nome||'').replace(/\n/g,' ').trim();
+    const tel  = (row.celular||row.telefone||'').replace(/\s+/g,'').trim();
+    const email= (row.email||'').trim();
+    const titulo = (row.especialidade||'').trim();
+    const nota = `Conselho: ${row.conselho||''} ${row.numero||''} | Hospital: ${row.hospital||''} | Inst.: ${row.instituicao||''} | Cargo: ${row.cargo||''} | Convênio: ${row.convenio||''}`.trim();
+
+    return [
+        'BEGIN:VCARD',
+        'VERSION:3.0',
+        `N:${nome};;;;`,
+        `FN:${nome}`,
+        'ORG:CadMed',
+        `TITLE:${titulo}`,
+        tel   ? `TEL;TYPE=CELL:${tel}` : '',
+        email ? `EMAIL;TYPE=INTERNET:${email}` : '',
+        `NOTE:${nota}`,
+        'END:VCARD'
+    ].filter(Boolean).join('\n');
+    }
+
+    async function shareMedico(id){
+    // Carrega dados atualizados do médico
+    let row;
+    try{
+        const r = await fetch(`${API.get}?id=${encodeURIComponent(id)}`, {credentials:'include'});
+        const j = await r.json();
+        if(!j.ok || !j.row) throw new Error(j.error||'Falha ao carregar dados do médico.');
+        row = j.row;
+    }catch(e){
+        console.error(e);
+        return M.toast({html:'Não foi possível preparar o compartilhamento.'});
+    }
+
+    const link  = await makePublicLinkFor(id); // novo (com token)
+    const texto = buildTexto(row);
+    const shareText = `${texto}\nSaiba mais: ${link}`.trim();
+
+    try { localStorage.setItem('cadmed:ultimaCompartilhada', JSON.stringify({id, link, ts: Date.now()})); } catch{}
+
+    // Tenta Web Share API + vCard (Android/iOS modernos)
+    try{
+        const vcfBlob = new Blob([buildVCard(row)], {type:'text/vcard'});
+        const fileName = (row.nome||'contato').replace(/\s+/g,'_') + '.vcf';
+        const vcfFile = new File([vcfBlob], fileName, {type:'text/vcard'});
+        const data = { title: row.nome||'Contato', text: shareText, url: link };
+
+        if (navigator.canShare && navigator.canShare({files:[vcfFile]})) {
+        data.files = [vcfFile];
+        }
+        if (navigator.share) {
+        await navigator.share(data);
+        return;
+        }
+    }catch(err){
+        console.warn('Web Share falhou, usando fallback...', err);
+    }
+
+    // Fallback 1: WhatsApp Web
+    try{
+        window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+        return;
+    }catch{}
+
+    // Fallback 2: E-mail
+    try{
+        const assunto = `Contato – ${row.nome||''} (${row.especialidade||''})`;
+        location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(shareText)}`;
+        return;
+    }catch{}
+
+    // Fallback 3: Copiar link
+    try{
+        await navigator.clipboard.writeText(link);
+        M.toast({html:'Link copiado!'});
+    }catch{
+        window.prompt('Copie o link:', link);
+    }
+    }
+
+    async function makePublicLinkFor(id){
+    const r = await fetch(API.shareCreate, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body: JSON.stringify({ id })
+    });
+    const j = await r.json();
+    if(!j.ok || !j.share) throw new Error(j.error||'Falha ao gerar link público');
+    const base = (location.origin || 'https://secauxiliar.com.br');
+    // Página estática pública (HTML): medico.html
+    return `${base}/cadmed/medico.html?share=${encodeURIComponent(j.share)}`;
+  } 
+
   })();
+
+    
   </script>
 </body>
 </html>
