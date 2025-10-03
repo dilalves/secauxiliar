@@ -1,169 +1,207 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CadMed • Médico</title>
+
+  <!-- Materialize -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- Opcional: evitar indexação por buscadores -->
+  <meta name="robots" content="noindex, nofollow">
+
   <style>
     :root{ --brand:#0b3b78 }
     body{ background:#f6f8fb }
     .brand{ color:var(--brand) }
+    .btn-brand{ background:var(--brand) }
     .card{ border-radius:14px }
-
-    .k{ background:#e3f2fd; color:#0b3b78; border-radius:999px; padding:.18rem .6rem; font-size:.8rem }
-    .field-row{ display:flex; gap:10px; align-items:flex-start; padding:.35rem 0 }
-    .field-row i{ font-size:18px; width:22px; text-align:center; color:#546e7a; margin-top:2px }
-    .actions{ display:flex; flex-wrap:wrap; gap:10px; padding:12px 16px; border-top:1px solid #eee; background:#fafafa; border-radius:0 0 14px 14px }
-    .btn-small { text-transform:none }
-    .skeleton{ background:linear-gradient(90deg,#eee,#f6f6f6,#eee); height:14px; border-radius:8px; }
+    .chip.k{ background:#e3f2fd }
+    .topbar{ padding:12px 0 }
+    .field-row { display:flex; gap:8px; align-items:flex-start; margin:6px 0 }
+    .field-row i { font-size:18px; line-height:22px; color:#607d8b }
+    .field-row span { line-height:22px }
+    .footer-actions{ display:flex; gap:8px; flex-wrap:wrap }
+    .small-note{ font-size:.9rem; color:#78909c }
   </style>
 </head>
 <body>
-  <nav class="white z-depth-0">
+  <nav class="white z-depth-0 topbar">
     <div class="nav-wrapper container">
-      <a class="brand-logo brand" href="#!" style="font-size:1.2rem">CadMed • Perfil Público</a>
+      <a class="brand-logo brand" href="/cadmed/" style="font-size:1.2rem">
+        <i class="material-icons left" style="font-size:22px;margin-right:6px">local_hospital</i>CadMed
+      </a>
     </div>
   </nav>
 
-  <main class="container" style="margin-top:28px">
-    <div id="box" class="card">
+  <main class="container" style="margin-top:18px">
+    <div id="box" class="card z-depth-2" style="display:none;">
       <div class="card-content">
-        <span class="card-title">Carregando...</span>
-        <div class="skeleton" style="width:60%;margin:10px 0"></div>
-        <div class="skeleton" style="width:40%;margin:10px 0"></div>
-        <div class="skeleton" style="width:75%;margin:10px 0"></div>
+        <span id="titulo" class="card-title"></span>
+        <p id="crm" class="grey-text text-darken-1"></p>
+        <div class="divider" style="margin:10px 0 16px"></div>
+
+        <div id="fields">
+          <!-- preenchido via JS -->
+        </div>
+      </div>
+      <div class="card-action footer-actions">
+        <a id="btnWhats" class="btn btn-brand"><i class="material-icons left">chat</i>WhatsApp</a>
+        <a id="btnEmail" class="btn"><i class="material-icons left">email</i>E-mail</a>
+        <a id="btnVcf" class="btn"><i class="material-icons left">contact_mail</i>vCard</a>
+        <a id="btnPrint" class="btn-flat"><i class="material-icons left">print</i>Imprimir</a>
       </div>
     </div>
-    <p class="grey-text" style="margin:10px 4px">Este link é somente leitura e pode expirar.</p>
+
+    <div id="msg" class="card-panel yellow lighten-4 grey-text text-darken-2" style="display:none;border-radius:12px"></div>
   </main>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  
   <script>
-(async function () {
-  // ===== helpers de DOM =====
-  const $ = (id) => document.getElementById(id);
-  const BOX = $('box'), TIT = $('titulo'), CRM = $('crm'), FIELDS = $('fields');
-  const BTN_WA = $('btnWhats'), BTN_MAIL = $('btnEmail'), BTN_VCF = $('btnVcf'), BTN_PRINT = $('btnPrint');
-
-  // pega token compartilhado
-  const share = new URLSearchParams(location.search).get('share');
-  if (!share) return showMsg('Link inválido ou expirado.');
-
-  // endpoint público (sem cookies)
-  const API_PUBLIC = `https://apisec.secauxiliar.com.br/cadmed/medicos_public.php?share=${encodeURIComponent(share)}`;
-
-  try {
-    const r = await fetch(API_PUBLIC, { credentials: 'omit' });
-    const j = await r.json();
-    if (!j.ok || !j.row) throw new Error(j.error || 'Falha ao carregar.');
-
-    const m = j.row;
-
-    // ===== Cabeçalho: Nome + chip e CRM logo abaixo =====
-    TIT.innerHTML = `
-      ${escapeHtml(m.nome || 'Médico')}
-      ${m.especialidade ? `<span class="chip" style="margin-left:.5rem">${escapeHtml(m.especialidade)}</span>` : ''}
-    `;
-    const crmTxt = [m.conselho || '', m.numero || ''].filter(Boolean).join(' ').trim();
-    CRM.textContent = crmTxt ? `CRM ${crmTxt}` : '';
-
-    // ===== Campos na ORDEM solicitada =====
-    FIELDS.innerHTML = '';
-    const itens = [
-      ['call'         , 'Telefone'     , m.telefone],
-      ['smartphone'   , 'Celular'      , m.celular],
-      ['email'        , 'E-mail'       , m.email],
-      ['local_hospital', 'Hospital'    , m.hospital],
-      ['school'       , 'Instituição'  , m.instituicao],
-      ['badge'        , 'Convênio'     , m.convenio],
-      ['event'        , 'Data'         , m.data],
-      ['notes'        , 'Observações'  , m.obs],
-    ];
-    itens.forEach(([icon, label, value]) => {
-      if (!value) return;
-      const row = document.createElement('div');
-      row.className = 'field-row';
-      row.innerHTML = `
-        <i class="material-icons" aria-hidden="true">${icon}</i>
-        <span><b>${label}:</b> ${escapeHtml(value)}</span>
-      `;
-      FIELDS.appendChild(row);
-    });
-
-    // ===== Ações (usam o MESMO link ?share=...) =====
-    const link = location.href.split('#')[0];
-    const texto = buildTexto(m, link);
-
-    BTN_WA.onclick   = () => window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
-    BTN_MAIL.onclick = () => {
-      const assunto = `Contato – ${m.nome || ''}${m.especialidade ? ` (${m.especialidade})` : ''}`;
-      location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(texto)}`;
+  (function(){
+    const API = {
+      get: 'https://apisec.secauxiliar.com.br/cadmed/medicos_get.php'
     };
-    BTN_VCF.onclick  = () => downloadVcf(m);
-    BTN_PRINT.onclick= () => window.print();
 
-    BOX.style.display = 'block';
-  } catch (e) {
-    console.error(e);
-    showMsg('Não foi possível carregar as informações deste médico.');
-  }
+    const EL = {
+      box: document.getElementById('box'),
+      msg: document.getElementById('msg'),
+      titulo: document.getElementById('titulo'),
+      crm: document.getElementById('crm'),
+      fields: document.getElementById('fields'),
+      btnWhats: document.getElementById('btnWhats'),
+      btnEmail: document.getElementById('btnEmail'),
+      btnVcf: document.getElementById('btnVcf'),
+      btnPrint: document.getElementById('btnPrint'),
+    };
 
-  // ===== utilitários =====
-  function showMsg(t) {
-    BOX.innerHTML = `
-      <div class="card-content">
-        <div class="card-panel yellow lighten-4">${escapeHtml(t)}</div>
-      </div>`;
-  }
-  function buildTexto(m, link) {
-    return [
-      `Médico(a): ${m.nome || ''}`,
-      m.especialidade ? `Especialidade: ${m.especialidade}` : '',
-      [m.conselho, m.numero].some(Boolean) ? `Conselho: ${(m.conselho || '') + ' ' + (m.numero || '')}`.trim() : '',
-      m.telefone    ? `Telefone: ${m.telefone}` : '',
-      m.celular     ? `Celular: ${m.celular}` : '',
-      m.email       ? `E-mail: ${m.email}` : '',
-      m.hospital    ? `Hospital: ${m.hospital}` : '',
-      m.instituicao ? `Instituição: ${m.instituicao}` : '',
-      m.cargo       ? `Cargo: ${m.cargo}` : '',
-      m.convenio    ? `Convênio: ${m.convenio}` : '',
-      m.data        ? `Data: ${m.data}` : '',
-      m.obs         ? `Observações: ${m.obs}` : '',
-      '',
-      `Saiba mais: ${link}`
-    ].filter(Boolean).join('\n');
-  }
-  function downloadVcf(m) {
-    const nome  = (m.nome || '').replace(/\n/g, ' ').trim();
-    const tel   = (m.celular || m.telefone || '').replace(/\s+/g, '').trim();
-    const email = (m.email || '').trim();
-    const titulo= (m.especialidade || '').trim();
-    const nota  = `Conselho: ${(m.conselho||'')+' '+(m.numero||'')}`.trim();
-    const vcf = [
-      'BEGIN:VCARD','VERSION:3.0',
-      `N:${nome};;;;`,`FN:${nome}`,
-      'ORG:CadMed', `TITLE:${titulo}`,
-      tel   ? `TEL;TYPE=CELL:${tel}` : '',
-      email ? `EMAIL;TYPE=INTERNET:${email}` : '',
-      `NOTE:${nota}`,
-      'END:VCARD'
-    ].filter(Boolean).join('\n');
+    const id = (new URLSearchParams(location.search)).get('id');
 
-    const blob = new Blob([vcf], { type: 'text/vcard' });
-    const url  = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `${(m.nome || 'contato').replace(/\s+/g,'_')}.vcf`;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-  }
-  function escapeHtml(s) {
-    return String(s||'')
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-      .replace(/'/g,'&#039;');
-  }
-})();
-</script>
+    if(!id){
+      showMsg('Link inválido: nenhum ID informado.');
+      return;
+    }
+
+    init();
+
+    async function init(){
+      try{
+        const r = await fetch(`${API.get}?id=${encodeURIComponent(id)}`, {credentials:'include'});
+        const j = await r.json();
+        if(!j.ok || !j.row){ throw new Error(j.error || 'Registro não encontrado.'); }
+
+        render(j.row);
+      }catch(e){
+        console.error(e);
+        showMsg('Não foi possível carregar as informações deste médico.');
+      }
+    }
+
+    function showMsg(text){
+      EL.msg.textContent = text;
+      EL.msg.style.display = 'block';
+    }
+
+    function render(row){
+      // título e “CRM”
+      EL.titulo.innerHTML = `${escapeHtml(row.nome||'')} <span class="chip k">${escapeHtml(row.especialidade||'')}</span>`;
+      const crm = [row.conselho, row.numero].filter(Boolean).join(' ');
+      EL.crm.textContent = crm ? crm : '';
+
+      EL.fields.innerHTML = '';
+      // mapa de campos públicos (ajuste se quiser esconder algo)
+      const items = [
+        ['phone',  'Telefone',   row.telefone],
+        ['phone',  'Celular',    row.celular],
+        ['email',  'E-mail',     row.email],
+        ['local_hospital','Hospital',   row.hospital],
+        ['school', 'Instituição',row.instituicao],
+        ['work',   'Cargo',      row.cargo],
+        ['assignment_ind','Convênio',   row.convenio],
+        ['event',  'Data',       row.data],
+        ['notes',  'Observações',row.obs]
+      ];
+      items.forEach(([icon,label,value])=>{
+        if(!value) return;
+        const div = document.createElement('div');
+        div.className = 'field-row';
+        div.innerHTML = `<i class="material-icons">${icon}</i><span><b>${label}:</b> ${escapeHtml(value)}</span>`;
+        EL.fields.appendChild(div);
+      });
+
+      // ações
+      const link = location.href.split('#')[0]; // este próprio link
+      const texto = buildTexto(row, link);
+
+      EL.btnWhats.onclick = ()=> window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+      EL.btnEmail.onclick = ()=>{
+        const assunto = `Contato – ${row.nome||''} (${row.especialidade||''})`;
+        location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(texto)}`;
+      };
+      EL.btnVcf.onclick = ()=> downloadVcf(row);
+      EL.btnPrint.onclick = ()=> window.print();
+
+      EL.box.style.display = 'block';
+    }
+
+    function buildTexto(row, link){
+      return [
+        `Médico(a): ${row.nome||''}`,
+        `Especialidade: ${row.especialidade||''}`,
+        `Conselho: ${(row.conselho||'')+' '+(row.numero||'')}`.trim(),
+        `Telefone: ${row.telefone||''}`,
+        `Celular: ${row.celular||''}`,
+        `E-mail: ${row.email||''}`,
+        `Hospital: ${row.hospital||''}`,
+        `Instituição: ${row.instituicao||''}`,
+        `Cargo: ${row.cargo||''}`,
+        `Convênio: ${row.convenio||''}`,
+        row.data ? `Data: ${row.data}` : '',
+        row.obs ? `Obs.: ${row.obs}` : '',
+        '',
+        `Saiba mais: ${link}`
+      ].filter(Boolean).join('\n');
+    }
+
+    function downloadVcf(row){
+      const nome = (row.nome||'').replace(/\n/g,' ').trim();
+      const tel  = (row.celular||row.telefone||'').replace(/\s+/g,'').trim();
+      const email= (row.email||'').trim();
+      const titulo = (row.especialidade||'').trim();
+      const nota = `Conselho: ${row.conselho||''} ${row.numero||''} | Hospital: ${row.hospital||''} | Inst.: ${row.instituicao||''} | Cargo: ${row.cargo||''} | Convênio: ${row.convenio||''}`.trim();
+      const vcf = [
+        'BEGIN:VCARD','VERSION:3.0',
+        `N:${nome};;;;`,`FN:${nome}`,
+        'ORG:CadMed',`TITLE:${titulo}`,
+        tel   ? `TEL;TYPE=CELL:${tel}` : '',
+        email ? `EMAIL;TYPE=INTERNET:${email}` : '',
+        `NOTE:${nota}`,
+        'END:VCARD'
+      ].filter(Boolean).join('\n');
+
+      const blob = new Blob([vcf], {type:'text/vcard'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(row.nome||'contato').replace(/\s+/g,'_')}.vcf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(s){
+      return String(s||'')
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#039;');
+    }
+  })();
+  </script>
 </body>
 </html>
