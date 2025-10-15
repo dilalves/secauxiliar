@@ -47,7 +47,7 @@
               <p>A importância do microbioma humano e suas funções no organismo. Como o uso de antibióticos pode afetá-lo e como prevenir doenças.</p>
             </div>
             <div class="card-action center-align">
-              <a href="https://www.youtube.com/watch?reload=9&v=AYy0M9NSlAY" class="btn btn-custom">Assistir aula</a>
+              <a href="#" class="btn btn-custom modal-trigger" data-target="videoModal" data-video="https://www.youtube.com/embed/aYy0M9NSlAY">Assistir aula</a>
             </div>
           </div>
         </div>
@@ -168,11 +168,47 @@
     </section>
 
   </main>
+  <!-- Modal Structure -->
+    <div id="videoModal" class="modal">
+        <div class="modal-content">
+        <div class="video-container">
+        <iframe id="videoFrame" width="100%" height="400" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+        </div>
+        <div class="modal-footer">
+        <a href="#!" class="modal-close btn-flat">Fechar</a>
+        </div>
+    </div>
 
   <footer>
     <p>© 2025 Curso Objetivo — Desenvolvido por Adilson Alves (3A Sistemas)</p>
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+const elems = document.querySelectorAll('.modal');
+M.Modal.init(elems);
+
+
+const triggers = document.querySelectorAll('.modal-trigger');
+triggers.forEach(btn => {
+btn.addEventListener('click', function() {
+const videoUrl = this.getAttribute('data-video');
+document.getElementById('videoFrame').src = videoUrl + '?autoplay=1';
+});
+});
+
+
+const modalElems = document.querySelectorAll('.modal');
+modalElems.forEach(modal => {
+modal.addEventListener('modal:close', function() {
+document.getElementById('videoFrame').src = '';
+});
+});
+});
+</script>
+
 </body>
 </html>
