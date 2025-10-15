@@ -174,43 +174,43 @@
 
   </main>
   <!-- Modal Structure -->
-    <div id="videoModal" class="modal">
-    <div class="modal-content center-align">
-        <h5 id="videoTitle"></h5>
-        <img id="videoThumb" style="max-width:100%;border-radius:10px;margin-top:15px;">
-        <br><br>
-        <a id="videoLink" href="#" target="_blank" class="btn btn-custom">Abrir no YouTube</a>
+<div id="videoModal" class="modal">
+  <div class="modal-content center-align">
+    <h5 id="videoTitle"></h5>
+    <div class="video-container">
+      <iframe id="videoFrame" width="100%" height="400" frameborder="0"
+              allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
-    <div class="modal-footer">
-        <a href="#!" class="modal-close btn-flat">Fechar</a>
-    </div>
-    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" class="modal-close btn-flat">Fechar</a>
+  </div>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-        const elems = document.querySelectorAll('.modal');
-        M.Modal.init(elems);
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const elems = document.querySelectorAll('.modal');
+  const modals = M.Modal.init(elems);
 
-        const triggers = document.querySelectorAll('.modal-trigger');
-        triggers.forEach(btn => {
-            btn.addEventListener('click', function() {
-            const videoUrl = this.getAttribute('data-video');
-            const frame = document.getElementById('videoFrame');
-            frame.src = videoUrl;
-            });
-        });
+  // Quando clicar em "Assistir aula"
+  document.querySelectorAll('.modal-trigger').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const videoUrl = this.getAttribute('data-video');
+      const videoTitle = this.closest('.card').querySelector('.video-title').innerText;
+      document.getElementById('videoTitle').innerText = videoTitle;
+      document.getElementById('videoFrame').src = videoUrl;
+    });
+  });
 
-        const modals = document.querySelectorAll('.modal');
-        modals.forEach(modal => {
-            modal.addEventListener('click', function() {
-            document.getElementById('videoFrame').src = ''; // limpa ao fechar
-            });
-        });
-        });
-    </script>
-    </body>
-    </html>
+  // Quando o modal for fechado
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', function() {
+      document.getElementById('videoFrame').src = '';
+    });
+  });
+});
+</script>
 
 </body>
 </html>
