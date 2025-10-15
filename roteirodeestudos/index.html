@@ -188,24 +188,26 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const modals = document.querySelectorAll('.modal');
-  M.Modal.init(modals);
+    document.addEventListener('DOMContentLoaded', function() {
+    const elems = document.querySelectorAll('.modal');
+    M.Modal.init(elems);
 
-  const triggers = document.querySelectorAll('.modal-trigger');
-  triggers.forEach(btn => {
-    btn.addEventListener('click', function() {
-      const videoUrl = this.getAttribute('data-video');
-      const videoId = videoUrl.split('v=')[1];
-      const title = this.closest('.card').querySelector('.video-title').innerText;
-      
-      document.getElementById('videoTitle').innerText = title;
-      document.getElementById('videoThumb').src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-      document.getElementById('videoLink').href = videoUrl;
+    const triggers = document.querySelectorAll('.modal-trigger');
+    triggers.forEach(btn => {
+        btn.addEventListener('click', function() {
+        const videoUrl = this.getAttribute('data-video');
+        const frame = document.getElementById('videoFrame');
+        frame.src = videoUrl;
+        });
     });
-  });
-});
-</script>
 
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('click', function() {
+        document.getElementById('videoFrame').src = ''; // limpa ao fechar
+        });
+    });
+    });
+</script>
 </body>
 </html>
