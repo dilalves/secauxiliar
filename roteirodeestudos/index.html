@@ -18,9 +18,24 @@
     .video-title { font-size: 18px; color: #002776; font-weight: bold; margin-bottom: 5px; }
     .video-prof { font-size: 14px; color: #444; margin-bottom: 10px; }
 
-    .modal { background: rgba(0,0,0,0.8); }
-    .modal-content { background: transparent; box-shadow: none; }
-    #videoFrame { border: none; border-radius: 12px; }
+    .modal {
+    max-height: 95vh !important; /* ocupa quase toda a altura da tela */
+    background: rgba(0,0,0,0.9); /* modo cinema */
+    }
+
+    .modal-content {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    }
+
+    .video-container iframe {
+    width: 100%;
+    height: 75vh; /* ocupa 75% da tela, ajusta conforme preferir */
+    border: none;
+    border-radius: 12px;
+    }
+
 
   </style>
 </head>
@@ -196,7 +211,9 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const elems = document.querySelectorAll('.modal');
-  const modals = M.Modal.init(elems);
+  const modals = M.Modal.init(elems, {
+    dismissible: false // ❌ impede fechar clicando fora
+    });
 
   // Quando clicar em "Assistir aula"
   document.querySelectorAll('.modal-trigger').forEach(btn => {
