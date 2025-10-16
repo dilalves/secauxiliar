@@ -53,17 +53,21 @@
 
     /* Ajusta a linha dos blocos EAD para ocupar o mesmo espaço visual da linha acima */
 
-/* Força a grade EAD a ocupar a largura total do container de cima */
+/* 🔹 Garante que os blocos EAD tenham a mesma largura visual dos cards acima */
 .container .row.ead-grid {
-  width: calc(100% + 24px);      /* compensa o padding lateral padrão do container */
-  margin-left: -12px !important; /* puxa para alinhar com as colunas acima */
-  margin-right: -12px !important;
+  max-width: 1200px;             /* mesmo limite interno do container do Materialize */
+  margin: 0 auto;                /* centraliza perfeitamente */
+  padding: 0 12px;               /* igual ao padding padrão do Materialize */
 }
 
+/* 🔹 Controla a grade de 4 colunas fixas, espaçamento e alinhamento lateral */
 .row.ead-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 28px; /* ligeiramente maior pra equilibrar o espaçamento dos cards */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* ajusta dinamicamente */
+  justify-content: center;
+  align-items: start;
+  gap: 30px;                     /* mesmo espaçamento entre cards do Materialize */
+  margin-top: 20px;
 }
 
 
