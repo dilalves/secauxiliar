@@ -51,60 +51,62 @@
       margin-top: auto;
     }
 
-    /* Ajusta a linha dos blocos EAD para ocupar o mesmo espaço visual da linha acima */
-
-/* 🔹 Garante que os blocos EAD tenham a mesma largura visual dos cards acima */
-.container .row.ead-grid {
-  max-width: 1200px;             /* mesmo limite interno do container do Materialize */
-  margin: 0 auto;                /* centraliza perfeitamente */
-  padding: 0 12px;               /* igual ao padding padrão do Materialize */
-}
-
-/* 🔹 Controla a grade de 4 colunas fixas, espaçamento e alinhamento lateral */
+    /* 🔹 Alinhamento exato dos 4 blocos com os 3 cards de cima */
 .row.ead-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* ajusta dinamicamente */
-  justify-content: center;
-  align-items: start;
-  gap: 30px;                     /* mesmo espaçamento entre cards do Materialize */
-  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-left: -0.75rem;   /* mesmo espaçamento do Materialize */
+  margin-right: -0.75rem;
 }
 
-
-.bloco-disciplina {
-  min-height: 300px; /* altura visual mais próxima dos cards de vídeo */
-  width: 100%;
-  max-width: 260px; /* mantém alinhamento proporcional */
-  margin: 0 auto;
-
-}
-
-
-.bloco-disciplina {
+.row.ead-grid .bloco-disciplina {
+  flex: 0 0 calc(25% - 1.5rem);  /* 4 colunas com espaçamento proporcional */
+  margin: 0.75rem;               /* mesmo gutter do Materialize */
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 3px 6px rgba(0,0,0,0.12);
   padding: 20px;
-  min-height: 280px; 
+  min-height: 300px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-}  
+}
 
+.row.ead-grid .bloco-disciplina:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+}
+
+/* 🔹 Bloco visual dos cards EAD */
+.bloco-disciplina {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+  padding: 20px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
 .bloco-disciplina:hover {
   transform: translateY(-4px);
   box-shadow: 0 5px 10px rgba(0,0,0,0.15);
 }
 
+/* 🔹 Logo maior e central */
 .disciplina-logo {
-  width: 150px;  /* imagem maior */
+  width: 150px;
   height: auto;
   margin-bottom: 12px;
 }
 
+/* 🔹 Lista de links com bolinha e alinhamento à esquerda */
 .disciplina-links {
   list-style: none;
   padding: 0;
@@ -117,7 +119,7 @@
 .disciplina-links li {
   margin: 8px 0;
   position: relative;
-  padding-left: 18px;
+  padding-left: 16px;
 }
 
 .disciplina-links li::before {
@@ -129,30 +131,18 @@
   top: 0;
 }
 
-.disciplina-links a {
-  color: #002776;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.disciplina-links a:hover {
-  text-decoration: underline;
-}
-
-/* Responsividade */
+/* 🔹 Responsividade */
 @media (max-width: 992px) {
-  .row.ead-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .row.ead-grid .bloco-disciplina {
+    flex: 0 0 calc(50% - 1.5rem); /* 2 por linha */
   }
 }
 
 @media (max-width: 600px) {
-  .row.ead-grid {
-    grid-template-columns: 1fr;
+  .row.ead-grid .bloco-disciplina {
+    flex: 0 0 100%; /* 1 por linha */
   }
 }
-
 
 
   </style>
@@ -323,7 +313,7 @@
     </section>
 
     <!--Teste novo quadro - links unip -->
-      <section class="container">
+      <section>
         <h4 style="color:#002776; text-align:center;">Aulas do Curso Objetivo EAD</h4>
 
         <div class="row ead-grid">
@@ -361,103 +351,6 @@
             <ul class="disciplina-links">
               <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=59e2fdd4-dd2d-488f-9810-18c6d861dbce&instituto=objetivo">Ideias e movimentos urbanos na 1ª República</a></li>
               <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=b70d63b7-0858-4b2b-bd3b-f2302e4bcece&instituto=objetivo">Populismo na América Latina</a></li>
-            </ul>
-          </div>
-
-        </div>
-
-
-        <div class="row">
-
-          <!-- BLOCO 1 -->
-          <div class="col s12 m6 l3 center-align bloco-disciplina">
-            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/bio.jpg" alt="Biologia" class="disciplina-logo">
-            <ul class="disciplina-links">
-              <li>
-                <a href="#"
-                  class="modal-trigger"
-                  data-target="videoModal"
-                  data-video="https://tvweb3.unip.br/player/Transmissao?id=ddc9d802-8051-4d64-94a7-6fec356d6a23&instituto=objetivo">
-                  O tegumento dos animais
-                </a>
-              </li>
-              <li>
-                <a href="#"
-                  class="modal-trigger"
-                  data-target="videoModal"
-                  data-video="https://tvweb3.unip.br/player/Transmissao?id=ddc9d802-8051-4d64-94a7-6fec356d6a23&instituto=objetivo">
-                  A poluição
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <!-- BLOCO 2 -->
-          <div class="col s12 m6 l3 center-align bloco-disciplina">
-            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/fis.jpg" alt="Física" class="disciplina-logo">
-            <ul class="disciplina-links">
-              <li>
-                <a href="#"
-                  class="modal-trigger"
-                  data-target="videoModal"
-                  data-video="https://tvweb3.unip.br/player/Transmissao?id=667ba19a-a391-46a6-93f6-24a5e13a729e&instituto=objetivo">
-                  Noções gerais de ondas
-                </a>
-              </li>
-              <li>
-                <a href="#"
-                  class="modal-trigger"
-                  data-target="videoModal"
-                  data-video="https://tvweb3.unip.br/player/Transmissao?id=6af763b8-098c-4126-ac49-907fe80024a7&instituto=objetivo">
-                  Esfera eletrizada
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <!-- BLOCO 3 -->
-          <div class="col s12 m6 l3 center-align bloco-disciplina">
-            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/geo.jpg" alt="Geografia" class="disciplina-logo">
-            <ul class="disciplina-links">
-              <li>
-                <a href="#"
-                  class="modal-trigger"
-                  data-target="videoModal"
-                  data-video="https://tvweb3.unip.br/player/Transmissao?id=e05cab5a-372d-4ebd-8ec4-93f230631395&instituto=objetivo">
-                  Estrutura da população
-                </a>
-              </li>
-              <li>
-                <a href="#"
-                  class="modal-trigger"
-                  data-target="videoModal"
-                  data-video="https://tvweb3.objetivo.br/player/Transmissao?id=84feb5d5-93a1-4ef4-ae5b-9ff79e662152&instituto=objetivo&referencia=201027_SergioNunes_Geografia_II_Curso_AD">
-                  Questões ambientais
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <!-- BLOCO 4 -->
-          <div class="col s12 m6 l3 center-align bloco-disciplina">
-            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/his.jpg" alt="História" class="disciplina-logo">
-            <ul class="disciplina-links">
-              <li>
-                <a href="#"
-                  class="modal-trigger"
-                  data-target="videoModal"
-                  data-video="https://tvweb3.unip.br/player/Transmissao?id=59e2fdd4-dd2d-488f-9810-18c6d861dbce&instituto=objetivo">
-                  Ideias e movimentos urbanos na 1ª República
-                </a>
-              </li>
-              <li>
-                <a href="#"
-                  class="modal-trigger"
-                  data-target="videoModal"
-                  data-video="https://tvweb3.unip.br/player/Transmissao?id=b70d63b7-0858-4b2b-bd3b-f2302e4bcece&instituto=objetivo">
-                  Populismo na América Latina
-                </a>
-              </li>
             </ul>
           </div>
 
