@@ -219,6 +219,29 @@
         </div>
 
       </div>
+
+      <!--Teste novo quadro - links unip -->
+      <div class="col s12 m6 l4">
+          <div class="card hoverable video-card">
+            <div class="card-image">
+              <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/redacao.JPG" alt="Redação">
+            </div>
+            <div class="card-content">
+              <p class="video-title">O tegumento dos animais</p>
+              <p class="video-prof">Prof. Adriano</p>
+              <p>xxxxx.</p>
+            </div>
+            <div class="card-action center-align">
+                <a href="#"
+                  class="btn btn-custom modal-trigger"
+                  data-target="videoModal"
+                  data-video="https://tvweb3.unip.br/player/Transmissao?id=677272b0-9460-4c61-9626-f7228481eada&instituto=objetivo">
+                  Assistir aula
+                </a>
+            </div>
+          </div>
+        </div>
+
     </section>
 
   </main>
@@ -242,22 +265,34 @@ document.addEventListener('DOMContentLoaded', function() {
   const elems = document.querySelectorAll('.modal');
   const modals = M.Modal.init(elems, {
     dismissible: false // ❌ impede fechar clicando fora
-    });
+  });
 
   // Quando clicar em "Assistir aula"
   document.querySelectorAll('.modal-trigger').forEach(btn => {
     btn.addEventListener('click', function() {
       const videoUrl = this.getAttribute('data-video');
       const videoTitle = this.closest('.card').querySelector('.video-title').innerText;
+      const iframe = document.getElementById('videoFrame');
       document.getElementById('videoTitle').innerText = videoTitle;
-      document.getElementById('videoFrame').src = videoUrl;
+
+      // Detecta tipo de link e aplica o embed correto
+      if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+        // 🎥 YouTube
+        iframe.src = videoUrl;
+      } else if (videoUrl.includes('tvweb') || videoUrl.includes('unip.br/player')) {
+        // 🎓 TVWeb UNIP / Objetivo
+        iframe.src = videoUrl + "&autoplay=true";
+      } else {
+        // fallback genérico
+        iframe.src = videoUrl;
+      }
     });
   });
 
   // Quando o modal for fechado
-  document.querySelectorAll('.modal').forEach(modal => {
-    modal.addEventListener('click', function() {
-      document.getElementById('videoFrame').src = '';
+  document.querySelectorAll('.modal-close').forEach(closeBtn => {
+    closeBtn.addEventListener('click', function() {
+      document.getElementById('videoFrame').src = ''; // limpa o vídeo
     });
   });
 });
