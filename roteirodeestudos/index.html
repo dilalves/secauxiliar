@@ -51,13 +51,22 @@
       margin-top: auto;
     }
 
+    .bloco-disciplina {
+      margin-bottom: 30px;
+      padding: 15px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      min-height: 260px; /* deixa mais alto como os cards de vídeo */
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
     .disciplina-logo {
-      width: 120px; /* tamanho menor */
+      width: 130px;
       height: auto;
       margin-bottom: 10px;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      padding: 5px;
     }
 
     .disciplina-links {
@@ -67,19 +76,19 @@
     }
 
     .disciplina-links li {
-      margin: 4px 0;
+      margin: 6px 0;
     }
 
     .disciplina-links a {
       color: #002776;
       text-decoration: none;
-      font-weight: 500;
+      font-weight: 600;
+      font-size: 15px;
     }
 
     .disciplina-links a:hover {
       text-decoration: underline;
     }
-
 
   </style>
 </head>
@@ -249,57 +258,46 @@
     </section>
 
     <!--Teste novo quadro - links unip -->
-
       <section class="container">
-      <h4 style="color:#002776; text-align:center;">Aulas do Curso Objetivo EAD</h4>
+        <h4 style="color:#002776; text-align:center;">Aulas do Curso Objetivo EAD</h4>
 
-      <div class="row">
+        <div class="row">
 
-        <!-- BLOCO 1 -->
-        <div class="col s12 m6 l3 center-align">
-          <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/bio.jpg" alt="Biologia" class="disciplina-logo">
-          <ul class="disciplina-links">
-            <li>
-              <a href="#"
-                class="btn btn-custom modal-trigger"
-                data-target="videoModal"
-                data-video="https://tvweb3.unip.br/player/Transmissao?id=ddc9d802-8051-4d64-94a7-6fec356d6a23&instituto=objetivo">
-                Assistir aula
-              </a>
-            </li>
-            <li><a href="#">A poluição</a></li>
-          </ul>
+          <!-- BLOCO 1 -->
+          <div class="col s12 m6 l3 center-align bloco-disciplina">
+            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/bio.jpg" alt="Biologia" class="disciplina-logo">
+            <ul class="disciplina-links">
+              <li>
+                <a href="#"
+                  class="modal-trigger"
+                  data-target="videoModal"
+                  data-video="https://tvweb3.unip.br/player/Transmissao?id=ddc9d802-8051-4d64-94a7-6fec356d6a23&instituto=objetivo">
+                  O tegumento dos animais
+                </a>
+              </li>
+              <li><a href="#">A poluição</a></li>
+            </ul>
+          </div>
+
+          <!-- BLOCO 2 -->
+          <div class="col s12 m6 l3 center-align bloco-disciplina">
+            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/fisica.jpg" alt="Física" class="disciplina-logo">
+            <ul class="disciplina-links">
+              <li>
+                <a href="#"
+                  class="modal-trigger"
+                  data-target="videoModal"
+                  data-video="https://tvweb3.unip.br/player/Transmissao?id=677272b0-9460-4c61-9626-f7228481eada&instituto=objetivo">
+                  Noções gerais de ondas
+                </a>
+              </li>
+              <li><a href="#">Esfera eletrizada</a></li>
+            </ul>
+          </div>
+
         </div>
+      </section>
 
-        <!-- BLOCO 2 -->
-        <div class="col s12 m6 l3 center-align">
-          <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/fisica.jpg" alt="Física" class="disciplina-logo">
-          <ul class="disciplina-links">
-            <li><a href="#">Noções gerais de ondas</a></li>
-            <li><a href="#">Esfera eletrizada</a></li>
-          </ul>
-        </div>
-
-        <!-- BLOCO 3 -->
-        <div class="col s12 m6 l3 center-align">
-          <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/geo.jpg" alt="Geografia" class="disciplina-logo">
-          <ul class="disciplina-links">
-            <li><a href="#">Estrutura da população</a></li>
-            <li><a href="#">Questões ambientais</a></li>
-          </ul>
-        </div>
-
-        <!-- BLOCO 4 -->
-        <div class="col s12 m6 l3 center-align">
-          <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/historia.jpg" alt="História" class="disciplina-logo">
-          <ul class="disciplina-links">
-            <li><a href="#">Ideias e movimentos urbanos</a></li>
-            <li><a href="#">Populismo na América Latina</a></li>
-          </ul>
-        </div>
-
-      </div>
-    </section>
     
     <!--fim do bloco - aulas EAD - links unip -->
 
@@ -320,43 +318,49 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const elems = document.querySelectorAll('.modal');
-  const modals = M.Modal.init(elems, {
-    dismissible: false // ❌ impede fechar clicando fora
-  });
 
-  // Quando clicar em "Assistir aula"
-  document.querySelectorAll('.modal-trigger').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const videoUrl = this.getAttribute('data-video');
-      const videoTitle = this.closest('.card').querySelector('.video-title').innerText;
-      const iframe = document.getElementById('videoFrame');
-      document.getElementById('videoTitle').innerText = videoTitle;
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Inicializa os modais e impede fechar clicando fora
+      const elems = document.querySelectorAll('.modal');
+      const modals = M.Modal.init(elems, {
+        dismissible: false
+      });
 
-      // Detecta tipo de link e aplica o embed correto
-      if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
-        // 🎥 YouTube
-        iframe.src = videoUrl;
-      } else if (videoUrl.includes('tvweb') || videoUrl.includes('unip.br/player')) {
-        // 🎓 TVWeb UNIP / Objetivo
-        iframe.src = videoUrl + "&autoplay=true";
-      } else {
-        // fallback genérico
-        iframe.src = videoUrl;
-      }
+      // Ao clicar em qualquer botão/link que abre vídeo
+      document.querySelectorAll('.modal-trigger').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const videoUrl = this.getAttribute('data-video');
+          const iframe = document.getElementById('videoFrame');
+          const videoTitleEl = document.getElementById('videoTitle');
+          
+          // Tenta achar o título dentro do card (ou usa o texto do link)
+          let videoTitle = this.innerText;
+          const cardTitle = this.closest('.card')?.querySelector('.video-title');
+          if (cardTitle) videoTitle = cardTitle.innerText;
+          videoTitleEl.innerText = videoTitle;
+
+          // Verifica tipo do link e ajusta o embed
+          if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+            // 🎥 YouTube (mantém embed já configurado com parâmetros)
+            iframe.src = videoUrl;
+          } else if (videoUrl.includes('tvweb') || videoUrl.includes('unip.br/player')) {
+            // 🎓 TVWeb UNIP / Objetivo (adiciona autoplay)
+            iframe.src = videoUrl + (videoUrl.includes('?') ? '&' : '?') + 'autoplay=true';
+          } else {
+            // fallback genérico
+            iframe.src = videoUrl;
+          }
+        });
+      });
+
+      // Quando o modal for fechado, para o vídeo
+      document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.getElementById('videoFrame').src = '';
+        });
+      });
     });
-  });
-
-  // Quando o modal for fechado
-  document.querySelectorAll('.modal-close').forEach(closeBtn => {
-    closeBtn.addEventListener('click', function() {
-      document.getElementById('videoFrame').src = ''; // limpa o vídeo
-    });
-  });
-});
-</script>
-
+  </script>
 </body>
 </html>
