@@ -51,76 +51,86 @@
       margin-top: auto;
     }
 
-    /* === AJUSTE DE PROPORÇÃO DO BLOCO DE 4 COLUNAS === */
-    section.container:last-of-type {
-      max-width: 1150px; /* largura similar à linha de 3 cards acima */
-      margin: 0 auto; /* centraliza horizontalmente */
-    }
+    /* Ajusta a linha dos blocos EAD para ocupar o mesmo espaço visual da linha acima */
+.row.ead-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 blocos iguais */
+  gap: 25px;
+  justify-content: center;
+}
 
-    /* === MELHORIA VISUAL DAS DISCIPLINAS === */
-    .bloco-disciplina {
-      border-radius: 10px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      transition: transform 0.2s ease;
-    }
+.bloco-disciplina {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+  padding: 20px;
+  min-height: 280px; /* altura proporcional aos cards de cima */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-    .bloco-disciplina:hover {
-      transform: translateY(-4px);
-    }
+.bloco-disciplina:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+}
 
-    .card-image {
-      padding-top: 15px;
-    }
+.disciplina-logo {
+  width: 150px;  /* imagem maior */
+  height: auto;
+  margin-bottom: 12px;
+}
 
-    .disciplina-logo {
-      width: 160px; /* aumenta um pouco o tamanho do logo */
-      height: auto;
-      margin-bottom: 12px;
-      transition: transform 0.3s ease;
-    }
+.disciplina-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  width: 100%;
+  max-width: 230px;
+}
 
-    .disciplina-logo:hover {
-      transform: scale(1.05);
-    }
+.disciplina-links li {
+  margin: 8px 0;
+  position: relative;
+  padding-left: 18px;
+}
 
-    /* === LISTA DE LINKS COM BOLINHA === */
-    .disciplina-links {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      text-align: left; /* texto alinhado à esquerda */
-    }
+.disciplina-links li::before {
+  content: "•";
+  color: #002776;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
 
-    .disciplina-links li {
-      margin: 8px 0;
-      position: relative;
-      padding-left: 18px; /* espaço para o marcador */
-    }
+.disciplina-links a {
+  color: #002776;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+}
 
-    .disciplina-links li::before {
-      content: "•";
-      color: #002776; /* azul Objetivo */
-      font-weight: bold;
-      position: absolute;
-      left: 0;
-      top: 0;
-      font-size: 18px;
-    }
+.disciplina-links a:hover {
+  text-decoration: underline;
+}
 
-    .disciplina-links a {
-      color: #002776;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 15px;
-    }
+/* Responsividade */
+@media (max-width: 992px) {
+  .row.ead-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
-    .disciplina-links a:hover {
-      text-decoration: underline;
-    }
+@media (max-width: 600px) {
+  .row.ead-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 
   </style>
