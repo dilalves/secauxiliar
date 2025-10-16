@@ -53,12 +53,31 @@
 
     /* 🔹 Alinhamento exato dos 4 blocos com os 3 cards de cima */
 .row.ead-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);  /* 4 colunas fixas */
-  gap: 24px;                              /* espaçamento igual ao padrão Materialize */
-  margin-left: -0.75rem;                  /* remove o padding interno do container */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-left: -0.75rem;   /* mesmo recuo interno do Materialize */
   margin-right: -0.75rem;
-  justify-content: stretch;
+}
+
+.row.ead-grid .bloco-disciplina {
+  flex: 0 0 calc(25% - 1.5rem);  /* 4 colunas (25%) com o mesmo espaçamento */
+  margin: 0.75rem;               /* igual ao gutter padrão do Materialize */
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+  padding: 20px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.row.ead-grid .bloco-disciplina:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.15);
 }
 
 /* 🔹 Bloco visual dos cards EAD */
@@ -114,14 +133,14 @@
 
 /* 🔹 Responsividade */
 @media (max-width: 992px) {
-  .row.ead-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .row.ead-grid .bloco-disciplina {
+    flex: 0 0 calc(50% - 1.5rem); /* 2 por linha */
   }
 }
 
 @media (max-width: 600px) {
-  .row.ead-grid {
-    grid-template-columns: 1fr;
+  .row.ead-grid .bloco-disciplina {
+    flex: 0 0 100%; /* 1 por linha */
   }
 }
 
