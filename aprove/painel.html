@@ -185,7 +185,13 @@ async function initPainel(){
     const me = await apiFetch('auth_guard.php');
     if (!me.ok) throw new Error('UNAUTHORIZED');
 
-    document.getElementById('unitLabel').textContent = me.user?.login || me.user?.nome || '—';
+    // Mostra "login - nome" no topo
+    const user = me.user || {};
+    const login = user.login || '';
+    const nome  = user.nome  || '';
+    document.getElementById('unitLabel').textContent =
+      login && nome ? `${login} - ${nome}` : (login || nome || '—');
+
     await carregarKPIs();
   } catch (err) {
     console.warn('Sessão inválida ou expirada', err);
@@ -194,6 +200,7 @@ async function initPainel(){
     }
   }
 }
+
 
 /* ===== Carrega estatísticas básicas (exemplo) ===== */
 async function carregarKPIs(){
