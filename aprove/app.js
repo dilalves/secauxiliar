@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  await loadLayout();
+  //await loadLayout();
   loadPageFromHash();
   window.addEventListener('hashchange', loadPageFromHash);
 });
