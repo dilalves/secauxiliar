@@ -1,62 +1,117 @@
-<!doctype html>
-<html lang="pt-br">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
-<title>Login — Aprove</title>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Login — Aprove</title>
 
-<style>
-  :root {
-    --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3; --ink:#0f172a; 
-    --muted:#6b7280; --primary:#0b3b78; --accent:#2563eb;
-  }
-  body {
-    font-family:system-ui,Arial;
-    padding:24px;
-    background:var(--bg);
-  }
-  header.topbar {
-    position:fixed; top:0; left:0; right:0; height:64px;
-    background:var(--primary); color:#fff;
-    display:flex; align-items:center; z-index:10;
-    padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
-  }
-  header.topbar h5 {
-    margin:0; font-weight:600; white-space:nowrap;
-    overflow:hidden; text-overflow:ellipsis;
-  }
-  .card {
-    max-width:420px; margin:96px auto 0;
-    background:#fff; border-radius:12px; padding:24px;
-    box-shadow:0 10px 30px rgba(0,0,0,.06);
-  }
-  input {
-    width:95%; padding:12px; border-radius:8px;
-    border:1px solid #ddd; margin-top:8px;
-  }
-  #btn {
-    width:160px; padding:12px 16px;
-    border-radius:8px; display:block; margin:16px auto 0;
-    border:none; background:#0d6efd; color:#fff; cursor:pointer;
-  }
-  #btn:hover{ filter:brightness(1.05); }
-  #btn:disabled{ opacity:.6; cursor:default; }
-  .msg{ margin-top:12px; color:#b00; text-align:center; }
-</style>
+  <style>
+    :root {
+      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+      --ink:#0f172a; --muted:#6b7280; 
+      --primary:#0b3b78; --accent:#2563eb;
+    }
+
+    html,body {
+      height:100%; margin:0;
+      font-family:system-ui,Arial;
+      background:var(--bg); color:var(--ink);
+      display:flex; flex-direction:column;
+    }
+
+    header.topbar {
+      flex:0 0 64px;
+      background:var(--primary); color:#fff;
+      display:flex; align-items:center;
+      padding:0 24px;
+      box-shadow:0 2px 10px rgba(16,24,40,.12);
+      z-index:10;
+    }
+
+    header.topbar img {
+      height:28px; width:auto; margin-right:12px;
+    }
+
+    header.topbar h5 {
+      margin:0; font-weight:600;
+      white-space:nowrap; overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    main {
+      flex:1; display:flex; align-items:center; justify-content:center;
+      padding:20px;
+    }
+
+    .card {
+      width:100%; max-width:420px;
+      background:var(--card);
+      border-radius:14px;
+      padding:32px 28px;
+      box-shadow:0 8px 24px rgba(0,0,0,.06);
+      text-align:center;
+    }
+
+    .card h2 {
+      margin-top:0; color:var(--primary);
+      font-weight:700; font-size:22px;
+    }
+
+    input {
+      width:100%; padding:12px 14px;
+      border-radius:8px; border:1px solid #d1d5db;
+      margin-top:14px; font-size:15px;
+      outline:none; transition:all .2s;
+    }
+    input:focus {
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(37,99,235,.15);
+    }
+
+    #btn {
+      width:100%; padding:12px;
+      border-radius:8px; border:none;
+      background:var(--accent);
+      color:#fff; font-size:16px;
+      margin-top:22px;
+      cursor:pointer; transition:.25s;
+    }
+    #btn:hover { filter:brightness(1.05); }
+    #btn:disabled { opacity:.6; cursor:default; }
+
+    .msg {
+      margin-top:14px; text-align:center;
+      font-size:14px; color:#b91c1c;
+      min-height:20px;
+    }
+
+    footer {
+      text-align:center; font-size:13px; color:var(--muted);
+      padding:16px 0 12px;
+    }
+  </style>
+</head>
 
 <body>
   <header class="topbar">
-    <img src="/aprove/logo-mini.png" alt="Logo" style="height:28px; margin-right:12px;">
+    <img src="/aprove/logo-mini.png" alt="Logo">
     <h5>Aprove — Conferência de Aprovados</h5>
   </header>
 
-  <div class="card">
-    <h2 style="margin-top:0;">Acesso ao Sistema</h2>
-    <input id="login" placeholder="Login da unidade (ex.: 1501)" inputmode="numeric">
-    <input id="senha" type="password" placeholder="Senha">
-    <button id="btn">Entrar</button>
-    <div id="msg" class="msg"></div>
-  </div>
+  <main>
+    <div class="card">
+      <h2>Acesso ao Sistema</h2>
+      <input id="login" placeholder="Login da unidade (ex.: 1501)" inputmode="numeric">
+      <input id="senha" type="password" placeholder="Senha">
+      <button id="btn">Entrar</button>
+      <div id="msg" class="msg"></div>
+    </div>
+  </main>
+
+  <footer>
+    © 2026 — Desenvolvido por Adilson Alves • 3A Sistemas
+  </footer>
 
 <script>
 const API = 'https://apisec.secauxiliar.com.br/aprove/';
@@ -72,27 +127,32 @@ document.getElementById('btn').onclick = async () => {
     return;
   }
 
+  document.getElementById('btn').disabled = true;
+  msg.textContent = 'Verificando...';
+
   try {
     const r = await fetch(API + 'auth_login.php', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({login, senha}),
-      credentials: 'include' // 🔥 importante para enviar/receber cookie
+      credentials: 'include'
     });
 
     const data = await r.json();
     if (!r.ok || !data.ok) {
-      msg.textContent = data.error || 'Falha no login';
+      msg.textContent = data.error || 'Falha no login.';
+      document.getElementById('btn').disabled = false;
       return;
     }
 
-    // O cookie foi criado no servidor (HttpOnly)
-    // Agora só redireciona para o painel protegido
-    location.href = './painel.html';
+    msg.style.color = '#16a34a';
+    msg.textContent = 'Login realizado. Redirecionando...';
+    setTimeout(() => location.href = './painel.html', 600);
 
   } catch (e) {
     console.error(e);
     msg.textContent = 'Erro de rede ou servidor indisponível.';
+    document.getElementById('btn').disabled = false;
   }
 };
 </script>
