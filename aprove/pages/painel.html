@@ -1,290 +1,201 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
-  <title>Painel • Aprove — Conferência de Aprovados</title>
-
-  <!-- Materialize -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aprove — Conferência de Aprovados</title>
+  <link rel="icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    :root {
-      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3; --ink:#0f172a; --muted:#6b7280; 
-      --primary:#0b3b78; --accent:#2563eb;
-      --aside-w:260px; --topbar-h:64px;
+    body {
+      background: #f4f6f9;
+      font-family: 'Segoe UI', sans-serif;
+      color: #333;
     }
-
-    html, body {height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
-    body {color:var(--ink);}
-
-    .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
-
-    /* ===== TOPBAR ===== */
-    header.topbar {
-      position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
-      background:var(--primary); color:#fff; display:flex; align-items:center;
-      padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+    header {
+      background-color: #002776;
+      color: #fff;
+      padding: 18px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-
-    /* ===== SIDEBAR ===== */
-    aside {
-      background:#fff; border-right:1px solid var(--line);
-      position:sticky; top:var(--topbar-h);
-      height:calc(100vh - var(--topbar-h)); overflow:auto; z-index:6;
-      padding-bottom:20px;
+    header h1 {
+      font-size: 20px;
+      margin: 0;
+      font-weight: 600;
     }
-
-    .menu {list-style:none; margin:0; padding:0 0 12px;}
-    .menu a {
-      display:block; padding:10px 22px; color:#111827; text-decoration:none;
-      font-size:15px; transition:0.25s;
-    }
-    .menu a:hover {background:#f4f6fb; color:var(--primary);}
-    .menu .active > a {background:#eef3ff; font-weight:600; color:var(--primary);}
-
-    .menu-group {margin-bottom:12px;}
-    .group-title {
-      font-weight:700; color:#0b3b78; text-transform:uppercase;
-      font-size:13px; letter-spacing:0.5px;
-      padding:10px 20px 6px; border-top:1px solid #eef2f8;
-    }
-
-    /* ===== MAIN CONTENT ===== */
-    main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
-    .page {padding:24px;}
-
-    .card {border-radius:14px; box-shadow:0 6px 18px rgba(16,24,40,.06);}
-    .card-title {font-weight:600;}
-    .muted {color:var(--muted);}
-    .value {font-size:22px; font-weight:700;}
-    .label {color:var(--muted); font-size:13px;}
-
     #unitLabel {
-      font-size:14px; font-weight:500; color:#ffffff; opacity:0.9;
+      font-size: 15px;
+      font-weight: 500;
+      opacity: 0.9;
     }
-
-    @media (max-width:992px) {.app {grid-template-columns:1fr;} aside {display:none;}}
+    #btnSair {
+      color: #fff;
+      background: none;
+      border: 1px solid #fff;
+      border-radius: 6px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    #btnSair:hover {
+      background: #fff;
+      color: #002776;
+    }
+    main {
+      padding: 30px;
+    }
+    .kpi-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+    }
+    .kpi-box:hover {
+      transform: translateY(-3px);
+    }
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 600;
+      color: #002776;
+    }
+    .card-action {
+      margin-top: 10px;
+    }
+    footer {
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      padding: 20px;
+    }
   </style>
 </head>
 
 <body>
-<div class="app">
-  <!-- ===== SIDEBAR ===== -->
-  <aside>
-    <div class="center" style="padding:18px 0 8px;">
-      <span class="title" style="font-weight:700; color:#0b3b78">Aprove</span>
+  <header>
+    <h1>Aprove — Conferência de Aprovados <span id="unitLabel"></span></h1>
+    <button id="btnSair">SAIR</button>
+  </header>
+
+  <main class="container">
+    <div class="row g-4 mb-4 text-center">
+      <div class="col-md-3">
+        <div class="kpi-box">
+          <div>Total de Aprovados</div>
+          <div class="kpi-value" id="kpiTotal">—</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="kpi-box">
+          <div>Novos Cadastros</div>
+          <div class="kpi-value" id="kpiNovos">—</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="kpi-box">
+          <div>Confirmados</div>
+          <div class="kpi-value" id="kpiConfirmados">—</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="kpi-box">
+          <div>Pendentes</div>
+          <div class="kpi-value" id="kpiPendentes">—</div>
+        </div>
+      </div>
     </div>
 
-    <ul class="menu">
-      <li class="active"><a href="/aprove/painel.html">Início</a></li>
-
-      <li class="menu-group">
-        <div class="group-title">Atualizações</div>
-        <ul>
-          <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
-          <li><a href="/aprove/alunos.html">Alunos</a></li>
-          <li><a href="/aprove/instituicoes.html">Instituições</a></li>
-          <li><a href="/aprove/cursos.html">Cursos</a></li>
-          <li><a href="/aprove/unidades.html">Unidades</a></li>
-          <li><a href="/aprove/autorizacoes.html">Autorização de Imagem</a></li>
-          <li><a href="/aprove/listas_aprovados.html">Listas de Aprovados</a></li>
-        </ul>
-      </li>
-
-      <li class="menu-group">
-        <div class="group-title">Ferramentas</div>
-        <ul>
-          <li><a href="/aprove/conferir_listas.html">Conferir Listas</a></li>
-          <li><a href="/aprove/importar_aprovacoes.html">Importar Aprovações</a></li>
-        </ul>
-      </li>
-
-      <li class="menu-group">
-        <div class="group-title">Relatórios</div>
-        <ul>
-          <li><a href="/aprove/convocados2fase.html">Convocados 2ª Fase</a></li>
-          <li><a href="/aprove/aprovados_rel.html">Aprovados</a></li>
-          <li><a href="/aprove/porcentagem_lista.html">Porcentagem Lista</a></li>
-          <li><a href="/aprove/totais_curso.html">Totais por Curso</a></li>
-          <li><a href="/aprove/totais_instituicao.html">Totais por Instituição</a></li>
-        </ul>
-      </li>
-    </ul>
-  </aside>
-
-  <!-- ===== MAIN ===== -->
-  <main>
-    <header class="topbar">
-      <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <img src="/aprove/logo-mini.png" alt="Logo" style="height:28px; width:auto;">
-          <h5 style="margin:0; font-weight:600;">
-            Aprove — Conferência de Aprovados — <span id="unitLabel">—</span>
-          </h5>
-        </div>
-        <div style="display:flex; align-items:center;">
-          <a class="btn-flat waves-effect white-text" href="#!" onclick="logout()">Sair</a>
-        </div>
-      </div>
-    </header>
-
-    <section class="page">
-      <div class="row" style="margin-bottom:10px">
-        <div class="col s12 m6 l3">
-          <div class="card z-depth-0">
-            <div class="card-content center">
-              <div class="value" id="kpiTotal">—</div>
-              <div class="label">Total de Aprovados</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col s12 m6 l3">
-          <div class="card z-depth-0">
-            <div class="card-content center">
-              <div class="value" id="kpiNovos">—</div>
-              <div class="label">Novos Cadastros</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col s12 m6 l3">
-          <div class="card z-depth-0">
-            <div class="card-content center">
-              <div class="value" id="kpiConfirmados">—</div>
-              <div class="label">Confirmados</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col s12 m6 l3">
-          <div class="card z-depth-0">
-            <div class="card-content center">
-              <div class="value" id="kpiPendentes">—</div>
-              <div class="label">Pendentes</div>
-            </div>
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div class="kpi-box">
+          <h5>Consultar Aprovados</h5>
+          <p>Ver lista de aprovados por unidade</p>
+          <div class="card-action">
+            <a href="consultar_aprovados.html" class="btn btn-primary btn-sm">ABRIR</a>
           </div>
         </div>
       </div>
-
-      <div class="row">
-        <div class="col s12 m4">
-          <div class="card hoverable center">
-            <div class="card-content">
-              <div class="title" style="font-weight:700">Consultar Aprovados</div>
-              <p class="grey-text">Ver lista de aprovados por unidade</p>
-            </div>
-            <div class="card-action">
-              <a href="/aprove/aprovacoes.html" class="btn waves-effect waves-light blue darken-2">
-                Abrir
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div class="col s12 m4">
-          <div class="card hoverable center">
-            <div class="card-content">
-              <div class="title" style="font-weight:700">Gerenciar Unidades</div>
-              <p class="grey-text">Editar dados e resultados</p>
-            </div>
-            <div class="card-action">
-              <a href="/aprove/unidades.html" class="btn-flat">Abrir</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="col s12 m4">
-          <div class="card hoverable center">
-            <div class="card-content">
-              <div class="title" style="font-weight:700">Relatórios</div>
-              <p class="grey-text">Visualizar estatísticas de aprovações</p>
-            </div>
-            <div class="card-action">
-              <a href="/aprove/totais_curso.html" class="btn-flat">Abrir</a>
-            </div>
+      <div class="col-md-4">
+        <div class="kpi-box">
+          <h5>Gerenciar Unidades</h5>
+          <p>Editar dados e resultados</p>
+          <div class="card-action">
+            <a href="unidades.html" class="btn btn-warning btn-sm text-white">ABRIR</a>
           </div>
         </div>
       </div>
-    </section>
+      <div class="col-md-4">
+        <div class="kpi-box">
+          <h5>Relatórios</h5>
+          <p>Visualizar estatísticas de aprovações</p>
+          <div class="card-action">
+            <a href="relatorios.html" class="btn btn-secondary btn-sm">ABRIR</a>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
-</div>
 
-<script>
-// 🔒 BLOQUEIO DE ACESSO DIRETO (sem cookie de login)
-//if (!document.cookie.includes('aprove_token=')) {
- // location.replace('/aprove/index.html');
-//}
+  <footer>
+    Desenvolvido por 3A Sistemas — Adilson Alves © 2025
+  </footer>
 
+  <script>
+    const LOGIN_URL = "https://secauxiliar.com.br/aprove/index.html";
+    const API_AUTH = "https://apisec.secauxiliar.com.br/aprove/auth_guard.php";
+    const API_KPI = "https://apisec.secauxiliar.com.br/aprove/dashboard_stats.php";
 
-const API = 'https://apisec.secauxiliar.com.br/aprove/';
-const LOGIN_URL = '/aprove/index.html';
-
-/* ===== Requisição genérica ===== */
-async function apiFetch(path, opts = {}) {
-  const options = {
-    method: opts.method || 'GET',
-    headers: { 'Accept': 'application/json', ...(opts.headers || {}) },
-    body: opts.body,
-    credentials: 'include'
-  };
-  const res = await fetch(API + path, options).catch(() => null);
-  if (!res) throw new Error('NETWORK_FAIL');
-  if (res.status === 401 || res.status === 403) throw new Error('UNAUTHORIZED');
-  if (!res.ok) throw new Error(`API_${res.status}`);
-  return res.json();
-}
-
-/* ===== Inicialização ===== */
-document.addEventListener('DOMContentLoaded', initPainel);
-
-async function initPainel(){
-  try {
-    const me = await apiFetch('auth_guard.php');
-    if (!me.ok) throw new Error('UNAUTHORIZED');
-    const user = me.user || {};
-    const login = user.login || '';
-    const nome  = user.nome  || '';
-    document.getElementById('unitLabel').textContent =
-      login && nome ? `${login} - ${nome}` : (login || nome || '—');
-    await carregarKPIs();
-  } catch (err) {
-    console.warn('Sessão inválida ou expirada', err);
-    if (String(err.message).includes('UNAUTHORIZED')) {
-      location.replace(LOGIN_URL);
+    async function apiFetch(url, opts = {}) {
+      const res = await fetch(url, { credentials: "include", ...opts });
+      if (!res.ok) throw new Error("NETWORK_FAIL");
+      return res.json();
     }
-  }
-}
 
-/* ===== KPIs ===== */
-async function carregarKPIs(){
-  try {
-    const r = await apiFetch('dashboard_stats.php', { method:'GET' });
-    const d = r.data || {};
-    const nf = new Intl.NumberFormat('pt-BR');
-    document.getElementById('kpiTotal').textContent      = nf.format(d.total ?? 0);
-    document.getElementById('kpiNovos').textContent      = nf.format(d.novos ?? 0);
-    document.getElementById('kpiConfirmados').textContent= nf.format(d.confirmados ?? 0);
-    document.getElementById('kpiPendentes').textContent  = nf.format(d.pendentes ?? 0);
-  } catch(e) {
-    console.error('Falha ao carregar KPIs', e);
-  }
-}
+    async function carregarKPIs() {
+      try {
+        const stats = await apiFetch(API_KPI);
+        document.getElementById("kpiTotal").textContent = stats.total ?? "—";
+        document.getElementById("kpiNovos").textContent = stats.novos ?? "—";
+        document.getElementById("kpiConfirmados").textContent = stats.confirmados ?? "—";
+        document.getElementById("kpiPendentes").textContent = stats.pendentes ?? "—";
+      } catch (e) {
+        console.warn("Falha ao carregar KPIs", e);
+      }
+    }
 
-/* ===== Logout ===== */
-async function logout(){
-  try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); } catch(_) {}
+    async function initPainel() {
+      try {
+        const me = await apiFetch(API_AUTH);
+        if (!me.ok) throw new Error("UNAUTHORIZED");
+        const user = me.user || {};
+        document.getElementById("unitLabel").textContent = `— ${user.login} - ${user.nome}`;
+        await carregarKPIs();
+      } catch (err) {
+        console.warn("Sessão inválida ou expirada", err);
+        if (String(err.message).includes("UNAUTHORIZED")) {
+          location.replace(LOGIN_URL);
+        }
+      }
+    }
 
-  // Refresca cookies client-side também
-  document.cookie = 'aprove_token=; Max-Age=0; path=/aprove; domain=secauxiliar.com.br; secure';
+    document.getElementById("btnSair").addEventListener("click", async () => {
+      try {
+        await fetch("https://apisec.secauxiliar.com.br/aprove/logout.php", {
+          method: "POST",
+          credentials: "include"
+        });
+      } finally {
+        location.replace(LOGIN_URL);
+      }
+    });
 
-  location.replace(LOGIN_URL);
-}
-
-
-</script>
+    document.addEventListener("DOMContentLoaded", initPainel);
+  </script>
 </body>
 </html>
