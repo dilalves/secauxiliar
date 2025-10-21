@@ -276,10 +276,16 @@ async function carregarKPIs(){
 
 /* ===== Logout ===== */
 async function logout(){
-  try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); }
-  catch(_) {}
+  try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); } catch(_) {}
+
+  // Refresca cookies client-side também
+  document.cookie = 'aprove_token=; Max-Age=0; path=/; domain=secauxiliar.com.br; secure';
+  document.cookie = 'aprove_token=; Max-Age=0; path=/aprove; domain=secauxiliar.com.br; secure';
+
   location.replace(LOGIN_URL);
 }
+
+
 </script>
 </body>
 </html>
