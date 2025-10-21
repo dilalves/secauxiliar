@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
   //await loadLayout();
   loadPageFromHash();
-  window.addEventListener('hashchange', loadPageFromHash);
+//  window.addEventListener('hashchange', loadPageFromHash);
 });
 
 /* === Carrega topbar e sidebar === */
