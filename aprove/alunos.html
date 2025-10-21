@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
-  <title>Painel • Aprove — Conferência de Aprovados</title>
+  <title>Alunos • Aprove — Conferência de Aprovados</title>
 
   <!-- Materialize -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
@@ -54,10 +54,6 @@
     /* ===== MAIN CONTENT ===== */
     main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
     .page {padding:24px;}
-    .card {border-radius:14px; box-shadow:0 6px 18px rgba(16,24,40,.06);}
-    .value {font-size:22px; font-weight:700;}
-    .label {color:var(--muted); font-size:13px;}
-    #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
     footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
     @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
   </style>
@@ -72,37 +68,37 @@
     </div>
 
     <ul class="menu">
-      <li class="active"><a href="#">Início</a></li>
+      <li><a href="/aprove/painel.html">Início</a></li>
 
       <li class="menu-group">
         <div class="group-title">Atualizações</div>
         <ul>
-          <li><a href="#">Aprovações</a></li>
-          <li><a href="/aprove/alunos.html">Alunos</a></li>
-          <li><a href="#">Instituições</a></li>
-          <li><a href="#">Cursos</a></li>
-          <li><a href="#">Unidades</a></li>
-          <li><a href="#">Autorização de Imagem</a></li>
-          <li><a href="#">Listas de Aprovados</a></li>
+          <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
+          <li class="active"><a href="/aprove/alunos.html">Alunos</a></li>
+          <li><a href="/aprove/instituicoes.html">Instituições</a></li>
+          <li><a href="/aprove/cursos.html">Cursos</a></li>
+          <li><a href="/aprove/unidades.html">Unidades</a></li>
+          <li><a href="/aprove/autorizacoes.html">Autorização de Imagem</a></li>
+          <li><a href="/aprove/listas_aprovados.html">Listas de Aprovados</a></li>
         </ul>
       </li>
 
       <li class="menu-group">
         <div class="group-title">Ferramentas</div>
         <ul>
-          <li><a href="#">Conferir Listas</a></li>
-          <li><a href="#">Importar Aprovações</a></li>
+          <li><a href="/aprove/conferir_listas.html">Conferir Listas</a></li>
+          <li><a href="/aprove/importar_aprovacoes.html">Importar Aprovações</a></li>
         </ul>
       </li>
 
       <li class="menu-group">
         <div class="group-title">Relatórios</div>
         <ul>
-          <li><a href="#">Convocados 2ª Fase</a></li>
-          <li><a href="#">Aprovados</a></li>
-          <li><a href="#">Porcentagem Lista</a></li>
-          <li><a href="#">Totais por Curso</a></li>
-          <li><a href="#">Totais por Instituição</a></li>
+          <li><a href="/aprove/convocados2fase.html">Convocados 2ª Fase</a></li>
+          <li><a href="/aprove/aprovados_rel.html">Aprovados</a></li>
+          <li><a href="/aprove/porcentagem_lista.html">Porcentagem Lista</a></li>
+          <li><a href="/aprove/totais_curso.html">Totais por Curso</a></li>
+          <li><a href="/aprove/totais_instituicao.html">Totais por Instituição</a></li>
         </ul>
       </li>
     </ul>
@@ -126,51 +122,11 @@
     </header>
 
     <section class="page">
-      <div class="row" style="margin-bottom:10px">
-        <div class="col s12 m6 l3"><div class="card z-depth-0"><div class="card-content center">
-          <div class="value" id="kpiTotal">—</div><div class="label">Total de Aprovados</div>
-        </div></div></div>
+      <h4 style="color:#0b3b78; font-weight:600;">Cadastro de Alunos</h4>
+      <p class="grey-text text-darken-1">Nesta área você poderá visualizar, editar e cadastrar alunos.</p>
 
-        <div class="col s12 m6 l3"><div class="card z-depth-0"><div class="card-content center">
-          <div class="value" id="kpiNovos">—</div><div class="label">Novos Cadastros</div>
-        </div></div></div>
-
-        <div class="col s12 m6 l3"><div class="card z-depth-0"><div class="card-content center">
-          <div class="value" id="kpiConfirmados">—</div><div class="label">Confirmados</div>
-        </div></div></div>
-
-        <div class="col s12 m6 l3"><div class="card z-depth-0"><div class="card-content center">
-          <div class="value" id="kpiPendentes">—</div><div class="label">Pendentes</div>
-        </div></div></div>
-      </div>
-
-      <div class="row">
-        <div class="col s12 m4">
-          <div class="card hoverable center">
-            <div class="card-content"><div class="title" style="font-weight:700">Consultar Aprovados</div>
-              <p class="grey-text">Ver lista de aprovados por unidade</p>
-            </div>
-            <div class="card-action"><a href="#" class="btn waves-effect waves-light blue darken-2">Abrir</a></div>
-          </div>
-        </div>
-
-        <div class="col s12 m4">
-          <div class="card hoverable center">
-            <div class="card-content"><div class="title" style="font-weight:700">Gerenciar Unidades</div>
-              <p class="grey-text">Editar dados e resultados</p>
-            </div>
-            <div class="card-action"><a href="#" class="btn-flat amber-text text-darken-3">Abrir</a></div>
-          </div>
-        </div>
-
-        <div class="col s12 m4">
-          <div class="card hoverable center">
-            <div class="card-content"><div class="title" style="font-weight:700">Relatórios</div>
-              <p class="grey-text">Visualizar estatísticas de aprovações</p>
-            </div>
-            <div class="card-action"><a href="#" class="btn-flat grey-text">Abrir</a></div>
-          </div>
-        </div>
+      <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
+        <p class="grey-text center">Em breve, aqui ficará o conteúdo de gerenciamento de alunos.</p>
       </div>
     </section>
 
@@ -182,28 +138,11 @@
 const API = 'https://apisec.secauxiliar.com.br/aprove/';
 const LOGIN_URL = '/aprove/index.html';
 
-/* ===== Logout ===== */
 async function logout(){
   try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); }
   catch(_) {}
   location.replace(LOGIN_URL);
 }
-
-/* ===== Exemplo de atualização dos KPIs ===== */
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const res = await fetch(API + 'dashboard_stats.php', {credentials:'include'});
-    const data = await res.json();
-    const d = data.data || {};
-    const nf = new Intl.NumberFormat('pt-BR');
-    document.getElementById('kpiTotal').textContent = nf.format(d.total ?? 0);
-    document.getElementById('kpiNovos').textContent = nf.format(d.novos ?? 0);
-    document.getElementById('kpiConfirmados').textContent = nf.format(d.confirmados ?? 0);
-    document.getElementById('kpiPendentes').textContent = nf.format(d.pendentes ?? 0);
-  } catch(e) {
-    console.warn('Falha ao carregar KPIs', e);
-  }
-});
 </script>
 </body>
 </html>
