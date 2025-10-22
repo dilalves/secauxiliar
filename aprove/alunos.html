@@ -21,28 +21,19 @@
     html, body {height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
     body {color:var(--ink);}
     .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
-
-    /* ===== TOPBAR ===== */
     header.topbar {
       position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
       background:var(--primary); color:#fff; display:flex; align-items:center;
       padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
     }
-
-
-    /* ===== SIDEBAR ===== */
     aside {
       background:#fff; border-right:1px solid var(--line);
       position:sticky; top:var(--topbar-h);
       height:calc(100vh - var(--topbar-h)); overflow:auto; z-index:6;
       padding-bottom:20px;
     }
-
     .menu {list-style:none; margin:0; padding:0 0 12px;}
-    .menu a {
-      display:block; padding:10px 22px; color:#111827; text-decoration:none;
-      font-size:15px; transition:0.25s;
-    }
+    .menu a {display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:0.25s;}
     .menu a:hover {background:#f4f6fb; color:var(--primary);}
     .menu .active > a {background:#eef3ff; font-weight:600; color:var(--primary);}
     .menu-group {margin-bottom:12px;}
@@ -51,20 +42,13 @@
       font-size:13px; letter-spacing:0.5px;
       padding:10px 20px 6px; border-top:1px solid #eef2f8;
     }
-
-    /* ===== MAIN CONTENT ===== */
     main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
     .page {padding:24px;}
     footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
-
-    #unitLabel {
-      font-size:14px;
-      font-weight:500;
-      color:#fff;
-      opacity:0.9;
-    }
-
-
+    #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
+    table.striped th {background:#f2f5ff; color:#0b3b78; font-weight:600;}
+    .search-box {display:flex; align-items:center; gap:8px; margin-bottom:16px;}
+    .search-box input {flex:1;}
     @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
   </style>
 </head>
@@ -132,10 +116,29 @@
 
     <section class="page">
       <h4 style="color:#0b3b78; font-weight:600;">Cadastro de Alunos</h4>
-      <p class="grey-text text-darken-1">Nesta área você poderá visualizar, editar e cadastrar alunos.</p>
+      <p class="grey-text text-darken-1">Pesquise alunos por nome ou visualize todos.</p>
 
       <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
-        <p class="grey-text center">Em breve, aqui ficará o conteúdo de gerenciamento de alunos.</p>
+        <div class="search-box">
+          <input id="search" type="text" placeholder="Buscar por nome..." oninput="buscarAlunos()">
+          <button class="btn blue darken-2" onclick="buscarAlunos()">Buscar</button>
+        </div>
+
+        <table class="striped highlight responsive-table" id="tabela-alunos">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Série</th>
+              <th>Cód. Unidade</th>
+              <th>Unidade</th>
+              <th>Cadastro</th>
+              <th>Listagem</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <p class="center grey-text" id="msg-status">Digite um nome para buscar.</p>
       </div>
     </section>
 
@@ -153,7 +156,6 @@ async function logout(){
   location.replace(LOGIN_URL);
 }
 
-/* ===== Mostra nome e login do usuário ===== */
 async function carregarUsuario() {
   try {
     const res = await fetch(API + 'auth_me.php', { credentials:'include' });
@@ -162,15 +164,46 @@ async function carregarUsuario() {
       const nome  = data.user.nome  ?? 'Usuário';
       const login = data.user.login ?? '';
       document.getElementById('unitLabel').textContent = `${login} — ${nome}`;
-    } else {
-      document.getElementById('unitLabel').textContent = '— Sessão expirada';
     }
   } catch (e) {
     document.getElementById('unitLabel').textContent = '— Erro de conexão';
   }
 }
+
+/* ===== BUSCA DE ALUNOS ===== */
+async function buscarAlunos(){
+  const termo = document.getElementById('search').value.trim();
+  const tbody = document.querySelector('#tabela-alunos tbody');
+  tbody.innerHTML = '';
+  document.getElementById('msg-status').textContent = 'Buscando...';
+
+  try {
+    const res = await fetch(API + 'alunos_list.php?nome=' + encodeURIComponent(termo), { credentials:'include' });
+    const data = await res.json();
+
+    if (data.ok && data.rows.length){
+      document.getElementById('msg-status').textContent = '';
+      data.rows.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.NOME}</td>
+          <td>${r.SERIE ?? ''}</td>
+          <td>${r.CODUNIDADE ?? ''}</td>
+          <td>${r.UNIDADE ?? ''}</td>
+          <td>${r.CADASTRO ?? ''}</td>
+          <td>${r.LISTAGEM ?? ''}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } else {
+      document.getElementById('msg-status').textContent = 'Nenhum aluno encontrado.';
+    }
+  } catch(e){
+    document.getElementById('msg-status').textContent = 'Erro ao carregar dados.';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', carregarUsuario);
 </script>
-
 </body>
 </html>
