@@ -12,14 +12,14 @@
 
   <style>
     :root {
-      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
-      --ink:#0f172a; --muted:#6b7280; 
+      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3; --ink:#0f172a; --muted:#6b7280; 
       --primary:#0b3b78; --accent:#2563eb;
       --aside-w:260px; --topbar-h:64px;
     }
 
     html, body {height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
     body {color:var(--ink);}
+
     .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
 
     /* ===== TOPBAR ===== */
@@ -44,6 +44,7 @@
     }
     .menu a:hover {background:#f4f6fb; color:var(--primary);}
     .menu .active > a {background:#eef3ff; font-weight:600; color:var(--primary);}
+
     .menu-group {margin-bottom:12px;}
     .group-title {
       font-weight:700; color:#0b3b78; text-transform:uppercase;
@@ -54,12 +55,18 @@
     /* ===== MAIN CONTENT ===== */
     main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
     .page {padding:24px;}
+
     .card {border-radius:14px; box-shadow:0 6px 18px rgba(16,24,40,.06);}
+    .card-title {font-weight:600;}
+    .muted {color:var(--muted);}
     .value {font-size:22px; font-weight:700;}
     .label {color:var(--muted); font-size:13px;}
-    #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
-    footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
-    @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
+
+    #unitLabel {
+      font-size:14px; font-weight:500; color:#ffffff; opacity:0.9;
+    }
+
+    @media (max-width:992px) {.app {grid-template-columns:1fr;} aside {display:none;}}
   </style>
 </head>
 
@@ -72,13 +79,13 @@
     </div>
 
     <ul class="menu">
-      <li><a href="/aprove/painel.html">Início</a></li>
+      <li class="active"><a href="/aprove/painel.html">Início</a></li>
 
       <li class="menu-group">
         <div class="group-title">Atualizações</div>
         <ul>
           <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
-          <li class="active"><a href="/aprove/alunos.html">Alunos</a></li>
+          <li><a href="/aprove/alunos.html">Alunos</a></li>
           <li><a href="/aprove/instituicoes.html">Instituições</a></li>
           <li><a href="/aprove/cursos.html">Cursos</a></li>
           <li><a href="/aprove/unidades.html">Unidades</a></li>
@@ -126,83 +133,158 @@
 
     <section class="page">
       <div class="row" style="margin-bottom:10px">
-        <div class="col s12 m6 l3"><div class="card z-depth-0"><div class="card-content center">
-          <div class="value" id="kpiTotal">—</div><div class="label">Total de Aprovados</div>
-        </div></div></div>
+        <div class="col s12 m6 l3">
+          <div class="card z-depth-0">
+            <div class="card-content center">
+              <div class="value" id="kpiTotal">—</div>
+              <div class="label">Total de Aprovados</div>
+            </div>
+          </div>
+        </div>
 
-        <div class="col s12 m6 l3"><div class="card z-depth-0"><div class="card-content center">
-          <div class="value" id="kpiNovos">—</div><div class="label">Novos Cadastros</div>
-        </div></div></div>
+        <div class="col s12 m6 l3">
+          <div class="card z-depth-0">
+            <div class="card-content center">
+              <div class="value" id="kpiNovos">—</div>
+              <div class="label">Novos Cadastros</div>
+            </div>
+          </div>
+        </div>
 
-        <div class="col s12 m6 l3"><div class="card z-depth-0"><div class="card-content center">
-          <div class="value" id="kpiConfirmados">—</div><div class="label">Confirmados</div>
-        </div></div></div>
+        <div class="col s12 m6 l3">
+          <div class="card z-depth-0">
+            <div class="card-content center">
+              <div class="value" id="kpiConfirmados">—</div>
+              <div class="label">Confirmados</div>
+            </div>
+          </div>
+        </div>
 
-        <div class="col s12 m6 l3"><div class="card z-depth-0"><div class="card-content center">
-          <div class="value" id="kpiPendentes">—</div><div class="label">Pendentes</div>
-        </div></div></div>
+        <div class="col s12 m6 l3">
+          <div class="card z-depth-0">
+            <div class="card-content center">
+              <div class="value" id="kpiPendentes">—</div>
+              <div class="label">Pendentes</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="row">
         <div class="col s12 m4">
           <div class="card hoverable center">
-            <div class="card-content"><div class="title" style="font-weight:700">Consultar Aprovados</div>
+            <div class="card-content">
+              <div class="title" style="font-weight:700">Consultar Aprovados</div>
               <p class="grey-text">Ver lista de aprovados por unidade</p>
             </div>
-            <div class="card-action"><a href="#" class="btn waves-effect waves-light blue darken-2">Abrir</a></div>
+            <div class="card-action">
+              <a href="/aprove/aprovacoes.html" class="btn waves-effect waves-light blue darken-2">
+                Abrir
+              </a>
+            </div>
           </div>
         </div>
 
         <div class="col s12 m4">
           <div class="card hoverable center">
-            <div class="card-content"><div class="title" style="font-weight:700">Gerenciar Unidades</div>
+            <div class="card-content">
+              <div class="title" style="font-weight:700">Gerenciar Unidades</div>
               <p class="grey-text">Editar dados e resultados</p>
             </div>
-            <div class="card-action"><a href="#" class="btn-flat amber-text text-darken-3">Abrir</a></div>
+            <div class="card-action">
+              <a href="/aprove/unidades.html" class="btn-flat">Abrir</a>
+            </div>
           </div>
         </div>
 
         <div class="col s12 m4">
           <div class="card hoverable center">
-            <div class="card-content"><div class="title" style="font-weight:700">Relatórios</div>
+            <div class="card-content">
+              <div class="title" style="font-weight:700">Relatórios</div>
               <p class="grey-text">Visualizar estatísticas de aprovações</p>
             </div>
-            <div class="card-action"><a href="#" class="btn-flat grey-text">Abrir</a></div>
+            <div class="card-action">
+              <a href="/aprove/totais_curso.html" class="btn-flat">Abrir</a>
+            </div>
           </div>
         </div>
       </div>
     </section>
-
-    <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
   </main>
 </div>
 
 <script>
+// 🔒 BLOQUEIO DE ACESSO DIRETO (sem cookie de login)
+//if (!document.cookie.includes('aprove_token=')) {
+ // location.replace('/aprove/index.html');
+//}
+
+
 const API = 'https://apisec.secauxiliar.com.br/aprove/';
 const LOGIN_URL = '/aprove/index.html';
 
+/* ===== Requisição genérica ===== */
+async function apiFetch(path, opts = {}) {
+  const options = {
+    method: opts.method || 'GET',
+    headers: { 'Accept': 'application/json', ...(opts.headers || {}) },
+    body: opts.body,
+    credentials: 'include'
+  };
+  const res = await fetch(API + path, options).catch(() => null);
+  if (!res) throw new Error('NETWORK_FAIL');
+  if (res.status === 401 || res.status === 403) throw new Error('UNAUTHORIZED');
+  if (!res.ok) throw new Error(`API_${res.status}`);
+  return res.json();
+}
+
+/* ===== Inicialização ===== */
+document.addEventListener('DOMContentLoaded', initPainel);
+
+async function initPainel(){
+  try {
+    const me = await apiFetch('auth_guard.php');
+    if (!me.ok) throw new Error('UNAUTHORIZED');
+    const user = me.user || {};
+    const login = user.login || '';
+    const nome  = user.nome  || '';
+    document.getElementById('unitLabel').textContent =
+      login && nome ? `${login} - ${nome}` : (login || nome || '—');
+    await carregarKPIs();
+  } catch (err) {
+    console.warn('Sessão inválida ou expirada', err);
+    if (String(err.message).includes('UNAUTHORIZED')) {
+      location.replace(LOGIN_URL);
+    }
+  }
+}
+
+/* ===== KPIs ===== */
+async function carregarKPIs(){
+  try {
+    const r = await apiFetch('dashboard_stats.php', { method:'GET' });
+    const d = r.data || {};
+    const nf = new Intl.NumberFormat('pt-BR');
+    document.getElementById('kpiTotal').textContent      = nf.format(d.total ?? 0);
+    document.getElementById('kpiNovos').textContent      = nf.format(d.novos ?? 0);
+    document.getElementById('kpiConfirmados').textContent= nf.format(d.confirmados ?? 0);
+    document.getElementById('kpiPendentes').textContent  = nf.format(d.pendentes ?? 0);
+  } catch(e) {
+    console.error('Falha ao carregar KPIs', e);
+  }
+}
+
 /* ===== Logout ===== */
 async function logout(){
-  try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); }
-  catch(_) {}
+  try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); } catch(_) {}
+
+  // Refresca cookies client-side também
+  document.cookie = 'aprove_token=; Max-Age=0; path=/aprove; domain=secauxiliar.com.br; secure';
+
   location.replace(LOGIN_URL);
 }
 
-/* ===== Exemplo de atualização dos KPIs ===== */
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const res = await fetch(API + 'dashboard_stats.php', {credentials:'include'});
-    const data = await res.json();
-    const d = data.data || {};
-    const nf = new Intl.NumberFormat('pt-BR');
-    document.getElementById('kpiTotal').textContent = nf.format(d.total ?? 0);
-    document.getElementById('kpiNovos').textContent = nf.format(d.novos ?? 0);
-    document.getElementById('kpiConfirmados').textContent = nf.format(d.confirmados ?? 0);
-    document.getElementById('kpiPendentes').textContent = nf.format(d.pendentes ?? 0);
-  } catch(e) {
-    console.warn('Falha ao carregar KPIs', e);
-  }
-});
+
 </script>
 </body>
 </html>
