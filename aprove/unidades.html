@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Unidades • Aprove — Conferência de Aprovados</title>
+
+  <!-- Materialize -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <style>
+    :root {
+      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+      --ink:#0f172a; --muted:#6b7280; 
+      --primary:#0b3b78; --accent:#2563eb;
+      --aside-w:260px; --topbar-h:64px;
+    }
+
+    html, body {height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
+    body {color:var(--ink);}
+    .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
+
+    /* ===== TOPBAR ===== */
+    header.topbar {
+      position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
+      background:var(--primary); color:#fff; display:flex; align-items:center;
+      padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+
+    /* ===== SIDEBAR ===== */
+    aside {
+      background:#fff; border-right:1px solid var(--line);
+      position:sticky; top:var(--topbar-h);
+      height:calc(100vh - var(--topbar-h)); overflow:auto; z-index:6;
+      padding-bottom:20px;
+    }
+    .menu {list-style:none; margin:0; padding:0 0 12px;}
+    .menu a {
+      display:block; padding:10px 22px; color:#111827; text-decoration:none;
+      font-size:15px; transition:0.25s;
+    }
+    .menu a:hover {background:#f4f6fb; color:var(--primary);}
+    .menu .active > a {background:#eef3ff; font-weight:600; color:var(--primary);}
+    .menu-group {margin-bottom:12px;}
+    .group-title {
+      font-weight:700; color:#0b3b78; text-transform:uppercase;
+      font-size:13px; letter-spacing:0.5px;
+      padding:10px 20px 6px; border-top:1px solid #eef2f8;
+    }
+
+    /* ===== MAIN ===== */
+    main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
+    .page {padding:24px;}
+    footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
+    #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
+
+    /* ===== TABELA ===== */
+    table.striped th {color:var(--primary);}
+    table.striped tr:hover {background:#f4f7ff;}
+
+    /* ===== BOTÃO FLUTUANTE ===== */
+    .fixed-action-btn {
+      position: fixed; bottom: 40px; right: 40px;
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+  <!-- ===== SIDEBAR ===== -->
+  <aside>
+    <div class="center" style="padding:18px 0 8px;">
+      <span class="title" style="font-weight:700; color:#0b3b78">Aprove</span>
+    </div>
+    <ul class="menu">
+      <li><a href="/aprove/painel.html">Início</a></li>
+      <li class="menu-group">
+        <div class="group-title">Atualizações</div>
+        <ul>
+          <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
+          <li><a href="/aprove/alunos.html">Alunos</a></li>
+          <li><a href="/aprove/instituicoes.html">Instituições</a></li>
+          <li><a href="/aprove/cursos.html">Cursos</a></li>
+          <li class="active"><a href="/aprove/unidades.html">Unidades</a></li>
+          <li><a href="/aprove/autorizacoes.html">Autorização de Imagem</a></li>
+          <li><a href="/aprove/listas_aprovados.html">Listas de Aprovados</a></li>
+        </ul>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main>
+    <header class="topbar">
+      <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="/aprove/logo-mini.png" alt="Logo" style="height:28px; width:auto;">
+          <h5 style="margin:0; font-weight:600;">
+            Aprove — Conferência de Aprovados — <span id="unitLabel">—</span>
+          </h5>
+        </div>
+        <div><a class="btn-flat waves-effect white-text" href="#!" onclick="logout()">Sair</a></div>
+      </div>
+    </header>
+
+    <section class="page">
+      <h4 style="color:#0b3b78; font-weight:600;">Gerenciamento de Unidades</h4>
+      <p class="grey-text text-darken-1">Pesquise, edite e cadastre novas unidades.</p>
+
+      <!-- PESQUISA -->
+      <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
+        <div class="row">
+          <div class="input-field col s3">
+            <input id="f_codunid" type="text" placeholder="Código da unidade">
+            <label for="f_codunid">Cód. Unidade</label>
+          </div>
+          <div class="input-field col s5">
+            <input id="f_unidade" type="text" placeholder="Nome da unidade">
+            <label for="f_unidade">Unidade</label>
+          </div>
+          <div class="input-field col s3">
+            <input id="f_cnpj" type="text" placeholder="CNPJ">
+            <label for="f_cnpj">CNPJ</label>
+          </div>
+          <div class="col s1" style="margin-top:25px;">
+            <a class="btn blue darken-3 waves-effect" onclick="carregarUnidades()">Buscar</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- LISTAGEM -->
+      <div class="card z-depth-0" style="padding:0; margin-top:20px;">
+        <table class="striped highlight responsive-table">
+          <thead>
+            <tr>
+              <th>Cód</th>
+              <th>Unidade</th>
+              <th>CNPJ</th>
+              <th>Cidade</th>
+              <th>UF</th>
+              <th>E-mail</th>
+              <th style="width:80px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaUnidades">
+            <tr><td colspan="7" class="center grey-text">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
+  </main>
+</div>
+
+<!-- BOTÃO FLUTUANTE -->
+<div class="fixed-action-btn">
+  <a class="btn-floating btn-large blue darken-3 modal-trigger" href="#modalUnidade">
+    <i class="material-icons">add</i>
+  </a>
+</div>
+
+<!-- MODAL CRUD -->
+<div id="modalUnidade" class="modal">
+  <div class="modal-content">
+    <h5 id="tituloModal">Nova Unidade</h5>
+    <div class="row">
+      <div class="input-field col s4"><input id="codunid" type="text"><label for="codunid">Cód. Unidade</label></div>
+      <div class="input-field col s8"><input id="unidade" type="text"><label for="unidade">Nome da Unidade</label></div>
+      <div class="input-field col s6"><input id="cnpj" type="text"><label for="cnpj">CNPJ</label></div>
+      <div class="input-field col s6"><input id="cidade" type="text"><label for="cidade">Cidade</label></div>
+      <div class="input-field col s6"><input id="email_institucional" type="email"><label for="email_institucional">E-mail Institucional</label></div>
+      <div class="input-field col s2"><input id="uf" type="text" maxlength="2"><label for="uf">UF</label></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" class="modal-close waves-effect btn-flat">Cancelar</a>
+    <a href="#!" class="waves-effect btn blue darken-3" onclick="salvarUnidade()">Salvar</a>
+  </div>
+</div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/aprove/';
+const LOGIN_URL = '/aprove/index.html';
+
+window.addEventListener('load', () => {
+  M.AutoInit();
+  carregarUsuario();
+  carregarUnidades();
+});
+
+async function logout(){
+  try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); }
+  catch(_) {}
+  location.replace(LOGIN_URL);
+}
+
+async function carregarUsuario() {
+  try {
+    const res = await fetch(API + 'auth_me.php', { credentials:'include' });
+    const data = await res.json();
+    if (data.ok && data.user) {
+      document.getElementById('unitLabel').textContent = `${data.user.login} — ${data.user.nome}`;
+    } else {
+      document.getElementById('unitLabel').textContent = '— Sessão expirada';
+    }
+  } catch {
+    document.getElementById('unitLabel').textContent = '— Erro de conexão';
+  }
+}
+
+/* === CARREGAR LISTA === */
+async function carregarUnidades(){
+  const params = new URLSearchParams({
+    codunid: f_codunid.value.trim(),
+    unidade: f_unidade.value.trim(),
+    cnpj: f_cnpj.value.trim()
+  });
+  const tbody = document.getElementById('tabelaUnidades');
+  tbody.innerHTML = `<tr><td colspan="7" class="center grey-text">Carregando...</td></tr>`;
+  try {
+    const res = await fetch(API + 'unidades_listar.php?' + params, { credentials:'include' });
+    const data = await res.json();
+    if (data.ok && data.rows.length){
+      tbody.innerHTML = data.rows.map(u=>`
+        <tr>
+          <td>${u.codunid}</td>
+          <td>${u.unidade}</td>
+          <td>${u.cnpj}</td>
+          <td>${u.cidade??''}</td>
+          <td>${u.uf??''}</td>
+          <td>${u.email_institucional??''}</td>
+          <td>
+            <a href="#modalUnidade" class="modal-trigger" onclick='editarUnidade(${JSON.stringify(u)})'><i class="material-icons tiny blue-text">edit</i></a>
+          </td>
+        </tr>`).join('');
+    } else {
+      tbody.innerHTML = `<tr><td colspan="7" class="center grey-text">Nenhuma unidade encontrada</td></tr>`;
+    }
+  } catch {
+    tbody.innerHTML = `<tr><td colspan="7" class="center red-text">Erro ao carregar dados</td></tr>`;
+  }
+}
+
+/* === CRUD === */
+function editarUnidade(u){
+  M.updateTextFields();
+  document.getElementById('tituloModal').textContent = "Editar Unidade";
+  for (const k in u){ if (document.getElementById(k)) document.getElementById(k).value = u[k]; }
+  M.updateTextFields();
+}
+
+async function salvarUnidade(){
+  const dados = {
+    codunid: codunid.value.trim(),
+    unidade: unidade.value.trim(),
+    cnpj: cnpj.value.trim(),
+    cidade: cidade.value.trim(),
+    uf: uf.value.trim(),
+    email_institucional: email_institucional.value.trim()
+  };
+  const res = await fetch(API + 'unidades_salvar.php', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    credentials:'include',
+    body: JSON.stringify(dados)
+  });
+  const data = await res.json();
+  if (data.ok){
+    M.toast({html:'Unidade salva com sucesso!', classes:'green'});
+    carregarUnidades();
+    const modal = M.Modal.getInstance(document.getElementById('modalUnidade'));
+    modal.close();
+  } else {
+    M.toast({html:'Erro ao salvar: '+(data.error||'desconhecido'), classes:'red'});
+  }
+}
+</script>
+</body>
+</html>
