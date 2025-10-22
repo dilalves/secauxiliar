@@ -208,25 +208,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 /* ===== Mostra nome e login do usuário ===== */
 async function carregarUsuario() {
   try {
-    const res = await fetch(API + 'auth_me.php', { credentials: 'include' });
+    const res = await fetch(API + 'auth_me.php', { credentials:'include' });
     const data = await res.json();
-
     if (data.ok && data.user) {
-      const nome = data.user.nome ?? data.user.unidade ?? 'Usuário';
+      const nome  = data.user.nome  ?? 'Usuário';
       const login = data.user.login ?? '';
       document.getElementById('unitLabel').textContent = `${login} — ${nome}`;
     } else {
       document.getElementById('unitLabel').textContent = '— Sessão expirada';
     }
-  } catch (err) {
-    console.error('Erro ao carregar usuário', err);
+  } catch (e) {
     document.getElementById('unitLabel').textContent = '— Erro de conexão';
   }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  carregarUsuario();
-});
+document.addEventListener('DOMContentLoaded', carregarUsuario);
 
 </script>
 </body>
