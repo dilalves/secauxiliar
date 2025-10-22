@@ -178,22 +178,42 @@
 
 <!-- BOTÃO FLUTUANTE -->
 <div class="fixed-action-btn">
-  <a class="btn-floating btn-large blue darken-3 modal-trigger" href="#modalUnidade">
+  <a class="btn-floating btn-large blue darken-3 modal-trigger" href="#modalUnidade" onclick="novaUnidade()">
     <i class="material-icons">add</i>
   </a>
 </div>
 
-<!-- MODAL CRUD -->
-<div id="modalUnidade" class="modal">
+<!-- MODAL CRUD COMPLETO -->
+<div id="modalUnidade" class="modal modal-fixed-footer">
   <div class="modal-content">
     <h5 id="tituloModal">Nova Unidade</h5>
     <div class="row">
-      <div class="input-field col s4"><input id="codund" type="text"><label for="codund">Cód. Unidade</label></div>
-      <div class="input-field col s8"><input id="unidade" type="text"><label for="unidade">Nome da Unidade</label></div>
+      <div class="input-field col s3"><input id="codund" type="text"><label for="codund">Cód. Unidade</label></div>
+      <div class="input-field col s9"><input id="unidade" type="text"><label for="unidade">Nome da Unidade</label></div>
+
       <div class="input-field col s6"><input id="cnpj" type="text"><label for="cnpj">CNPJ</label></div>
+      <div class="input-field col s6"><input id="razao_social" type="text"><label for="razao_social">Razão Social</label></div>
+
       <div class="input-field col s6"><input id="cidade" type="text"><label for="cidade">Cidade</label></div>
-      <div class="input-field col s6"><input id="email_institucional" type="email"><label for="email_institucional">E-mail Institucional</label></div>
       <div class="input-field col s2"><input id="uf" type="text" maxlength="2"><label for="uf">UF</label></div>
+      <div class="input-field col s4"><input id="cep" type="text"><label for="cep">CEP</label></div>
+
+      <div class="input-field col s12"><input id="endereco" type="text"><label for="endereco">Endereço</label></div>
+
+      <div class="input-field col s4"><input id="ddd" type="text" maxlength="2"><label for="ddd">DDD</label></div>
+      <div class="input-field col s8"><input id="telefone" type="text"><label for="telefone">Telefone</label></div>
+
+      <div class="input-field col s6"><input id="email_institucional" type="email"><label for="email_institucional">E-mail Institucional</label></div>
+      <div class="input-field col s6"><input id="email_dir" type="email"><label for="email_dir">E-mail Direção</label></div>
+
+      <div class="input-field col s6"><input id="email_alternativo1" type="email"><label for="email_alternativo1">E-mail Alternativo 1</label></div>
+      <div class="input-field col s6"><input id="email_alternativo2" type="email"><label for="email_alternativo2">E-mail Alternativo 2</label></div>
+
+      <div class="input-field col s6"><input id="assessora" type="text"><label for="assessora">Assessora</label></div>
+      <div class="input-field col s6"><input id="classificacao" type="text"><label for="classificacao">Classificação</label></div>
+
+      <div class="input-field col s6"><input id="gac" type="text"><label for="gac">GAC</label></div>
+      <div class="input-field col s6"><input id="metrcs" type="text"><label for="metrcs">Métricas</label></div>
     </div>
   </div>
   <div class="modal-footer">
@@ -254,7 +274,8 @@ async function carregarUnidades(){
           <td>${u.uf??''}</td>
           <td>${u.email_institucional??''}</td>
           <td>
-            <a href="#modalUnidade" class="modal-trigger" onclick='editarUnidade(${JSON.stringify(u)})'><i class="material-icons tiny blue-text">edit</i></a>
+            <a href="#modalUnidade" class="modal-trigger" 
+              onclick='editarUnidade(${JSON.stringify(u)})'>Editar</a>
           </td>
         </tr>`).join('');
     } else {
@@ -266,22 +287,27 @@ async function carregarUnidades(){
 }
 
 /* === CRUD === */
-function editarUnidade(u){
+function novaUnidade() {
+  // limpa todos os campos
+  document.querySelectorAll('#modalUnidade input').forEach(i => i.value = '');
+  document.getElementById('tituloModal').textContent = "Nova Unidade";
   M.updateTextFields();
+}
+
+function editarUnidade(u){
   document.getElementById('tituloModal').textContent = "Editar Unidade";
-  for (const k in u){ if (document.getElementById(k)) document.getElementById(k).value = u[k]; }
+  for (const k in u){ 
+    if (document.getElementById(k)) 
+      document.getElementById(k).value = u[k] ?? ''; 
+  }
   M.updateTextFields();
 }
 
 async function salvarUnidade(){
-  const dados = {
-    codund: codund.value.trim(),
-    unidade: unidade.value.trim(),
-    cnpj: cnpj.value.trim(),
-    cidade: cidade.value.trim(),
-    uf: uf.value.trim(),
-    email_institucional: email_institucional.value.trim()
-  };
+  const campos = Array.from(document.querySelectorAll('#modalUnidade input'));
+  const dados = {};
+  campos.forEach(i => dados[i.id] = i.value.trim());
+
   const res = await fetch(API + 'unidades_salvar.php', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -289,6 +315,7 @@ async function salvarUnidade(){
     body: JSON.stringify(dados)
   });
   const data = await res.json();
+
   if (data.ok){
     M.toast({html:'Unidade salva com sucesso!', classes:'green'});
     carregarUnidades();
@@ -298,6 +325,9 @@ async function salvarUnidade(){
     M.toast({html:'Erro ao salvar: '+(data.error||'desconhecido'), classes:'red'});
   }
 }
+
+
+
 </script>
 </body>
 </html>
