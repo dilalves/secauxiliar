@@ -143,6 +143,25 @@ async function logout(){
   catch(_) {}
   location.replace(LOGIN_URL);
 }
+
+/* ===== Mostra nome e login do usuário ===== */
+async function carregarUsuario() {
+  try {
+    const res = await fetch(API + 'auth_me.php', { credentials:'include' });
+    const data = await res.json();
+    if (data.ok && data.user) {
+      const nome  = data.user.nome  ?? 'Usuário';
+      const login = data.user.login ?? '';
+      document.getElementById('unitLabel').textContent = `${login} — ${nome}`;
+    } else {
+      document.getElementById('unitLabel').textContent = '— Sessão expirada';
+    }
+  } catch (e) {
+    document.getElementById('unitLabel').textContent = '— Erro de conexão';
+  }
+}
+document.addEventListener('DOMContentLoaded', carregarUsuario);
+
 </script>
 </body>
 </html>
