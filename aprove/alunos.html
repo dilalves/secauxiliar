@@ -134,6 +134,7 @@
               <th>Unidade</th>
               <th>Cadastro</th>
               <th>Listagem</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -146,6 +147,47 @@
     <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
   </main>
 </div>
+
+
+<!-- MODAL DE EDIÇÃO DE ALUNO -->
+<div id="modal-editar" class="modal">
+  <div class="modal-content">
+    <h5 style="color:#0b3b78; font-weight:600;">Editar Aluno</h5>
+    <form id="form-editar">
+      <div class="input-field">
+        <input id="nome" name="nome" type="text" required>
+        <label for="nome">Nome</label>
+      </div>
+      <div class="input-field">
+        <input id="serie" name="serie" type="text">
+        <label for="serie">Série</label>
+      </div>
+      <div class="input-field">
+        <input id="codunidade" name="codunidade" type="text">
+        <label for="codunidade">Código da Unidade</label>
+      </div>
+      <div class="input-field">
+        <input id="unidade" name="unidade" type="text">
+        <label for="unidade">Unidade</label>
+      </div>
+      <div class="input-field">
+        <input id="cadastro" name="cadastro" type="text">
+        <label for="cadastro">Cadastro</label>
+      </div>
+      <div class="input-field">
+        <input id="listagem" name="listagem" type="text">
+        <label for="listagem">Listagem</label>
+      </div>
+      <input type="hidden" id="id" name="id">
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn blue" onclick="salvarEdicao()">Salvar</button>
+    <a href="#!" class="modal-close btn-flat">Cancelar</a>
+  </div>
+</div>
+
+
 
 <script>
 const API = 'https://apisec.secauxiliar.com.br/aprove/';
@@ -194,6 +236,9 @@ async function buscarAlunos(){
           <td>${r.UNIDADE ?? ''}</td>
           <td>${r.CADASTRO ?? ''}</td>
           <td>${r.LISTAGEM ?? ''}</td>
+          <td>
+            <button class="btn-small blue" onclick="abrirEdicao(${r.ID})">Editar</button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
@@ -206,6 +251,64 @@ async function buscarAlunos(){
 }
 
 document.addEventListener('DOMContentLoaded', carregarUsuario);
+
+document.addEventListener('DOMContentLoaded', () => {
+  carregarUsuario();
+  M.Modal.init(document.querySelectorAll('.modal'));
+});
+
+async function abrirEdicao(id) {
+  const modal = M.Modal.getInstance(document.getElementById('modal-editar'));
+  document.getElementById('form-editar').reset();
+
+  try {
+    const res = await fetch(API + 'alunos_get.php?id=' + id, { credentials:'include' });
+    const data = await res.json();
+
+    if (data.ok && data.row) {
+      const r = data.row;
+      document.getElementById('id').value = r.id;
+      document.getElementById('nome').value = r.nome;
+      document.getElementById('serie').value = r.serie;
+      document.getElementById('codunidade').value = r.codunidade;
+      document.getElementById('unidade').value = r.unidade;
+      document.getElementById('cadastro').value = r.cadastro;
+      document.getElementById('listagem').value = r.listagem;
+
+      M.updateTextFields();
+      modal.open();
+    } else {
+      M.toast({ html:'Aluno não encontrado.' });
+    }
+  } catch (e) {
+    M.toast({ html:'Erro de conexão com o servidor.' });
+  }
+}
+
+async function salvarEdicao() {
+  const form = document.getElementById('form-editar');
+  const fd = new FormData(form);
+
+  try {
+    const res = await fetch(API + 'alunos_update.php', {
+      method: 'POST',
+      body: fd,
+      credentials: 'include'
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      M.toast({ html:'Cadastro atualizado com sucesso!' });
+      M.Modal.getInstance(document.getElementById('modal-editar')).close();
+      buscarAlunos(); // recarrega a tabela
+    } else {
+      M.toast({ html: data.error || 'Erro ao salvar' });
+    }
+  } catch (e) {
+    M.toast({ html:'Falha na conexão' });
+  }
+}
+
 </script>
 </body>
 </html>
