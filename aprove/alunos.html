@@ -380,6 +380,52 @@ document.getElementById('codunidade').addEventListener('change', async e => {
   M.updateTextFields();
 });
 
+
+/* ===== CPF: validação e limpeza ===== */
+document.addEventListener('input', e => {
+  if (e.target.id === 'cpf') {
+    const campo = e.target;
+    campo.value = campo.value.replace(/\D/g, ''); // só números
+
+    const helper = document.getElementById('cpf-helper');
+    const cpf = campo.value;
+
+    if (cpf === '') {
+      helper.textContent = '';
+      campo.classList.remove('invalid');
+      return;
+    }
+
+    if (cpfValido(cpf)) {
+      helper.textContent = '';
+      campo.classList.remove('invalid');
+      campo.classList.add('valid');
+    } else {
+      helper.textContent = 'CPF inválido';
+      campo.classList.remove('valid');
+      campo.classList.add('invalid');
+    }
+  }
+});
+
+function cpfValido(cpf) {
+  cpf = cpf.replace(/\D/g, '');
+  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+  let soma = 0;
+  for (let i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
+  let resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf[9])) return false;
+
+  soma = 0;
+  for (let i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
+  resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  return resto === parseInt(cpf[10]);
+}
+
+
 </script>
 </body>
 </html>
