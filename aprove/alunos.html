@@ -298,32 +298,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 async function abrirEdicao(id) {
-  const modal = M.Modal.getInstance(document.getElementById('modal-editar'));
+  const modal = M.Modal.getInstance(document.querySelector('#modal-editar'));
   document.getElementById('form-editar').reset();
 
   try {
-    const res = await fetch(API + 'alunos_get.php?id=' + id, { credentials:'include' });
+    const res = await fetch(API + 'alunos_get.php?id=' + id, { credentials: 'include' });
     const data = await res.json();
 
     if (data.ok && data.row) {
       const r = data.row;
-      document.getElementById('id').value = r.id;
-      document.getElementById('nome').value = r.nome;
-      document.getElementById('serie').value = r.serie;
-      document.getElementById('codunidade').value = r.codunidade;
-      document.getElementById('unidade').value = r.unidade;
-      document.getElementById('cadastro').value = r.cadastro;
-      document.getElementById('listagem').value = r.listagem;
+
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val ?? '';
+      };
+
+      set('id', r.id);
+      set('nome', r.nome);
+      set('cpf', r.cpf);
+      set('serie', r.serie);
+      set('codunidade', r.codunidade);
+      set('unidade', r.unidade);
+      set('cadastro', r.cadastro);
+      set('matricula', r.matricula);
+      set('ddd', r.ddd);
+      set('celular', r.celular);
+      set('email', r.email);
+      set('excluir', r.excluir);
+      set('mat', r.mat);
+      set('listagem', r.listagem);
 
       M.updateTextFields();
       modal.open();
     } else {
-      M.toast({ html:'Aluno não encontrado.' });
+      M.toast({ html: 'Aluno não encontrado.' });
     }
+
   } catch (e) {
-    M.toast({ html:'Erro de conexão com o servidor.' });
+    console.error(e);
+    M.toast({ html: 'Erro de conexão com o servidor.' });
   }
 }
+
 
 async function salvarEdicao() {
   const form = document.getElementById('form-editar');
