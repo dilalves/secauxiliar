@@ -167,7 +167,7 @@
         <label for="codunidade">Código da Unidade</label>
       </div>
       <div class="input-field">
-        <input id="unidade" name="unidade" type="text">
+        <input id="unidade" name="unidade" type="text" readonly>
         <label for="unidade">Unidade</label>
       </div>
       <div class="input-field">
@@ -257,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
   M.Modal.init(document.querySelectorAll('.modal'));
 });
 
+
 async function abrirEdicao(id) {
   const modal = M.Modal.getInstance(document.getElementById('modal-editar'));
   document.getElementById('form-editar').reset();
@@ -308,6 +309,32 @@ async function salvarEdicao() {
     M.toast({ html:'Falha na conexão' });
   }
 }
+
+document.getElementById('codunidade').addEventListener('change', async e => {
+  const cod = e.target.value.trim();
+  const campoUnidade = document.getElementById('unidade');
+
+  if (!cod) {
+    campoUnidade.value = '';
+    M.updateTextFields();
+    return;
+  }
+
+  try {
+    const res = await fetch(API + 'unidades_get.php?codund=' + encodeURIComponent(cod), { credentials:'include' });
+    const data = await res.json();
+
+    if (data.ok && data.row) {
+      campoUnidade.value = data.row.unidade || '';
+    } else {
+      campoUnidade.value = 'Não encontrada';
+    }
+  } catch (e) {
+    campoUnidade.value = 'Erro de conexão';
+  }
+
+  M.updateTextFields();
+});
 
 </script>
 </body>
