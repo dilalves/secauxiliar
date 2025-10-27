@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Cursos • Aprove — Conferência de Aprovados</title>
+
+  <!-- Materialize -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <style>
+    :root {
+      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+      --ink:#0f172a; --muted:#6b7280; 
+      --primary:#0b3b78; --accent:#2563eb;
+      --aside-w:260px; --topbar-h:64px;
+    }
+
+    html, body {height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
+    body {color:var(--ink);}
+    .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
+    header.topbar {
+      position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
+      background:var(--primary); color:#fff; display:flex; align-items:center;
+      padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+    aside {
+      background:#fff; border-right:1px solid var(--line);
+      position:sticky; top:var(--topbar-h);
+      height:calc(100vh - var(--topbar-h)); overflow:auto; z-index:6;
+      padding-bottom:20px;
+    }
+    .menu {list-style:none; margin:0; padding:0 0 12px;}
+    .menu a {display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:0.25s;}
+    .menu a:hover {background:#f4f6fb; color:var(--primary);}
+    .menu .active > a {background:#eef3ff; font-weight:600; color:var(--primary);}
+    .menu-group {margin-bottom:12px;}
+    .group-title {
+      font-weight:700; color:#0b3b78; text-transform:uppercase;
+      font-size:13px; letter-spacing:0.5px;
+      padding:10px 20px 6px; border-top:1px solid #eef2f8;
+    }
+    main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
+    .page {padding:24px;}
+    footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
+    table.striped th {background:#f2f5ff; color:#0b3b78; font-weight:600;}
+    .search-box {display:flex; align-items:center; gap:8px; margin-bottom:16px;}
+    .search-box input {flex:1;}
+    #modal-editar.modal, #modal-novo.modal {
+      width:80% !important; max-height:90vh !important; overflow:hidden !important;
+    }
+    #modal-editar .modal-content, #modal-novo .modal-content {
+      padding:24px 36px; height:calc(90vh - 70px); overflow-y:auto;
+    }
+    @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
+  </style>
+</head>
+
+<body>
+<div class="app">
+  <aside>
+    <div class="center" style="padding:18px 0 8px;">
+      <span class="title" style="font-weight:700; color:#0b3b78">Aprove</span>
+    </div>
+
+    <ul class="menu">
+      <li><a href="/aprove/painel.html">Início</a></li>
+
+      <li class="menu-group">
+        <div class="group-title">Atualizações</div>
+        <ul>
+          <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
+          <li class="active"><a href="/aprove/alunos.html">Alunos</a></li>
+          <li><a href="/aprove/instituicoes.html">Instituições</a></li>
+          <li><a href="/aprove/cursos.html">Cursos</a></li>
+          <li><a href="/aprove/unidades.html">Unidades</a></li>
+          <li><a href="/aprove/autorizacoes.html">Autorização de Imagem</a></li>
+          <li><a href="/aprove/listas_aprovados.html">Listas de Aprovados</a></li>
+        </ul>
+      </li>
+
+      <li class="menu-group">
+        <div class="group-title">Ferramentas</div>
+        <ul>
+          <li><a href="/aprove/conferir_listas.html">Conferir Listas</a></li>
+          <li><a href="/aprove/importar_aprovacoes.html">Importar Aprovações</a></li>
+        </ul>
+      </li>
+
+      <li class="menu-group">
+        <div class="group-title">Relatórios</div>
+        <ul>
+          <li><a href="/aprove/convocados2fase.html">Convocados 2ª Fase</a></li>
+          <li><a href="/aprove/aprovados_rel.html">Aprovados</a></li>
+          <li><a href="/aprove/porcentagem_lista.html">Porcentagem Lista</a></li>
+          <li><a href="/aprove/totais_curso.html">Totais por Curso</a></li>
+          <li><a href="/aprove/totais_instituicao.html">Totais por Instituição</a></li>
+        </ul>
+      </li>
+    </ul>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="/aprove/logo-mini.png" style="height:28px;">
+          <h5 style="margin:0; font-weight:600;">Aprove — Conferência de Aprovados</h5>
+        </div>
+        <a class="btn-flat waves-effect white-text" href="#!" onclick="logout()">Sair</a>
+      </div>
+    </header>
+
+    <section class="page">
+      <h4 style="color:#0b3b78; font-weight:600;">Cadastro de Cursos</h4>
+      <p class="grey-text text-darken-1">Pesquise cursos ou visualize todos.</p>
+
+      <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
+        <div class="search-box">
+          <input id="search" type="text" placeholder="Buscar por nome ou código..." oninput="buscarCursos()">
+          <button class="btn blue darken-2" onclick="buscarCursos()">Buscar</button>
+        </div>
+
+        <table class="striped highlight responsive-table" id="tabela-cursos">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Curso</th>
+              <th>Extenso</th>
+              <th>Grupo</th>
+              <th>Exclusivo</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <p class="center grey-text" id="msg-status">Digite para buscar cursos.</p>
+      </div>
+
+      <div class="right-align" style="margin-bottom:10px;">
+        <button class="btn green darken-1" onclick="abrirNovoCurso()">+ Novo Curso</button>
+      </div>
+    </section>
+
+    <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
+  </main>
+</div>
+
+<!-- MODAL EDITAR -->
+<div id="modal-editar" class="modal">
+  <div class="modal-content">
+    <h5 style="color:#0b3b78;">Editar Curso</h5>
+    <form id="form-editar">
+      <div class="row">
+        <div class="input-field col s2"><input id="id" name="id" type="text" readonly><label for="id" class="active">Código</label></div>
+        <div class="input-field col s3"><input id="curso" name="curso" type="text"><label for="curso">Curso</label></div>
+        <div class="input-field col s4"><input id="extenso" name="extenso" type="text"><label for="extenso">Nome Extenso</label></div>
+        <div class="input-field col s2"><input id="grupo" name="grupo" type="text"><label for="grupo">Grupo</label></div>
+        <div class="input-field col s1">
+          <label><input type="checkbox" id="exclusivo" name="exclusivo"><span>Exclusivo</span></label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn blue" onclick="salvarEdicao()">Salvar</button>
+    <a href="#!" class="modal-close btn-flat">Cancelar</a>
+  </div>
+</div>
+
+<!-- MODAL NOVO -->
+<div id="modal-novo" class="modal">
+  <div class="modal-content">
+    <h5 style="color:#0b3b78;">Novo Curso</h5>
+    <form id="form-novo">
+      <div class="row">
+        <div class="input-field col s2"><input id="novo-id" name="id" type="text" required><label for="novo-id">Código</label></div>
+        <div class="input-field col s3"><input id="novo-curso" name="curso" type="text" required><label for="novo-curso">Curso</label></div>
+        <div class="input-field col s4"><input id="novo-extenso" name="extenso" type="text"><label for="novo-extenso">Nome Extenso</label></div>
+        <div class="input-field col s2"><input id="novo-grupo" name="grupo" type="text"><label for="novo-grupo">Grupo</label></div>
+        <div class="input-field col s1">
+          <label><input type="checkbox" id="novo-exclusivo" name="exclusivo"><span>Exclusivo</span></label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn green" onclick="salvarNovo()">Salvar</button>
+    <a href="#!" class="modal-close btn-flat">Fechar</a>
+  </div>
+</div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/aprove/';
+
+async function logout(){ await fetch(API+'auth_login_out.php',{credentials:'include'}); location.href='/aprove/index.html'; }
+
+document.addEventListener('DOMContentLoaded',()=>{
+  M.Modal.init(document.querySelectorAll('.modal'));
+  buscarCursos();
+});
+
+async function buscarCursos(){
+  const termo=document.getElementById('search').value.trim();
+  const tbody=document.querySelector('#tabela-cursos tbody');
+  tbody.innerHTML=''; document.getElementById('msg-status').textContent='Buscando...';
+  const res=await fetch(API+'cursos_list.php?busca='+encodeURIComponent(termo),{credentials:'include'});
+  const data=await res.json();
+  if(data.ok && data.rows.length){
+    document.getElementById('msg-status').textContent='';
+    data.rows.forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${r.ID}</td>
+        <td>${r.CURSO}</td>
+        <td>${r.EXTENSO||''}</td>
+        <td>${r.GRUPO||''}</td>
+        <td>${r.EXCLUSIVO==1?'Sim':'Não'}</td>
+        <td><button class="btn-small blue" onclick="abrirEdicao('${r.ID}')">Editar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }else document.getElementById('msg-status').textContent='Nenhum curso encontrado.';
+}
+
+async function abrirEdicao(id){
+  const modal=M.Modal.getInstance(document.querySelector('#modal-editar'));
+  const res=await fetch(API+'cursos_get.php?id='+id,{credentials:'include'});
+  const data=await res.json();
+  if(data.ok && data.row){
+    const r=data.row;
+    document.getElementById('id').value=r.ID;
+    document.getElementById('curso').value=r.CURSO;
+    document.getElementById('extenso').value=r.EXTENSO;
+    document.getElementById('grupo').value=r.GRUPO;
+    document.getElementById('exclusivo').checked=(r.EXCLUSIVO==1);
+    M.updateTextFields();
+    modal.open();
+  }else M.toast({html:'Curso não encontrado'});
+}
+
+async function salvarEdicao(){
+  const fd=new FormData(document.getElementById('form-editar'));
+  fd.set('exclusivo', document.getElementById('exclusivo').checked ? 1:0);
+  const res=await fetch(API+'cursos_update.php',{method:'POST',body:fd,credentials:'include'});
+  const data=await res.json();
+  if(data.ok){M.toast({html:'Curso atualizado!'});buscarCursos();M.Modal.getInstance(document.querySelector('#modal-editar')).close();}
+  else M.toast({html:data.error||'Erro ao salvar'});
+}
+
+function abrirNovoCurso(){
+  document.getElementById('form-novo').reset();
+  M.updateTextFields();
+  M.Modal.getInstance(document.querySelector('#modal-novo')).open();
+}
+
+async function salvarNovo(){
+  const fd=new FormData(document.getElementById('form-novo'));
+  fd.set('exclusivo', document.getElementById('novo-exclusivo').checked ? 1:0);
+  const res=await fetch(API+'cursos_insert.php',{method:'POST',body:fd,credentials:'include'});
+  const data=await res.json();
+  if(data.ok){M.toast({html:'Curso inserido!'});buscarCursos();M.Modal.getInstance(document.querySelector('#modal-novo')).close();}
+  else M.toast({html:data.error||'Erro ao inserir'});
+}
+</script>
+</body>
+</html>
