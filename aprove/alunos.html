@@ -157,6 +157,11 @@
 
         <p class="center grey-text" id="msg-status">Digite um nome para buscar.</p>
       </div>
+
+      <div class="right-align" style="margin-bottom:10px;">
+        <button class="btn green darken-1" onclick="abrirNovoAluno()">+ Adicionar Aluno</button>
+      </div>
+
     </section>
 
     <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
@@ -250,6 +255,74 @@
     <a href="#!" class="modal-close btn-flat">Cancelar</a>
   </div>
 </div>
+
+
+
+
+<!--MODAL CADASTRAMENTO DE ALUNOS - UTILIZADO QUANDO NÃO EXISTIR OS NOMES PREVIAMENTO ENVIADO PARA A INTERNET-->
+<!-- MODAL DE NOVO ALUNO (inserção linha a linha) -->
+<div id="modal-novo" class="modal">
+  <div class="modal-content">
+    <h5 style="color:#0b3b78; font-weight:600;">Novo Aluno</h5>
+
+    <!-- Cabeçalho fixo da sessão de inserção -->
+    <div class="row">
+      <div class="input-field col s4">
+        <input id="novo-codunidade" type="text" maxlength="6" required>
+        <label for="novo-codunidade">Cód. Unidade</label>
+      </div>
+      <div class="input-field col s8">
+        <input id="novo-unidade" type="text" readonly>
+        <label for="novo-unidade">Unidade</label>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="input-field col s6">
+        <input id="novo-cadastro" type="text" value="2025" readonly>
+        <label class="active" for="novo-cadastro">Cadastro</label>
+      </div>
+      <div class="input-field col s6">
+        <input id="novo-listagem" type="text" value="2026" readonly>
+        <label class="active" for="novo-listagem">Listagem</label>
+      </div>
+    </div>
+
+    <!-- Tabela de inserção linha a linha -->
+    <div class="row" style="margin-top:10px;">
+      <div class="col s12">
+        <div class="right-align" style="margin-bottom:8px;">
+          <button class="btn green darken-1" type="button" onclick="addLinhaNovo()">+ Nova linha</button>
+        </div>
+
+        <table class="striped highlight responsive-table">
+          <thead>
+            <tr>
+              <th style="width:44%;">Nome</th>
+              <th style="width:16%;">Série</th>
+              <th style="width:24%;">CPF</th>
+              <th style="width:8%;">Ações</th>
+              <th style="width:8%;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-novo"></tbody>
+        </table>
+
+        <p class="grey-text" style="margin-top:8px;">
+          Dica: preencha <b>Nome</b>, <b>Série</b> e <b>CPF</b> e clique em <i>Salvar</i> na linha.  
+          Os campos **Cadastro (2025)** e **Listagem (2026)** e o **Cód. Unidade** serão aplicados automaticamente.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#!" class="modal-close btn-flat">Fechar</a>
+  </div>
+</div>
+
+
+
 
 
 
@@ -460,6 +533,148 @@ function cpfValido(cpf) {
   if (resto === 10 || resto === 11) resto = 0;
   return resto === parseInt(cpf[10]);
 }
+
+/* ====== NOVO ALUNO: linha a linha ====== */
+let novoLinhaSeq = 0;
+
+async function abrirNovoAluno(){
+  const modal = M.Modal.getInstance(document.querySelector('#modal-novo'));
+  // Reset sessão
+  document.getElementById('novo-codunidade').value = '';
+  document.getElementById('novo-unidade').value = '';
+  document.getElementById('novo-cadastro').value = '2025';
+  document.getElementById('novo-listagem').value = '2026';
+  document.getElementById('tbody-novo').innerHTML = '';
+
+  // Ao abrir, já cria uma linha
+  addLinhaNovo();
+
+  M.updateTextFields();
+  modal.open();
+}
+
+/* Busca nome da unidade quando muda o código */
+document.addEventListener('change', async (e) => {
+  if (e.target && e.target.id === 'novo-codunidade'){
+    const cod = e.target.value.trim();
+    const campoUnidade = document.getElementById('novo-unidade');
+    if (!cod){
+      campoUnidade.value = '';
+      return M.updateTextFields();
+    }
+    try {
+      const res = await fetch(API + 'unidades_get.php?codund=' + encodeURIComponent(cod), { credentials:'include' });
+      const data = await res.json();
+      campoUnidade.value = (data.ok && data.row) ? (data.row.unidade || '') : 'Não encontrada';
+    } catch {
+      campoUnidade.value = 'Erro de conexão';
+    }
+    M.updateTextFields();
+  }
+});
+
+function addLinhaNovo(){
+  const tbody = document.getElementById('tbody-novo');
+  const idx = ++novoLinhaSeq;
+  const tr = document.createElement('tr');
+  tr.id = `novo-row-${idx}`;
+  tr.innerHTML = `
+    <td>
+      <div class="input-field" style="margin:0;">
+        <input id="novo-nome-${idx}" type="text" required>
+      </div>
+    </td>
+    <td>
+      <div class="input-field" style="margin:0;">
+        <input id="novo-serie-${idx}" type="text">
+      </div>
+    </td>
+    <td>
+      <div class="input-field" style="margin:0;">
+        <input id="novo-cpf-${idx}" type="text" placeholder="somente números" maxlength="14">
+      </div>
+    </td>
+    <td class="center-align">
+      <button class="btn-small blue" type="button" onclick="salvarLinhaNovo(${idx})">Salvar</button>
+    </td>
+    <td id="novo-status-${idx}" class="grey-text center-align">—</td>
+  `;
+  tbody.appendChild(tr);
+
+  // Enter no CPF salva a linha
+  tr.querySelector(`#novo-cpf-${idx}`).addEventListener('keydown', (ev)=>{
+    if (ev.key === 'Enter') salvarLinhaNovo(idx);
+  });
+  // Foco no Nome da nova linha
+  tr.querySelector(`#novo-nome-${idx}`).focus();
+}
+
+async function salvarLinhaNovo(idx){
+  const nomeEl = document.getElementById(`novo-nome-${idx}`);
+  const serieEl = document.getElementById(`novo-serie-${idx}`);
+  const cpfEl   = document.getElementById(`novo-cpf-${idx}`);
+  const status  = document.getElementById(`novo-status-${idx}`);
+
+  const codunidade = document.getElementById('novo-codunidade').value.trim();
+  const cadastro   = document.getElementById('novo-cadastro').value.trim();
+  const listagem   = document.getElementById('novo-listagem').value.trim();
+
+  const nome = (nomeEl.value || '').trim();
+  const serie = (serieEl.value || '').trim();
+  let cpf = (cpfEl.value || '').replace(/\D/g,'');
+
+  // validações
+  if (!codunidade){
+    M.toast({ html: 'Informe o Cód. Unidade antes de salvar as linhas.' });
+    return;
+  }
+  if (!nome){
+    M.toast({ html: 'Informe o Nome.' });
+    nomeEl.focus(); return;
+  }
+  if (cpf && !cpfValido(cpf)){
+    M.toast({ html: 'CPF inválido.' });
+    cpfEl.focus(); return;
+  }
+
+  status.textContent = 'salvando...';
+
+  const fd = new FormData();
+  fd.append('nome', nome);
+  fd.append('serie', serie);
+  fd.append('cpf', cpf);
+  fd.append('codunidade', codunidade);
+  fd.append('cadastro', cadastro);
+  fd.append('listagem', listagem);
+
+  try {
+    const res = await fetch(API + 'alunos_insert.php', {
+      method: 'POST',
+      body: fd,
+      credentials: 'include'
+    });
+    const data = await res.json();
+
+    if (data.ok){
+      status.innerHTML = '<span class="green-text">OK</span>';
+      // limpa a linha para a próxima inserção
+      nomeEl.value = '';
+      serieEl.value = '';
+      cpfEl.value = '';
+      M.updateTextFields();
+
+      // cria automaticamente outra linha vazia pra fluxo rápido
+      addLinhaNovo();
+    } else {
+      status.innerHTML = '<span class="red-text">ERRO</span>';
+      M.toast({ html: data.error || 'Erro ao inserir aluno.' });
+    }
+  } catch (e){
+    status.innerHTML = '<span class="red-text">FALHA</span>';
+    M.toast({ html: 'Falha na conexão com o servidor.' });
+  }
+}
+
 
 
 </script>
