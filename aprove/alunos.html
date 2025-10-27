@@ -64,16 +64,20 @@
       padding: 24px 36px;          /* espaçamento interno mais elegante */
     }
 
-    /* ===== Modal de novo aluno ===== */
+    /* === MODAL DE NOVO ALUNO === */
     #modal-novo.modal {
-      width: 90% !important;           /* um pouco mais largo */
-      max-height: 95vh !important;     /* altura maior, quase tela cheia */
+      width: 90% !important;          /* mais largo */
+      height: 95vh !important;        /* altura fixa quase tela cheia */
+      max-height: 95vh !important;    /* garante que não será cortado */
+      top: 2.5vh !important;          /* centraliza verticalmente */
+      overflow: hidden !important;    /* evita dupla rolagem */
+      border-radius: 12px;
     }
 
     #modal-novo .modal-content {
       padding: 24px 36px;
-      overflow-y: auto !important;     /* permite rolar dentro da modal */
-      max-height: calc(95vh - 120px);  /* espaço total menos cabeçalho/footer */
+      height: calc(95vh - 70px);      /* conteúdo ocupa quase tudo */
+      overflow-y: auto;               /* rola internamente */
     }
 
     #modal-novo table thead th {
@@ -86,13 +90,27 @@
       font-weight: 600;
     }
 
-    /* ===== Corrige barra de rolagem interna da tabela ===== */
+    /* garante que a área da tabela role independente */
     #modal-novo .table-area {
-      max-height: 65vh;
+      max-height: 70vh;
       overflow-y: auto;
       padding-right: 8px;
-      margin-top: 10px;
     }
+
+    /* === MODAL DE EDIÇÃO (mesma ideia) === */
+    #modal-editar.modal {
+      width: 80% !important;
+      height: 90vh !important;
+      max-height: 90vh !important;
+      overflow: hidden !important;
+    }
+
+    #modal-editar .modal-content {
+      padding: 24px 36px;
+      height: calc(90vh - 70px);
+      overflow-y: auto;
+    }
+
     
     @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
   </style>
