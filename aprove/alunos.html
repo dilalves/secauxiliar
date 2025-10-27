@@ -69,13 +69,17 @@
       max-height: 90% !important; /* altura máxima */
     }
 
-    #modal-nobo .modal-content {
-      padding: 24px 36px;          /* espaçamento interno mais elegante */
+    #modal-novo .modal-content {
+      padding: 24px 36px; /* espaçamento interno mais elegante */
     }
 
     #modal-novo table thead th {
       background: #f2f5ff;
       color: #0b3b78;
+      font-weight: 600;
+    }
+
+    #tbody-novo tr td span.green-text {
       font-weight: 600;
     }
     
@@ -277,33 +281,43 @@
   <div class="modal-content">
     <h5 style="color:#0b3b78; font-weight:600;">Novo Aluno</h5>
 
-    <!-- Cabeçalho fixo da sessão de inserção -->
-    <div class="row">
-      <div class="input-field col s1">
-        <input id="novo-codunidade" type="text" maxlength="6" required>
-        <label for="novo-codunidade">Cód. Unidade</label>
+    <!-- Cabeçalho fixo -->
+    <div class="sticky-header" style="
+      position:sticky;
+      top:0;
+      background:#fff;
+      z-index:10;
+      border-bottom:1px solid #e5e7eb;
+      padding-bottom:4px;
+    ">
+      <div class="row" style="margin-bottom:0;">
+        <div class="input-field col s1">
+          <input id="novo-codunidade" type="text" maxlength="6" required>
+          <label for="novo-codunidade">Cód. Unidade</label>
+        </div>
+        <div class="input-field col s9">
+          <input id="novo-unidade" type="text" readonly>
+          <label for="novo-unidade">Unidade</label>
+        </div>
+        <div class="input-field col s1">
+          <input id="novo-cadastro" type="text" value="2025" readonly>
+          <label class="active" for="novo-cadastro">Cadastro</label>
+        </div>
+        <div class="input-field col s1">
+          <input id="novo-listagem" type="text" value="2026" readonly>
+          <label class="active" for="novo-listagem">Listagem</label>
+        </div>
       </div>
-      <div class="input-field col s9">
-        <input id="novo-unidade" type="text" readonly>
-        <label for="novo-unidade">Unidade</label>
-      </div>
-      <div class="input-field col s1">
-        <input id="novo-cadastro" type="text" value="2025" readonly>
-        <label class="active" for="novo-cadastro">Cadastro</label>
-      </div>
-      <div class="input-field col s1">
-        <input id="novo-listagem" type="text" value="2026" readonly>
-        <label class="active" for="novo-listagem">Listagem</label>
-      </div>
-    </div>
-    
-   <!-- Área rolável da tabela -->
-    <div style="max-height:60vh;overflow:auto;margin-top:10px;padding-right:8px;">
-      <div class="right-align" style="margin-bottom:8px;position:sticky;top:0;background:#fff;z-index:5;padding-top:4px;">
+
+      <div class="right-align" style="margin-top:6px;">
         <button class="btn green darken-1" type="button" onclick="addLinhaNovo()">+ Nova linha</button>
       </div>
+    </div>
+
+    <!-- Área rolável -->
+    <div style="max-height:60vh; overflow:auto; margin-top:10px; padding-right:8px;">
       <table class="striped highlight responsive-table">
-        <thead style="position:sticky;top:100px;background:#f8fafc;z-index:4;">
+        <thead style="position:sticky; top:120px; background:#f8fafc; z-index:4;">
           <tr>
             <th style="width:44%;">Nome</th>
             <th style="width:16%;">Série</th>
@@ -321,11 +335,6 @@
     <a href="#!" class="modal-close btn-flat">Fechar</a>
   </div>
 </div>
-
-
-
-
-
 
 
 <script>
@@ -657,11 +666,14 @@ async function salvarLinhaNovo(idx){
     const data = await res.json();
 
     if (data.ok){
-      status.innerHTML = '<span class="green-text">OK</span>';    
+      status.innerHTML = '<span class="green-text">OK</span>';
+      nomeEl.setAttribute('readonly', true);
+      serieEl.setAttribute('readonly', true);
+      cpfEl.setAttribute('readonly', true);
       M.updateTextFields();
-      // cria automaticamente outra linha vazia pra fluxo rápido
+      // adiciona nova linha abaixo, sem apagar a anterior
       addLinhaNovo();
-    } else {
+    }else {
       status.innerHTML = '<span class="red-text">ERRO</span>';
       M.toast({ html: data.error || 'Erro ao inserir aluno.' });
     }
