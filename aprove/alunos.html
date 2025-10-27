@@ -54,25 +54,31 @@
       font-weight:600; color:#0b3b78; margin-top:20px; margin-bottom:8px;
     }
 
-     /* Aumenta o tamanho do modal de edição */
-      #modal-editar.modal {
-        width: 80% !important;      /* largura do modal */
-        max-height: 90% !important; /* altura máxima */
-      }
+    /* Aumenta o tamanho do modal de edição */
+    #modal-editar.modal {
+      width: 80% !important;      /* largura do modal */
+      max-height: 90% !important; /* altura máxima */
+    }
 
-      #modal-editar .modal-content {
-        padding: 24px 36px;          /* espaçamento interno mais elegante */
-      }
+    #modal-editar .modal-content {
+      padding: 24px 36px;          /* espaçamento interno mais elegante */
+    }
 
-      #modal-novo.modal{
-        width: 80% !important;      /* largura do modal */
-        max-height: 90% !important; /* altura máxima */
-      }
+    #modal-novo.modal{
+      width: 80% !important;      /* largura do modal */
+      max-height: 90% !important; /* altura máxima */
+    }
 
-      #modal-nobo .modal-content {
-        padding: 24px 36px;          /* espaçamento interno mais elegante */
-      }
-      
+    #modal-nobo .modal-content {
+      padding: 24px 36px;          /* espaçamento interno mais elegante */
+    }
+
+    #modal-novo table thead th {
+      background: #f2f5ff;
+      color: #0b3b78;
+      font-weight: 600;
+    }
+    
     @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
   </style>
 </head>
@@ -291,31 +297,23 @@
       </div>
     </div>
     
-    <!-- Tabela de inserção linha a linha -->
-    <div class="row" style="margin-top:10px;">
-      <div class="col s12">
-        <div class="right-align" style="margin-bottom:8px;">
-          <button class="btn green darken-1" type="button" onclick="addLinhaNovo()">+ Nova linha</button>
-        </div>
-
-        <table class="striped highlight responsive-table">
-          <thead>
-            <tr>
-              <th style="width:44%;">Nome</th>
-              <th style="width:16%;">Série</th>
-              <th style="width:24%;">CPF</th>
-              <th style="width:8%;">Ações</th>
-              <th style="width:8%;">Status</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-novo"></tbody>
-        </table>
-
-        <p class="grey-text" style="margin-top:8px;">
-          Dica: preencha <b>Nome</b>, <b>Série</b> e <b>CPF</b> e clique em <i>Salvar</i> na linha.  
-          Os campos **Cadastro (2025)** e **Listagem (2026)** e o **Cód. Unidade** serão aplicados automaticamente.
-        </p>
+   <!-- Área rolável da tabela -->
+    <div style="max-height:60vh;overflow:auto;margin-top:10px;padding-right:8px;">
+      <div class="right-align" style="margin-bottom:8px;position:sticky;top:0;background:#fff;z-index:5;padding-top:4px;">
+        <button class="btn green darken-1" type="button" onclick="addLinhaNovo()">+ Nova linha</button>
       </div>
+      <table class="striped highlight responsive-table">
+        <thead style="position:sticky;top:100px;background:#f8fafc;z-index:4;">
+          <tr>
+            <th style="width:44%;">Nome</th>
+            <th style="width:16%;">Série</th>
+            <th style="width:24%;">CPF</th>
+            <th style="width:8%;">Ações</th>
+            <th style="width:8%;">Status</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-novo"></tbody>
+      </table>
     </div>
   </div>
 
@@ -659,13 +657,8 @@ async function salvarLinhaNovo(idx){
     const data = await res.json();
 
     if (data.ok){
-      status.innerHTML = '<span class="green-text">OK</span>';
-      // limpa a linha para a próxima inserção
-      nomeEl.value = '';
-      serieEl.value = '';
-      cpfEl.value = '';
+      status.innerHTML = '<span class="green-text">OK</span>';    
       M.updateTextFields();
-
       // cria automaticamente outra linha vazia pra fluxo rápido
       addLinhaNovo();
     } else {
