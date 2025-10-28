@@ -162,12 +162,20 @@
 
     <form id="form-novo" style="margin-top:16px;">
       <div class="row">
-        <div class="input-field col s6">
-          <select id="instituicao_id_novo" name="instituicao_id" required></select>
-          <label>Instituição</label>
+        <!-- Código da Instituição -->
+        <div class="input-field col s2">
+          <input id="instituicao_id_novo" name="instituicao_id" type="number" min="1" required onblur="buscarInstituicaoNome()">
+          <label for="instituicao_id_novo">Cód. Instituição</label>
         </div>
 
-        <div class="input-field col s3">
+        <!-- Nome da Instituição (auto) -->
+        <div class="input-field col s6">
+          <input id="nome_instituicao_novo" type="text" readonly style="font-weight:600; color:#0b3b78;">
+          <label class="active" for="nome_instituicao_novo">Instituição</label>
+        </div>
+
+        <!-- Semestre -->
+        <div class="input-field col s2">
           <select id="epoca_novo" name="epoca">
             <option value="1">1º Semestre</option>
             <option value="2">2º Semestre</option>
@@ -175,11 +183,13 @@
           <label>Semestre</label>
         </div>
 
-        <div class="input-field col s2">
+        <!-- Ano -->
+        <div class="input-field col s1">
           <input id="listagem_novo" name="listagem" type="number" value="2026" readonly>
           <label class="active" for="listagem_novo">Ano</label>
         </div>
 
+        <!-- Exclusivo -->
         <div class="col s1 center-align" style="margin-top:25px;">
           <label>
             <input type="checkbox" id="exclusivo_novo" name="somente_exclusivos">
@@ -195,6 +205,7 @@
     <a href="#!" class="modal-close btn-flat">Cancelar</a>
   </div>
 </div>
+
 
 <script>
 // === NOVO VESTIBULAR (SIMPLIFICADO) ===
@@ -348,6 +359,30 @@ async function salvarEdicao(){
     M.toast({html:data.error||'Erro ao salvar'});
   }
 }
+
+async function buscarInstituicaoNome() {
+  const cod = document.getElementById('instituicao_id_novo').value.trim();
+  const nomeInput = document.getElementById('nome_instituicao_novo');
+  nomeInput.value = '';
+
+  if (!cod) return;
+
+  try {
+    const res = await fetch(API + 'instituicoes_get.php?id=' + encodeURIComponent(cod), { credentials: 'include' });
+    const data = await res.json();
+    if (data.ok && data.row) {
+      nomeInput.value = data.row.instituicao || '';
+    } else {
+      nomeInput.value = 'Instituição não encontrada';
+    }
+    M.updateTextFields();
+  } catch (err) {
+    console.error(err);
+    nomeInput.value = 'Erro ao buscar';
+  }
+}
+
+
 </script>
 </body>
 </html>
