@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Vestibulares • Aprove — Conferência de Aprovados</title>
+
+  <!-- Materialize -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <style>
+    :root {
+      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+      --ink:#0f172a; --muted:#6b7280;
+      --primary:#0b3b78; --accent:#2563eb;
+      --aside-w:260px; --topbar-h:64px;
+    }
+    html, body {height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
+    body {color:var(--ink);}
+    .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
+    header.topbar { position:fixed; top:0; left:0; right:0; height:var(--topbar-h);
+      z-index:20; background:var(--primary); color:#fff;
+      display:flex; align-items:center; padding:0 24px;
+      box-shadow:0 2px 10px rgba(16,24,40,.12);}
+    aside { background:#fff; border-right:1px solid var(--line);
+      position:sticky; top:var(--topbar-h); height:calc(100vh - var(--topbar-h));
+      overflow:auto; z-index:6; padding-bottom:20px;}
+    .menu {list-style:none; margin:0; padding:0 0 12px;}
+    .menu a {display:block; padding:10px 22px; color:#111827;
+      text-decoration:none; font-size:15px; transition:0.25s;}
+    .menu a:hover {background:#f4f6fb; color:var(--primary);}
+    .menu .active > a {background:#eef3ff; font-weight:600; color:var(--primary);}
+    .menu-group {margin-bottom:12px;}
+    .group-title {font-weight:700; color:#0b3b78; text-transform:uppercase;
+      font-size:13px; letter-spacing:0.5px; padding:10px 20px 6px;
+      border-top:1px solid #eef2f8;}
+    main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
+    .page {padding:24px;}
+    footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
+    table.striped th {background:#f2f5ff; color:#0b3b78; font-weight:600;}
+    .search-box {display:flex; align-items:center; gap:8px; margin-bottom:16px;}
+    .search-box input {flex:1;}
+    #modal-editar.modal, #modal-novo.modal { width:80% !important; max-height:90vh !important; overflow:hidden !important; }
+    #modal-editar .modal-content, #modal-novo .modal-content { padding:24px 36px; height:calc(90vh - 70px); overflow-y:auto; }
+    #modal-novo .modal-content { display: flex; flex-direction: column; height: 90vh; padding: 0; }
+    #modal-novo h5 { padding: 24px 36px 12px; margin: 0; color: #0b3b78; font-weight: 600;
+      background: #fff; position: sticky; top: 0; z-index: 20; border-bottom: 1px solid #e5e7eb; }
+    #modal-novo .scroll-area { flex: 1; overflow-y: auto; padding: 16px 36px; }
+    #modal-novo table thead { position: sticky; top: 0; background: #f2f5ff; z-index: 10;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.05);}
+    #modal-novo table td { padding-top: 4px !important; padding-bottom: 4px !important; }
+    #modal-novo .modal-footer { background: #fff; border-top: 1px solid #e5e7eb;
+      position: sticky; bottom: 0; padding: 10px 24px; z-index: 20; }
+    @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
+  </style>
+</head>
+
+<body>
+<div class="app">
+  <aside>
+    <div class="center" style="padding:18px 0 8px;">
+      <span class="title" style="font-weight:700; color:#0b3b78">Aprove</span>
+    </div>
+    <ul class="menu">
+      <li><a href="/aprove/painel.html">Início</a></li>
+      <li class="menu-group">
+        <div class="group-title">Atualizações</div>
+        <ul>
+          <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
+          <li><a href="/aprove/alunos.html">Alunos</a></li>
+          <li><a href="/aprove/instituicoes.html">Instituições</a></li>
+          <li><a href="/aprove/cursos.html">Cursos</a></li>
+          <li class="active"><a href="/aprove/vestibulares.html">Vestibulares</a></li>
+          <li><a href="/aprove/unidades.html">Unidades</a></li>
+        </ul>
+      </li>
+    </ul>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="/aprove/logo-mini.png" style="height:28px;">
+          <h5 style="margin:0; font-weight:600;">Aprove — Conferência de Aprovados</h5>
+        </div>
+        <a class="btn-flat waves-effect white-text" href="#!" onclick="logout()">Sair</a>
+      </div>
+    </header>
+
+    <section class="page">
+      <h4 style="color:#0b3b78; font-weight:600;">Cadastro de Vestibulares</h4>
+      <p class="grey-text text-darken-1">Pesquise vestibulares ou visualize todos.</p>
+
+      <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
+        <div class="search-box">
+          <input id="search" type="text" placeholder="Buscar por nome, instituição ou ano..." oninput="buscarVestibulares()">
+          <button class="btn blue darken-2" onclick="buscarVestibulares()">Buscar</button>
+          <div class="right-align">
+            <button class="btn green darken-1" onclick="abrirNovo()">+ Novo Vestibular</button>
+          </div>
+        </div>
+
+        <table class="striped highlight responsive-table" id="tabela-lista">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Instituição</th>
+              <th>Ano</th>
+              <th>Exclusivo</th>
+              <th>Ativo</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p class="center grey-text" id="msg-status">Digite para buscar vestibulares.</p>
+      </div>
+    </section>
+
+    <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
+  </main>
+</div>
+
+<!-- MODAL EDITAR -->
+<div id="modal-editar" class="modal">
+  <div class="modal-content">
+    <h5 style="color:#0b3b78;">Editar Vestibular</h5>
+    <form id="form-editar">
+      <div class="row">
+        <div class="input-field col s2"><input id="id" name="id" type="text" readonly><label class="active" for="id">Código</label></div>
+        <div class="input-field col s4"><input id="nome" name="nome" type="text"><label for="nome">Nome</label></div>
+        <div class="input-field col s3">
+          <select id="instituicao_id" name="instituicao_id"></select>
+          <label>Instituição</label>
+        </div>
+        <div class="input-field col s2"><input id="listagem" name="listagem" type="number" min="2000" max="2100"><label for="listagem">Ano</label></div>
+        <div class="col s1 center-align" style="margin-top:25px;">
+          <label><input type="checkbox" id="somente_exclusivos" name="somente_exclusivos"><span>Exclusivo</span></label>
+        </div>
+        <div class="col s1 center-align" style="margin-top:25px;">
+          <label><input type="checkbox" id="ativo" name="ativo"><span>Ativo</span></label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn blue" onclick="salvarEdicao()">Salvar</button>
+    <a href="#!" class="modal-close btn-flat">Cancelar</a>
+  </div>
+</div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/aprove/';
+
+// === Logout ===
+async function logout(){
+  await fetch(API+'auth_login_out.php',{credentials:'include'});
+  location.href='/aprove/index.html';
+}
+
+// === Inicialização ===
+document.addEventListener('DOMContentLoaded',()=>{
+  M.Modal.init(document.querySelectorAll('.modal'));
+  carregarInstituicoes();
+  buscarVestibulares();
+});
+
+// === Carrega opções de instituição ===
+async function carregarInstituicoes(){
+  const res = await fetch(API+'instituicoes_list.php',{credentials:'include'});
+  const data = await res.json();
+  if(data.ok && data.rows.length){
+    const select = document.getElementById('instituicao_id');
+    select.innerHTML = '<option value="">Selecione...</option>';
+    data.rows.forEach(r=>{
+      const opt=document.createElement('option');
+      opt.value=r.id;
+      opt.textContent=r.instituicao;
+      select.appendChild(opt);
+    });
+    M.FormSelect.init(select);
+  }
+}
+
+// === BUSCAR ===
+async function buscarVestibulares(){
+  const termo=document.getElementById('search').value.trim();
+  const tbody=document.querySelector('#tabela-lista tbody');
+  tbody.innerHTML='';
+  document.getElementById('msg-status').textContent='Buscando...';
+  const res=await fetch(API+'vestibulares_list.php?busca='+encodeURIComponent(termo),{credentials:'include'});
+  const data=await res.json();
+  if(data.ok && data.rows.length){
+    document.getElementById('msg-status').textContent='';
+    data.rows.forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${r.id}</td>
+        <td>${r.nome}</td>
+        <td>${r.instituicao||''}</td>
+        <td>${r.listagem||''}</td>
+        <td>${r.somente_exclusivos==1?'Sim':'Não'}</td>
+        <td>${r.ativo==1?'Sim':'Não'}</td>
+        <td><button class="btn-small blue" onclick="abrirEdicao('${r.id}')">Editar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }else{
+    document.getElementById('msg-status').textContent='Nenhum vestibular encontrado.';
+  }
+}
+
+// === EDITAR ===
+async function abrirEdicao(id){
+  const modal=M.Modal.getInstance(document.querySelector('#modal-editar'));
+  const res=await fetch(API+'vestibulares_get.php?id='+id,{credentials:'include'});
+  const data=await res.json();
+  if(data.ok && data.row){
+    const r=data.row;
+    document.getElementById('id').value=r.id;
+    document.getElementById('nome').value=r.nome;
+    document.getElementById('listagem').value=r.listagem;
+    document.getElementById('instituicao_id').value=r.instituicao_id;
+    document.getElementById('somente_exclusivos').checked=(r.somente_exclusivos==1);
+    document.getElementById('ativo').checked=(r.ativo==1);
+    M.updateTextFields();
+    M.FormSelect.init(document.querySelectorAll('select'));
+    modal.open();
+  }else{
+    M.toast({html:'Vestibular não encontrado'});
+  }
+}
+
+// === SALVAR EDIÇÃO ===
+async function salvarEdicao(){
+  const fd=new FormData(document.getElementById('form-editar'));
+  fd.set('ativo', ativo.checked ? 1:0);
+  fd.set('somente_exclusivos', somente_exclusivos.checked ? 1:0);
+  const res=await fetch(API+'vestibulares_update.php',{method:'POST',body:fd,credentials:'include'});
+  const data=await res.json();
+  if(data.ok){
+    M.toast({html:'Vestibular atualizado!'});
+    buscarVestibulares();
+    M.Modal.getInstance(document.querySelector('#modal-editar')).close();
+  }else{
+    M.toast({html:data.error||'Erro ao salvar'});
+  }
+}
+</script>
+</body>
+</html>
