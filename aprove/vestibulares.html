@@ -153,6 +153,138 @@
   </div>
 </div>
 
+
+<!-- MODAL NOVO VESTIBULAR -->
+<div id="modal-novo" class="modal">
+  <div class="modal-content">
+    <h5>Novo Vestibular</h5>
+    <div class="scroll-area">
+      <table class="striped highlight responsive-table" id="tabela-novo">
+        <thead>
+          <tr>
+            <th>Instituição</th>
+            <th>Nome</th>
+            <th>Semestre</th>
+            <th>Ano</th>
+            <th>Exclusivo</th>
+            <th>Ativo</th>
+            <th style="width:100px;">Ações</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="right-align" style="margin-top:20px;">
+        <button class="btn green" id="btn-nova-linha">+ Nova Linha</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" class="modal-close btn-flat">Fechar</a>
+  </div>
+</div>
+
+<script>
+// === NOVO VESTIBULAR ===
+let novoSeq = 0;
+
+// abre o modal e cria a primeira linha
+function abrirNovo(){
+  const modal = M.Modal.getInstance(document.getElementById('modal-novo'));
+  document.querySelector('#tabela-novo tbody').innerHTML = '';
+  addLinhaNovo();
+  modal.open();
+}
+
+// adiciona linha ao modal
+function addLinhaNovo(){
+  const tbody = document.querySelector('#tabela-novo tbody');
+  const idx = ++novoSeq;
+  const tr = document.createElement('tr');
+
+  // cria uma linha com selects e inputs
+  tr.innerHTML = `
+    <td>
+      <select id="novo-instituicao-${idx}" class="browser-default"></select>
+    </td>
+    <td><input id="novo-nome-${idx}" type="text" placeholder="Nome do Vestibular"></td>
+    <td>
+      <select id="novo-epoca-${idx}" class="browser-default">
+        <option value="1">1º Semestre</option>
+        <option value="2">2º Semestre</option>
+      </select>
+    </td>
+    <td><input id="novo-listagem-${idx}" type="number" value="2026" min="2000" max="2100"></td>
+    <td class="center-align"><label><input type="checkbox" id="novo-exclusivo-${idx}"><span></span></label></td>
+    <td class="center-align"><label><input type="checkbox" id="novo-ativo-${idx}" checked><span></span></label></td>
+    <td><button class="btn-small blue" onclick="salvarNovo(${idx})">Salvar</button></td>
+    <td id="status-${idx}" class="grey-text">—</td>
+  `;
+  tbody.appendChild(tr);
+
+  carregarSelectInstituicoes(`novo-instituicao-${idx}`);
+}
+
+// preenche o select de instituições dinamicamente
+async function carregarSelectInstituicoes(selectId){
+  const res = await fetch(API+'instituicoes_list.php',{credentials:'include'});
+  const data = await res.json();
+  const select = document.getElementById(selectId);
+  select.innerHTML = '<option value="">Selecione...</option>';
+  if(data.ok && data.rows.length){
+    data.rows.forEach(r=>{
+      const opt = document.createElement('option');
+      opt.value = r.id;
+      opt.textContent = r.instituicao;
+      select.appendChild(opt);
+    });
+  }
+}
+
+// salva um vestibular novo
+async function salvarNovo(idx){
+  const fd = new FormData();
+  fd.append('instituicao_id', document.getElementById(`novo-instituicao-${idx}`).value);
+  fd.append('nome', document.getElementById(`novo-nome-${idx}`).value.trim());
+  fd.append('epoca', document.getElementById(`novo-epoca-${idx}`).value);
+  fd.append('listagem', document.getElementById(`novo-listagem-${idx}`).value);
+  fd.append('somente_exclusivos', document.getElementById(`novo-exclusivo-${idx}`).checked ? 1 : 0);
+  fd.append('ativo', document.getElementById(`novo-ativo-${idx}`).checked ? 1 : 0);
+
+  const status = document.getElementById(`status-${idx}`);
+  status.textContent = 'Salvando...';
+
+  try {
+    const res = await fetch(API+'vestibulares_insert.php', {
+      method: 'POST',
+      body: fd,
+      credentials: 'include'
+    });
+    const data = await res.json();
+    if (data.ok) {
+      status.innerHTML = '<span style="color:green;font-weight:600;">OK</span>';
+      // bloqueia campos da linha salva
+      document.querySelectorAll(`#tabela-novo #novo-instituicao-${idx},#novo-nome-${idx},#novo-epoca-${idx},#novo-listagem-${idx},#novo-exclusivo-${idx},#novo-ativo-${idx}`).forEach(e => e.disabled = true);
+      addLinhaNovo(); // adiciona nova linha automaticamente
+    } else {
+      status.innerHTML = '<span style="color:red;font-weight:600;">Erro</span>';
+    }
+  } catch (err) {
+    status.innerHTML = '<span style="color:red;font-weight:600;">Falha</span>';
+    console.error(err);
+  }
+}
+
+// inicializa botão “nova linha”
+document.addEventListener('DOMContentLoaded', ()=>{
+  const btn = document.getElementById('btn-nova-linha');
+  if(btn) btn.addEventListener('click', addLinhaNovo);
+});
+</script>
+
+
+
+
 <script>
 const API = 'https://apisec.secauxiliar.com.br/aprove/';
 
