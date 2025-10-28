@@ -72,9 +72,9 @@
         <div class="group-title">Atualizações</div>
         <ul>
           <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
-          <li class="active"><a href="/aprove/alunos.html">Alunos</a></li>
+          <li><a href="/aprove/alunos.html">Alunos</a></li>
           <li><a href="/aprove/instituicoes.html">Instituições</a></li>
-          <li><a href="/aprove/cursos.html">Cursos</a></li>
+          <li class="active"><a href="/aprove/cursos.html">Cursos</a></li>
           <li><a href="/aprove/unidades.html">Unidades</a></li>
           <li><a href="/aprove/autorizacoes.html">Autorização de Imagem</a></li>
           <li><a href="/aprove/listas_aprovados.html">Listas de Aprovados</a></li>
@@ -123,7 +123,7 @@
           <button class="btn blue darken-2" onclick="buscarCursos()">Buscar</button>
         </div>
 
-        <table class="striped highlight responsive-table" id="tabela-cursos">
+        <table class="striped highlight responsive-table" id="tabela-lista">
           <thead>
             <tr>
               <th>Código</th>
@@ -141,7 +141,7 @@
       </div>
 
       <div class="right-align" style="margin-bottom:10px;">
-        <button class="btn green darken-1" onclick="abrirNovoCurso()">+ Novo Curso</button>
+        <button class="btn green darken-1" onclick="abrirNovo()">+ Novo Curso</button>
       </div>
     </section>
 
@@ -155,7 +155,7 @@
     <h5 style="color:#0b3b78;">Editar Curso</h5>
     <form id="form-editar">
       <div class="row">
-        <div class="input-field col s2"><input id="id" name="id" type="text" readonly><label for="id" class="active">Código</label></div>
+        <div class="input-field col s2"><input id="id" name="id" type="text" readonly><label class="active" for="id">Código</label></div>
         <div class="input-field col s3"><input id="curso" name="curso" type="text"><label for="curso">Curso</label></div>
         <div class="input-field col s4"><input id="extenso" name="extenso" type="text"><label for="extenso">Nome Extenso</label></div>
         <div class="input-field col s2"><input id="grupo" name="grupo" type="text"><label for="grupo">Grupo</label></div>
@@ -171,41 +171,57 @@
   </div>
 </div>
 
-<!-- MODAL NOVO -->
+<!-- MODAL NOVO CURSO -->
 <div id="modal-novo" class="modal">
   <div class="modal-content">
-    <h5 style="color:#0b3b78;">Novo Curso</h5>
-    <form id="form-novo">
-      <div class="row">
-        <div class="input-field col s2"><input id="novo-id" name="id" type="text" required><label for="novo-id">Código</label></div>
-        <div class="input-field col s3"><input id="novo-curso" name="curso" type="text" required><label for="novo-curso">Curso</label></div>
-        <div class="input-field col s4"><input id="novo-extenso" name="extenso" type="text"><label for="novo-extenso">Nome Extenso</label></div>
-        <div class="input-field col s2"><input id="novo-grupo" name="grupo" type="text"><label for="novo-grupo">Grupo</label></div>
-        <div class="input-field col s1">
-          <label><input type="checkbox" id="novo-exclusivo" name="exclusivo"><span>Exclusivo</span></label>
-        </div>
+    <h5 style="color:#0b3b78; font-weight:600;">Novo Curso</h5>
+
+    <div class="row" style="margin-bottom:10px;">
+      <div class="input-field col s3">
+        <label>
+          <input type="checkbox" id="todos_exclusivo" />
+          <span>Marcar todos como exclusivos</span>
+        </label>
       </div>
-    </form>
+    </div>
+
+    <table class="striped highlight responsive-table" id="tabela-novo">
+      <thead>
+        <tr style="background:#f2f5ff;">
+          <th>Código</th>
+          <th>Curso</th>
+          <th>Nome Extenso</th>
+          <th>Grupo</th>
+          <th>Exclusivo</th>
+          <th style="width:110px;">Ações</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="right-align" style="margin-top:20px;">
+      <button class="btn green" id="btn-nova-linha">+ Nova Linha</button>
+    </div>
   </div>
   <div class="modal-footer">
-    <button class="btn green" onclick="salvarNovo()">Salvar</button>
     <a href="#!" class="modal-close btn-flat">Fechar</a>
   </div>
 </div>
 
 <script>
 const API = 'https://apisec.secauxiliar.com.br/aprove/';
-
 async function logout(){ await fetch(API+'auth_login_out.php',{credentials:'include'}); location.href='/aprove/index.html'; }
 
 document.addEventListener('DOMContentLoaded',()=>{
   M.Modal.init(document.querySelectorAll('.modal'));
+  document.getElementById('btn-nova-linha').addEventListener('click', addLinhaNovo);
   buscarCursos();
 });
 
 async function buscarCursos(){
   const termo=document.getElementById('search').value.trim();
-  const tbody=document.querySelector('#tabela-cursos tbody');
+  const tbody=document.querySelector('#tabela-lista tbody');
   tbody.innerHTML=''; document.getElementById('msg-status').textContent='Buscando...';
   const res=await fetch(API+'cursos_list.php?busca='+encodeURIComponent(termo),{credentials:'include'});
   const data=await res.json();
@@ -251,20 +267,67 @@ async function salvarEdicao(){
   else M.toast({html:data.error||'Erro ao salvar'});
 }
 
-function abrirNovoCurso(){
-  document.getElementById('form-novo').reset();
-  M.updateTextFields();
-  M.Modal.getInstance(document.querySelector('#modal-novo')).open();
+// === NOVO CURSO ===
+let novoSeq=0;
+function abrirNovo(){
+  const modal=M.Modal.getInstance(document.getElementById('modal-novo'));
+  document.querySelector('#tabela-novo tbody').innerHTML='';
+  addLinhaNovo();
+  modal.open();
 }
 
-async function salvarNovo(){
-  const fd=new FormData(document.getElementById('form-novo'));
-  fd.set('exclusivo', document.getElementById('novo-exclusivo').checked ? 1:0);
-  const res=await fetch(API+'cursos_insert.php',{method:'POST',body:fd,credentials:'include'});
-  const data=await res.json();
-  if(data.ok){M.toast({html:'Curso inserido!'});buscarCursos();M.Modal.getInstance(document.querySelector('#modal-novo')).close();}
-  else M.toast({html:data.error||'Erro ao inserir'});
+function addLinhaNovo(){
+  const tbody=document.querySelector('#tabela-novo tbody');
+  const idx=++novoSeq;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><input id="novo-id-${idx}" type="text" placeholder="01"></td>
+    <td><input id="novo-curso-${idx}" type="text" placeholder="Quím."></td>
+    <td><input id="novo-extenso-${idx}" type="text" placeholder="Química Industrial"></td>
+    <td><input id="novo-grupo-${idx}" type="text" placeholder="Quím."></td>
+    <td class="center-align"><label><input type="checkbox" id="novo-exclusivo-${idx}" class="exclusivo"><span></span></label></td>
+    <td><button class="btn-small blue" onclick="salvarNovo(${idx})">Salvar</button></td>
+    <td id="status-${idx}" class="grey-text center-align">—</td>
+  `;
+  tbody.appendChild(tr);
+  tr.querySelector(`#novo-id-${idx}`).focus();
 }
+
+async function salvarNovo(idx){
+  const id=document.getElementById(`novo-id-${idx}`).value.trim();
+  const curso=document.getElementById(`novo-curso-${idx}`).value.trim();
+  const extenso=document.getElementById(`novo-extenso-${idx}`).value.trim();
+  const grupo=document.getElementById(`novo-grupo-${idx}`).value.trim();
+  const exclusivo=document.getElementById(`novo-exclusivo-${idx}`).checked?1:0;
+  const status=document.getElementById(`status-${idx}`);
+  if(!id || !curso){M.toast({html:'Preencha Código e Curso.'});return;}
+  status.textContent='Salvando...';
+  const fd=new FormData();
+  fd.append('ID',id);
+  fd.append('CURSO',curso);
+  fd.append('EXTENSO',extenso);
+  fd.append('GRUPO',grupo);
+  fd.append('EXCLUSIVO',exclusivo);
+  try{
+    const res=await fetch(API+'cursos_insert.php',{method:'POST',body:fd,credentials:'include'});
+    const data=await res.json();
+    if(data.ok){
+      status.innerHTML='<span style="color:green;font-weight:600;">OK</span>';
+      document.querySelectorAll(`#tabela-novo #novo-id-${idx},#novo-curso-${idx},#novo-extenso-${idx},#novo-grupo-${idx},#novo-exclusivo-${idx}`).forEach(e=>e.disabled=true);
+      addLinhaNovo();
+    }else{
+      status.innerHTML='<span style="color:red;font-weight:600;">Erro</span>';
+    }
+  }catch{
+    status.innerHTML='<span style="color:red;font-weight:600;">Falha</span>';
+  }
+}
+
+document.addEventListener('change',e=>{
+  if(e.target.id==='todos_exclusivo'){
+    document.querySelectorAll('.exclusivo').forEach(ch=>ch.checked=e.target.checked);
+  }
+});
 </script>
 </body>
 </html>
