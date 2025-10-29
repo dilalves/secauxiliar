@@ -370,15 +370,19 @@ async function buscarInstituicaoNome() {
   try {
     const res = await fetch(API + 'instituicoes_get.php?id=' + encodeURIComponent(cod), { credentials: 'include' });
     const data = await res.json();
+
     if (data.ok && data.row) {
-      nomeInput.value = data.row.instituicao || '';
+      nomeInput.value = data.row.nome || data.row.instituicao || ''; // cobre ambos os campos
+      nomeInput.style.color = '#0b3b78';
     } else {
       nomeInput.value = 'Instituição não encontrada';
+      nomeInput.style.color = '#c62828';
     }
     M.updateTextFields();
   } catch (err) {
     console.error(err);
-    nomeInput.value = 'Erro ao buscar';
+    nomeInput.value = 'Erro ao buscar instituição';
+    nomeInput.style.color = '#c62828';
   }
 }
 
