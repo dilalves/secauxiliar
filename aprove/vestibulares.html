@@ -127,36 +127,70 @@
 </div>
 
 <!-- MODAL EDITAR -->
+<!-- MODAL EDITAR -->
 <div id="modal-editar" class="modal">
   <div class="modal-content">
     <h5 style="color:#0b3b78;">Editar Vestibular</h5>
     <form id="form-editar">
       <div class="row">
-        <div class="input-field col s2"><input id="id" name="id" type="text" readonly><label class="active" for="id">Código</label></div>
-        <div class="input-field col s3">
+        <!-- Código -->
+        <div class="input-field col s2">
+          <input id="id" name="id" type="text" readonly>
+          <label class="active" for="id">Código</label>
+        </div>
+
+        <!-- Sigla -->
+        <div class="input-field col s2">
           <input id="sigla" name="sigla" type="text" readonly>
           <label class="active" for="sigla">Sigla</label>
         </div>
-        <div class="input-field col s4"><input id="nome" name="nome" type="text"><label for="nome">Nome</label></div>
-        <div class="input-field col s3">
+
+        <!-- Instituição -->
+        <div class="input-field col s4">
           <select id="instituicao_id" name="instituicao_id"></select>
           <label>Instituição</label>
         </div>
-        <div class="input-field col s2"><input id="listagem" name="listagem" type="number" min="2000" max="2100"><label for="listagem">Ano</label></div>
-        <div class="col s1 center-align" style="margin-top:25px;">
-          <label><input type="checkbox" id="somente_exclusivos" name="somente_exclusivos"><span>Exclusivo</span></label>
+
+        <!-- Ano -->
+        <div class="input-field col s2">
+          <input id="listagem" name="listagem" type="number" min="2000" max="2100">
+          <label for="listagem">Ano</label>
         </div>
+
+        <!-- Semestre -->
+        <div class="input-field col s2">
+          <select id="semestre" name="semestre">
+            <option value="1">1º Semestre</option>
+            <option value="2">2º Semestre</option>
+          </select>
+          <label for="semestre">Semestre</label>
+        </div>
+
+        <!-- Exclusivo -->
         <div class="col s1 center-align" style="margin-top:25px;">
-          <label><input type="checkbox" id="ativo" name="ativo"><span>Ativo</span></label>
+          <label>
+            <input type="checkbox" id="somente_exclusivos" name="somente_exclusivos">
+            <span>Exclusivo</span>
+          </label>
+        </div>
+
+        <!-- Ativo -->
+        <div class="col s1 center-align" style="margin-top:25px;">
+          <label>
+            <input type="checkbox" id="ativo" name="ativo">
+            <span>Ativo</span>
+          </label>
         </div>
       </div>
     </form>
   </div>
+
   <div class="modal-footer">
     <button class="btn blue" onclick="salvarEdicao()">Salvar</button>
     <a href="#!" class="modal-close btn-flat">Cancelar</a>
   </div>
 </div>
+
 
 
 <!-- MODAL NOVO VESTIBULAR -->
@@ -339,6 +373,7 @@ async function abrirEdicao(id){
     document.getElementById('listagem').value=r.listagem;
     document.getElementById('instituicao_id').value=r.instituicao_id;
     document.getElementById('somente_exclusivos').checked=(r.somente_exclusivos==1);
+    document.getElementById('semestre').value = r.semestre;
     document.getElementById('ativo').checked=(r.ativo==1);
     M.updateTextFields();
     M.FormSelect.init(document.querySelectorAll('select'));
