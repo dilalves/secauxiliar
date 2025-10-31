@@ -593,14 +593,14 @@ async function buscarNomeCurso(){
 
 // === SALVAR NOVO CURSO ===
 async function salvarCurso(){
-  const vId = document.getElementById('vestibular_id_curso').value;
-  const cursoId = document.getElementById('curso_id_novo').value;
-  const codinst = document.getElementById('codinst_novo').value;
-  const periodo = document.getElementById('periodo_novo').value;
-  const vagas = document.getElementById('vagas_novo').value;
+  const vId      = document.getElementById('vestibular_id_curso').value;
+  const cursoId  = document.getElementById('curso_id_novo').value;
+  const codinst  = document.getElementById('curso_codinst_novo').value; // << aqui!
+  const periodo  = document.getElementById('periodo_novo').value;
+  const vagas    = document.getElementById('vagas_novo').value;
 
-  if(!cursoId || !codinst){
-    M.toast({html:'Informe o curso e a instituição.'});
+  if (!cursoId || !codinst){
+    M.toast({ html:'Informe o curso e a instituição.' });
     return;
   }
 
@@ -611,24 +611,31 @@ async function salvarCurso(){
   fd.set('periodo', periodo);
   fd.set('vagas', vagas);
 
-  const res = await fetch(API+'vestibular_cursos_insert.php', {
-    method:'POST', body:fd, credentials:'include'
-  });
-  const data = await res.json();
+  try{
+    const res  = await fetch(API+'vestibular_cursos_insert.php', { method:'POST', body:fd, credentials:'include' });
+    const data = await res.json();
 
-  if(data.ok){
-    M.toast({html:'Curso adicionado com sucesso!'});
-    document.getElementById('curso_id_novo').value='';
-    document.getElementById('curso_nome_novo').value='';
-    document.getElementById('codinst_novo').value='';
-    document.getElementById('periodo_novo').value='';
-    document.getElementById('vagas_novo').value='0';
-    M.updateTextFields();
-    await carregarCursosVestibular(vId);
-  }else{
-    M.toast({html:data.error || 'Erro ao salvar curso'});
+    if (data.ok){
+      M.toast({ html:'Curso adicionado com sucesso!' });
+      // limpa campos
+      document.getElementById('curso_id_novo').value = '';
+      document.getElementById('curso_nome_novo').value = '';
+      document.getElementById('curso_codinst_novo').value = '';
+      document.getElementById('curso_nomeinst_novo').value = '';
+      document.getElementById('periodo_novo').value = '';
+      document.getElementById('vagas_novo').value = '0';
+      M.updateTextFields();
+
+      await carregarCursosVestibular(vId);
+    } else {
+      M.toast({ html: (data.error || 'Erro ao salvar curso') });
+    }
+  }catch(err){
+    console.error(err);
+    M.toast({ html:'Falha na comunicação com o servidor.' });
   }
 }
+
 
 async function carregarCursosVestibular(vestibularId){
   const tbody = document.querySelector('#tabela-cursos tbody');
