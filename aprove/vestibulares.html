@@ -244,7 +244,6 @@
   </div>
 </div>
 
-
 <!-- MODAL CURSOS DO VESTIBULAR -->
 <div id="modal-cursos" class="modal modal-fixed-footer">
   <div class="modal-content">
@@ -260,6 +259,14 @@
         <input id="vestibular_instituicao_curso" type="text" readonly style="font-weight:600; color:#0b3b78;">
         <label class="active" for="vestibular_instituicao_curso">Instituição</label>
       </div>
+      <div class="input-field col s2">
+        <input id="vestibular_ano_curso" type="text" readonly>
+        <label class="active" for="vestibular_ano_curso">Ano</label>
+      </div>
+      <div class="input-field col s2">
+        <input id="vestibular_semestre_curso" type="text" readonly>
+        <label class="active" for="vestibular_semestre_curso">Semestre</label>
+      </div>
     </div>
 
     <!-- Tabela -->
@@ -268,6 +275,7 @@
         <tr>
           <th>ID</th>
           <th>Curso</th>
+          <th>Cód. Inst</th>
           <th>Período</th>
           <th>Vagas</th>
           <th>Ações</th>
@@ -280,23 +288,35 @@
 
     <div style="margin-top:20px; border-top:1px solid #e5e7eb; padding-top:16px;">
       <h6 style="color:#0b3b78; font-weight:600;">Adicionar novo curso</h6>
+
       <div class="row">
-        <div class="input-field col s5">
-          <select id="curso_id_novo">
-            <option value="">Selecione...</option>
-          </select>
-          <label>Curso</label>
+        <div class="input-field col s2">
+          <input id="curso_id_novo" type="number" min="1" onblur="buscarNomeCurso()">
+          <label for="curso_id_novo">Cód. Curso</label>
         </div>
-        <div class="input-field col s3">
+
+        <div class="input-field col s4">
+          <input id="curso_nome_novo" type="text" readonly style="font-weight:600;">
+          <label class="active" for="curso_nome_novo">Nome do Curso</label>
+        </div>
+
+        <div class="input-field col s2">
+          <input id="codinst_novo" type="number" min="1">
+          <label for="codinst_novo">Cód. Instituição</label>
+        </div>
+
+        <div class="input-field col s2">
           <input id="periodo_novo" type="text" placeholder="Manhã / Tarde / Noite">
           <label for="periodo_novo">Período</label>
         </div>
-        <div class="input-field col s2">
+
+        <div class="input-field col s1">
           <input id="vagas_novo" type="number" min="0" value="0">
           <label for="vagas_novo">Vagas</label>
         </div>
-        <div class="col s2" style="margin-top:25px;">
-          <button class="btn green" onclick="salvarCurso()">Adicionar</button>
+
+        <div class="col s1" style="margin-top:25px;">
+          <button class="btn green" onclick="salvarCurso()">+</button>
         </div>
       </div>
     </div>
@@ -306,7 +326,6 @@
     <a href="#!" class="modal-close btn-flat">Fechar</a>
   </div>
 </div>
-
 
 
 <script>
@@ -491,104 +510,101 @@ async function buscarInstituicaoNome() {
   }
 }
 
+
+let vestibularSomenteExclusivo = 0;
+
 // === ABRIR MODAL DE CURSOS ===
-async function abrirCursos(id, instituicaoNome){
+async function abrirCursos(vestibularId){
   const modal = M.Modal.getInstance(document.getElementById('modal-cursos'));
-  document.getElementById('vestibular_id_curso').value = id;
-  document.getElementById('vestibular_instituicao_curso').value = instituicaoNome || '';
-  M.updateTextFields();
-  await carregarCursos(id);
-  await carregarListaCursos();
-  modal.open();
-}
-
-// === CARREGAR CURSOS VINCULADOS ===
-async function carregarCursos(vestibularId){
-  const tbody = document.querySelector('#tabela-cursos tbody');
-  tbody.innerHTML = '';
-  document.getElementById('msg-cursos').textContent = 'Carregando...';
-
-  const res = await fetch(API + 'vestibular_cursos_list.php?vestibular_id=' + vestibularId, {credentials:'include'});
+  const res = await fetch(API + 'vestibulares_get.php?id=' + vestibularId, {credentials:'include'});
   const data = await res.json();
 
-  if(data.ok && data.rows.length){
-    document.getElementById('msg-cursos').textContent = '';
-    data.rows.forEach(r=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${r.id}</td>
-        <td>${r.curso}</td>
-        <td>${r.periodo||''}</td>
-        <td>${r.vagas||0}</td>
-        <td><button class="btn-small red" onclick="removerCurso(${r.id}, ${vestibularId})">Remover</button></td>
-      `;
-      tbody.appendChild(tr);
-    });
+  if(data.ok && data.row){
+    const v = data.row;
+    vestibularSomenteExclusivo = parseInt(v.somente_exclusivos || 0);
+
+    document.getElementById('vestibular_id_curso').value = v.id;
+    document.getElementById('vestibular_instituicao_curso').value = v.instituicao;
+    document.getElementById('vestibular_ano_curso').value = v.listagem;
+    document.getElementById('vestibular_semestre_curso').value = v.semestre;
+    M.updateTextFields();
+
+    await carregarCursosVestibular(v.id);
+    modal.open();
   } else {
-    document.getElementById('msg-cursos').textContent = 'Nenhum curso cadastrado.';
+    M.toast({html:'Vestibular não encontrado'});
   }
 }
 
-// === CARREGAR LISTA DE CURSOS DISPONÍVEIS ===
-async function carregarListaCursos(){
-  const res = await fetch(API + 'cursos_list.php', {credentials:'include'});
-  const data = await res.json();
-  const select = document.getElementById('curso_id_novo');
-  select.innerHTML = '<option value="">Selecione...</option>';
-  if(data.ok && data.rows.length){
-    data.rows.forEach(c=>{
-      const opt = document.createElement('option');
-      opt.value = c.id;
-      opt.textContent = c.nome;
-      select.appendChild(opt);
-    });
+// === BUSCAR NOME DO CURSO ===
+async function buscarNomeCurso(){
+  const id = document.getElementById('curso_id_novo').value.trim();
+  const nomeInput = document.getElementById('curso_nome_novo');
+  nomeInput.value = '';
+  if(!id) return;
+
+  try {
+    const res = await fetch(API+'cursos_get.php?id='+id, {credentials:'include'});
+    const data = await res.json();
+    if(data.ok && data.row){
+      // Se vestibular é exclusivo, o curso deve ser exclusivo
+      if(vestibularSomenteExclusivo && data.row.curso_exc != 1){
+        nomeInput.value = 'Curso NÃO é exclusivo';
+        nomeInput.style.color = '#c62828';
+      }else{
+        nomeInput.value = data.row.nome || '';
+        nomeInput.style.color = '#0b3b78';
+      }
+    } else {
+      nomeInput.value = 'Curso não encontrado';
+      nomeInput.style.color = '#c62828';
+    }
+    M.updateTextFields();
+  } catch(err){
+    console.error(err);
+    nomeInput.value = 'Erro ao buscar curso';
+    nomeInput.style.color = '#c62828';
   }
-  M.FormSelect.init(select);
 }
 
-// === ADICIONAR CURSO ===
+// === SALVAR NOVO CURSO ===
 async function salvarCurso(){
-  const vestibular_id = document.getElementById('vestibular_id_curso').value;
-  const curso_id = document.getElementById('curso_id_novo').value;
+  const vId = document.getElementById('vestibular_id_curso').value;
+  const cursoId = document.getElementById('curso_id_novo').value;
+  const codinst = document.getElementById('codinst_novo').value;
   const periodo = document.getElementById('periodo_novo').value;
-  const vagas = document.getElementById('vagas_novo').value || 0;
+  const vagas = document.getElementById('vagas_novo').value;
 
-  if(!curso_id){ return M.toast({html:'Selecione o curso.'}); }
+  if(!cursoId || !codinst){
+    M.toast({html:'Informe o curso e a instituição.'});
+    return;
+  }
 
   const fd = new FormData();
-  fd.append('vestibular_id', vestibular_id);
-  fd.append('curso_id', curso_id);
-  fd.append('periodo', periodo);
-  fd.append('vagas', vagas);
+  fd.set('vestibular_id', vId);
+  fd.set('curso_id', cursoId);
+  fd.set('codinst', codinst);
+  fd.set('periodo', periodo);
+  fd.set('vagas', vagas);
 
-  const res = await fetch(API + 'vestibular_cursos_insert.php', {
+  const res = await fetch(API+'vestibular_cursos_insert.php', {
     method:'POST', body:fd, credentials:'include'
   });
   const data = await res.json();
 
   if(data.ok){
-    M.toast({html:'Curso adicionado!'});
-    carregarCursos(vestibular_id);
+    M.toast({html:'Curso adicionado com sucesso!'});
+    document.getElementById('curso_id_novo').value='';
+    document.getElementById('curso_nome_novo').value='';
+    document.getElementById('codinst_novo').value='';
+    document.getElementById('periodo_novo').value='';
+    document.getElementById('vagas_novo').value='0';
+    M.updateTextFields();
+    await carregarCursosVestibular(vId);
   }else{
-    M.toast({html:data.error || 'Erro ao adicionar curso.'});
+    M.toast({html:data.error || 'Erro ao salvar curso'});
   }
 }
-
-// === REMOVER CURSO ===
-async function removerCurso(id, vestibularId){
-  if(!confirm('Remover este curso?')) return;
-  const fd = new FormData();
-  fd.append('id', id);
-  const res = await fetch(API + 'vestibular_cursos_delete.php', {method:'POST', body:fd, credentials:'include'});
-  const data = await res.json();
-  if(data.ok){
-    M.toast({html:'Curso removido.'});
-    carregarCursos(vestibularId);
-  } else {
-    M.toast({html:data.error || 'Erro ao remover.'});
-  }
-}
-
 
 
 </script>
