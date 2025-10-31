@@ -127,7 +127,6 @@
 </div>
 
 <!-- MODAL EDITAR -->
-<!-- MODAL EDITAR -->
 <div id="modal-editar" class="modal">
   <div class="modal-content">
     <h5 style="color:#0b3b78;">Editar Vestibular</h5>
@@ -286,6 +285,7 @@
 
     <p class="center grey-text" id="msg-cursos">Nenhum curso cadastrado.</p>
 
+    <!-- Adicionar novo curso -->
     <div style="margin-top:20px; border-top:1px solid #e5e7eb; padding-top:16px;">
       <h6 style="color:#0b3b78; font-weight:600;">Adicionar novo curso</h6>
 
@@ -301,16 +301,23 @@
         </div>
 
         <div class="input-field col s2">
-          <input id="codinst_novo" type="number" min="1">
-          <label for="codinst_novo">Cód. Instituição</label>
+          <input id="curso_codinst_novo" type="number" onblur="buscarInstituicaoPorCodigo()">
+          <label for="curso_codinst_novo">Cód. Instituição</label>
         </div>
 
+        <div class="input-field col s4">
+          <input id="curso_nomeinst_novo" type="text" disabled style="color:#0b3b78;">
+          <label for="curso_nomeinst_novo">Nome da Instituição</label>
+        </div>
+      </div>
+
+      <div class="row">
         <div class="input-field col s2">
           <input id="periodo_novo" type="text" placeholder="Manhã / Tarde / Noite">
           <label for="periodo_novo">Período</label>
         </div>
 
-        <div class="input-field col s1">
+        <div class="input-field col s2">
           <input id="vagas_novo" type="number" min="0" value="0">
           <label for="vagas_novo">Vagas</label>
         </div>
@@ -326,6 +333,7 @@
     <a href="#!" class="modal-close btn-flat">Fechar</a>
   </div>
 </div>
+
 
 
 <script>
@@ -515,11 +523,19 @@ let vestibularSomenteExclusivo = 0;
 
 // === ABRIR MODAL DE CURSOS ===
 async function abrirCursos(vestibularId, instituicaoNome){
-  // Garante inicialização do modal
+  // Elemento do modal
   let modalEl = document.getElementById('modal-cursos');
+
+  // Inicializa o modal se ainda não existir
   if (!M.Modal.getInstance(modalEl)) {
-    M.Modal.init(modalEl);
+    M.Modal.init(modalEl, {
+      dismissible: false,         // ❌ Desativa ESC e clique fora
+      preventScrolling: false,    // ✅ Permite rolar o fundo, se necessário
+      inDuration: 200,
+      outDuration: 200
+    });
   }
+
   const modal = M.Modal.getInstance(modalEl);
 
   // Busca dados do vestibular
@@ -531,7 +547,6 @@ async function abrirCursos(vestibularId, instituicaoNome){
     vestibularSomenteExclusivo = parseInt(v.somente_exclusivos || 0);
 
     document.getElementById('vestibular_id_curso').value = v.id;
-    // Usa o nome vindo da tabela se existir, senão o do backend
     document.getElementById('vestibular_instituicao_curso').value = instituicaoNome || v.instituicao;
     document.getElementById('vestibular_ano_curso').value = v.listagem;
     document.getElementById('vestibular_semestre_curso').value = v.semestre;
@@ -641,6 +656,54 @@ async function carregarCursosVestibular(vestibularId){
     document.getElementById('msg-cursos').textContent='Nenhum curso cadastrado.';
   }
 }
+
+async function buscarInstituicaoPorCodigo() {
+  const codInput = document.getElementById('curso_codinst_novo');
+  const nomeInput = document.getElementById('curso_nomeinst_novo');
+  const codigo = codInput.value.trim();
+
+  if (!codigo) {
+    nomeInput.value = '';
+    return;
+  }
+
+  try {
+    const res = await fetch(`https://apisec.secauxiliar.com.br/aprove/instituicoes_get.php?id=${codigo}`, {
+      credentials: 'include'
+    });
+    const data = await res.json();
+
+    if (data.ok && data.row) {
+      nomeInput.value = data.row.unidade || data.row.nome || 'Instituição encontrada';
+      nomeInput.style.color = '#0b3b78';
+    } else {
+      nomeInput.value = 'Instituição não encontrada';
+      nomeInput.style.color = '#c62828';
+    }
+  } catch (err) {
+    nomeInput.value = 'Erro ao buscar';
+    nomeInput.style.color = '#c62828';
+  }
+}
+
+async function removerCurso(id) {
+  if (!confirm('Deseja realmente excluir este curso?')) return;
+
+  try {
+    const res = await fetch(API + 'vestibular_cursos_delete.php?id=' + id, { credentials: 'include' });
+    const data = await res.json();
+
+    if (data.ok) {
+      M.toast({ html: 'Curso removido com sucesso' });
+      await carregarCursosVestibular(document.getElementById('vestibular_id_curso').value);
+    } else {
+      M.toast({ html: 'Erro: ' + (data.error || 'Falha ao excluir') });
+    }
+  } catch (err) {
+    M.toast({ html: 'Erro na exclusão: ' + err.message });
+  }
+}
+
 
 </script>
 </body>
