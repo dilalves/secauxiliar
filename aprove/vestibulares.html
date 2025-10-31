@@ -514,8 +514,15 @@ async function buscarInstituicaoNome() {
 let vestibularSomenteExclusivo = 0;
 
 // === ABRIR MODAL DE CURSOS ===
-async function abrirCursos(vestibularId){
-  const modal = M.Modal.getInstance(document.getElementById('modal-cursos'));
+async function abrirCursos(vestibularId, instituicaoNome){
+  // Garante inicialização do modal
+  let modalEl = document.getElementById('modal-cursos');
+  if (!M.Modal.getInstance(modalEl)) {
+    M.Modal.init(modalEl);
+  }
+  const modal = M.Modal.getInstance(modalEl);
+
+  // Busca dados do vestibular
   const res = await fetch(API + 'vestibulares_get.php?id=' + vestibularId, {credentials:'include'});
   const data = await res.json();
 
@@ -524,7 +531,8 @@ async function abrirCursos(vestibularId){
     vestibularSomenteExclusivo = parseInt(v.somente_exclusivos || 0);
 
     document.getElementById('vestibular_id_curso').value = v.id;
-    document.getElementById('vestibular_instituicao_curso').value = v.instituicao;
+    // Usa o nome vindo da tabela se existir, senão o do backend
+    document.getElementById('vestibular_instituicao_curso').value = instituicaoNome || v.instituicao;
     document.getElementById('vestibular_ano_curso').value = v.listagem;
     document.getElementById('vestibular_semestre_curso').value = v.semestre;
     M.updateTextFields();
@@ -535,6 +543,7 @@ async function abrirCursos(vestibularId){
     M.toast({html:'Vestibular não encontrado'});
   }
 }
+
 
 // === BUSCAR NOME DO CURSO ===
 async function buscarNomeCurso(){
@@ -606,6 +615,32 @@ async function salvarCurso(){
   }
 }
 
+async function carregarCursosVestibular(vestibularId){
+  const tbody = document.querySelector('#tabela-cursos tbody');
+  tbody.innerHTML = '';
+  document.getElementById('msg-cursos').textContent = 'Carregando...';
+
+  const res = await fetch(API + 'vestibular_cursos_list.php?vestibular_id=' + vestibularId, {credentials:'include'});
+  const data = await res.json();
+
+  if(data.ok && data.rows.length){
+    document.getElementById('msg-cursos').textContent = '';
+    data.rows.forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${r.id}</td>
+        <td>${r.curso}</td>
+        <td>${r.codinst}</td>
+        <td>${r.periodo}</td>
+        <td>${r.vagas}</td>
+        <td><button class="btn-small red" onclick="removerCurso(${r.id}, ${vestibularId})">Excluir</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }else{
+    document.getElementById('msg-cursos').textContent='Nenhum curso cadastrado.';
+  }
+}
 
 </script>
 </body>
