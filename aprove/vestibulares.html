@@ -290,6 +290,10 @@
         <input id="vestibular_id_curso" type="text" readonly>
         <label class="active" for="vestibular_id_curso">Cód. Vestibular</label>
       </div>
+      <div class="input-field col s4">
+        <input id="vestibular_instituicao_curso" type="text" readonly style="font-weight:600; color:#0b3b78;">
+        <label class="active" for="vestibular_instituicao_curso">Instituição</label>
+      </div>
       <div class="input-field col s3">
         <input id="sigla_instituicao_novo" type="text" readonly style="font-weight:600; color:#0b3b78;">
         <label class="active" for="sigla_instituicao_novo">Sigla</label>
@@ -585,7 +589,7 @@ async function abrirCursos(vestibularId, instituicaoNome){
     vestibularSomenteExclusivo = parseInt(v.somente_exclusivos || 0);
 
     document.getElementById('vestibular_id_curso').value = v.id;
-    document.getElementById('vestibular_instituicao_curso').value = instituicaoNome || v.instituicao;
+    document.getElementById('vestibular_instituicao_curso').value = instituicaoNome || v.instituicao || v.sigla || '(sem nome)';
     document.getElementById('vestibular_ano_curso').value = v.listagem;
     document.getElementById('vestibular_semestre_curso').value = v.semestre;
     M.updateTextFields();
