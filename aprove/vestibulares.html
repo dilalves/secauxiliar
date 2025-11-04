@@ -459,31 +459,38 @@ async function carregarInstituicoes(){
 
 // === BUSCAR ===
 async function buscarVestibulares(){
-  const termo=document.getElementById('search').value.trim();
-  const tbody=document.querySelector('#tabela-lista tbody');
-  tbody.innerHTML='';
-  document.getElementById('msg-status').textContent='Buscando...';
-  const res=await fetch(API+'vestibulares_list.php?busca='+encodeURIComponent(termo),{credentials:'include'});
-  const data=await res.json();
-  if(data.ok && data.rows.length){
-    document.getElementById('msg-status').textContent='';
-    data.rows.forEach(r=>{
-      const tr=document.createElement('tr');
+  const termo = document.getElementById('search').value.trim();
+  const tbody = document.querySelector('#tabela-lista tbody');
+  tbody.innerHTML = '';
+  document.getElementById('msg-status').textContent = 'Buscando...';
+
+  const res = await fetch(API + 'vestibulares_list.php?busca=' + encodeURIComponent(termo), { credentials: 'include' });
+  const data = await res.json();
+
+  if (data.ok && data.rows.length) {
+    document.getElementById('msg-status').textContent = '';
+    data.rows.forEach(r => {
+      const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${r.id}</td>
-        <td>${r.curso_id} — ${r.curso}</td>
-        <td>${r.codinst}</td>
-        <td>${r.sigla_inst || '(s/ sigla)'}</td>
-        <td>${r.periodo}</td>
-        <td>${r.vagas}</td>
-        <td><button class="btn-small red" onclick="removerCurso(${r.id}, ${vestibularId})">Excluir</button></td>
+        <td>${r.sigla || ''}</td>
+        <td>${r.instituicao || ''}</td>
+        <td>${r.listagem || ''}</td>
+        <td>${r.somente_exclusivos == 1 ? 'Sim' : 'Não'}</td>
+        <td>${r.semestre || ''}</td>
+        <td>${r.ativo == 1 ? 'Sim' : 'Não'}</td>
+        <td>
+          <button class="btn-small blue" onclick="abrirCursos(${r.id}, '${(r.instituicao || '').replace(/'/g, "\\'")}')">Cursos</button>
+          <button class="btn-small orange" onclick="abrirEdicao(${r.id})">Editar</button>
+        </td>
       `;
       tbody.appendChild(tr);
     });
-  }else{
-    document.getElementById('msg-status').textContent='Nenhum vestibular encontrado.';
+  } else {
+    document.getElementById('msg-status').textContent = 'Nenhum vestibular encontrado.';
   }
 }
+
 
 // === EDITAR ===
 async function abrirEdicao(id){
