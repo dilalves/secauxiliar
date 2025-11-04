@@ -248,7 +248,7 @@
         </div>
 
         <!-- Semestre -->
-        <div class="input-field col s2">
+        <div class="input-field col s1">
           <select id="epoca_novo" name="semestre">
             <option value="1">1º Semestre</option>
             <option value="2">2º Semestre</option>
@@ -290,9 +290,9 @@
         <input id="vestibular_id_curso" type="text" readonly>
         <label class="active" for="vestibular_id_curso">Cód. Vestibular</label>
       </div>
-      <div class="input-field col s6">
-        <input id="vestibular_instituicao_curso" type="text" readonly style="font-weight:600; color:#0b3b78;">
-        <label class="active" for="vestibular_instituicao_curso">Instituição</label>
+      <div class="input-field col s3">
+        <input id="sigla_instituicao_novo" type="text" readonly style="font-weight:600; color:#0b3b78;">
+        <label class="active" for="sigla_instituicao_novo">Sigla</label>
       </div>
       <div class="input-field col s2">
         <input id="vestibular_ano_curso" type="text" readonly>
@@ -342,8 +342,8 @@
         </div>
 
         <div class="input-field col s3">
-          <input id="curso_nomeinst_novo" type="text" disabled style="color:#0b3b78">
-          <label class="active" for="curso_nomeinst_novo">Nome da Instituição</label>
+          <input id="curso_siglainst_novo" type="text" disabled style="color:#0b3b78">
+          <label class="active" for="curso_siglainst_novo">Sigla da Instituição</label>
         </div>
 
         <div class="input-field col s1">
@@ -469,17 +469,14 @@ async function buscarVestibulares(){
     document.getElementById('msg-status').textContent='';
     data.rows.forEach(r=>{
       const tr=document.createElement('tr');
-      tr.innerHTML=`
+      tr.innerHTML = `
         <td>${r.id}</td>
-        <td>${r.sigla}</td>
-        <td>${r.instituicao||''}</td>
-        <td>${r.listagem||''}</td>
-        <td>${r.somente_exclusivos==1?'Sim':'Não'}</td>
-        <td>${r.semestre||''}</td>
-        <td>${r.ativo==1?'Sim':'Não'}</td>
-        <td>
-          <button class="btn-small blue" onclick="abrirCursos(${r.id}, '${r.instituicao||''}')">Cursos</button>
-        </td>
+        <td>${r.curso_id} — ${r.curso}</td>
+        <td>${r.codinst}</td>
+        <td>${r.sigla_inst || '(s/ sigla)'}</td>
+        <td>${r.periodo}</td>
+        <td>${r.vagas}</td>
+        <td><button class="btn-small red" onclick="removerCurso(${r.id}, ${vestibularId})">Excluir</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -538,11 +535,11 @@ async function buscarInstituicaoNome() {
     const data = await res.json();
 
     if (data.ok && data.row) {
-      nomeInput.value = data.row.nome || data.row.instituicao || ''; // cobre ambos os campos
-      nomeInput.style.color = '#0b3b78';
+      document.getElementById('sigla_instituicao_novo').value = data.row.sigla || '';
+      document.getElementById('sigla_instituicao_novo').style.color = '#0b3b78';
     } else {
-      nomeInput.value = 'Instituição não encontrada';
-      nomeInput.style.color = '#c62828';
+      document.getElementById('sigla_instituicao_novo').value = 'Sigla não encontrada';
+      document.getElementById('sigla_instituicao_novo').style.color = '#c62828';
     }
     M.updateTextFields();
   } catch (err) {
@@ -687,6 +684,7 @@ async function carregarCursosVestibular(vestibularId){
         <td>${r.id}</td>
         <td>${r.curso}</td>
         <td>${r.codinst}</td>
+        <td>${r.sigla}</td>
         <td>${r.periodo}</td>
         <td>${r.vagas}</td>
         <td><button class="btn-small red" onclick="removerCurso(${r.id}, ${vestibularId})">Excluir</button></td>
@@ -700,30 +698,28 @@ async function carregarCursosVestibular(vestibularId){
 
 async function buscarInstituicaoPorCodigo() {
   const codInput = document.getElementById('curso_codinst_novo');
-  const nomeInput = document.getElementById('curso_nomeinst_novo');
+  const siglaInput = document.getElementById('curso_siglainst_novo');
   const codigo = codInput.value.trim();
 
   if (!codigo) {
-    nomeInput.value = '';
+    siglaInput.value = '';
     return;
   }
 
   try {
-    const res = await fetch(`https://apisec.secauxiliar.com.br/aprove/instituicoes_get.php?id=${codigo}`, {
-      credentials: 'include'
-    });
+    const res = await fetch(API + 'instituicoes_get.php?id=' + codigo, { credentials: 'include' });
     const data = await res.json();
 
     if (data.ok && data.row) {
-      nomeInput.value = data.row.unidade || data.row.nome || 'Instituição encontrada';
-      nomeInput.style.color = '#0b3b78';
+      siglaInput.value = data.row.sigla || '(sem sigla)';
+      siglaInput.style.color = '#0b3b78';
     } else {
-      nomeInput.value = 'Instituição não encontrada';
-      nomeInput.style.color = '#c62828';
+      siglaInput.value = 'Instituição não encontrada';
+      siglaInput.style.color = '#c62828';
     }
   } catch (err) {
-    nomeInput.value = 'Erro ao buscar';
-    nomeInput.style.color = '#c62828';
+    siglaInput.value = 'Erro ao buscar';
+    siglaInput.style.color = '#c62828';
   }
 }
 
