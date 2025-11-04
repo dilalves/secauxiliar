@@ -286,7 +286,7 @@
 
     <!-- Cabeçalho -->
     <div class="row" style="margin-bottom:12px;">
-      <div class="input-field col s2">
+      <div class="input-field col s1">
         <input id="vestibular_id_curso" type="text" readonly>
         <label class="active" for="vestibular_id_curso">Cód. Vestibular</label>
       </div>
@@ -294,15 +294,15 @@
         <input id="vestibular_instituicao_curso" type="text" readonly style="font-weight:600; color:#0b3b78;">
         <label class="active" for="vestibular_instituicao_curso">Instituição</label>
       </div>
-      <div class="input-field col s3">
+      <div class="input-field col s2">
         <input id="sigla_instituicao_novo" type="text" readonly style="font-weight:600; color:#0b3b78;">
         <label class="active" for="sigla_instituicao_novo">Sigla</label>
       </div>
-      <div class="input-field col s2">
+      <div class="input-field col s1">
         <input id="vestibular_ano_curso" type="text" readonly>
         <label class="active" for="vestibular_ano_curso">Ano</label>
       </div>
-      <div class="input-field col s2">
+      <div class="input-field col s1">
         <input id="vestibular_semestre_curso" type="text" readonly>
         <label class="active" for="vestibular_semestre_curso">Semestre</label>
       </div>
@@ -691,14 +691,14 @@ async function carregarCursosVestibular(vestibularId){
     document.getElementById('msg-cursos').textContent = '';
     data.rows.forEach(r=>{
       const tr=document.createElement('tr');
-      tr.innerHTML=`
+      tr.innerHTML = `
         <td>${r.id}</td>
-        <td>${r.curso}</td>
+        <td>${r.curso || '(sem nome)'}</td>
         <td>${r.codinst}</td>
-        <td>${r.sigla}</td>
-        <td>${r.periodo}</td>
-        <td>${r.vagas}</td>
-        <td><button class="btn-small red" onclick="removerCurso(${r.id}, ${vestibularId})">Excluir</button></td>
+        <td>${r.sigla_inst || ''}</td>
+        <td>${r.periodo || ''}</td>
+        <td>${r.vagas || 0}</td>
+        <td><button class="btn-small red" onclick="removerCurso(${r.id})">Excluir</button></td>
       `;
       tbody.appendChild(tr);
     });
