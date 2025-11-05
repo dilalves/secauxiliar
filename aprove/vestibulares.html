@@ -142,15 +142,25 @@
       border-bottom: 1px dashed #ccc !important;
     }
 
-    /* Corrige sobreposição do label em campos desativados */
-    .input-field input[readonly] + label,
-    .input-field input[disabled] + label {
-      transform: translateY(-14px) scale(0.8);
-      transform-origin: 0 0;
-      color: #0b3b78;
-      font-weight: 500;
-    }
+    /* Corrige posição e bloqueia foco de labels em campos apenas leitura */
+      .input-field input[readonly],                                       
+      .input-field input[disabled] {
+        background-color: transparent;
+        border-bottom: 1px solid #ccc;
+        box-shadow: none;
+      }
 
+      .input-field input[readonly]:focus {
+        border-bottom: 1px solid #ccc;
+        box-shadow: none;
+      }
+
+      .input-field input[readonly] + label {
+        top: -18px !important;
+        color: #0b3b78;
+        font-weight: 500;
+        pointer-events: none;
+      } 
 
     
     @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
@@ -408,8 +418,8 @@
       </div>
 
       <div class="input-field col s3">
-        <input id="curso_siglainst_novo" type="text" readonly style="color:#0b3b78">
-        <label class="active" for="curso_siglainst_novo">Sigla da Instituição</label>
+        <input id="curso_siglainst_novo" type="text" readonly tabindex="-1" style="color:#0b3b78; pointer-events:none;">
+        <label class="active" for="curso_siglainst_novo" style="top:-18px;">Sigla da Instituição</label>
       </div>
 
       <div class="input-field col s1">
