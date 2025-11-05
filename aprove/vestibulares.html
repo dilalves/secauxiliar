@@ -733,8 +733,13 @@ async function salvarCurso(){
       document.getElementById('vagas_novo').value = '0';
       M.updateTextFields();
 
-      // ⚡ aguarda 200ms antes de recarregar lista (garante que o BD já gravou)
-      setTimeout(() => carregarCursosVestibular(vId), 200);
+      // ⚡ aguarda gravação e recarrega tabela
+      setTimeout(async () => {
+        await carregarCursosVestibular(vId);
+        // 🔁 após recarregar, devolve foco para Cód. Curso
+        const campoCurso = document.getElementById('curso_id_novo');
+        if (campoCurso) campoCurso.focus();
+      }, 200);
     } else {
       M.toast({ html: (data.error || 'Erro ao salvar curso') });
     }
