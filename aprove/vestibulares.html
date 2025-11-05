@@ -54,35 +54,71 @@
     #modal-novo .modal-footer { background: #fff; border-top: 1px solid #e5e7eb;
       position: sticky; bottom: 0; padding: 10px 24px; z-index: 20; }
     
-    /* === MODAL DE CURSOS (AMPLIADO) === */
+    /* === MODAL DE CURSOS (APERFEIÇOADO) === */
     #modal-cursos.modal {
-      width: 90% !important;           /* aumenta largura total */
-      max-height: 95vh !important;     /* ocupa quase toda a altura */
+      width: 95% !important;          /* ocupa quase toda a tela */
+      max-height: 95vh !important;    /* quase toda a altura visível */
     }
 
     #modal-cursos .modal-content {
-      padding: 32px 48px;              /* mais respiro interno */
-      overflow-y: auto;                /* mantém scroll suave */
+      padding: 20px 40px 100px;       /* espaço para o rodapé fixo */
+      overflow-y: auto;
     }
 
-    #modal-cursos .row {
-      margin-bottom: 10px;
+    #modal-cursos h5 {
+      margin-bottom: 20px;
+      color: #0b3b78;
+      font-weight: 600;
     }
 
-    /* deixa a linha de inclusão mais organizada */
-    #modal-cursos .row.adicionar-curso .input-field {
-      margin-top: 0;
+    /* Cabeçalho fixo da tabela */
+    #modal-cursos table thead {
+      position: sticky;
+      top: 0;
+      background: #f2f5ff;
+      z-index: 10;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.05);
     }
 
-    #modal-cursos h6 {
-      margin-top: 20px;
-      margin-bottom: 10px;
+    /* Linhas compactas */
+    #modal-cursos table td, 
+    #modal-cursos table th {
+      padding-top: 6px !important;
+      padding-bottom: 6px !important;
+      font-size: 14px;
     }
 
-    /* linha de inclusão com campos mais largos */
-    #modal-cursos .row.adicionar-curso .col {
-      padding-right: 8px;
-      padding-left: 8px;
+    /* Linha de inclusão mais leve */
+    #modal-cursos .adicionar-curso {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    /* Mantém os campos e botão na mesma linha */
+    #modal-cursos .adicionar-curso .input-field {
+      margin: 0;
+    }
+    #modal-cursos .adicionar-curso .col {
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+    #modal-cursos .adicionar-curso button {
+      margin-top: 12px;
+    }
+
+    /* Rodapé fixo */
+    #modal-cursos .modal-footer {
+      background: #fff;
+      border-top: 1px solid #e5e7eb;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 30px;
+      display: flex;
+      justify-content: flex-end;
+      z-index: 15;
     }
 
     
@@ -279,18 +315,18 @@
   </div>
 </div>
 
-<!-- MODAL CURSOS DO VESTIBULAR -->
+ <!-- MODAL CURSOS DO VESTIBULAR -->
 <div id="modal-cursos" class="modal modal-fixed-footer">
   <div class="modal-content">
-    <h5 style="color:#0b3b78; font-weight:600;">Cursos do Vestibular</h5>
+    <h5>Cursos do Vestibular</h5>
 
     <!-- Cabeçalho -->
-    <div class="row" style="margin-bottom:12px;">
+    <div class="row" style="margin-bottom:8px;">
       <div class="input-field col s1">
         <input id="vestibular_id_curso" type="text" readonly>
         <label class="active" for="vestibular_id_curso">Cód. Vestibular</label>
       </div>
-      <div class="input-field col s4">
+      <div class="input-field col s5">
         <input id="vestibular_instituicao_curso" type="text" readonly style="font-weight:600; color:#0b3b78;">
         <label class="active" for="vestibular_instituicao_curso">Instituição</label>
       </div>
@@ -327,51 +363,50 @@
     <p class="center grey-text" id="msg-cursos">Nenhum curso cadastrado.</p>
 
     <!-- Adicionar novo curso -->
-    <div style="margin-top:20px; border-top:1px solid #e5e7eb; padding-top:16px;">
-      <h6 style="color:#0b3b78; font-weight:600;">Adicionar novo curso</h6>
+    <div class="row adicionar-curso">
+      <div class="input-field col s2">
+        <input id="curso_id_novo" type="number" min="1" onblur="buscarNomeCurso()">
+        <label for="curso_id_novo">Cód. Curso</label>
+      </div>
 
-      <div class="row adicionar-curso">
-        <div class="input-field col s2">
-          <input id="curso_id_novo" type="number" min="1" onblur="buscarNomeCurso()">
-          <label for="curso_id_novo">Cód. Curso</label>
-        </div>
+      <div class="input-field col s3">
+        <input id="curso_nome_novo" type="text" readonly style="font-weight:600;">
+        <label class="active" for="curso_nome_novo">Nome do Curso</label>
+      </div>
 
-        <div class="input-field col s3">
-          <input id="curso_nome_novo" type="text" readonly style="font-weight:600;">
-          <label class="active" for="curso_nome_novo">Nome do Curso</label>
-        </div>
+      <div class="input-field col s2">
+        <input id="curso_codinst_novo" type="number" min="1" onblur="buscarInstituicaoPorCodigo()">
+        <label for="curso_codinst_novo">Cód. Instituição</label>
+      </div>
 
-        <div class="input-field col s2">
-          <input id="curso_codinst_novo" type="number" min="1" onblur="buscarInstituicaoPorCodigo()">
-          <label for="curso_codinst_novo">Cód. Instituição</label>
-        </div>
+      <div class="input-field col s3">
+        <input id="curso_siglainst_novo" type="text" disabled style="color:#0b3b78">
+        <label class="active" for="curso_siglainst_novo">Sigla da Instituição</label>
+      </div>
 
-        <div class="input-field col s3">
-          <input id="curso_siglainst_novo" type="text" disabled style="color:#0b3b78">
-          <label class="active" for="curso_siglainst_novo">Sigla da Instituição</label>
-        </div>
+      <div class="input-field col s1">
+        <input id="periodo_novo" type="text" placeholder="M / T / N">
+        <label for="periodo_novo">Período</label>
+      </div>
 
-        <div class="input-field col s1">
-          <input id="periodo_novo" type="text" placeholder="M / T / N">
-          <label for="periodo_novo">Período</label>
-        </div>
+      <div class="input-field col s1">
+        <input id="vagas_novo" type="number" min="0" value="0">
+        <label for="vagas_novo">Vagas</label>
+      </div>
 
-        <div class="input-field col s1">
-          <input id="vagas_novo" type="number" min="0" value="0">
-          <label for="vagas_novo">Vagas</label>
-        </div>
-
-        <div class="col s1" style="margin-top:25px;">
-          <button class="btn green" onclick="salvarCurso()">+</button>
-        </div>
+      <div class="col s1 center-align">
+        <button class="btn green" onclick="salvarCurso()">+</button>
       </div>
     </div>
+  </div>
 
-
+  <!-- Rodapé fixo -->
   <div class="modal-footer">
     <a href="#!" class="modal-close btn-flat">Fechar</a>
   </div>
 </div>
+
+
 
 
 
