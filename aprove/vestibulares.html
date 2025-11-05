@@ -585,22 +585,27 @@ async function abrirCursos(vestibularId, instituicaoNome){
   const res = await fetch(API + 'vestibulares_get.php?id=' + vestibularId, {credentials:'include'});
   const data = await res.json();
 
-  if(data.ok && data.row){
+  if (data.ok && data.row) {
     const v = data.row;
     vestibularSomenteExclusivo = parseInt(v.somente_exclusivos || 0);
 
+    // Preenche campos do cabeçalho do modal
     document.getElementById('vestibular_id_curso').value = v.id;
-    document.getElementById('vestibular_instituicao_curso').value = instituicaoNome || v.instituicao || v.sigla || '(sem nome)';
+    document.getElementById('vestibular_instituicao_curso').value = instituicaoNome || v.instituicao || '(sem nome)';
+    document.getElementById('sigla_instituicao_novo').value = v.sigla || '(sem sigla)';
     document.getElementById('vestibular_ano_curso').value = v.listagem;
     document.getElementById('vestibular_semestre_curso').value = v.semestre;
+    
     M.updateTextFields();
 
+    // Carrega cursos associados
     await carregarCursosVestibular(v.id);
     modal.open();
   } else {
-    M.toast({html:'Vestibular não encontrado'});
+    M.toast({ html: 'Vestibular não encontrado' });
   }
 }
+
 
 
 // === BUSCAR NOME DO CURSO ===
