@@ -695,10 +695,10 @@ async function buscarNomeCurso(){
 // === SALVAR NOVO CURSO ===
 async function salvarCurso(){
   const vId      = document.getElementById('vestibular_id_curso').value;
-  const cursoId  = document.getElementById('curso_id_novo').value;
-  const codinst  = document.getElementById('curso_codinst_novo').value;
-  const periodo  = document.getElementById('periodo_novo').value;
-  const vagas    = document.getElementById('vagas_novo').value;
+  const cursoId  = document.getElementById('curso_id_novo').value.trim();
+  const codinst  = document.getElementById('curso_codinst_novo').value.trim();
+  const periodo  = document.getElementById('periodo_novo').value.trim();
+  const vagas    = document.getElementById('vagas_novo').value.trim();
 
   if (!cursoId || !codinst){
     M.toast({ html:'Informe o curso e a instituição.' });
@@ -712,13 +712,8 @@ async function salvarCurso(){
   fd.set('periodo', periodo);
   fd.set('vagas', vagas);
 
-  try {
-    const res  = await fetch(API+'vestibular_cursos_insert.php', {
-      method:'POST',
-      body:fd,
-      credentials:'include'
-    });
-
+  try{
+    const res  = await fetch(API+'vestibular_cursos_insert.php', { method:'POST', body:fd, credentials:'include' });
     const data = await res.json();
 
     if (data.ok){
@@ -733,21 +728,22 @@ async function salvarCurso(){
       document.getElementById('vagas_novo').value = '0';
       M.updateTextFields();
 
-      // ⚡ aguarda gravação e recarrega tabela
+      // ⚡ Recarrega tabela e devolve foco ao campo "Cód. Curso"
       setTimeout(async () => {
         await carregarCursosVestibular(vId);
-        // 🔁 após recarregar, devolve foco para Cód. Curso
         const campoCurso = document.getElementById('curso_id_novo');
         if (campoCurso) campoCurso.focus();
       }, 200);
+
     } else {
       M.toast({ html: (data.error || 'Erro ao salvar curso') });
     }
-  } catch (err) {
+  }catch(err){
     console.error(err);
     M.toast({ html:'Falha na comunicação com o servidor.' });
   }
 }
+
 
 
 
