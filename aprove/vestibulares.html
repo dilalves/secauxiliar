@@ -607,28 +607,24 @@ async function salvarEdicao(){
 }
 
 async function buscarInstituicaoNome() {
-  const cod = document.getElementById('instituicao_id_novo').value.trim();
-  const nomeInput = document.getElementById('nome_instituicao_novo');
-  nomeInput.value = '';
+  const id = document.getElementById('instituicao_id_novo').value.trim();
+  const campo = document.getElementById('nome_instituicao_novo');
+  campo.value = '';
 
-  if (!cod) return;
+  if (!id) return;
 
   try {
-    const res = await fetch(API + 'instituicoes_get.php?id=' + encodeURIComponent(cod), { credentials: 'include' });
+    const res = await fetch(`php/instituicoes_get.php?id=${encodeURIComponent(id)}`);
     const data = await res.json();
 
     if (data.ok && data.row) {
-      document.getElementById('sigla_instituicao_novo').value = data.row.sigla || '';
-      document.getElementById('sigla_instituicao_novo').style.color = '#0b3b78';
+      campo.value = data.row.sigla || data.row.instituicao || '—';
     } else {
-      document.getElementById('sigla_instituicao_novo').value = 'Sigla não encontrada';
-      document.getElementById('sigla_instituicao_novo').style.color = '#c62828';
+      campo.value = 'Não encontrada';
     }
-    M.updateTextFields();
   } catch (err) {
     console.error(err);
-    nomeInput.value = 'Erro ao buscar instituição';
-    nomeInput.style.color = '#c62828';
+    campo.value = 'Erro';
   }
 }
 
