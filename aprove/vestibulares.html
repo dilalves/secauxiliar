@@ -165,6 +165,28 @@
       font-weight: 500;
       pointer-events: none;
     }
+
+    /* Alinha todos os labels da linha de inclusão */
+    .adicionar-curso .input-field label {
+      top: -8px !important;
+      left: 0 !important;
+      transform: scale(0.9);
+      color: #0b3b78;
+      font-weight: 500;
+      pointer-events: none;
+    }
+
+    /* Verde claro quando preenchido ou em foco */
+    .input-field input:focus:not([readonly]),
+    .input-field input:valid:not([readonly]) {
+      border-bottom: 2px solid #43e97b !important;
+      box-shadow: 0 1px 0 0 #43e97b !important;
+    }
+    .input-field input:focus + label,
+    .input-field input:valid + label {
+      color: #43e97b !important;
+    }
+
     
     @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
   </style>
@@ -403,39 +425,39 @@
 
     <p class="center grey-text" id="msg-cursos">Nenhum curso cadastrado.</p>
 
-    <!-- Adicionar novo curso -->
+    <!-- Linha de inclusão / novo curso -->
     <div class="row adicionar-curso">
       <div class="input-field col s2">
-        <input id="curso_id_novo" type="number" min="1" onblur="buscarNomeCurso()">
-        <label for="curso_id_novo">Cód. Curso</label>
+        <input id="curso_id_novo" type="number" min="1" onblur="buscarNomeCurso()" required>
+        <label class="active" for="curso_id_novo">Cód. Curso</label>
       </div>
 
       <div class="input-field col s3">
-        <input id="curso_nome_novo" type="text" readonly>
+        <input id="curso_nome_novo" type="text" readonly tabindex="-1" style="color:#0b3b78; pointer-events:none;">
         <label class="active" for="curso_nome_novo">Nome do Curso</label>
       </div>
 
       <div class="input-field col s2">
-        <input id="curso_codinst_novo" type="number" min="1" onblur="buscarInstituicaoPorCodigo()">
-        <label for="curso_codinst_novo">Cód. Instituição</label>
+        <input id="curso_codinst_novo" type="number" min="1" onblur="buscarInstituicaoPorCodigo()" required>
+        <label class="active" for="curso_codinst_novo">Cód. Instituição</label>
       </div>
 
       <div class="input-field col s3">
-        <input id="curso_siglainst_novo" type="text" readonly>
-        <label class="active" for="curso_siglainst_novo" style="top:-18px;">Sigla da Instituição</label>
+        <input id="curso_siglainst_novo" type="text" readonly tabindex="-1" style="color:#0b3b78; pointer-events:none;">
+        <label class="active" for="curso_siglainst_novo">Sigla da Instituição</label>
       </div>
 
       <div class="input-field col s1">
-        <input id="periodo_novo" type="text" placeholder="M / T / V / N">
-        <label for="periodo_novo">Período</label>
+        <input id="periodo_novo" type="text" placeholder="M / T / V / N" required>
+        <label class="active" for="periodo_novo">Período</label>
       </div>
 
       <div class="input-field col s1">
-        <input id="vagas_novo" type="number" min="0" value="0">
-        <label for="vagas_novo">Vagas</label>
+        <input id="vagas_novo" type="number" min="0" value="0" required>
+        <label class="active" for="vagas_novo">Vagas</label>
       </div>
 
-      <div class="col s1 center-align">
+      <div class="col s1 center-align" style="padding-top:22px;">
         <button class="btn green" onclick="salvarCurso()">+</button>
       </div>
     </div>
