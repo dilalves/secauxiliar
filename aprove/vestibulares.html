@@ -614,7 +614,11 @@ async function buscarInstituicaoNome() {
   if (!id) return;
 
   try {
-    const res = await fetch(API+'instituicoes_get.php?id=${encodeURIComponent(id)}');
+    // 🔹 usa crases e envia o cookie JWT
+    const res = await fetch(`${API}instituicoes_get.php?id=${encodeURIComponent(id)}`, {
+      credentials: 'include'
+    });
+
     const data = await res.json();
 
     if (data.ok && data.row) {
@@ -627,6 +631,7 @@ async function buscarInstituicaoNome() {
     campo.value = 'Erro';
   }
 }
+
 
 
 let vestibularSomenteExclusivo = 0;
