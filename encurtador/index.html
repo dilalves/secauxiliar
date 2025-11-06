@@ -40,30 +40,30 @@
 
   <script>
     async function encurtar() {
-      const url = document.getElementById('url').value.trim();
-      const div = document.getElementById('resultado');
-      if (!url) {
+    const url = document.getElementById('url').value.trim();
+    const div = document.getElementById('resultado');
+
+    if (!url) {
         div.innerHTML = '<p style="color:red;">Informe uma URL!</p>';
         return;
-      }
+    }
 
-      try {
-        const res = await fetch('encurtar.php', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({url})
-        });
+    try {
+        // 🔹 Substituímos o POST por GET
+        const res = await fetch(`encurtar.php?url=${encodeURIComponent(url)}`);
         const data = await res.json();
+
         if (data.ok) {
-          div.innerHTML = `<p>✅ Seu link curto:</p>
+        div.innerHTML = `<p>✅ Seu link curto:</p>
             <a href="${data.short_url}" target="_blank">${data.short_url}</a>`;
         } else {
-          div.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
+        div.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
         }
-      } catch (e) {
+    } catch (e) {
         div.innerHTML = `<p style="color:red;">Falha na requisição: ${e.message}</p>`;
-      }
     }
+    }
+
   </script>
 </body>
 </html>
