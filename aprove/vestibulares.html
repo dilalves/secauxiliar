@@ -174,7 +174,15 @@
       color: #0b3b78 !important;
       font-weight: 500;
     }
-        
+    
+    #total-vagas {
+      font-size: 16px;
+      background: #f2f5ff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
     @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
   </style>
 </head>
@@ -409,6 +417,10 @@
       </thead>
       <tbody></tbody>
     </table>
+
+    <div id="total-vagas" style="text-align:right; margin-top:8px; font-weight:600; color:#0b3b78;">
+      Total de vagas: 0
+    </div>
 
     <p class="center grey-text" id="msg-cursos">Nenhum curso cadastrado.</p>
 
@@ -803,6 +815,7 @@ document.getElementById('vagas_novo').addEventListener('keydown', function(e){
     e.preventDefault(); // evita enviar formulário ou recarregar
     salvarCurso();
   }
+  atualizarTotalVagas();
 });
 
 
@@ -880,6 +893,18 @@ async function removerCurso(id) {
   } catch (err) {
     M.toast({ html: 'Erro na exclusão: ' + err.message });
   }
+  atualizarTotalVagas();
+}
+
+function atualizarTotalVagas() {
+  let total = 0;
+  document.querySelectorAll('#modal-cursos table tbody tr').forEach(tr => {
+    const vagas = parseInt(tr.querySelector('td:nth-child(6)')?.textContent || 0);
+    if (!isNaN(vagas)) total += vagas;
+  });
+
+  const div = document.getElementById('total-vagas');
+  if (div) div.textContent = `Total de vagas: ${total.toLocaleString('pt-BR')}`;
 }
 
 
