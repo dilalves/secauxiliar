@@ -104,7 +104,8 @@
       padding-right: 6px;
     }
     #modal-cursos .adicionar-curso button {
-      margin-top: 12px;
+      margin-top: 20px;  /* mais centralizado na linha */
+      padding: 0 12px;
     }
 
 
@@ -115,11 +116,9 @@
     }
 
     #modal-cursos label[for="curso_siglainst_novo"] {
-      margin-top: -6px;
-    }
-
-    #modal-cursos .col.s3 input#curso_siglainst_novo {
-      min-width: 180px;
+      top: -8px !important;
+      transform: scale(0.9);
+      transform-origin: 0 0;
     }
 
     /* Rodapé fixo */
@@ -165,7 +164,17 @@
       font-weight: 500;
       pointer-events: none;
     }
-    
+
+    #modal-cursos .input-field input {
+      height: 2.8rem !important;
+      font-size: 15px !important;
+    }
+
+    #modal-cursos .input-field label {
+      color: #0b3b78 !important;
+      font-weight: 500;
+    }
+        
     @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
   </style>
 </head>
@@ -404,41 +413,51 @@
     <p class="center grey-text" id="msg-cursos">Nenhum curso cadastrado.</p>
 
     <!-- Adicionar novo curso -->
-    <div class="row adicionar-curso">
+    <div class="row adicionar-curso" style="align-items:center; margin-bottom:0;">
+      <!-- Código do Curso -->
       <div class="input-field col s2">
         <input id="curso_id_novo" type="number" min="1" onblur="buscarNomeCurso()">
         <label for="curso_id_novo">Cód. Curso</label>
       </div>
 
+      <!-- Nome do Curso -->
       <div class="input-field col s3">
-        <input id="curso_nome_novo" type="text" readonly tabindex="-1" style="color:#0b3b78; pointer-events:none;">
+        <input id="curso_nome_novo" type="text" readonly tabindex="-1" style="color:#0b3b78; font-weight:600; pointer-events:none;">
         <label class="active" for="curso_nome_novo">Nome do Curso</label>
       </div>
 
+      <!-- Código da Instituição -->
       <div class="input-field col s2">
         <input id="curso_codinst_novo" type="number" min="1" onblur="buscarInstituicaoPorCodigo()">
         <label for="curso_codinst_novo">Cód. Instituição</label>
       </div>
 
-      <div class="input-field col s3">
-        <input id="curso_siglainst_novo" type="text" readonly tabindex="-1" style="color:#0b3b78; pointer-events:none;">
-        <label class="active" for="curso_siglainst_novo" style="top:-18px;">Sigla da Instituição</label>
+      <!-- Sigla da Instituição -->
+      <div class="input-field col s2">
+        <input id="curso_siglainst_novo" type="text" readonly tabindex="-1" style="color:#0b3b78; font-weight:600; pointer-events:none;">
+        <label class="active" for="curso_siglainst_novo">Sigla</label>
       </div>
 
+      <!-- Período -->
       <div class="input-field col s1">
-        <input id="periodo_novo" type="text" placeholder="M / T / V / N">
+        <input id="periodo_novo" type="text" placeholder="M / T / V / N" maxlength="1">
         <label for="periodo_novo">Período</label>
       </div>
 
+      <!-- Vagas -->
       <div class="input-field col s1">
         <input id="vagas_novo" type="number" min="0" value="0">
         <label for="vagas_novo">Vagas</label>
       </div>
 
-      <div class="col s1 center-align">
-        <button class="btn green" onclick="salvarCurso()">+</button>
+      <!-- Botão adicionar -->
+      <div class="col s1 center-align" style="margin-top:20px;">
+        <button class="btn green" onclick="salvarCurso()" type="button">
+          <i class="material-icons">add</i>
+        </button>
       </div>
     </div>
+
   </div>
 
   <!-- Rodapé fixo -->
