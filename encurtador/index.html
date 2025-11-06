@@ -39,6 +39,8 @@
   </div>
 
   <script>
+   const API = 'https://apisec.secauxiliar.com.br/encurtador/';
+
     async function encurtar() {
     const url = document.getElementById('url').value.trim();
     const div = document.getElementById('resultado');
@@ -49,8 +51,10 @@
     }
 
     try {
-        // 🔹 Substituímos o POST por GET
-        const res = await fetch(`encurtar.php?url=${encodeURIComponent(url)}`);
+        // 🔹 chamada para o encurtar.php hospedado na API
+        const res = await fetch(`${API}encurtar.php?url=${encodeURIComponent(url)}`);
+
+        // 🔹 tenta interpretar como JSON
         const data = await res.json();
 
         if (data.ok) {
@@ -60,9 +64,11 @@
         div.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
         }
     } catch (e) {
+        // 🔹 tratamento de erro de rede / JSON inválido
         div.innerHTML = `<p style="color:red;">Falha na requisição: ${e.message}</p>`;
     }
     }
+
 
   </script>
 </body>
