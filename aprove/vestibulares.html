@@ -447,11 +447,12 @@
   </div>
 </div>
 
-
-
-
-
 <script>
+const API = 'https://apisec.secauxiliar.com.br/aprove/';
+let VEST_ATUAL = { id: null, instituicao_id: null, sigla: '' };
+
+
+
 // === NOVO VESTIBULAR (SIMPLIFICADO) ===
 
 async function abrirNovo(){
@@ -501,12 +502,6 @@ async function salvarNovo(){
     M.toast({ html: 'Falha na comunicação com o servidor.' });
   }
 }
-
-</script>
-
-<script>
-  
-const API = 'https://apisec.secauxiliar.com.br/aprove/';
 
 // === Logout ===
 async function logout(){
@@ -671,10 +666,17 @@ async function abrirCursos(vestibularId, instituicaoNome){
     document.getElementById('sigla_instituicao_novo').value = v.sigla || '(sem sigla)';
     document.getElementById('vestibular_ano_curso').value = v.listagem;
     document.getElementById('vestibular_semestre_curso').value = v.semestre;
+
+    // guarda para reutilizar após cada inclusão
+    VEST_ATUAL = {
+      id: v.id,
+      instituicao_id: v.instituicao_id || '',
+      sigla: v.sigla || ''
+    };
     
-    // ✅ NOVO: preencher automaticamente os campos de instituição para o novo curso
-    document.getElementById('curso_codinst_novo').value = v.instituicao_id || '';
-    document.getElementById('curso_siglainst_novo').value = v.sigla || '';
+    // preenche os campos padrão de instituição para o novo curso
+    document.getElementById('curso_codinst_novo').value  = VEST_ATUAL.instituicao_id;
+    document.getElementById('curso_siglainst_novo').value = VEST_ATUAL.sigla;
     
     M.updateTextFields();
 
@@ -749,10 +751,13 @@ async function salvarCurso(){
       // limpa campos
       document.getElementById('curso_id_novo').value = '';
       document.getElementById('curso_nome_novo').value = '';
-      document.getElementById('curso_codinst_novo').value = '';
-      document.getElementById('curso_siglainst_novo').value = '';
       document.getElementById('periodo_novo').value = '';
       document.getElementById('vagas_novo').value = '0';
+
+      // ✅ restaura o padrão da instituição do vestibular atual
+      document.getElementById('curso_codinst_novo').value  = VEST_ATUAL.instituicao_id || '';
+      document.getElementById('curso_siglainst_novo').value = VEST_ATUAL.sigla || '';
+
       M.updateTextFields();
 
       // ⚡ Recarrega tabela e devolve foco ao campo "Cód. Curso"
@@ -765,6 +770,7 @@ async function salvarCurso(){
     } else {
       M.toast({ html: (data.error || 'Erro ao salvar curso') });
     }
+
   }catch(err){
     console.error(err);
     M.toast({ html:'Falha na comunicação com o servidor.' });
