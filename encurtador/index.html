@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Encurtador de Links • SecAuxiliar</title>
+  <title>Encurtador de Links • 3A Sistemas</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <style>
@@ -12,7 +12,7 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      font-family: Roboto, sans-serif;
+      font-family: 'Roboto', sans-serif;
     }
     .card {
       max-width: 500px;
@@ -23,6 +23,10 @@
     #resultado a {
       font-weight: 600;
       color: #0b3b78;
+    }
+    #resultado {
+      transition: all .3s ease;
+      min-height: 40px;
     }
   </style>
 </head>
@@ -39,37 +43,37 @@
   </div>
 
   <script>
-   const API = 'https://apisec.secauxiliar.com.br/encurtador/';
+    // 🔗 URL base da API
+    const API = 'https://apisec.secauxiliar.com.br/encurtador/';
 
     async function encurtar() {
-    const url = document.getElementById('url').value.trim();
-    const div = document.getElementById('resultado');
+      const url = document.getElementById('url').value.trim();
+      const div = document.getElementById('resultado');
 
-    if (!url) {
+      if (!url) {
         div.innerHTML = '<p style="color:red;">Informe uma URL!</p>';
         return;
-    }
+      }
 
-    try {
-        // 🔹 chamada para o encurtar.php hospedado na API
+      // Exibe mensagem temporária enquanto processa
+      div.innerHTML = '<p style="color:#0b3b78;">⏳ Gerando link...</p>';
+
+      try {
         const res = await fetch(`${API}encurtar.php?url=${encodeURIComponent(url)}`);
-
-        // 🔹 tenta interpretar como JSON
         const data = await res.json();
 
         if (data.ok) {
-        div.innerHTML = `<p>✅ Seu link curto:</p>
-            <a href="${data.short_url}" target="_blank">${data.short_url}</a>`;
+          div.innerHTML = `
+            <p>✅ Seu link curto:</p>
+            <a href="${data.short_url}" target="_blank">${data.short_url}</a>
+          `;
         } else {
-        div.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
+          div.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
         }
-    } catch (e) {
-        // 🔹 tratamento de erro de rede / JSON inválido
+      } catch (e) {
         div.innerHTML = `<p style="color:red;">Falha na requisição: ${e.message}</p>`;
+      }
     }
-    }
-
-
   </script>
 </body>
 </html>
