@@ -8,54 +8,92 @@
   <style>
     body {
       background: #f7f9fc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       font-family: 'Roboto', sans-serif;
+      padding: 40px 10px;
+    }
+    main {
+      max-width: 900px;
+      margin: auto;
+    }
+    .tabs .tab a {
+      color: #0b3b78;
+      font-weight: 500;
+    }
+    .tabs .tab a.active {
+      background: #0b3b78;
+      color: #fff;
     }
     .card {
-      max-width: 500px;
-      width: 100%;
-      padding: 30px;
       border-radius: 10px;
     }
-    #resultado a {
-      font-weight: 600;
-      color: #0b3b78;
+    table th, table td {
+      font-size: 0.9em;
     }
-    #resultado {
-      transition: all .3s ease;
-      min-height: 40px;
+    .btn {
+      background-color: #0b3b78;
     }
   </style>
 </head>
 <body>
-  <div class="card white z-depth-2">
-    <h5 class="center-align" style="color:#0b3b78;">🔗 Encurtador de Links</h5>
-    <div class="input-field">
-      <input id="url" type="text" placeholder="Cole aqui o link completo">
+  <main class="white z-depth-2 card">
+    <ul id="tabs" class="tabs tabs-fixed-width">
+      <li class="tab"><a href="#encurtar" class="active">Encurtar Link</a></li>
+      <li class="tab"><a href="#relatorio">Relatórios</a></li>
+    </ul>
+
+    <!-- 🔹 Aba 1 — Encurtar Link -->
+    <div id="encurtar" class="section" style="padding:20px;">
+      <h5 style="color:#0b3b78;">🔗 Encurtador de Links</h5>
+      <div class="input-field">
+        <input id="url" type="text" placeholder="Cole aqui o link completo">
+      </div>
+      <div class="center-align">
+        <button class="btn" onclick="encurtar()">Encurtar</button>
+      </div>
+      <div id="resultado" class="center-align" style="margin-top:20px;"></div>
     </div>
-    <div class="center-align">
-      <button class="btn blue darken-3" onclick="encurtar()">Encurtar</button>
+
+    <!-- 🔹 Aba 2 — Relatórios -->
+    <div id="relatorio" class="section" style="padding:20px;">
+      <h5 style="color:#0b3b78;">📊 Relatório de Links</h5>
+      <div class="right-align" style="margin-bottom:10px;">
+        <button class="btn-small" onclick="carregarRelatorio()">🔄 Atualizar</button>
+      </div>
+      <div class="responsive-table">
+        <table class="highlight centered">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Link Original</th>
+              <th>Curtinho</th>
+              <th>Cliques</th>
+              <th>Último Acesso</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-links">
+            <tr><td colspan="5">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div id="resultado" class="center-align" style="margin-top:20px;"></div>
-  </div>
+  </main>
 
   <script>
-    // 🔗 URL base da API
+    document.addEventListener('DOMContentLoaded', () => {
+      M.Tabs.init(document.querySelector('.tabs'));
+      carregarRelatorio();
+    });
+
     const API = 'https://apisec.secauxiliar.com.br/encurtador/';
 
     async function encurtar() {
       const url = document.getElementById('url').value.trim();
       const div = document.getElementById('resultado');
-
       if (!url) {
         div.innerHTML = '<p style="color:red;">Informe uma URL!</p>';
         return;
       }
 
-      // Exibe mensagem temporária enquanto processa
       div.innerHTML = '<p style="color:#0b3b78;">⏳ Gerando link...</p>';
 
       try {
@@ -67,11 +105,38 @@
             <p>✅ Seu link curto:</p>
             <a href="${data.short_url}" target="_blank">${data.short_url}</a>
           `;
+          carregarRelatorio();
         } else {
           div.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
         }
       } catch (e) {
         div.innerHTML = `<p style="color:red;">Falha na requisição: ${e.message}</p>`;
+      }
+    }
+
+    async function carregarRelatorio() {
+      const tbody = document.getElementById('tabela-links');
+      tbody.innerHTML = '<tr><td colspan="5">⏳ Carregando...</td></tr>';
+
+      try {
+        const res = await fetch(`${API}relatorio.php`);
+        const data = await res.json();
+
+        if (data.ok && data.rows.length > 0) {
+          tbody.innerHTML = data.rows.map(row => `
+            <tr>
+              <td>${row.codigo}</td>
+              <td class="truncate" title="${row.url_original}">${row.url_original}</td>
+              <td><a href="https://obj.li/${row.codigo}" target="_blank">obj.li/${row.codigo}</a></td>
+              <td>${row.cliques ?? 0}</td>
+              <td>${row.ultimo_acesso ?? '-'}</td>
+            </tr>
+          `).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="5">Nenhum link encontrado.</td></tr>';
+        }
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color:red;">Erro: ${e.message}</td></tr>`;
       }
     }
   </script>
