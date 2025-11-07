@@ -9,11 +9,18 @@
     body {
       background: #f7f9fc;
       font-family: 'Roboto', sans-serif;
-      padding: 40px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
     main {
-      max-width: 900px;
-      margin: auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 950px;
+      padding-bottom: 10px;
     }
     .tabs .tab a {
       color: #0b3b78;
@@ -23,38 +30,43 @@
       background: #0b3b78;
       color: #fff;
     }
-    .card {
-      border-radius: 10px;
-    }
     table th, table td {
       font-size: 0.9em;
     }
     .btn {
       background-color: #0b3b78;
     }
+    #resultado {
+      transition: all .3s ease;
+      margin-top: 20px;
+    }
+    #qrcode {
+      margin-top: 15px;
+    }
   </style>
 </head>
 <body>
-  <main class="white z-depth-2 card">
+  <main class="z-depth-2">
     <ul id="tabs" class="tabs tabs-fixed-width">
       <li class="tab"><a href="#encurtar" class="active">Encurtar Link</a></li>
       <li class="tab"><a href="#relatorio">Relatórios</a></li>
     </ul>
 
     <!-- 🔹 Aba 1 — Encurtar Link -->
-    <div id="encurtar" class="section" style="padding:20px;">
-      <h5 style="color:#0b3b78;">🔗 Encurtador de Links</h5>
+    <div id="encurtar" class="section" style="padding:30px;">
+      <h5 style="color:#0b3b78;" class="center-align">🔗 Encurtador de Links</h5>
       <div class="input-field">
         <input id="url" type="text" placeholder="Cole aqui o link completo">
       </div>
       <div class="center-align">
         <button class="btn" onclick="encurtar()">Encurtar</button>
       </div>
-      <div id="resultado" class="center-align" style="margin-top:20px;"></div>
+      <div id="resultado" class="center-align"></div>
+      <div id="qrcode" class="center-align"></div>
     </div>
 
     <!-- 🔹 Aba 2 — Relatórios -->
-    <div id="relatorio" class="section" style="padding:20px;">
+    <div id="relatorio" class="section" style="padding:30px;">
       <h5 style="color:#0b3b78;">📊 Relatório de Links</h5>
       <div class="right-align" style="margin-bottom:10px;">
         <button class="btn-small" onclick="carregarRelatorio()">🔄 Atualizar</button>
@@ -89,22 +101,31 @@
     async function encurtar() {
       const url = document.getElementById('url').value.trim();
       const div = document.getElementById('resultado');
+      const qrDiv = document.getElementById('qrcode');
+
       if (!url) {
         div.innerHTML = '<p style="color:red;">Informe uma URL!</p>';
+        qrDiv.innerHTML = '';
         return;
       }
 
       div.innerHTML = '<p style="color:#0b3b78;">⏳ Gerando link...</p>';
+      qrDiv.innerHTML = '';
 
       try {
         const res = await fetch(`${API}encurtar.php?url=${encodeURIComponent(url)}`);
         const data = await res.json();
 
         if (data.ok) {
+          const shortUrl = data.short_url;
           div.innerHTML = `
             <p>✅ Seu link curto:</p>
-            <a href="${data.short_url}" target="_blank">${data.short_url}</a>
+            <a href="${shortUrl}" target="_blank">${shortUrl}</a>
           `;
+          // 🔹 Gera QR Code (Google Charts API simples)
+          const qrSrc = `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(shortUrl)}&choe=UTF-8`;
+          qrDiv.innerHTML = `<img src="${qrSrc}" alt="QR Code"><p style="font-size:0.9em; color:#666;">Escaneie para abrir o link</p>`;
+
           carregarRelatorio();
         } else {
           div.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
