@@ -122,12 +122,17 @@
             <p>✅ Seu link curto:</p>
             <a href="${shortUrl}" target="_blank">${shortUrl}</a>
           `;
-          // 🔹 Gera QR Code (Google Charts API simples)
-          const qrSrc = `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(shortUrl)}&choe=UTF-8`;
-          qrDiv.innerHTML = `<img src="${qrSrc}" alt="QR Code"><p style="font-size:0.9em; color:#666;">Escaneie para abrir o link</p>`;
+
+          // 🔹 Gera QR Code (com botão para download)
+          const qrSrc = `${API}qr.php?data=${encodeURIComponent(shortUrl)}`;
+          qrDiv.innerHTML = `
+            <img src="${qrSrc}" alt="QR Code" style="margin-top:10px;">
+            <p style="font-size:0.9em; color:#666;">📱 Escaneie para abrir o link</p>
+            <a class="btn-small blue darken-2" href="${qrSrc}" download="qrcode.png" style="margin-top:5px;">⬇️ Baixar QR</a>
+          `;
 
           carregarRelatorio();
-        } else {
+        }else {
           div.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
         }
       } catch (e) {
