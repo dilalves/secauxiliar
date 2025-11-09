@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Encurtador de Links • 3A Sistemas</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <style>
+    body {
+      background: #f7f9fc;
+      font-family: 'Roboto', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    main {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 1050px;
+    }
+    .tabs .tab a { color: #0b3b78; font-weight: 500; }
+    .tabs .tab a.active { background: #0b3b78; color: #fff; }
+    table th, table td { font-size: 0.9em; padding: 10px 6px; }
+    .truncate { max-width: 260px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn, .btn-small { background-color: #0b3b78; }
+    .btn:hover, .btn-small:hover { background-color: #2563eb; }
+    #resultado { transition: all .3s ease; margin-top: 20px; }
+    #qrcode { margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <main class="z-depth-2">
+    <ul id="tabs" class="tabs tabs-fixed-width">
+      <li class="tab"><a href="#encurtar" class="active">Encurtar Link</a></li>
+      <li class="tab"><a href="#relatorio">Relatórios</a></li>
+    </ul>
+
+    <!-- 🔹 Aba 1 — Encurtar Link -->
+    <div id="encurtar" class="section" style="padding:30px;">
+      <h5 style="color:#0b3b78;" class="center-align">🔗 Encurtador de Links</h5>
+      <div class="input-field">
+        <input id="url" type="text" placeholder="Cole aqui o link completo">
+      </div>
+      <div class="center-align">
+        <button class="btn" onclick="encurtar()">Encurtar</button>
+      </div>
+      <div id="resultado" class="center-align"></div>
+      <div id="qrcode" class="center-align"></div>
+    </div>
+
+    <!-- 🔹 Aba 2 — Relatórios -->
+    <div id="relatorio" class="section" style="padding:30px;">
+      <h5 style="color:#0b3b78;">📊 Relatório de Links</h5>
+      <div class="right-align" style="margin-bottom:10px;">
+        <button class="btn-small" onclick="carregarRelatorio()">🔄 Atualizar</button>
+      </div>
+
+      <div class="responsive-table">
+        <table class="highlight centered">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Link Original</th>
+              <th>Link Curto</th>
+              <th>Cliques</th>
+              <th>Último Acesso</th>
+              <th>Estatísticas</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-links">
+            <tr><td colspan="6">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- 🔹 Modal para estatísticas -->
+  <div id="modal-estat" class="modal">
+    <div class="modal-content">
+      <h5 id="titulo-estat" style="color:#0b3b78;">📈 Estatísticas</h5>
+      <div id="conteudo-estat">Carregando...</div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close btn-small blue">Fechar</a>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/encurtador/';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      M.Tabs.init(document.querySelector('.tabs'));
+      M.Modal.init(document.querySelectorAll('.modal'));
+      carregarRelatorio();
+    });
+
+    async function encurtar() {
+      const url = document.getElementById('url').value.trim();
+      const div = document.getElementById('resultado');
+      const qrDiv = document.getElementById('qrcode');
+
+      if (!url) {
+        div.innerHTML = '<p style="color:red;">Informe uma URL!</p>';
+        qrDiv.innerHTML = '';
+        return;
+      }
+
+      div.innerHTML = '<p style="color:#0b3b78;">⏳ Gerando link...</p>';
+      qrDiv.innerHTML = '';
+
+      try {
+        const res = await fetch(`${API}encurtar.php?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+
+        if (data.ok) {
+          const shortUrl = data.short_url;
+          div.innerHTML = `
+            <p>✅ Seu link curto:</p>
+            <a href="${shortUrl}" target="_blank">${shortUrl}</a>
+          `;
+
+          const qrSrc = `${API}qr.php?data=${encodeURIComponent(shortUrl)}`;
+          qrDiv.innerHTML = `
+            <img src="${qrSrc}" alt="QR Code" style="margin-top:10px;">
+            <p style="font-size:0.9em; color:#666;">📱 Escaneie para abrir o link</p>
+            <a class="btn-small blue darken-2" href="${qrSrc}" download="qrcode.png" style="margin-top:5px;">⬇️ Baixar QR</a>
+          `;
+          carregarRelatorio();
+        } else {
+          div.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
+        }
+      } catch (e) {
+        div.innerHTML = `<p style="color:red;">Falha: ${e.message}</p>`;
+      }
+    }
+
+    async function carregarRelatorio() {
+      const tbody = document.getElementById('tabela-links');
+      tbody.innerHTML = '<tr><td colspan="6">⏳ Carregando...</td></tr>';
+
+      try {
+        const res = await fetch(`${API}relatorio.php`);
+        const data = await res.json();
+
+        if (data.ok && data.rows.length > 0) {
+          tbody.innerHTML = data.rows.map(row => `
+            <tr>
+              <td>${row.codigo}</td>
+              <td class="truncate" title="${row.url_original}">${row.url_original}</td>
+              <td><a href="https://obj.li/${row.codigo}" target="_blank">obj.li/${row.codigo}</a></td>
+              <td>${row.cliques ?? 0}</td>
+              <td>${row.ultimo_acesso ?? '-'}</td>
+              <td>
+                <button class="btn-small blue lighten-1" onclick="mostrarEstatisticas('${row.codigo}')">
+                  📈 Ver
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="6">Nenhum link encontrado.</td></tr>';
+        }
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="color:red;">Erro: ${e.message}</td></tr>`;
+      }
+    }
+
+    async function mostrarEstatisticas(codigo) {
+      const modal = M.Modal.getInstance(document.getElementById('modal-estat'));
+      const conteudo = document.getElementById('conteudo-estat');
+      document.getElementById('titulo-estat').innerText = `📈 Estatísticas de ${codigo}`;
+      conteudo.innerHTML = '⏳ Carregando...';
+      modal.open();
+
+      try {
+        const res = await fetch(`${API}estatisticas.php?codigo=${codigo}`);
+        const data = await res.json();
+
+        if (data.ok) {
+          const total = data.total ?? 0;
+          const porPais = data.paises?.map(p => `<li>${p.country} — ${p.qtd} cliques</li>`).join('') || '<li>Sem dados</li>';
+          const porCidade = data.cidades?.map(c => `<li>${c.city} — ${c.qtd} cliques</li>`).join('') || '<li>Sem dados</li>';
+
+          conteudo.innerHTML = `
+            <p><strong>Total de cliques:</strong> ${total}</p>
+            <h6>🌎 Por país:</h6><ul>${porPais}</ul>
+            <h6>🏙️ Por cidade:</h6><ul>${porCidade}</ul>
+          `;
+        } else {
+          conteudo.innerHTML = `<p style="color:red;">${data.error || 'Nenhum dado encontrado'}</p>`;
+        }
+      } catch (e) {
+        conteudo.innerHTML = `<p style="color:red;">Erro: ${e.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
