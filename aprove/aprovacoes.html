@@ -217,7 +217,9 @@ document.getElementById('vest').addEventListener('change', async e=>{
   if(!val) return;
   const res = await fetch(`${API}buscar_vestibular.php?id=${val}`, {credentials:'include'});
   const data = await res.json();
-  document.getElementById('nomeVest').textContent = data.ok ? `${data.nome} (${data.sigla})` : 'Vestibular não encontrado';
+  document.getElementById('nomeVest').textContent = data.ok
+    ? `${data.sigla} — ${data.vestibular}`
+    : 'Vestibular não encontrado';
 });
 
 document.getElementById('codcurso').addEventListener('change', async e=>{
@@ -226,7 +228,9 @@ document.getElementById('codcurso').addEventListener('change', async e=>{
   if(!codcurso || !vest) return;
   const res = await fetch(`${API}buscar_curso.php?vest=${vest}&codcurso=${codcurso}`, {credentials:'include'});
   const data = await res.json();
-  document.getElementById('nomeCurso').textContent = data.ok ? data.curso : 'Curso não encontrado';
+  document.getElementById('nomeCurso').textContent = data.ok
+    ? `${data.curso} (${data.instituicao})`
+    : 'Curso não encontrado neste vestibular';
 });
 
 /* === ENVIO DO FORM === */
