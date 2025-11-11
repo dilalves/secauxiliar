@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Alunos • Aprove — Conferência de Aprovados</title>
+
+  <!-- Materialize -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <style>
+    :root {
+      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+      --ink:#0f172a; --muted:#6b7280; 
+      --primary:#0b3b78; --accent:#2563eb;
+      --aside-w:260px; --topbar-h:64px;
+    }
+
+    html, body {height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
+    body {color:var(--ink);}
+    .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
+    header.topbar {
+      position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
+      background:var(--primary); color:#fff; display:flex; align-items:center;
+      padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+    aside {
+      background:#fff; border-right:1px solid var(--line);
+      position:sticky; top:var(--topbar-h);
+      height:calc(100vh - var(--topbar-h)); overflow:auto; z-index:6;
+      padding-bottom:20px;
+    }
+    .menu {list-style:none; margin:0; padding:0 0 12px;}
+    .menu a {display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:0.25s;}
+    .menu a:hover {background:#f4f6fb; color:var(--primary);}
+    .menu .active > a {background:#eef3ff; font-weight:600; color:var(--primary);}
+    .menu-group {margin-bottom:12px;}
+    .group-title {
+      font-weight:700; color:#0b3b78; text-transform:uppercase;
+      font-size:13px; letter-spacing:0.5px;
+      padding:10px 20px 6px; border-top:1px solid #eef2f8;
+    }
+    main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
+    .page {padding:24px;}
+    footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
+    #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
+    table.striped th {background:#f2f5ff; color:#0b3b78; font-weight:600;}
+    .search-box {display:flex; align-items:center; gap:8px; margin-bottom:16px;}
+    .search-box input {flex:1;}
+
+    .section-title {
+      font-weight:600; color:#0b3b78; margin-top:20px; margin-bottom:8px;
+    }
+
+    /* Aumenta o tamanho do modal de edição */
+    #modal-editar.modal {
+      width: 80% !important;      /* largura do modal */
+      max-height: 90% !important; /* altura máxima */
+    }
+
+    #modal-editar .modal-content {
+      padding: 24px 36px;          /* espaçamento interno mais elegante */
+    }
+
+    /* === MODAL DE NOVO ALUNO === */
+    #modal-novo.modal {
+      width: 90% !important;          /* mais largo */
+      height: 95vh !important;        /* altura fixa quase tela cheia */
+      max-height: 95vh !important;    /* garante que não será cortado */
+      top: 2.5vh !important;          /* centraliza verticalmente */
+      overflow: hidden !important;    /* evita dupla rolagem */
+      border-radius: 12px;
+    }
+
+    #modal-novo .modal-content {
+      padding: 24px 36px;
+      height: calc(95vh - 70px);      /* conteúdo ocupa quase tudo */
+      overflow-y: auto;               /* rola internamente */
+    }
+
+    #modal-novo table thead {
+      position: sticky;
+      top: 0px !important;   /* sobe o cabeçalho — ajuste fino */
+      background: #f8fafc;
+      z-index: 15;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.05);
+    }
+
+    #modal-novo table thead th {
+      background: #f2f5ff;
+      color: #0b3b78;
+      font-weight: 600;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    /* melhora o espaçamento das células da primeira linha (campos de inserção) */
+    #modal-novo tbody td .input-field {
+             /* afasta dos títulos ->  margin-top: 10px;  */
+      margin: 0 !important;        /* remove espaçamento vertical padrão */
+    }
+
+    #tbody-novo tr td span.green-text {
+      font-weight: 600;
+    }
+
+    #modal-novo table td {
+      padding-top: 4px !important;
+      padding-bottom: 4px !important;
+    }
+
+    #modal-novo table .input-field input {
+      height: 28px !important;     /* deixa o campo mais baixo */
+      margin: 0 !important;
+      font-size: 14px;
+    }
+
+    /* garante que a área da tabela role independente */
+    #modal-novo .table-area {
+      max-height: 70vh;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    /* === MODAL DE EDIÇÃO (mesma ideia) === */
+    #modal-editar.modal {
+      width: 80% !important;
+      height: 90vh !important;
+      max-height: 90vh !important;
+      overflow: hidden !important;
+    }
+
+    #modal-editar .modal-content {
+      padding: 24px 36px;
+      height: calc(90vh - 70px);
+      overflow-y: auto;
+    }
+
+    
+    @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
+  </style>
+</head>
+
+<body>
+<div class="app">
+  <!-- ===== SIDEBAR ===== -->
+  <aside>
+    <div class="center" style="padding:18px 0 8px;">
+      <span class="title" style="font-weight:700; color:#0b3b78">Aprove</span>
+    </div>
+
+    <ul class="menu">
+      <li><a href="/aprove/painel.html">Início</a></li>
+
+      <li class="menu-group">
+        <div class="group-title">Atualizações</div>
+        <ul>
+          <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
+          <li class="active"><a href="/aprove/alunos.html">Alunos</a></li>
+          <li><a href="/aprove/instituicoes.html">Instituições</a></li>
+          <li><a href="/aprove/cursos.html">Cursos</a></li>
+          <li><a href="/aprove/unidades.html">Unidades</a></li>
+          <li><a href="/aprove/autorizacoes.html">Autorização de Imagem</a></li>
+          <li><a href="/aprove/vestibulares.html">Listas de Aprovados</a></li>
+        </ul>
+      </li>
+
+      <li class="menu-group">
+        <div class="group-title">Ferramentas</div>
+        <ul>
+          <li><a href="/aprove/conferir_listas.html">Conferir Listas</a></li>
+          <li><a href="/aprove/importar_aprovacoes.html">Importar Aprovações</a></li>
+        </ul>
+      </li>
+
+      <li class="menu-group">
+        <div class="group-title">Relatórios</div>
+        <ul>
+          <li><a href="/aprove/convocados2fase.html">Convocados 2ª Fase</a></li>
+          <li><a href="/aprove/aprovados_rel.html">Aprovados</a></li>
+          <li><a href="/aprove/porcentagem_lista.html">Porcentagem Lista</a></li>
+          <li><a href="/aprove/totais_curso.html">Totais por Curso</a></li>
+          <li><a href="/aprove/totais_instituicao.html">Totais por Instituição</a></li>
+        </ul>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main>
+    <header class="topbar">
+      <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="/aprove/logo-mini.png" alt="Logo" style="height:28px; width:auto;">
+          <h5 style="margin:0; font-weight:600;">
+            Aprove — Conferência de Aprovados — <span id="unitLabel">—</span>
+          </h5>
+        </div>
+        <div style="display:flex; align-items:center;">
+          <a class="btn-flat waves-effect white-text" href="#!" onclick="logout()">Sair</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="page">
+      <h4 style="color:#0b3b78; font-weight:600;">Cadastro de Alunos</h4>
+      <p class="grey-text text-darken-1">Pesquise alunos por nome ou visualize todos.</p>
+
+      <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
+        <div class="search-box">
+          <input id="search" type="text" placeholder="Buscar por nome..." oninput="buscarAlunos()">
+          <button class="btn blue darken-2" onclick="buscarAlunos()">Buscar</button>
+        </div>
+
+        <table class="striped highlight responsive-table" id="tabela-alunos">
+          <thead>
+            <tr>
+              <th>id</th>
+              <th>Nome</th>
+              <th>Série</th>
+              <th>Cód. Unidade</th>
+              <th>Unidade</th>
+              <th>Cadastro</th>
+              <th>Listagem</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <p class="center grey-text" id="msg-status">Digite um nome para buscar.</p>
+      </div>
+
+      <div class="right-align" style="margin-bottom:10px;">
+        <button class="btn green darken-1" onclick="abrirNovoAluno()">+ Adicionar Aluno</button>
+      </div>
+
+    </section>
+
+    <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
+  </main>
+</div>
+
+
+<!-- MODAL DE EDIÇÃO DE ALUNO -->
+<div id="modal-editar" class="modal">
+  <div class="modal-content">
+    <h5 style="color:#0b3b78; font-weight:600;">Editar Aluno</h5>
+
+    <form id="form-editar">
+      <!-- Identificação -->
+      <div class="row">
+        <div class="input-field col s12">
+          <input id="nome" name="nome" type="text" required>
+          <label for="nome">Nome</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="input-field col s6">
+          <input id="cpf" name="cpf" type="text" maxlength="14" placeholder="000.000.000-00">
+          <label for="cpf">CPF</label>
+        </div>
+        <div class="input-field col s6">
+          <input id="serie" name="serie" type="text">
+          <label for="serie">Série</label>
+        </div>
+      </div>
+
+      <!-- Unidade -->
+      <div class="row">
+        <div class="input-field col s4">
+          <input id="codunidade" name="codunidade" type="text" maxlength="6">
+          <label for="codunidade">Cód. Unidade</label>
+        </div>
+        <div class="input-field col s8">
+          <input id="unidade" name="unidade" type="text" readonly>
+          <label for="unidade">Unidade</label>
+        </div>
+      </div>
+
+      <!-- Dados escolares -->
+      <div class="row">
+        <div class="input-field col s4">
+          <input id="cadastro" name="cadastro" type="text" maxlength="4">
+          <label for="cadastro">Cadastro</label>
+        </div>
+        <div class="input-field col s4">
+          <input id="listagem" name="listagem" type="text" maxlength="4" readonly>
+          <label for="listagem">Listagem</label>
+        </div>
+        <div class="input-field col s4">
+          <input id="matricula" name="matricula" type="text">
+          <label for="matricula">Matrícula</label>
+        </div>
+      </div>
+
+      <!-- Contato -->
+      <div class="row">
+        <div class="input-field col s2">
+          <input id="ddd" name="ddd" type="text" maxlength="2">
+          <label for="ddd">DDD</label>
+        </div>
+        <div class="input-field col s4">
+          <input id="celular" name="celular" type="text" maxlength="9">
+          <label for="celular">Celular</label>
+        </div>
+        <div class="input-field col s6">
+          <input id="email" name="email" type="email">
+          <label for="email">E-mail</label>
+        </div>
+      </div>
+
+      <!-- Exclusão -->
+      <div class="row">
+        <div class="input-field col s3">
+          <label><input type="checkbox" id="excluir" name="excluir"><span>Excluir</span></label>
+        </div>
+      </div>
+
+      <input type="hidden" id="id" name="id">
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn blue" onclick="salvarEdicao()">Salvar</button>
+    <a href="#!" class="modal-close btn-flat">Cancelar</a>
+  </div>
+</div>
+
+
+<!-- === NOVO MODAL: LISTAGEM DE APROVAÇÕES DO ALUNO === -->
+<div id="modal-aprovacoes" class="modal">
+  <div class="modal-content">
+    <h5 style="color:#0b3b78; font-weight:600;">Aprovações do Aluno</h5>
+    <p><b>Aluno:</b> <span id="aprov-nome"></span></p>
+
+    <table class="striped highlight responsive-table">
+      <thead>
+        <tr>
+          <th>Curso</th>
+          <th>Instituição</th>
+          <th>Listagem</th>
+          <th>Chamada</th>
+          <th>Classificação</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-aprov"></tbody>
+    </table>
+
+    <p class="center grey-text" id="msg-aprov">Carregando...</p>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" class="modal-close btn-flat">Fechar</a>
+  </div>
+</div>
+
+
+
+<!-- MODAL DE NOVO ALUNO (inserção linha a linha) -->
+<div id="modal-novo" class="modal">
+  <div class="modal-content">
+    <h5 style="color:#0b3b78; font-weight:600;">Novo Aluno</h5>
+
+    <!-- Cabeçalho fixo -->
+    <div class="sticky-header" style="
+      position:sticky;
+      top:0;
+      background:#fff;
+      z-index:10;
+      border-bottom:1px solid #e5e7eb;
+      padding-bottom:4px;
+    ">
+      <div class="row" style="margin-bottom:0;">
+        <div class="input-field col s1">
+          <input id="novo-codunidade" type="text" maxlength="6" required>
+          <label for="novo-codunidade">Cód. Unidade</label>
+        </div>
+        <div class="input-field col s9">
+          <input id="novo-unidade" type="text" readonly>
+          <label for="novo-unidade">Unidade</label>
+        </div>
+        <div class="input-field col s1">
+          <input id="novo-cadastro" type="text" value="2025" readonly>
+          <label class="active" for="novo-cadastro">Cadastro</label>
+        </div>
+        <div class="input-field col s1">
+          <input id="novo-listagem" type="text" value="2026" readonly>
+          <label class="active" for="novo-listagem">Listagem</label>
+        </div>
+      </div>
+
+      <!--
+      <div class="right-align" style="margin-top:6px;">
+        <button class="btn green darken-1" type="button" onclick="addLinhaNovo()">+ Nova linha</button>
+      </div>
+      -->
+
+    </div>
+
+    <!-- Área rolável -->
+    <div style="max-height:60vh; overflow:auto; margin-top:10px; padding-right:8px;">
+      <table class="striped highlight responsive-table">
+        <thead style="position:sticky; top:120px; background:#f8fafc; z-index:4;">
+          <tr>
+            <th style="width:44%;">Nome</th>
+            <th style="width:16%;">Série</th>
+            <th style="width:24%;">CPF</th>
+            <th style="width:8%;">Ações</th>
+            <th style="width:8%;">Status</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-novo"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#!" class="modal-close btn-flat">Fechar</a>
+  </div>
+</div>
+
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/aprove/';
+const LOGIN_URL = '/aprove/index.html';
+
+async function logout(){
+  try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); }
+  catch(_) {}
+  location.replace(LOGIN_URL);
+}
+
+async function carregarUsuario() {
+  try {
+    const res = await fetch(API + 'auth_me.php', { credentials:'include' });
+    const data = await res.json();
+    if (data.ok && data.user) {
+      const nome  = data.user.nome  ?? 'Usuário';
+      const login = data.user.login ?? '';
+      document.getElementById('unitLabel').textContent = `${login} — ${nome}`;
+    }
+  } catch (e) {
+    document.getElementById('unitLabel').textContent = '— Erro de conexão';
+  }
+}
+
+/* ===== BUSCA DE ALUNOS (AJUSTADA) ===== */
+async function buscarAlunos(){
+  const termo = document.getElementById('search').value.trim();
+  const tbody = document.querySelector('#tabela-alunos tbody');
+  tbody.innerHTML = '';
+  document.getElementById('msg-status').textContent = 'Buscando...';
+
+  try {
+    const res = await fetch(API + 'alunos_list.php?nome=' + encodeURIComponent(termo), { credentials:'include' });
+    const data = await res.json();
+
+    if (data.ok && data.rows.length){
+      document.getElementById('msg-status').textContent = '';
+      data.rows.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.ID}</td>
+          <td>${r.NOME}</td>
+          <td>${r.SERIE ?? ''}</td>
+          <td>${r.CODUNIDADE ?? ''}</td>
+          <td>${r.UNIDADE ?? ''}</td>
+          <td>${r.CADASTRO ?? ''}</td>
+          <td>${r.LISTAGEM ?? ''}</td>
+          <td>
+            <button class="btn-small blue" onclick="abrirEdicao(${r.ID})">Editar</button>
+            <button class="btn-small grey" onclick="verAprovacoes(${r.ID}, '${r.NOME.replace(/'/g, "\\'")}')">Ver Aprovações</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } else {
+      document.getElementById('msg-status').textContent = 'Nenhum aluno encontrado.';
+    }
+  } catch(e){
+    document.getElementById('msg-status').textContent = 'Erro ao carregar dados.';
+  }
+}
+
+/* === FUNÇÃO PARA VER APROVAÇÕES DO ALUNO === */
+async function verAprovacoes(idAluno, nomeAluno){
+  const modal = M.Modal.getInstance(document.querySelector('#modal-aprovacoes'));
+  const tbody = document.getElementById('tbody-aprov');
+  const msg = document.getElementById('msg-aprov');
+  tbody.innerHTML = '';
+  msg.textContent = 'Carregando...';
+  document.getElementById('aprov-nome').textContent = nomeAluno;
+
+  try {
+    const res = await fetch(API + 'aprovacoes_by_aluno.php?id=' + idAluno, {credentials:'include'});
+    const data = await res.json();
+
+    if(data.ok && data.rows.length){
+      msg.textContent = '';
+      data.rows.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.curso}</td>
+          <td>${r.instituicao}</td>
+          <td>${r.listagem}</td>
+          <td>${r.chamada}</td>
+          <td>${r.colocacao || '-'}</td>
+          <td>${r.data}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } else {
+      msg.textContent = 'Nenhuma aprovação registrada para este aluno.';
+    }
+
+    modal.open();
+  } catch(e){
+    msg.textContent = 'Erro ao carregar aprovações.';
+  }
+}
+
+/* === INICIALIZAÇÃO === */
+document.addEventListener('DOMContentLoaded', () => {
+  carregarUsuario();
+  M.Modal.init(document.querySelectorAll('.modal'));
+});
+
+document.addEventListener('DOMContentLoaded', carregarUsuario);
+
+document.addEventListener('DOMContentLoaded', () => {
+  carregarUsuario();
+  M.Modal.init(document.querySelectorAll('.modal'));
+});
+
+
+async function abrirEdicao(id) {
+  const modal = M.Modal.getInstance(document.querySelector('#modal-editar'));
+  document.getElementById('form-editar').reset();
+
+  try {
+    const res = await fetch(API + 'alunos_get.php?id=' + id, { credentials: 'include' });
+    const data = await res.json();
+
+    if (data.ok && data.row) {
+      const r = data.row;
+
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val ?? '';
+      };
+
+      set('id', r.id);
+      set('nome', r.nome);
+      set('cpf', r.cpf);
+      set('serie', r.serie);
+      set('codunidade', r.codunidade);
+      set('unidade', r.unidade);
+      set('cadastro', r.cadastro);
+      set('matricula', r.matricula);
+      set('ddd', r.ddd);
+      set('celular', r.celular);
+      set('email', r.email);
+      set('excluir', r.excluir);
+      set('listagem', r.listagem);
+
+      M.updateTextFields();
+      modal.open();
+    } else {
+      M.toast({ html: 'Aluno não encontrado.' });
+    }
+
+  } catch (e) {
+    console.error(e);
+    M.toast({ html: 'Erro de conexão com o servidor.' });
+  }
+}
+
+
+async function salvarEdicao() {
+  const form = document.getElementById('form-editar');
+  const fd = new FormData(form);
+
+  try {
+    const res = await fetch(API + 'alunos_update.php', {
+      method: 'POST',
+      body: fd,
+      credentials: 'include'
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      M.toast({ html:'Cadastro atualizado com sucesso!' });
+      M.Modal.getInstance(document.getElementById('modal-editar')).close();
+      buscarAlunos(); // recarrega a tabela
+    } else {
+      M.toast({ html: data.error || 'Erro ao salvar' });
+    }
+  } catch (e) {
+    M.toast({ html:'Falha na conexão' });
+  }
+}
+
+document.getElementById('codunidade').addEventListener('change', async e => {
+  const cod = e.target.value.trim();
+  const campoUnidade = document.getElementById('unidade');
+
+  if (!cod) {
+    campoUnidade.value = '';
+    M.updateTextFields();
+    return;
+  }
+
+  try {
+    const res = await fetch(API + 'unidades_get.php?codund=' + encodeURIComponent(cod), { credentials:'include' });
+    const data = await res.json();
+
+    if (data.ok && data.row) {
+      campoUnidade.value = data.row.unidade || '';
+    } else {
+      campoUnidade.value = 'Não encontrada';
+    }
+  } catch (e) {
+    campoUnidade.value = 'Erro de conexão';
+  }
+
+  M.updateTextFields();
+});
+
+
+/* ===== CPF: validação e limpeza ===== */
+document.addEventListener('input', e => {
+  if (e.target.id === 'cpf') {
+    const campo = e.target;
+    campo.value = campo.value.replace(/\D/g, ''); // só números
+
+    const helper = document.getElementById('cpf-helper');
+    const cpf = campo.value;
+
+    if (cpf === '') {
+      helper.textContent = '';
+      campo.classList.remove('invalid');
+      return;
+    }
+
+    if (cpfValido(cpf)) {
+      helper.textContent = '';
+      campo.classList.remove('invalid');
+      campo.classList.add('valid');
+    } else {
+      helper.textContent = 'CPF inválido';
+      campo.classList.remove('valid');
+      campo.classList.add('invalid');
+    }
+  }
+});
+
+function cpfValido(cpf) {
+  cpf = cpf.replace(/\D/g, '');
+  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+  let soma = 0;
+  for (let i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
+  let resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf[9])) return false;
+
+  soma = 0;
+  for (let i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
+  resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  return resto === parseInt(cpf[10]);
+}
+
+/* ====== NOVO ALUNO: linha a linha ====== */
+let novoLinhaSeq = 0;
+
+async function abrirNovoAluno(){
+  const modal = M.Modal.getInstance(document.querySelector('#modal-novo'));
+  // Reset sessão
+  document.getElementById('novo-codunidade').value = '';
+  document.getElementById('novo-unidade').value = '';
+  document.getElementById('novo-cadastro').value = '2025';
+  document.getElementById('novo-listagem').value = '2026';
+  document.getElementById('tbody-novo').innerHTML = '';
+
+  // Ao abrir, já cria uma linha
+  addLinhaNovo();
+
+  M.updateTextFields();
+  modal.open();
+}
+
+/* Busca nome da unidade quando muda o código */
+document.addEventListener('change', async (e) => {
+  if (e.target && e.target.id === 'novo-codunidade'){
+    const cod = e.target.value.trim();
+    const campoUnidade = document.getElementById('novo-unidade');
+    if (!cod){
+      campoUnidade.value = '';
+      return M.updateTextFields();
+    }
+    try {
+      const res = await fetch(API + 'unidades_get.php?codund=' + encodeURIComponent(cod), { credentials:'include' });
+      const data = await res.json();
+      campoUnidade.value = (data.ok && data.row) ? (data.row.unidade || '') : 'Não encontrada';
+    } catch {
+      campoUnidade.value = 'Erro de conexão';
+    }
+    M.updateTextFields();
+  }
+});
+
+function addLinhaNovo(){
+  const tbody = document.getElementById('tbody-novo');
+  const idx = ++novoLinhaSeq;
+  const tr = document.createElement('tr');
+  tr.id = `novo-row-${idx}`;
+  tr.innerHTML = `
+    <td>
+      <div class="input-field" style="margin:0;">
+        <input id="novo-nome-${idx}" type="text" required>
+      </div>
+    </td>
+    <td>
+      <div class="input-field" style="margin:0;">
+        <input id="novo-serie-${idx}" type="text">
+      </div>
+    </td>
+    <td>
+      <div class="input-field" style="margin:0;">
+        <input id="novo-cpf-${idx}" type="text" placeholder="somente números" maxlength="14">
+      </div>
+    </td>
+    <td class="center-align">
+      <button class="btn-small blue" type="button" onclick="salvarLinhaNovo(${idx})">Salvar</button>
+    </td>
+    <td id="novo-status-${idx}" class="grey-text center-align">—</td>
+  `;
+  tbody.appendChild(tr);
+
+  // Enter no CPF salva a linha
+  tr.querySelector(`#novo-cpf-${idx}`).addEventListener('keydown', (ev)=>{
+    if (ev.key === 'Enter') salvarLinhaNovo(idx);
+  });
+  // Foco no Nome da nova linha
+  tr.querySelector(`#novo-nome-${idx}`).focus();
+}
+
+async function salvarLinhaNovo(idx){
+  const nomeEl = document.getElementById(`novo-nome-${idx}`);
+  const serieEl = document.getElementById(`novo-serie-${idx}`);
+  const cpfEl   = document.getElementById(`novo-cpf-${idx}`);
+  const status  = document.getElementById(`novo-status-${idx}`);
+
+  const codunidade = document.getElementById('novo-codunidade').value.trim();
+  const cadastro   = document.getElementById('novo-cadastro').value.trim();
+  const listagem   = document.getElementById('novo-listagem').value.trim();
+
+  const nome = (nomeEl.value || '').trim();
+  const serie = (serieEl.value || '').trim();
+  let cpf = (cpfEl.value || '').replace(/\D/g,'');
+
+  // validações
+  if (!codunidade){
+    M.toast({ html: 'Informe o Cód. Unidade antes de salvar as linhas.' });
+    return;
+  }
+  if (!nome){
+    M.toast({ html: 'Informe o Nome.' });
+    nomeEl.focus(); return;
+  }
+  if (cpf && !cpfValido(cpf)){
+    M.toast({ html: 'CPF inválido.' });
+    cpfEl.focus(); return;
+  }
+
+  status.textContent = 'salvando...';
+
+  const fd = new FormData();
+  fd.append('nome', nome);
+  fd.append('serie', serie);
+  fd.append('cpf', cpf);
+  fd.append('codunidade', codunidade);
+  fd.append('cadastro', cadastro);
+  fd.append('listagem', listagem);
+
+  try {
+    const res = await fetch(API + 'alunos_insert.php', {
+      method: 'POST',
+      body: fd,
+      credentials: 'include'
+    });
+    const data = await res.json();
+
+    if (data.ok){
+      status.innerHTML = '<span class="green-text">OK</span>';
+      nomeEl.setAttribute('readonly', true);
+      serieEl.setAttribute('readonly', true);
+      cpfEl.setAttribute('readonly', true);
+      M.updateTextFields();
+      // adiciona nova linha abaixo, sem apagar a anterior
+      addLinhaNovo();
+    }else {
+      status.innerHTML = '<span class="red-text">ERRO</span>';
+      M.toast({ html: data.error || 'Erro ao inserir aluno.' });
+    }
+  } catch (e){
+    status.innerHTML = '<span class="red-text">FALHA</span>';
+    M.toast({ html: 'Falha na conexão com o servidor.' });
+  }
+}
+
+
+
+</script>
+</body>
+</html>
