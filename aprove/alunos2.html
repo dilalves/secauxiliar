@@ -461,22 +461,27 @@ async function buscarAlunos(){
     if (data.ok && data.rows.length){
       document.getElementById('msg-status').textContent = '';
       data.rows.forEach(r=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${r.ID}</td>
-          <td>${r.NOME}</td>
-          <td>${r.SERIE ?? ''}</td>
-          <td>${r.CODUNIDADE ?? ''}</td>
-          <td>${r.UNIDADE ?? ''}</td>
-          <td>${r.CADASTRO ?? ''}</td>
-          <td>${r.LISTAGEM ?? ''}</td>
-          <td>
-            <button class="btn-small blue" onclick="abrirEdicao(${r.ID})">Editar</button>
-            <button class="btn-small grey" onclick="verAprovacoes(${r.ID}, '${r.NOME.replace(/'/g, "\\'")}')">Ver Aprovações</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+      const tr = document.createElement('tr');
+      const temAprov = (parseInt(r.QTDE_APROV || 0) > 0);
+      const btnAprov = temAprov
+        ? `<button class="btn-small grey" onclick="verAprovacoes(${r.ID}, '${r.NOME.replace(/'/g, "\\'")}')">Ver Aprovações</button>`
+        : '';
+
+      tr.innerHTML = `
+        <td>${r.ID}</td>
+        <td>${r.NOME}</td>
+        <td>${r.SERIE ?? ''}</td>
+        <td>${r.CODUNIDADE ?? ''}</td>
+        <td>${r.UNIDADE ?? ''}</td>
+        <td>${r.CADASTRO ?? ''}</td>
+        <td>${r.LISTAGEM ?? ''}</td>
+        <td>
+          <button class="btn-small blue" onclick="abrirEdicao(${r.ID})">Editar</button>
+          ${btnAprov}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
     } else {
       document.getElementById('msg-status').textContent = 'Nenhum aluno encontrado.';
     }
