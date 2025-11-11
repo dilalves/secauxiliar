@@ -298,7 +298,7 @@ async function carregarAprovacoes(){
           <td>${r.created_at}</td>
           <td>
             <a href="#modal-editar" class="btn-small blue lighten-1 modal-trigger" 
-              onclick="abrirEdicao(${r.id}, '${r.codcurso}', '${r.colocacao || ''}')">
+              onclick="abrirEdicao(${r.id}, '${r.codcurso}', '${r.colocacao || ''}', '${r.nome_aluno.replace(/'/g, "\\'")}')">
               <i class="material-icons">edit</i>
             </a>
           </td>
@@ -319,10 +319,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Abre modal e preenche dados
-function abrirEdicao(id, codcurso, colocacao){
+function abrirEdicao(id, codcurso, colocacao, nomeAluno){
   document.getElementById('edit-id').value = id;
-  document.getElementById('edit-codcurso').value = codcurso;
+  document.getElementById('edit-codcurso').value = codcurso || '';
   document.getElementById('edit-colocacao').value = colocacao || '';
+  document.getElementById('edit-nomeAluno').textContent = nomeAluno || 'Aluno não identificado';
   M.updateTextFields();
 }
 
