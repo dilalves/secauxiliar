@@ -105,30 +105,28 @@
     </header>
 
     <section class="page">
-      <h4 style="color:#0b3b78; font-weight:600;">Cadastro Direto de Aprovações</h4>
+      <h4 style="color:#0b3b78; font-weight:600;">
+        Cadastro Direto de Aprovações — <span class="grey-text text-darken-1">Listagem 2026</span>
+      </h4>
       <p class="grey-text text-darken-1">Informe os códigos e cadastre aprovações diretamente no sistema.</p>
 
       <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
         <form id="form-aprovacao">
           <div class="row">
-            <div class="input-field col s2">
+            <div class="input-field col s3">
               <input id="codaluno" name="codaluno" type="number" required>
               <label for="codaluno">Código do Aluno</label>
               <span id="nomeAluno" class="helper"></span>
             </div>
-            <div class="input-field col s1">
+            <div class="input-field col s2">
               <input id="vest" name="vest" type="number" required>
               <label for="vest">Código do Vestibular</label>
               <span id="nomeVest" class="helper"></span>
             </div>
-            <div class="input-field col s1">
+            <div class="input-field col s2">
               <input id="codcurso" name="codcurso" type="text" maxlength="10" required>
               <label for="codcurso">Código do Curso</label>
               <span id="nomeCurso" class="helper"></span>
-            </div>
-            <div class="input-field col s1">
-              <input id="listagem" name="listagem" type="number" value="2026" required>
-              <label for="listagem">Ano da Listagem</label>
             </div>
             <div class="input-field col s1">
               <input id="chamada" name="chamada" type="number" value="1" required>
@@ -227,13 +225,17 @@ document.getElementById('codcurso').addEventListener('change', async e=>{
 /* === ENVIO DO FORM === */
 document.getElementById('form-aprovacao').addEventListener('submit', async e=>{
   e.preventDefault();
+
   const formData = Object.fromEntries(new FormData(e.target).entries());
+  formData.listagem = 2026; // valor fixo da listagem
+
   const res = await fetch(API + 'aprovacoes_insert.php', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     credentials:'include',
     body:JSON.stringify(formData)
   });
+
   const data = await res.json();
   const msg = document.getElementById('mensagem');
   msg.textContent = data.msg;
