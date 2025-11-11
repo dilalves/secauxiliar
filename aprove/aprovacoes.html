@@ -183,6 +183,7 @@
         <div class="input-field">
           <input id="edit-codcurso" type="text" required>
           <label for="edit-codcurso">Código do Curso</label>
+          <span id="edit-nomeCurso" class="helper"></span> <!-- 🔹 AJUSTE -->
         </div>
         <div class="input-field">
           <input id="edit-colocacao" type="number">
@@ -219,7 +220,7 @@ async function carregarUsuario(){
     const res = await fetch(API + 'auth_me.php', { credentials:'include' });
     const data = await res.json();
     if (data.ok && data.user){
-      usuarioAtual = data.user.login; // já é o código 256595
+      usuarioAtual = data.user.login;
       document.getElementById('unitLabel').textContent = `${usuarioAtual} — ${data.user.nome}`;
       carregarAprovacoes();
     }
@@ -263,7 +264,7 @@ document.getElementById('form-aprovacao').addEventListener('submit', async e=>{
   e.preventDefault();
 
   const formData = Object.fromEntries(new FormData(e.target).entries());
-  formData.listagem = 2026; // valor fixo da listagem
+  formData.listagem = 2026;
 
   const res = await fetch(API + 'aprovacoes_insert.php', {
     method:'POST',
@@ -294,14 +295,14 @@ async function carregarAprovacoes(){
       document.getElementById('msg-lista').textContent = '';
       data.rows.forEach(r=>{
         const tr = document.createElement('tr');
-       tr.innerHTML = `
+        tr.innerHTML = `
           <td>${r.nome_aluno}</td>
           <td>${r.serie || '-'}</td>
           <td>${r.unidade || '-'}</td>
           <td>${r.curso}</td>
           <td>${r.instituicao}</td>
           <td>${r.chamada}</td>
-          <td>${r.colocacao}</td>
+          <td>${r.colocacao || '-'}</td>
           <td>${r.created_at}</td>
           <td>
             <a href="#modal-editar" class="btn-small blue lighten-1 modal-trigger" 
@@ -319,6 +320,7 @@ async function carregarAprovacoes(){
     document.getElementById('msg-lista').textContent = 'Erro ao carregar aprovações.';
   }
 }
+
 document.addEventListener('DOMContentLoaded', carregarUsuario);
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -330,12 +332,41 @@ function abrirEdicao(id, vest, codcurso, colocacao, chamada, nomeAluno){
   document.getElementById('edit-id').value = id;
   document.getElementById('edit-id-label').textContent = id;
   document.getElementById('edit-codcurso').value = codcurso || '';
+  document.getElementById('edit-nomeCurso').textContent = '';
   document.getElementById('edit-colocacao').value = colocacao || '';
   document.getElementById('edit-vest').textContent = vest || '-';
   document.getElementById('edit-chamada').textContent = chamada || '-';
   document.getElementById('edit-nomeAluno').textContent = nomeAluno || 'Aluno não identificado';
   M.updateTextFields();
 }
+
+// 🔹 AJUSTE: valida automaticamente o curso digitado no modal
+document.getElementById('edit-codcurso').addEventListener('change', async e=>{
+  const codcurso = e.target.value.trim();
+  const vest = document.getElementById('edit-vest').textContent.trim();
+  const helper = document.getElementById('edit-nomeCurso');
+
+  if(!codcurso || !vest){
+    helper.textContent = 'Informe o código do curso e o vestibular.';
+    helper.style.color = 'red';
+    return;
+  }
+
+  try{
+    const res = await fetch(`${API}buscar_curso.php?vest=${vest}&codcurso=${codcurso}`, {credentials:'include'});
+    const data = await res.json();
+    if(data.ok){
+      helper.textContent = `${data.curso} (${data.instituicao})`;
+      helper.style.color = 'green';
+    } else {
+      helper.textContent = 'Curso não encontrado neste vestibular.';
+      helper.style.color = 'red';
+    }
+  }catch(err){
+    helper.textContent = 'Erro ao verificar curso.';
+    helper.style.color = 'red';
+  }
+});
 
 // Salvar alterações
 document.getElementById('form-editar').addEventListener('submit', async e=>{
