@@ -50,7 +50,7 @@
 </head>
 
 <body>
-<div class="app">
+  <div class="app">
   <!-- ===== SIDEBAR ===== -->
   <aside>
     <div class="center" style="padding:18px 0 8px;">
@@ -156,6 +156,7 @@
             <th>Chamada</th>
             <th>Listagem</th>
             <th>Data</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -165,9 +166,37 @@
 
     <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
   </main>
+
+  <!-- MODAL DE EDIÇÃO -->
+<div id="modal-editar" class="modal">
+  <div class="modal-content">
+    <h5 style="color:#0b3b78; font-weight:600;">Editar Aprovação</h5>
+    <form id="form-editar">
+      <input type="hidden" id="edit-id">
+      <div class="input-field">
+        <input id="edit-codcurso" type="text" required>
+        <label for="edit-codcurso">Código do Curso</label>
+      </div>
+      <div class="input-field">
+        <input id="edit-colocacao" type="number">
+        <label for="edit-colocacao">Colocação</label>
+      </div>
+      <div class="right-align" style="margin-top:20px;">
+        <a href="#!" class="btn red lighten-1" onclick="excluirAprovacao()">
+          <i class="material-icons left">delete</i>Excluir
+        </a>
+        <button type="submit" class="btn blue darken-2">
+          <i class="material-icons left">save</i>Salvar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 </div>
 
 <script>
+
 const API = 'https://apisec.secauxiliar.com.br/aprove/';
 const LOGIN_URL = '/aprove/index.html';
 let usuarioAtual = '';
@@ -267,6 +296,12 @@ async function carregarAprovacoes(){
           <td>${r.chamada}</td>
           <td>${r.listagem}</td>
           <td>${r.created_at}</td>
+          <td>
+            <a href="#modal-editar" class="btn-small blue lighten-1 modal-trigger" 
+              onclick="abrirEdicao(${r.id}, '${r.codcurso}', '${r.colocacao || ''}')">
+              <i class="material-icons">edit</i>
+            </a>
+          </td>
         `;
         tbody.appendChild(tr);
       });
@@ -277,8 +312,58 @@ async function carregarAprovacoes(){
     document.getElementById('msg-lista').textContent = 'Erro ao carregar aprovações.';
   }
 }
-
 document.addEventListener('DOMContentLoaded', carregarUsuario);
+
+document.addEventListener('DOMContentLoaded', function() {
+  M.Modal.init(document.querySelectorAll('.modal'));
+});
+
+// Abre modal e preenche dados
+function abrirEdicao(id, codcurso, colocacao){
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-codcurso').value = codcurso;
+  document.getElementById('edit-colocacao').value = colocacao || '';
+  M.updateTextFields();
+}
+
+// Salvar alterações
+document.getElementById('form-editar').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const dados = {
+    id: document.getElementById('edit-id').value,
+    codcurso: document.getElementById('edit-codcurso').value.trim(),
+    colocacao: document.getElementById('edit-colocacao').value.trim()
+  };
+
+  const res = await fetch(API + 'aprovacoes_update.php', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    credentials:'include',
+    body:JSON.stringify(dados)
+  });
+  const data = await res.json();
+  M.toast({html:data.msg, classes:data.ok?'green':'red'});
+  if(data.ok){
+    const modal = M.Modal.getInstance(document.getElementById('modal-editar'));
+    modal.close();
+    carregarAprovacoes();
+  }
+});
+
+// Excluir
+async function excluirAprovacao(){
+  const id = document.getElementById('edit-id').value;
+  if(!confirm('Deseja realmente excluir esta aprovação?')) return;
+  const res = await fetch(API + 'aprovacoes_delete.php?id=' + id, {credentials:'include'});
+  const data = await res.json();
+  M.toast({html:data.msg, classes:data.ok?'green':'red'});
+  if(data.ok){
+    const modal = M.Modal.getInstance(document.getElementById('modal-editar'));
+    modal.close();
+    carregarAprovacoes();
+  }
+}
+
 </script>
 </body>
 </html>
