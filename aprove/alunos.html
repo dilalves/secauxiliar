@@ -315,11 +315,7 @@
       <!-- Exclusão -->
       <div class="row">
         <div class="input-field col s3">
-        <!-- <input id="excluir" name="excluir" type="text" maxlength="1">
-          <label for="excluir">Excluir (S/N)</label>   -->
-        
           <label><input type="checkbox" id="excluir" name="excluir"><span>Excluir</span></label>
-
         </div>
       </div>
 
@@ -332,6 +328,35 @@
     <a href="#!" class="modal-close btn-flat">Cancelar</a>
   </div>
 </div>
+
+
+<!-- === NOVO MODAL: LISTAGEM DE APROVAÇÕES DO ALUNO === -->
+<div id="modal-aprovacoes" class="modal">
+  <div class="modal-content">
+    <h5 style="color:#0b3b78; font-weight:600;">Aprovações do Aluno</h5>
+    <p><b>Aluno:</b> <span id="aprov-nome"></span></p>
+
+    <table class="striped highlight responsive-table">
+      <thead>
+        <tr>
+          <th>Curso</th>
+          <th>Instituição</th>
+          <th>Listagem</th>
+          <th>Chamada</th>
+          <th>Classificação</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-aprov"></tbody>
+    </table>
+
+    <p class="center grey-text" id="msg-aprov">Carregando...</p>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" class="modal-close btn-flat">Fechar</a>
+  </div>
+</div>
+
 
 
 <!-- MODAL DE NOVO ALUNO (inserção linha a linha) -->
@@ -422,7 +447,7 @@ async function carregarUsuario() {
   }
 }
 
-/* ===== BUSCA DE ALUNOS ===== */
+/* ===== BUSCA DE ALUNOS (AJUSTADA) ===== */
 async function buscarAlunos(){
   const termo = document.getElementById('search').value.trim();
   const tbody = document.querySelector('#tabela-alunos tbody');
@@ -436,21 +461,27 @@ async function buscarAlunos(){
     if (data.ok && data.rows.length){
       document.getElementById('msg-status').textContent = '';
       data.rows.forEach(r=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${r.ID}</td>
-          <td>${r.NOME}</td>
-          <td>${r.SERIE ?? ''}</td>
-          <td>${r.CODUNIDADE ?? ''}</td>
-          <td>${r.UNIDADE ?? ''}</td>
-          <td>${r.CADASTRO ?? ''}</td>
-          <td>${r.LISTAGEM ?? ''}</td>
-          <td>
-            <button class="btn-small blue" onclick="abrirEdicao(${r.ID})">Editar</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+      const tr = document.createElement('tr');
+      const temAprov = (parseInt(r.QTDE_APROV || 0) > 0);
+      const btnAprov = temAprov
+        ? `<button class="btn-small grey" onclick="verAprovacoes(${r.ID}, '${r.NOME.replace(/'/g, "\\'")}')">Ver Aprovações</button>`
+        : '';
+
+      tr.innerHTML = `
+        <td>${r.ID}</td>
+        <td>${r.NOME}</td>
+        <td>${r.SERIE ?? ''}</td>
+        <td>${r.CODUNIDADE ?? ''}</td>
+        <td>${r.UNIDADE ?? ''}</td>
+        <td>${r.CADASTRO ?? ''}</td>
+        <td>${r.LISTAGEM ?? ''}</td>
+        <td>
+          <button class="btn-small blue" onclick="abrirEdicao(${r.ID})">Editar</button>
+          ${btnAprov}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
     } else {
       document.getElementById('msg-status').textContent = 'Nenhum aluno encontrado.';
     }
@@ -458,6 +489,49 @@ async function buscarAlunos(){
     document.getElementById('msg-status').textContent = 'Erro ao carregar dados.';
   }
 }
+
+/* === FUNÇÃO PARA VER APROVAÇÕES DO ALUNO === */
+async function verAprovacoes(idAluno, nomeAluno){
+  const modal = M.Modal.getInstance(document.querySelector('#modal-aprovacoes'));
+  const tbody = document.getElementById('tbody-aprov');
+  const msg = document.getElementById('msg-aprov');
+  tbody.innerHTML = '';
+  msg.textContent = 'Carregando...';
+  document.getElementById('aprov-nome').textContent = nomeAluno;
+
+  try {
+    const res = await fetch(API + 'aprovacoes_by_aluno.php?id=' + idAluno, {credentials:'include'});
+    const data = await res.json();
+
+    if(data.ok && data.rows.length){
+      msg.textContent = '';
+      data.rows.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.curso}</td>
+          <td>${r.instituicao}</td>
+          <td>${r.listagem}</td>
+          <td>${r.chamada}</td>
+          <td>${r.colocacao || '-'}</td>
+          <td>${r.data}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } else {
+      msg.textContent = 'Nenhuma aprovação registrada para este aluno.';
+    }
+
+    modal.open();
+  } catch(e){
+    msg.textContent = 'Erro ao carregar aprovações.';
+  }
+}
+
+/* === INICIALIZAÇÃO === */
+document.addEventListener('DOMContentLoaded', () => {
+  carregarUsuario();
+  M.Modal.init(document.querySelectorAll('.modal'));
+});
 
 document.addEventListener('DOMContentLoaded', carregarUsuario);
 
