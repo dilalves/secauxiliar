@@ -167,31 +167,38 @@
     <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
   </main>
 
-  <!-- MODAL DE EDIÇÃO -->
-<div id="modal-editar" class="modal">
-  <div class="modal-content">
-    <h5 style="color:#0b3b78; font-weight:600;">Editar Aprovação</h5>
-    <form id="form-editar">
-      <input type="hidden" id="edit-id">
-      <div class="input-field">
-        <input id="edit-codcurso" type="text" required>
-        <label for="edit-codcurso">Código do Curso</label>
+ <!-- MODAL DE EDIÇÃO -->
+  <div id="modal-editar" class="modal">
+    <div class="modal-content">
+      <h5 style="color:#0b3b78; font-weight:600;">Editar Aprovação</h5>
+      <div id="edit-info" style="margin-bottom:20px; line-height:1.5;">
+        <p><b>ID:</b> <span id="edit-id-label"></span></p>
+        <p><b>Aluno:</b> <span id="edit-nomeAluno"></span></p>
+        <p><b>Cód. Vestibular:</b> <span id="edit-vest"></span></p>
+        <p><b>Chamada:</b> <span id="edit-chamada"></span></p>
       </div>
-      <div class="input-field">
-        <input id="edit-colocacao" type="number">
-        <label for="edit-colocacao">Colocação</label>
-      </div>
-      <div class="right-align" style="margin-top:20px;">
-        <a href="#!" class="btn red lighten-1" onclick="excluirAprovacao()">
-          <i class="material-icons left">delete</i>Excluir
-        </a>
-        <button type="submit" class="btn blue darken-2">
-          <i class="material-icons left">save</i>Salvar
-        </button>
-      </div>
-    </form>
+
+      <form id="form-editar">
+        <input type="hidden" id="edit-id">
+        <div class="input-field">
+          <input id="edit-codcurso" type="text" required>
+          <label for="edit-codcurso">Código do Curso</label>
+        </div>
+        <div class="input-field">
+          <input id="edit-colocacao" type="number">
+          <label for="edit-colocacao">Colocação</label>
+        </div>
+        <div class="right-align" style="margin-top:20px;">
+          <a href="#!" class="btn red lighten-1" onclick="excluirAprovacao()">
+            <i class="material-icons left">delete</i>Excluir
+          </a>
+          <button type="submit" class="btn blue darken-2">
+            <i class="material-icons left">save</i>Salvar
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
 </div>
 
@@ -298,8 +305,8 @@ async function carregarAprovacoes(){
           <td>${r.created_at}</td>
           <td>
             <a href="#modal-editar" class="btn-small blue lighten-1 modal-trigger" 
-              onclick="abrirEdicao(${r.id}, '${r.codcurso}', '${r.colocacao || ''}', '${r.nome_aluno.replace(/'/g, "\\'")}')">
-              <i class="material-icons">edit</i>
+              onclick="abrirEdicao(${r.id}, ${r.vest}, '${r.codcurso}', '${r.colocacao || ''}', ${r.chamada}, '${r.nome_aluno.replace(/'/g, "\\'")}')">
+              <i class='material-icons'>edit</i>
             </a>
           </td>
         `;
@@ -319,10 +326,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Abre modal e preenche dados
-function abrirEdicao(id, codcurso, colocacao, nomeAluno){
+function abrirEdicao(id, vest, codcurso, colocacao, chamada, nomeAluno){
   document.getElementById('edit-id').value = id;
+  document.getElementById('edit-id-label').textContent = id;
   document.getElementById('edit-codcurso').value = codcurso || '';
   document.getElementById('edit-colocacao').value = colocacao || '';
+  document.getElementById('edit-vest').textContent = vest || '-';
+  document.getElementById('edit-chamada').textContent = chamada || '-';
   document.getElementById('edit-nomeAluno').textContent = nomeAluno || 'Aluno não identificado';
   M.updateTextFields();
 }
