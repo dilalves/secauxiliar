@@ -38,7 +38,7 @@
       font-size:13px; letter-spacing:.5px; padding:10px 20px 6px; border-top:1px solid #eef2f8;}
     main{display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
     .page{padding:24px;}
-    footer{text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
+    footer{text-align:center; font-size:13px; color: var(--muted); padding:16px 0 10px;}
     #unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
     table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
     .section-title{font-weight:600; color:#0b3b78; margin:14px 0 8px;}
@@ -117,8 +117,8 @@
       <div class="card z-depth-0" style="padding:18px;">
         <div class="row" style="margin-bottom:0;">
           <div class="input-field col s12 m6 l5">
-            <select id="selVest"></select>
-            <label for="selVest">Código da Lista (Vestibular)</label>
+            <input id="inpVest" type="number" min="1" placeholder="ex.: 1234">
+            <label for="inpVest">Código da Lista (Vestibular)</label>
             <span class="helper-text">Fica fixo durante a conferência</span>
           </div>
 
@@ -233,86 +233,50 @@ async function logout(){
 const $ = s => document.querySelector(s);
 const debounce = (fn,ms=300)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); } };
 const toast = m => M.toast({html:m});
+const getVest = () => (document.getElementById('inpVest').value || '').trim();
+
 function enableLancar(){
-  const ok = ($('#selAlunoId').value) && ($('#selCursoCod').value) && ($('#selVest').value);
+  const ok = ($('#selAlunoId').value) && ($('#selCursoCod').value) && getVest();
   $('#btnLancar').disabled = !ok;
 }
 
-// ===== vestibulares -> select
-async function carregarVestibulares(){
-  const sel = $('#selVest');
-  sel.innerHTML = '<option value="" disabled selected>Carregando…</option>';
-  M.FormSelect.init(sel);
-
-  try{
-    const r = await fetch(API+'vestibulares_list.php',{credentials:'include'});
-    const j = await r.json();
-    if(!j.ok) throw new Error(j.erro || 'Falha ao listar vestibulares');
-
-    sel.innerHTML = '<option value="" disabled selected>Selecione…</option>';
-    (j.rows||[]).forEach(v=>{
-      const txt = `${v.sigla ?? v.instituicao} • ${v.listagem}-${v.semestre}`;
-      const opt = new Option(txt, v.id);
-      opt.dataset.listagem = v.listagem;
-      sel.appendChild(opt);
-    });
-    M.FormSelect.init(sel);
-  }catch(e){
-    sel.innerHTML = '<option value="" disabled selected>Erro</option>';
-    M.FormSelect.init(sel);
-    toast('Erro ao carregar vestibulares: '+e.message);
-  }
-}
-
-// quando muda o vest -> atualiza listagem e cursos
-$('#selVest').addEventListener('change', async ()=>{
-  const sel = $('#selVest');
-  const listagem = sel.options[sel.selectedIndex]?.dataset?.listagem || '';
-  $('#inpListagem').value = listagem;
-  M.updateTextFields();
-
-  await carregarCursosDoVest();
-  enableLancar();
-});
-
 // ===== cursos do vest
-let cursoSelecionado = null;
 async function carregarCursosDoVest(){
-  const vest = $('#selVest').value;
-  const box = $('#coursesBox');
+  const vest = getVest();
+  const box = document.getElementById('coursesBox');
   box.innerHTML = '<div class="center muted" style="padding:12px">Carregando…</div>';
-  $('#cursoCount').textContent = '—';
-  cursoSelecionado = null;
-  $('#selCursoCod').value = '';
+  document.getElementById('cursoCount').textContent = '—';
+  document.getElementById('selCursoCod').value = '';
   M.updateTextFields();
   enableLancar();
 
-  if(!vest){ box.innerHTML = '<div class="center muted" style="padding:12px">Selecione o vestibular</div>'; return; }
+  if(!vest){
+    box.innerHTML = '<div class="center muted" style="padding:12px">Informe o código da lista</div>';
+    return;
+  }
 
   try{
-    const r = await fetch(API+`vestibular_cursos_list.php?vest=${encodeURIComponent(vest)}`,{credentials:'include'});
+    const r = await fetch(API + `vestibular_cursos_list.php?vest=${encodeURIComponent(vest)}`, {credentials:'include'});
     const j = await r.json();
-    const rows = j.rows || j.cursos || []; // compat
+    const rows = j.rows || j.cursos || [];
     if(!j.ok) throw new Error(j.error || 'Falha ao listar cursos');
 
-    $('#cursoCount').textContent = rows.length;
+    document.getElementById('cursoCount').textContent = rows.length;
     if(!rows.length){ box.innerHTML = '<div class="center muted" style="padding:12px">Nenhum curso cadastrado</div>'; return; }
 
     box.innerHTML = '';
     rows.forEach(c=>{
-      // campos usuais: codigc, curso, extenso, P … (adaptável)
       const cod = c.codigc ?? c.codigo ?? c.cod ?? c.id ?? '';
       const nome = c.curso ?? c.nome ?? '';
       const ext  = c.extenso ?? '';
-      const row = document.createElement('div');
+      const row  = document.createElement('div');
       row.className = 'rowc';
       row.dataset.codcurso = cod;
       row.innerHTML = `<div class="muted">${cod}</div><div><div style="font-weight:600">${nome}</div><div class="muted" style="font-size:13px">${ext}</div></div>`;
       row.addEventListener('click', ()=>{
         box.querySelectorAll('.rowc').forEach(r=>r.classList.remove('active'));
         row.classList.add('active');
-        cursoSelecionado = cod;
-        $('#selCursoCod').value = cod;
+        document.getElementById('selCursoCod').value = cod;
         M.updateTextFields();
         enableLancar();
       });
@@ -320,7 +284,7 @@ async function carregarCursosDoVest(){
     });
   }catch(e){
     box.innerHTML = '<div class="center red-text" style="padding:12px">Erro ao carregar cursos</div>';
-    toast(e.message);
+    M.toast({html:e.message});
   }
 }
 
@@ -395,7 +359,7 @@ $('#inpBusca').addEventListener('keydown', e=>{
 // ===== lançar aprovação
 async function lancarAprovacao(){
   const codaluno = $('#selAlunoId').value;
-  const vest = $('#selVest').value;
+  const vest = getVest();
   const codcurso = $('#selCursoCod').value;
   const chamada = parseInt($('#inpChamada').value || '1',10);
   const listagem = parseInt($('#inpListagem').value || '0',10);
@@ -415,7 +379,7 @@ async function lancarAprovacao(){
     const j = await r.json();
     if(!j.ok) throw new Error(j.msg || 'Falha ao salvar');
 
-    toast('Aprovação registrada!');
+    M.toast({html:'Aprovação registrada!'});
     // limpa só aluno/colocação (mantém vest/chamada/curso marcado)
     $('#selAlunoId').value = '';
     $('#selAlunoLabel').value = '';
@@ -423,7 +387,7 @@ async function lancarAprovacao(){
     M.updateTextFields();
     enableLancar();
   }catch(e){
-    toast('Erro: '+e.message);
+    M.toast({html:'Erro: '+e.message});
   }finally{
     $('#btnLancar').disabled = false;
   }
@@ -431,11 +395,49 @@ async function lancarAprovacao(){
 
 $('#btnLancar').addEventListener('click', lancarAprovacao);
 
+// ===== carregar listagem a partir do código e puxar cursos
+async function carregarDadosVest() {
+  const vest = getVest();
+  const listagemEl = document.getElementById('inpListagem');
+  listagemEl.value = '';
+  M.updateTextFields();
+  if (!vest) { return; }
+
+  try {
+    let j;
+    try {
+      const r1 = await fetch(API + 'vestibulares_get.php?id=' + encodeURIComponent(vest), { credentials:'include' });
+      j = await r1.json();
+      if (!(j && j.ok && j.row)) throw new Error('sem_get');
+      listagemEl.value = j.row.listagem || '';
+    } catch {
+      const r2 = await fetch(API + 'vestibulares_list.php', { credentials:'include' });
+      const j2 = await r2.json();
+      const row = (j2.rows || []).find(x => String(x.id) === String(vest));
+      listagemEl.value = row ? (row.listagem || '') : '';
+    }
+    M.updateTextFields();
+  } catch {
+    /* silencioso */
+  }
+
+  await carregarCursosDoVest();
+  enableLancar();
+}
+
+// listeners do campo de código
+const debouncedVest = debounce(carregarDadosVest, 300);
+document.getElementById('inpVest').addEventListener('input', debouncedVest);
+document.getElementById('inpVest').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') carregarDadosVest();
+});
+
 // ===== init
 document.addEventListener('DOMContentLoaded', ()=>{
   carregarUsuario();
-  M.AutoInit(); // label/select/tooltip
-  carregarVestibulares();
+  M.AutoInit();
+  if (getVest()) carregarDadosVest();
+  document.getElementById('inpVest').focus();
 });
 </script>
 </body>
