@@ -38,7 +38,7 @@
       font-size:13px; letter-spacing:.5px; padding:10px 20px 6px; border-top:1px solid #eef2f8;}
     main{display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
     .page{padding:24px;}
-    footer{text-align:center; font-size:13px; color: var(--muted); padding:16px 0 10px;}
+    footer{text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
     #unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
     table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
     .section-title{font-weight:600; color:#0b3b78; margin:14px 0 8px;}
@@ -148,7 +148,7 @@
               <div class="right muted" id="cursoCount">—</div>
             </div>
             <div id="coursesBox" class="courses"></div>
-            <p class="muted" style="margin-top:8px">Clique para selecionar o curso (preenche o quadro “Inserir aprovação”).</p>
+            <p class="muted" style="margin-top:8px">Clique para selecionar o curso (ou digite o código no quadro “Inserir aprovação”).</p>
           </div>
         </div>
 
@@ -185,7 +185,8 @@
                 <label class="active">Aluno</label>
               </div>
               <div class="input-field col s6 l2">
-                <input id="selCursoCod" type="text" readonly placeholder="—">
+                <!-- agora permite DIGITAR -->
+                <input id="selCursoCod" type="text" placeholder="código">
                 <label class="active">Código do curso</label>
               </div>
               <div class="input-field col s6 l2">
@@ -236,19 +237,22 @@ const toast = m => M.toast({html:m});
 const getVest = () => (document.getElementById('inpVest').value || '').trim();
 
 function enableLancar(){
-  const ok = ($('#selAlunoId').value) && ($('#selCursoCod').value) && getVest();
+  const ok = ($('#selAlunoId').value) && ($('#selCursoCod').value.trim()) && getVest();
   $('#btnLancar').disabled = !ok;
 }
 
 // ===== cursos do vest
+let cursosCache = [];     // guarda pra auto-match do código digitado
+let cursoSelecionado = null;
+
 async function carregarCursosDoVest(){
   const vest = getVest();
   const box = document.getElementById('coursesBox');
   box.innerHTML = '<div class="center muted" style="padding:12px">Carregando…</div>';
   document.getElementById('cursoCount').textContent = '—';
-  document.getElementById('selCursoCod').value = '';
-  M.updateTextFields();
-  enableLancar();
+  cursoSelecionado = null;
+  cursosCache = [];
+  // não limpamos selCursoCod: usuário pode digitar manualmente
 
   if(!vest){
     box.innerHTML = '<div class="center muted" style="padding:12px">Informe o código da lista</div>';
@@ -256,35 +260,60 @@ async function carregarCursosDoVest(){
   }
 
   try{
-    const r = await fetch(API + `vestibular_cursos_list.php?vest=${encodeURIComponent(vest)}`, {credentials:'include'});
+    // >>>>>>>>>>>>>>>> CORRIGIDO: parametro esperado pelo PHP
+    const url = API + `vestibular_cursos_list.php?vestibular_id=${encodeURIComponent(vest)}`;
+    const r = await fetch(url, {credentials:'include'});
     const j = await r.json();
     const rows = j.rows || j.cursos || [];
     if(!j.ok) throw new Error(j.error || 'Falha ao listar cursos');
 
-    document.getElementById('cursoCount').textContent = rows.length;
-    if(!rows.length){ box.innerHTML = '<div class="center muted" style="padding:12px">Nenhum curso cadastrado</div>'; return; }
+    cursosCache = rows.map(c => ({
+      cod: c.codigc ?? c.codigo ?? c.cod ?? c.id ?? '',
+      nome: c.curso ?? c.nome ?? '',
+      ext:  c.extenso ?? ''
+    }));
+
+    document.getElementById('cursoCount').textContent = cursosCache.length;
+    if(!cursosCache.length){ box.innerHTML = '<div class="center muted" style="padding:12px">Nenhum curso cadastrado</div>'; return; }
 
     box.innerHTML = '';
-    rows.forEach(c=>{
-      const cod = c.codigc ?? c.codigo ?? c.cod ?? c.id ?? '';
-      const nome = c.curso ?? c.nome ?? '';
-      const ext  = c.extenso ?? '';
+    cursosCache.forEach(c=>{
       const row  = document.createElement('div');
       row.className = 'rowc';
-      row.dataset.codcurso = cod;
-      row.innerHTML = `<div class="muted">${cod}</div><div><div style="font-weight:600">${nome}</div><div class="muted" style="font-size:13px">${ext}</div></div>`;
+      row.dataset.codcurso = c.cod;
+      row.innerHTML = `<div class="muted">${c.cod}</div><div><div style="font-weight:600">${c.nome}</div><div class="muted" style="font-size:13px">${c.ext}</div></div>`;
       row.addEventListener('click', ()=>{
         box.querySelectorAll('.rowc').forEach(r=>r.classList.remove('active'));
         row.classList.add('active');
-        document.getElementById('selCursoCod').value = cod;
+        cursoSelecionado = c.cod;
+        document.getElementById('selCursoCod').value = c.cod;
         M.updateTextFields();
         enableLancar();
       });
       box.appendChild(row);
     });
+
+    // se o usuário já tinha digitado um código, tenta destacar
+    autoMatchCursoDigitado();
+
   }catch(e){
     box.innerHTML = '<div class="center red-text" style="padding:12px">Erro ao carregar cursos</div>';
     M.toast({html:e.message});
+  }
+}
+
+// tenta realçar na lista quando o usuário digita um código existente
+function autoMatchCursoDigitado(){
+  const cod = ($('#selCursoCod').value || '').trim();
+  const box = document.getElementById('coursesBox');
+  if(!cod || !cursosCache.length) return;
+  const hit = cursosCache.find(c => String(c.cod) === String(cod));
+  box.querySelectorAll('.rowc').forEach(r=>r.classList.remove('active'));
+  if(hit){
+    const el = box.querySelector(`.rowc[data-codcurso="${CSS.escape(String(hit.cod))}"]`);
+    if(el){ el.classList.add('active'); cursoSelecionado = hit.cod; }
+  }else{
+    cursoSelecionado = null;
   }
 }
 
@@ -351,6 +380,12 @@ const carregarAlunos = debounce(async ()=>{
 $('#inpBusca').addEventListener('input', carregarAlunos);
 $('#inpChamada').addEventListener('input', enableLancar);
 
+// quando o usuário DIGITAR o código do curso manualmente
+$('#selCursoCod').addEventListener('input', ()=>{
+  autoMatchCursoDigitado();
+  enableLancar();
+});
+
 // Enter na busca tenta salvar se tudo pronto
 $('#inpBusca').addEventListener('keydown', e=>{
   if(e.key==='Enter' && !$('#btnLancar').disabled) lancarAprovacao();
@@ -360,7 +395,7 @@ $('#inpBusca').addEventListener('keydown', e=>{
 async function lancarAprovacao(){
   const codaluno = $('#selAlunoId').value;
   const vest = getVest();
-  const codcurso = $('#selCursoCod').value;
+  const codcurso = $('#selCursoCod').value.trim();
   const chamada = parseInt($('#inpChamada').value || '1',10);
   const listagem = parseInt($('#inpListagem').value || '0',10);
   const colocacao = ($('#inpColocacao').value || '').trim();
@@ -379,15 +414,15 @@ async function lancarAprovacao(){
     const j = await r.json();
     if(!j.ok) throw new Error(j.msg || 'Falha ao salvar');
 
-    M.toast({html:'Aprovação registrada!'});
-    // limpa só aluno/colocação (mantém vest/chamada/curso marcado)
+    toast('Aprovação registrada!');
+    // limpa só aluno/colocação (mantém vest/chamada e, se quiser, o código digitado)
     $('#selAlunoId').value = '';
     $('#selAlunoLabel').value = '';
     $('#inpColocacao').value = '';
     M.updateTextFields();
     enableLancar();
   }catch(e){
-    M.toast({html:'Erro: '+e.message});
+    toast('Erro: '+e.message);
   }finally{
     $('#btnLancar').disabled = false;
   }
@@ -417,8 +452,8 @@ async function carregarDadosVest() {
       listagemEl.value = row ? (row.listagem || '') : '';
     }
     M.updateTextFields();
-  } catch {
-    /* silencioso */
+  } catch(e) {
+    // silencioso
   }
 
   await carregarCursosDoVest();
