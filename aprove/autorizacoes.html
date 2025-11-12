@@ -250,7 +250,7 @@
     };
 
     try{
-      const r = await fetch(API+'api/autoriza/create.php', {
+      const r = await fetch(API+'create.php', {
         method:'POST', credentials:'include',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify(payload)
@@ -287,7 +287,7 @@
     progressText.textContent = 'Enviando...';
 
     try{
-      await xhrUpload(API+'api/autoriza/upload.php', fd, (loaded,total)=>{
+      await xhrUpload(API+'upload.php', fd, (loaded,total)=>{
         const pct = total ? Math.round(loaded/total*100) : 0;
         progressBar.style.width = pct+'%';
         progressText.textContent = `Enviado ${fmtBytes(loaded)} de ${fmtBytes(total)} (${pct}%)`;
@@ -315,7 +315,7 @@
   // Listagem
   async function loadFilesByCPF(cpf){
     try{
-      const r = await fetch(API+`api/autoriza/list_files.php?cpf_aluno=${cpf}`, {credentials:'include'});
+      const r = await fetch(API+`list_files.php?cpf_aluno=${cpf}`, {credentials:'include'});
       const j = await r.json();
       if(!j.ok) throw new Error(j.error || 'Falha ao listar');
 
