@@ -179,6 +179,34 @@
 
         <ul id="fileList" class="collection" style="margin-top:12px"></ul>
       </div>
+
+        <!-- Card: Listagem de autorizações -->
+        <div class="card z-depth-0" style="padding:20px; margin-top:16px;">
+        <div style="display:flex; gap:12px; align-items:center; margin-bottom:8px;">
+            <h5 class="section-title" style="margin:0; flex:1;">Autorizações cadastradas</h5>
+            <div class="input-field" style="margin:0; width:340px; max-width:50%;">
+            <input id="buscaAut" type="text" placeholder="Buscar por CPF ou nome">
+            </div>
+            <button id="btnBuscarAut" class="btn">Buscar</button>
+        </div>
+
+        <table class="striped highlight responsive-table">
+            <thead>
+            <tr>
+                <th>CPF</th>
+                <th>Aluno</th>
+                <th>Flags</th>
+                <th>Arquivos</th>
+                <th>Atualizado</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody id="tbody-auts"></tbody>
+        </table>
+
+        <div id="paginacao" class="right-align" style="margin-top:10px;"></div>
+        </div>
+
     </section>
 
     <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
@@ -355,6 +383,112 @@
     M.CharacterCounter.init(document.querySelectorAll('#observacao'));
     carregarUsuario();
   });
+
+// ======= LISTAGEM =======
+const tbodyAuts = document.getElementById('tbody-auts');
+const buscaAut  = document.getElementById('buscaAut');
+const btnBuscarAut = document.getElementById('btnBuscarAut');
+const pagDiv    = document.getElementById('paginacao');
+
+let AUT_PAGE = 1;
+const AUT_PAGESIZE = 20;
+
+btnBuscarAut.addEventListener('click', ()=>{ AUT_PAGE=1; carregarLista(); });
+buscaAut.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ AUT_PAGE=1; carregarLista(); }});
+
+async function carregarLista() {
+  tbodyAuts.innerHTML = '<tr><td colspan="6" class="center grey-text">Carregando...</td></tr>';
+  pagDiv.innerHTML = '';
+
+  const q = encodeURIComponent(buscaAut.value.trim());
+  const url = API+`autorizacoes_list.php?q=${q}&page=${AUT_PAGE}&pagesize=${AUT_PAGESIZE}`;
+
+  try{
+    const r = await fetch(url, {credentials:'include'});
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error || 'Falha ao listar');
+
+    renderLista(j.rows || []);
+    renderPaginacao(j.page, j.pagesize, j.total);
+  }catch(e){
+    tbodyAuts.innerHTML = `<tr><td colspan="6" class="center red-text">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+function renderLista(rows){
+  tbodyAuts.innerHTML = '';
+  if(!rows.length){
+    tbodyAuts.innerHTML = '<tr><td colspan="6" class="center">Nenhuma autorização encontrada.</td></tr>';
+    return;
+  }
+
+  for (const r of rows){
+    const flags = [
+      r.foto ? 'Foto' : null,
+      r.entrevista ? 'Entrev.' : null,
+      r.publicidade ? 'Publ.' : null
+    ].filter(Boolean).join(', ') || '—';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${maskCPF(r.cpf_aluno)}</td>
+      <td>${r.aluno_nome || '—'}</td>
+      <td>${flags}</td>
+      <td>${r.arquivos}</td>
+      <td>${(r.updated_at || r.created_at || '').replace('T',' ').slice(0,19) || '—'}</td>
+      <td>
+        <button class="btn-small blue" data-abrir="${r.cpf_aluno}">Abrir</button>
+        <a class="btn-small grey" target="_blank"
+           href="${API}download_zip.php?autorizacao_id=${r.id}">ZIP</a>
+      </td>
+    `;
+    tbodyAuts.appendChild(tr);
+  }
+
+  // ação Abrir -> joga o CPF lá em cima e carrega a autorização/arquivos
+  tbodyAuts.querySelectorAll('[data-abrir]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const cpf = btn.getAttribute('data-abrir');
+      cpfInput.value = maskCPF(cpf);
+      M.updateTextFields();
+      // carrega flags/arquivos do CPF
+      await loadFilesByCPF(cpf);
+      // sobe a página pro topo
+      window.scrollTo({top:0, behavior:'smooth'});
+      // garante que cardUpload apareça
+      cardUpload.style.display = '';
+      cpfInfo.style.display = '';
+      cpfInfo.textContent = maskCPF(cpf);
+    });
+  });
+}
+
+function renderPaginacao(page, pagesize, total){
+  const pages = Math.max(1, Math.ceil(total / pagesize));
+  if (pages <= 1){ pagDiv.innerHTML = ''; return; }
+
+  let html = `<span class="grey-text" style="margin-right:10px">Total: ${total}</span>`;
+  const prevDis = page<=1 ? 'disabled' : '';
+  const nextDis = page>=pages ? 'disabled' : '';
+
+  html += `<button class="btn-flat ${prevDis}" id="pagPrev">Anterior</button>`;
+  html += `<span style="margin:0 8px">Página ${page}/${pages}</span>`;
+  html += `<button class="btn-flat ${nextDis}" id="pagNext">Próxima</button>`;
+  pagDiv.innerHTML = html;
+
+  const prev = document.getElementById('pagPrev');
+  const next = document.getElementById('pagNext');
+  if (prev && !prev.classList.contains('disabled')) {
+    prev.addEventListener('click', ()=>{ AUT_PAGE=Math.max(1, page-1); carregarLista(); });
+  }
+  if (next && !next.classList.contains('disabled')) {
+    next.addEventListener('click', ()=>{ AUT_PAGE=page+1; carregarLista(); });
+  }
+}
+
+// carrega a lista na abertura
+document.addEventListener('DOMContentLoaded', carregarLista);
+
 </script>
 </body>
 </html>
