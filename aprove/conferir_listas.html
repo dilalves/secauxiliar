@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico"/>
+  <title>Conferir Listas • Aprove — Conferência de Aprovados</title>
+
+  <!-- Materialize -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+      --ink:#0f172a; --muted:#6b7280;
+      --primary:#0b3b78; --accent:#2563eb;
+      --aside-w:260px; --topbar-h:64px;
+    }
+    html,body{height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
+    body{color:var(--ink);}
+    .app{display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
+    header.topbar{
+      position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
+      background:var(--primary); color:#fff; display:flex; align-items:center;
+      padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+    aside{background:#fff; border-right:1px solid var(--line);
+      position:sticky; top:var(--topbar-h); height:calc(100vh - var(--topbar-h));
+      overflow:auto; z-index:6; padding-bottom:20px;}
+    .menu{list-style:none; margin:0; padding:0 0 12px;}
+    .menu a{display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:.25s;}
+    .menu a:hover{background:#f4f6fb; color:var(--primary);}
+    .menu .active > a{background:#eef3ff; font-weight:600; color:var(--primary);}
+    .menu-group{margin-bottom:12px;}
+    .group-title{font-weight:700; color:#0b3b78; text-transform:uppercase;
+      font-size:13px; letter-spacing:.5px; padding:10px 20px 6px; border-top:1px solid #eef2f8;}
+    main{display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
+    .page{padding:24px;}
+    footer{text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
+    #unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
+    table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
+    .section-title{font-weight:600; color:#0b3b78; margin:14px 0 8px;}
+    .pill{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background:#eef3ff; color:#0b3b78; font-weight:600;}
+    .courses{max-height:420px; overflow:auto; border:1px solid var(--line); border-radius:10px;}
+    .courses .rowc{display:grid; grid-template-columns: 70px 1fr; gap:10px; padding:10px 12px; border-bottom:1px solid #eef2f8; cursor:pointer;}
+    .courses .rowc:hover{background:#f8fbff;}
+    .courses .rowc.active{background:#e9f2ff;}
+    .sticky{position:sticky; top:0; background:#fff; z-index:3; border-bottom:1px solid #eef2f8;}
+    .muted{color:#64748b}
+    @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <!-- ===== SIDEBAR ===== -->
+  <aside>
+    <div class="center" style="padding:18px 0 8px;">
+      <span class="title" style="font-weight:700; color:#0b3b78">Aprove</span>
+    </div>
+    <ul class="menu">
+      <li><a href="/aprove/painel.html">Início</a></li>
+
+      <li class="menu-group">
+        <div class="group-title">Atualizações</div>
+        <ul>
+          <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
+          <li><a href="/aprove/alunos.html">Alunos</a></li>
+          <li><a href="/aprove/instituicoes.html">Instituições</a></li>
+          <li><a href="/aprove/cursos.html">Cursos</a></li>
+          <li><a href="/aprove/unidades.html">Unidades</a></li>
+          <li><a href="/aprove/autorizacoes.html">Autorização de Imagem</a></li>
+          <li><a href="/aprove/vestibulares.html">Listas de Aprovados</a></li>
+        </ul>
+      </li>
+
+      <li class="menu-group">
+        <div class="group-title">Ferramentas</div>
+        <ul>
+          <li class="active"><a href="/aprove/conferir_listas.html">Conferir Listas</a></li>
+          <li><a href="/aprove/importar_aprovacoes.html">Importar Aprovações</a></li>
+        </ul>
+      </li>
+
+      <li class="menu-group">
+        <div class="group-title">Relatórios</div>
+        <ul>
+          <li><a href="/aprove/convocados2fase.html">Convocados 2ª Fase</a></li>
+          <li><a href="/aprove/aprovados_rel.html">Aprovados</a></li>
+          <li><a href="/aprove/porcentagem_lista.html">Porcentagem Lista</a></li>
+          <li><a href="/aprove/totais_curso.html">Totais por Curso</a></li>
+          <li><a href="/aprove/totais_instituicao.html">Totais por Instituição</a></li>
+        </ul>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main>
+    <header class="topbar">
+      <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="/aprove/logo-mini.png" alt="Logo" style="height:28px; width:auto;">
+          <h5 style="margin:0; font-weight:600;">
+            Aprove — Conferência de Aprovados — <span id="unitLabel">—</span>
+          </h5>
+        </div>
+        <div><a class="btn-flat waves-effect white-text" href="#!" onclick="logout()">Sair</a></div>
+      </div>
+    </header>
+
+    <section class="page">
+      <h4 class="section-title">Conferência de Listas</h4>
+
+      <!-- Filtros fixos (vest, chamada, listagem) -->
+      <div class="card z-depth-0" style="padding:18px;">
+        <div class="row" style="margin-bottom:0;">
+          <div class="input-field col s12 m6 l5">
+            <select id="selVest"></select>
+            <label for="selVest">Código da Lista (Vestibular)</label>
+            <span class="helper-text">Fica fixo durante a conferência</span>
+          </div>
+
+          <div class="input-field col s6 m3 l2">
+            <input id="inpChamada" type="number" min="1" value="1">
+            <label for="inpChamada" class="active">Chamada</label>
+          </div>
+
+          <div class="input-field col s6 m3 l2">
+            <input id="inpListagem" type="number" value="" readonly>
+            <label for="inpListagem" class="active">Listagem</label>
+          </div>
+
+          <div class="input-field col s12 m12 l3">
+            <input id="inpBusca" type="text" placeholder="Buscar aluno por nome…">
+            <label for="inpBusca">Nome</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Duas colunas: Cursos do vestibular (esquerda) / Resultado da busca (direita) -->
+      <div class="row">
+        <div class="col s12 m5 l4">
+          <div class="card z-depth-0" style="padding:14px;">
+            <div class="sticky" style="padding:6px 8px;">
+              <div class="pill"><i class="material-icons tiny">list</i> Cursos do Vestibular</div>
+              <div class="right muted" id="cursoCount">—</div>
+            </div>
+            <div id="coursesBox" class="courses"></div>
+            <p class="muted" style="margin-top:8px">Clique para selecionar o curso (preenche o quadro “Inserir aprovação”).</p>
+          </div>
+        </div>
+
+        <div class="col s12 m7 l8">
+          <div class="card z-depth-0" style="padding:14px;">
+            <div class="sticky" style="padding:6px 8px;">
+              <div class="pill"><i class="material-icons tiny">search</i> Resultado da busca</div>
+              <div class="right muted" id="alunoCount">—</div>
+            </div>
+
+            <table class="striped highlight responsive-table">
+              <thead>
+                <tr>
+                  <th>CodAluno</th>
+                  <th>Nome</th>
+                  <th>Série</th>
+                  <th>Unidade</th>
+                  <th>Cadastro</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tbodyAlunos">
+                <tr><td colspan="6" class="center muted">Digite um nome para buscar…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Inserir aprovação -->
+          <div class="card z-depth-0" style="padding:14px;">
+            <span class="section-title">Inserir aprovação</span>
+            <div class="row" style="margin-bottom:0;">
+              <div class="input-field col s12 l6">
+                <input id="selAlunoLabel" type="text" readonly placeholder="Selecione um aluno acima">
+                <label class="active">Aluno</label>
+              </div>
+              <div class="input-field col s6 l2">
+                <input id="selCursoCod" type="text" readonly placeholder="—">
+                <label class="active">Código do curso</label>
+              </div>
+              <div class="input-field col s6 l2">
+                <input id="inpColocacao" type="text" placeholder="ex.: 12º">
+                <label>Colocação (opcional)</label>
+              </div>
+              <div class="input-field col s12 l2 right-align">
+                <button id="btnLancar" class="btn waves-effect" disabled>
+                  <i class="material-icons left">check</i>Lançar
+                </button>
+              </div>
+            </div>
+
+            <!-- hidden state -->
+            <input type="hidden" id="selAlunoId">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
+  </main>
+</div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/aprove/';
+
+// ===== topbar user
+async function carregarUsuario(){
+  try{
+    const r = await fetch(API+'auth_me.php',{credentials:'include'});
+    const j = await r.json();
+    if(j.ok && j.user){
+      document.getElementById('unitLabel').textContent =
+        `${j.user.login ?? ''} — ${j.user.nome ?? 'Usuário'}`;
+    }
+  }catch{}
+}
+async function logout(){
+  try{ await fetch(API+'auth_login_out.php',{credentials:'include'});}catch(_){}
+  location.replace('/aprove/index.html');
+}
+
+// ===== helpers
+const $ = s => document.querySelector(s);
+const debounce = (fn,ms=300)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); } };
+const toast = m => M.toast({html:m});
+function enableLancar(){
+  const ok = ($('#selAlunoId').value) && ($('#selCursoCod').value) && ($('#selVest').value);
+  $('#btnLancar').disabled = !ok;
+}
+
+// ===== vestibulares -> select
+async function carregarVestibulares(){
+  const sel = $('#selVest');
+  sel.innerHTML = '<option value="" disabled selected>Carregando…</option>';
+  M.FormSelect.init(sel);
+
+  try{
+    const r = await fetch(API+'vestibulares_list.php',{credentials:'include'});
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.erro || 'Falha ao listar vestibulares');
+
+    sel.innerHTML = '<option value="" disabled selected>Selecione…</option>';
+    (j.rows||[]).forEach(v=>{
+      const txt = `${v.sigla ?? v.instituicao} • ${v.listagem}-${v.semestre}`;
+      const opt = new Option(txt, v.id);
+      opt.dataset.listagem = v.listagem;
+      sel.appendChild(opt);
+    });
+    M.FormSelect.init(sel);
+  }catch(e){
+    sel.innerHTML = '<option value="" disabled selected>Erro</option>';
+    M.FormSelect.init(sel);
+    toast('Erro ao carregar vestibulares: '+e.message);
+  }
+}
+
+// quando muda o vest -> atualiza listagem e cursos
+$('#selVest').addEventListener('change', async ()=>{
+  const sel = $('#selVest');
+  const listagem = sel.options[sel.selectedIndex]?.dataset?.listagem || '';
+  $('#inpListagem').value = listagem;
+  M.updateTextFields();
+
+  await carregarCursosDoVest();
+  enableLancar();
+});
+
+// ===== cursos do vest
+let cursoSelecionado = null;
+async function carregarCursosDoVest(){
+  const vest = $('#selVest').value;
+  const box = $('#coursesBox');
+  box.innerHTML = '<div class="center muted" style="padding:12px">Carregando…</div>';
+  $('#cursoCount').textContent = '—';
+  cursoSelecionado = null;
+  $('#selCursoCod').value = '';
+  M.updateTextFields();
+  enableLancar();
+
+  if(!vest){ box.innerHTML = '<div class="center muted" style="padding:12px">Selecione o vestibular</div>'; return; }
+
+  try{
+    const r = await fetch(API+`vestibular_cursos_list.php?vest=${encodeURIComponent(vest)}`,{credentials:'include'});
+    const j = await r.json();
+    const rows = j.rows || j.cursos || []; // compat
+    if(!j.ok) throw new Error(j.error || 'Falha ao listar cursos');
+
+    $('#cursoCount').textContent = rows.length;
+    if(!rows.length){ box.innerHTML = '<div class="center muted" style="padding:12px">Nenhum curso cadastrado</div>'; return; }
+
+    box.innerHTML = '';
+    rows.forEach(c=>{
+      // campos usuais: codigc, curso, extenso, P … (adaptável)
+      const cod = c.codigc ?? c.codigo ?? c.cod ?? c.id ?? '';
+      const nome = c.curso ?? c.nome ?? '';
+      const ext  = c.extenso ?? '';
+      const row = document.createElement('div');
+      row.className = 'rowc';
+      row.dataset.codcurso = cod;
+      row.innerHTML = `<div class="muted">${cod}</div><div><div style="font-weight:600">${nome}</div><div class="muted" style="font-size:13px">${ext}</div></div>`;
+      row.addEventListener('click', ()=>{
+        box.querySelectorAll('.rowc').forEach(r=>r.classList.remove('active'));
+        row.classList.add('active');
+        cursoSelecionado = cod;
+        $('#selCursoCod').value = cod;
+        M.updateTextFields();
+        enableLancar();
+      });
+      box.appendChild(row);
+    });
+  }catch(e){
+    box.innerHTML = '<div class="center red-text" style="padding:12px">Erro ao carregar cursos</div>';
+    toast(e.message);
+  }
+}
+
+// ===== busca de alunos
+const carregarAlunos = debounce(async ()=>{
+  const nome = $('#inpBusca').value.trim();
+  const tbody = $('#tbodyAlunos');
+  $('#alunoCount').textContent = '—';
+
+  if(!nome){
+    tbody.innerHTML = '<tr><td colspan="6" class="center muted">Digite um nome para buscar…</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = '<tr><td colspan="6" class="center muted">Buscando…</td></tr>';
+
+  try{
+    const r = await fetch(API+'alunos_list.php?nome='+encodeURIComponent(nome),{credentials:'include'});
+    const j = await r.json();
+    const rows = j.rows || [];
+    $('#alunoCount').textContent = rows.length;
+
+    if(!(j.ok && rows.length)){
+      tbody.innerHTML = '<tr><td colspan="6" class="center muted">Nenhum aluno encontrado.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = '';
+    rows.forEach(a=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${a.ID ?? a.id}</td>
+        <td>${a.NOME ?? a.nome}</td>
+        <td>${a.SERIE ?? a.serie ?? ''}</td>
+        <td>${a.UNIDADE ?? a.codunidade ?? ''}</td>
+        <td>${a.CADASTRO ?? a.cadastro ?? ''}</td>
+        <td class="right-align">
+          <button class="btn-small blue" title="Selecionar" data-pick="${a.ID ?? a.id}">
+            <i class="material-icons">done</i>
+          </button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+
+    // bind seleção do aluno
+    tbody.querySelectorAll('[data-pick]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-pick');
+        const linha = btn.closest('tr');
+        const nome = linha.children[1].textContent;
+        $('#selAlunoId').value = id;
+        $('#selAlunoLabel').value = `${id} — ${nome}`;
+        M.updateTextFields();
+        enableLancar();
+        window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'});
+      });
+    });
+
+  }catch(e){
+    tbody.innerHTML = '<tr><td colspan="6" class="center red-text">Erro ao buscar.</td></tr>';
+  }
+}, 300);
+
+$('#inpBusca').addEventListener('input', carregarAlunos);
+$('#inpChamada').addEventListener('input', enableLancar);
+
+// Enter na busca tenta salvar se tudo pronto
+$('#inpBusca').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !$('#btnLancar').disabled) lancarAprovacao();
+});
+
+// ===== lançar aprovação
+async function lancarAprovacao(){
+  const codaluno = $('#selAlunoId').value;
+  const vest = $('#selVest').value;
+  const codcurso = $('#selCursoCod').value;
+  const chamada = parseInt($('#inpChamada').value || '1',10);
+  const listagem = parseInt($('#inpListagem').value || '0',10);
+  const colocacao = ($('#inpColocacao').value || '').trim();
+
+  if(!codaluno || !vest || !codcurso){ return; }
+
+  $('#btnLancar').disabled = true;
+
+  try{
+    const r = await fetch(API+'aprovacoes_insert.php',{
+      method:'POST',
+      credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ codaluno, vest, codcurso, chamada, listagem, colocacao })
+    });
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.msg || 'Falha ao salvar');
+
+    toast('Aprovação registrada!');
+    // limpa só aluno/colocação (mantém vest/chamada/curso marcado)
+    $('#selAlunoId').value = '';
+    $('#selAlunoLabel').value = '';
+    $('#inpColocacao').value = '';
+    M.updateTextFields();
+    enableLancar();
+  }catch(e){
+    toast('Erro: '+e.message);
+  }finally{
+    $('#btnLancar').disabled = false;
+  }
+}
+
+$('#btnLancar').addEventListener('click', lancarAprovacao);
+
+// ===== init
+document.addEventListener('DOMContentLoaded', ()=>{
+  carregarUsuario();
+  M.AutoInit(); // label/select/tooltip
+  carregarVestibulares();
+});
+</script>
+</body>
+</html>
