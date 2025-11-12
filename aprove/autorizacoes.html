@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Autorização de Imagem • APROVE</title>
+
+  <!-- Materialize -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    body{ background:#f7f8fb; }
+    header{ background:#0b3b78; color:#fff; }
+    main{ max-width:1100px; margin:24px auto; }
+    .card{ border-radius:14px; }
+    .switch label { color:#0f172a; }
+    #dropzone{
+      border:2px dashed #cbd5e1; border-radius:12px; padding:28px;
+      text-align:center; background:#fff;
+    }
+    #dropzone.dragover{ background:#eef6ff; border-color:#60a5fa; }
+    .file-row .secondary-content{ font-size: 0.9rem; color:#64748b; }
+    .progress{ height:8px; border-radius:999px; }
+    .cpf-badge { font-family: monospace; }
+  </style>
+</head>
+<body>
+
+<header class="navbar-fixed">
+  <nav class="nav-wrapper">
+    <div class="container">
+      <a class="brand-logo" href="#!" style="font-weight:600;">APROVE</a>
+    </div>
+  </nav>
+</header>
+
+<main class="container">
+
+  <!-- Card: Cadastro básico (CPF + flags + observação) -->
+  <div class="card">
+    <div class="card-content">
+      <span class="card-title" style="color:#0b3b78">Cadastro de Autorização</span>
+
+      <div class="row" style="margin-top:8px">
+        <div class="input-field col s12 m6">
+          <input id="cpf" type="text" maxlength="14" placeholder="000.000.000-00">
+          <label for="cpf">CPF do aluno</label>
+          <span class="helper-text">Digite o CPF e clique em <b>Salvar / Criar pasta</b>.</span>
+        </div>
+
+        <div class="col s12 m6" style="margin-top:12px">
+          <div class="switch" style="margin-right:24px">
+            <label>
+              Foto
+              <input id="flag_foto" type="checkbox">
+              <span class="lever"></span>
+            </label>
+          </div>
+          <div class="switch" style="margin-right:24px">
+            <label>
+              Entrevista
+              <input id="flag_entrevista" type="checkbox">
+              <span class="lever"></span>
+            </label>
+          </div>
+          <div class="switch">
+            <label>
+              Publicidade
+              <input id="flag_publicidade" type="checkbox">
+              <span class="lever"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="input-field col s12">
+          <textarea id="observacao" class="materialize-textarea" data-length="3000" placeholder="Ex.: publicado no Instagram em 03/11; enviado para Lúcia; saiu no jornal X"></textarea>
+          <label for="observacao">Observação</label>
+        </div>
+
+        <div class="col s12">
+          <button id="btnSalvar" class="btn waves-effect waves-light">
+            <i class="material-icons left">save</i> Salvar / Criar pasta
+          </button>
+          <span id="cpfInfo" class="new badge cpf-badge" data-badge-caption="" style="display:none"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card: Upload -->
+  <div class="card" id="cardUpload" style="display:none">
+    <div class="card-content">
+      <span class="card-title" style="color:#0b3b78">Arquivos da Autorização</span>
+
+      <div id="dropzone" class="z-depth-0">
+        <i class="material-icons large">cloud_upload</i>
+        <p>Arraste arquivos aqui ou clique para selecionar</p>
+        <p class="grey-text">PDF, JPG, PNG, DOC, DOCX (máx. 20MB por arquivo)</p>
+        <input id="fileInput" type="file" multiple style="display:none">
+      </div>
+
+      <div id="progressWrap" class="section" style="display:none">
+        <div class="progress">
+          <div id="progressBar" class="determinate" style="width: 0%"></div>
+        </div>
+        <div id="progressText" class="grey-text"></div>
+      </div>
+
+      <ul id="fileList" class="collection" style="margin-top:16px"></ul>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ==== API base (fixa no apisec) ====
+  const API = 'https://apisec.secauxiliar.com.br/aprove/';
+
+  // ==== Utils ====
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+  function toast(msg){ M.toast({html: msg}); }
+  function digits(v){ return (v||'').replace(/\D+/g,''); }
+  function maskCPF(v){
+    v = digits(v).slice(0,11);
+    return v.replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  }
+  function fmtBytes(x){
+    const u=['B','KB','MB','GB']; let i=0, n=Number(x||0);
+    while(n>=1024 && i<u.length-1){ n/=1024; i++; }
+    return `${n.toFixed(n<10&&i>0?1:0)} ${u[i]}`;
+  }
+  function iconByMime(m){
+    if(!m) return 'insert_drive_file';
+    if(m.includes('pdf')) return 'picture_as_pdf';
+    if(m.includes('image/')) return 'image';
+    if(m.includes('word')) return 'description';
+    return 'insert_drive_file';
+  }
+
+  // ==== Campos ====
+  const cpfInput = $('#cpf');
+  const flag_foto = $('#flag_foto');
+  const flag_entrevista = $('#flag_entrevista');
+  const flag_publicidade = $('#flag_publicidade');
+  const observacao = $('#observacao');
+  const btnSalvar = $('#btnSalvar');
+
+  const cardUpload = $('#cardUpload');
+  const dropzone = $('#dropzone');
+  const fileInput = $('#fileInput');
+  const fileList = $('#fileList');
+  const progressWrap = $('#progressWrap');
+  const progressBar = $('#progressBar');
+  const progressText = $('#progressText');
+  const cpfInfo = $('#cpfInfo');
+
+  // Máscara de CPF
+  cpfInput.addEventListener('input', () => {
+    cpfInput.value = maskCPF(cpfInput.value);
+  });
+
+  // Salvar / Criar pasta
+  btnSalvar.addEventListener('click', async () => {
+    const cpf = digits(cpfInput.value);
+    if (cpf.length !== 11) return toast('CPF inválido.');
+
+    const payload = {
+      cpf_aluno: cpf,
+      foto: flag_foto.checked ? 1 : 0,
+      entrevista: flag_entrevista.checked ? 1 : 0,
+      publicidade: flag_publicidade.checked ? 1 : 0,
+      observacao: observacao.value.trim()
+    };
+
+    try{
+      const r = await fetch(API+'api/autoriza/create.php', {
+        method: 'POST',
+        credentials: 'include', // envia cookie aprove_token
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.error || 'Falha ao salvar');
+
+      toast('Autorização salva. Pasta pronta.');
+      cardUpload.style.display = '';
+      cpfInfo.style.display = '';
+      cpfInfo.textContent = maskCPF(cpf);
+      await loadFilesByCPF(cpf);
+    }catch(e){
+      console.error(e);
+      toast('Erro: '+e.message);
+    }
+  });
+
+  // Dropzone: clique abre input
+  dropzone.addEventListener('click', () => fileInput.click());
+
+  // Arrastar-e-soltar
+  ;['dragenter','dragover'].forEach(ev => {
+    dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+  });
+  ;['dragleave','drop'].forEach(ev => {
+    dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove('dragover'); });
+  });
+  dropzone.addEventListener('drop', e => {
+    const files = e.dataTransfer.files;
+    if(files && files.length) uploadFiles(files);
+  });
+
+  // Input change
+  fileInput.addEventListener('change', () => {
+    if(fileInput.files && fileInput.files.length) uploadFiles(fileInput.files);
+  });
+
+  // Upload com progress (XHR para progresso)
+  async function uploadFiles(fileListLike){
+    const cpf = digits(cpfInput.value);
+    if (cpf.length !== 11) { toast('CPF inválido.'); return; }
+
+    const fd = new FormData();
+    fd.append('cpf_aluno', cpf);
+    Array.from(fileListLike).forEach(f => fd.append('f'+Math.random(), f));
+
+    progressWrap.style.display = '';
+    progressBar.style.width = '0%';
+    progressText.textContent = 'Enviando...';
+
+    try{
+      await xhrUpload(API+'api/autoriza/upload.php', fd, (loaded,total) => {
+        const pct = total ? Math.round(loaded/total*100) : 0;
+        progressBar.style.width = pct+'%';
+        progressText.textContent = `Enviado ${fmtBytes(loaded)} de ${fmtBytes(total)} (${pct}%)`;
+      });
+      toast('Upload concluído.');
+      await loadFilesByCPF(cpf);
+    }catch(e){
+      console.error(e);
+      toast('Erro no upload: '+e.message);
+    }finally{
+      progressWrap.style.display = 'none';
+      fileInput.value = '';
+    }
+  }
+
+  function xhrUpload(url, formData, onProgress){
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.withCredentials = true; // envia cookie
+      xhr.upload.onprogress = (e) => { if(onProgress) onProgress(e.loaded, e.total); };
+      xhr.onload = () => {
+        try{
+          const j = JSON.parse(xhr.responseText || '{}');
+          if(j.ok) resolve(j); else reject(new Error(j.error || 'Falha no upload'));
+        }catch(err){ reject(err); }
+      };
+      xhr.onerror = () => reject(new Error('Erro de rede'));
+      xhr.send(formData);
+    });
+  }
+
+  // Listagem
+  async function loadFilesByCPF(cpf){
+    try{
+      const r = await fetch(API+`api/autoriza/list_files.php?cpf_aluno=${cpf}`, {
+        credentials: 'include'
+      });
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.error || 'Falha ao listar');
+
+      // preencher flags/obs vindos do server
+      if (j.autorizacao){
+        flag_foto.checked = !!Number(j.autorizacao.foto);
+        flag_entrevista.checked = !!Number(j.autorizacao.entrevista);
+        flag_publicidade.checked = !!Number(j.autorizacao.publicidade);
+        if ((observacao.value||'').trim()==='') observacao.value = j.autorizacao.observacao || '';
+        M.textareaAutoResize(observacao);
+      }
+
+      renderFiles(j.files||[]);
+      cardUpload.style.display = '';
+    }catch(e){
+      console.error(e);
+      toast('Erro ao listar: '+e.message);
+    }
+  }
+
+  function renderFiles(files){
+    fileList.innerHTML = '';
+    if(!files.length){
+      fileList.innerHTML = `<li class="collection-item">Nenhum arquivo enviado ainda.</li>`;
+      return;
+    }
+    files.forEach(f => {
+      const li = document.createElement('li');
+      li.className = 'collection-item avatar file-row';
+      li.innerHTML = `
+        <i class="material-icons circle">${iconByMime(f.mime_type)}</i>
+        <span class="title" style="font-weight:600">${f.nome_original}</span>
+        <p class="grey-text">${f.mime_type} • ${fmtBytes(f.tamanho_bytes)}<br>
+          <small>Enviado em ${new Date(f.uploaded_at.replace(' ','T')).toLocaleString()}</small>
+        </p>
+        <span class="secondary-content">${(f.caminho_relativo||'').split('/').pop()}</span>
+      `;
+      fileList.appendChild(li);
+    });
+  }
+
+  // Inicialização Materialize
+  document.addEventListener('DOMContentLoaded', () => {
+    M.CharacterCounter.init(document.querySelectorAll('#observacao'));
+  });
+</script>
+</body>
+</html>
