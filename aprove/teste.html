@@ -396,8 +396,8 @@ async function carregarCursosDoVest(){
     cod:     c.curso_id ?? c.CURSO_ID ?? c.codcurso ?? c.codigc ?? c.codigo ?? c.id ?? '',
     nome:    c.curso    ?? c.nome    ?? '',
     ext:     c.extenso  ?? c.descricao ?? '',
-    periodo: c.periodo  ?? c.PERIODO ?? c.turno ?? '',                // Manhã / Noite / Integral...
-    sigla:   c.sigla    ?? c.SIGLA   ?? c.inst_sigla ?? c.instituicao_sigla ?? c.instituicao ?? '' // USP, UNESP, UNICAMP...
+    periodo: c.periodo  ?? c.PERIODO ?? c.turno ?? '',
+    sigla:   c.sigla_inst ?? c.sigla ?? ''               // <-- NOVO
     })).filter(c => String(c.cod).trim() !== '');
 
     document.getElementById('cursoCount').textContent = cursosCache.length;
@@ -418,15 +418,15 @@ async function carregarCursosDoVest(){
     const siglaTag = c.sigla ? `<span class="chip" style="margin-right:6px; background:#eef3ff; color:#0b3b78; height:22px; line-height:22px; font-weight:600;">${c.sigla}</span>` : '';
 
     row.innerHTML = `
-        <div class="muted">${c.cod}</div>
-        <div>
-        <div style="display:flex; align-items:center; gap:4px; font-weight:600">
-            ${siglaTag}
-            <span>${c.nome}</span>
-            ${c.periodo ? `<span class="muted" style="font-weight:500">• ${c.periodo}</span>` : ''}
+    <div class="muted">${c.cod}</div>
+    <div>
+        <div style="font-weight:600">
+        ${c.nome}
+        ${c.sigla ? `<span class="muted"> (${c.sigla})</span>` : ''}
+        ${c.periodo ? `<span class="muted" style="font-weight:500"> • ${c.periodo}</span>` : ''}
         </div>
         <div class="muted" style="font-size:13px">${c.ext}</div>
-        </div>
+    </div>
     `;
 
     row.addEventListener('click', () => {
