@@ -363,8 +363,17 @@ const toast = m => M.toast({html:m});
 const getVest = () => (document.getElementById('inpVest').value || '').trim();
 
 function enableLancar(){
-  const ok = ($('#selAlunoId').value) && ($('#selCursoCod').value.trim()) && getVest();
-  $('#btnLancar').disabled = !ok;
+  const temAluno = !!($('#selAlunoId').value);
+  const vestOk   = !!getVest();
+  const cod      = ($('#selCursoCod').value || '').trim();
+  const cursoOk  = isCursoValido(cod);
+
+  // feedback visual no input do código
+  const inp = $('#selCursoCod');
+  inp.classList.remove('valid','invalid');
+  if(cod) inp.classList.add(cursoOk ? 'valid' : 'invalid');
+
+  $('#btnLancar').disabled = !(temAluno && vestOk && cod && cursoOk);
 }
 
 // ===== cursos do vest
@@ -391,12 +400,13 @@ async function carregarCursosDoVest(){
     if (!j.ok) throw new Error(j.error || 'Falha ao listar cursos');
     const rows = j.rows || j.cursos || [];
 
-    // mapeia garantindo curso_id e período
+    // mapeia garantindo curso_id, período E SIGLA DA INSTITUIÇÃO
     cursosCache = rows.map(c => ({
-      cod:     c.curso_id ?? c.CURSO_ID ?? c.codcurso ?? c.codigc ?? c.codigo ?? c.id ?? '',
-      nome:    c.curso    ?? c.nome    ?? '',
-      ext:     c.extenso  ?? c.descricao ?? '',
-      periodo: c.periodo  ?? c.PERIODO ?? c.turno ?? ''    // Manhã / Noite / Integral...
+    cod:     c.curso_id ?? c.CURSO_ID ?? c.codcurso ?? c.codigc ?? c.codigo ?? c.id ?? '',
+    nome:    c.curso    ?? c.nome    ?? '',
+    ext:     c.extenso  ?? c.descricao ?? '',
+    periodo: c.periodo  ?? c.PERIODO ?? c.turno ?? '',
+    sigla:   c.sigla_inst ?? c.sigla ?? ''               // <-- NOVO
     })).filter(c => String(c.cod).trim() !== '');
 
     document.getElementById('cursoCount').textContent = cursosCache.length;
@@ -408,27 +418,36 @@ async function carregarCursosDoVest(){
     // render
     box.innerHTML = '';
     cursosCache.forEach(c => {
-      const row = document.createElement('div');
-      row.className = 'rowc';
-      row.dataset.codcurso = c.cod;
-      row.innerHTML = `
-        <div class="muted">${c.cod}</div>
-        <div>
-          <div style="font-weight:600">
-            ${c.nome} ${c.periodo ? `<span class="muted" style="font-weight:500">• ${c.periodo}</span>` : ''}
-          </div>
-          <div class="muted" style="font-size:13px">${c.ext}</div>
+    const row = document.createElement('div');
+    row.className = 'rowc';
+    row.dataset.codcurso = c.cod;
+
+    // monta linha com SIGLA + NOME + PERÍODO
+    // exemplo visual: [USP] Biotec. • I
+    const siglaTag = c.sigla ? `<span class="chip" style="margin-right:6px; background:#eef3ff; color:#0b3b78; height:22px; line-height:22px; font-weight:600;">${c.sigla}</span>` : '';
+
+    row.innerHTML = `
+    <div class="muted">${c.cod}</div>
+    <div>
+        <div style="font-weight:600">
+        ${c.nome}
+        ${c.sigla ? `<span class="muted"> (${c.sigla})</span>` : ''}
+        ${c.periodo ? `<span class="muted" style="font-weight:500"> • ${c.periodo}</span>` : ''}
         </div>
-      `;
-      row.addEventListener('click', () => {
+        <div class="muted" style="font-size:13px">${c.ext}</div>
+    </div>
+    `;
+
+    row.addEventListener('click', () => {
         box.querySelectorAll('.rowc').forEach(r => r.classList.remove('active'));
         row.classList.add('active');
         cursoSelecionado = c.cod;
         document.getElementById('selCursoCod').value = c.cod; // usa curso_id
         M.updateTextFields();
         enableLancar();
-      });
-      box.appendChild(row);
+    });
+
+    box.appendChild(row);
     });
 
     // se o usuário já tinha digitado um código, tenta destacar
@@ -520,8 +539,14 @@ $('#inpBusca').addEventListener('input', carregarAlunos);
 $('#inpChamada').addEventListener('input', enableLancar);
 
 // quando o usuário DIGITAR o código do curso manualmente
-$('#selCursoCod').addEventListener('input', ()=>{
-  autoMatchCursoDigitado();
+$('#selCursoCod').addEventListener('input', (e) => {
+  const v = (e.target.value || '').trim();
+
+  // destaca na lista
+  document.querySelectorAll('#coursesBox .rowc')
+    .forEach(r => r.classList.toggle('active', r.dataset.codcurso === v));
+
+  // valida + (des)habilita botão
   enableLancar();
 });
 
@@ -534,11 +559,19 @@ $('#inpBusca').addEventListener('keydown', e=>{
 async function lancarAprovacao(){
   const codaluno = $('#selAlunoId').value;
   const vest     = getVest();
-  const codcurso = $('#selCursoCod').value;
+  const codcurso = ($('#selCursoCod').value || '').trim();
   const chamada  = parseInt($('#inpChamada').value || '1',10);
   const listagem = parseInt($('#inpListagem').value || '0',10);
   const colocacao = ($('#inpColocacao').value || '').trim();
-  if(!codaluno || !vest || !codcurso) return;
+
+  if(!codaluno || !vest || !codcurso){
+    return;
+  }
+  if(!isCursoValido(codcurso)){
+    M.toast({html:'Código de curso não pertence a este vestibular.'});
+    enableLancar();
+    return;
+  }
 
   $('#btnLancar').disabled = true;
 
@@ -549,20 +582,35 @@ async function lancarAprovacao(){
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ codaluno, vest, codcurso, chamada, listagem, colocacao })
     });
-
     const j = await r.json().catch(()=>({ok:false,msg:'Falha ao interpretar resposta.'}));
 
     if (j.ok) {
       M.toast({html:'Aprovação registrada!'});
+
+      // limpar aluno selecionado
       $('#selAlunoId').value = '';
       $('#selAlunoLabel').value = '';
+      $('#selAlunoLabel').classList.remove('valid','invalid');
+
+      // limpar código do curso e estado visual
+      $('#selCursoCod').value = '';
+      $('#selCursoCod').classList.remove('valid','invalid');
+      document.querySelectorAll('#coursesBox .rowc').forEach(r=>r.classList.remove('active'));
+      cursoSelecionado = null;
+
+      // limpar colocação
       $('#inpColocacao').value = '';
+
       M.updateTextFields();
       enableLancar();
+
+      // opcional: manter o foco onde preferir
+      // $('#selCursoCod').focus();
+      // ou: $('#inpBusca').focus();
+
       return;
     }
 
-    // --- mapeia mensagem técnica -> amigável ---
     const raw = (j.msg || '').toLowerCase();
     if (raw.includes('1062') || raw.includes('duplicate entry') || raw.includes('uq_aprovacao_unica')) {
       M.toast({html:'Esta aprovação já foi lançada para este aluno!'});
@@ -692,6 +740,12 @@ function fitPanels(){
 
 window.addEventListener('load', fitPanels);
 window.addEventListener('resize', fitPanels);
+
+// helper
+function isCursoValido(cod){
+  if(!cod) return false;
+  return cursosCache.some(c => String(c.cod) === String(cod));
+}
 
 </script>
 </body>
