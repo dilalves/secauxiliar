@@ -407,39 +407,49 @@ $('#inpBusca').addEventListener('keydown', e=>{
 // ===== lançar aprovação
 async function lancarAprovacao(){
   const codaluno = $('#selAlunoId').value;
-  const vest = getVest();
-  const codcurso = $('#selCursoCod').value.trim();
-  const chamada = parseInt($('#inpChamada').value || '1',10);
+  const vest     = getVest();
+  const codcurso = $('#selCursoCod').value;
+  const chamada  = parseInt($('#inpChamada').value || '1',10);
   const listagem = parseInt($('#inpListagem').value || '0',10);
   const colocacao = ($('#inpColocacao').value || '').trim();
-
-  if(!codaluno || !vest || !codcurso){ return; }
+  if(!codaluno || !vest || !codcurso) return;
 
   $('#btnLancar').disabled = true;
 
-  try{
-    const r = await fetch(API+'aprovacoes_insert.php',{
+  try {
+    const r = await fetch(API+'aprovacoes_insert.php', {
       method:'POST',
       credentials:'include',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ codaluno, vest, codcurso, chamada, listagem, colocacao })
     });
-    const j = await r.json();
-    if(!j.ok) throw new Error(j.msg || 'Falha ao salvar');
 
-    toast('Aprovação registrada!');
-    // limpa só aluno/colocação (mantém vest/chamada e, se quiser, o código digitado)
-    $('#selAlunoId').value = '';
-    $('#selAlunoLabel').value = '';
-    $('#inpColocacao').value = '';
-    M.updateTextFields();
-    enableLancar();
-  }catch(e){
-    toast('Erro: '+e.message);
-  }finally{
+    const j = await r.json().catch(()=>({ok:false,msg:'Falha ao interpretar resposta.'}));
+
+    if (j.ok) {
+      M.toast({html:'Aprovação registrada!'});
+      $('#selAlunoId').value = '';
+      $('#selAlunoLabel').value = '';
+      $('#inpColocacao').value = '';
+      M.updateTextFields();
+      enableLancar();
+      return;
+    }
+
+    // --- mapeia mensagem técnica -> amigável ---
+    const raw = (j.msg || '').toLowerCase();
+    if (raw.includes('1062') || raw.includes('duplicate entry') || raw.includes('uq_aprovacao_unica')) {
+      M.toast({html:'Esta aprovação já foi lançada para este aluno!'});
+    } else {
+      M.toast({html: j.msg || 'Falha ao salvar.'});
+    }
+  } catch (e) {
+    M.toast({html:'Erro de conexão ao salvar.'});
+  } finally {
     $('#btnLancar').disabled = false;
   }
 }
+
 
 $('#btnLancar').addEventListener('click', lancarAprovacao);
 
