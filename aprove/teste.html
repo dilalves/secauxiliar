@@ -18,21 +18,29 @@
     --primary:#0b3b78; --accent:#2563eb;
     --aside-w:260px; --topbar-h:64px;
 
-    /* altura padrão dos painéis roláveis (ajustada por breakpoint abaixo) */
-    --panel-h: calc(100vh - var(--topbar-h) - 340px);
+    /* NOVO: reservar espaço fixo p/ “cromo” (título + filtros + respiros) e rodapé */
+    --footer-h: 40px;
+    --chrome-h: 320px; /* cabeçalho da página + filtros + margens */
+
+    /* altura final dos painéis com rolagem interna (sem sobrar scroll da página) */
+    --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h));
   }
 
-  /* desktops grandes: cabe um pouco mais de conteúdo acima/abaixo */
-  @media (min-width: 1280px){
-    :root{ --panel-h: calc(100vh - var(--topbar-h) - 300px); }
+  /* finos por breakpoint — ajuste se quiser ainda menos/mais respiro */
+  @media (min-width:1280px){
+    :root{ --chrome-h: 300px; --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h)); }
   }
-  /* notebooks/13–14": um respiro extra pro topo/rodapé */
-  @media (max-width: 1024px){
-    :root{ --panel-h: calc(100vh - var(--topbar-h) - 360px); }
+  @media (max-width:1024px){
+    :root{ --chrome-h: 360px; --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h)); }
   }
 
-  html,body{height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
+  html,body{
+    height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);
+    /* NOVO: trava a rolagem global */
+    overflow:hidden;
+  }
   body{color:var(--ink);}
+
   .app{display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
 
   header.topbar{
@@ -54,9 +62,25 @@
   .menu-group{margin-bottom:12px;}
   .group-title{font-weight:700; color:#0b3b78; text-transform:uppercase; font-size:13px; letter-spacing:.5px; padding:10px 20px 6px; border-top:1px solid #eef2f8;}
 
-  main{display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
-  .page{padding:24px; padding-bottom:16px;} /* evita encavalamento com o footer */
-  footer{text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
+  /* NOVO: a área principal não rola; quem rola são os painéis internos */
+  main{
+    display:flex; flex-direction:column;
+    padding-top:calc(var(--topbar-h) + 8px);
+    height:calc(100vh - var(--topbar-h));
+    overflow:hidden;
+  }
+  .page{
+    padding:24px;
+    padding-bottom:8px;      /* pequeno respiro antes do footer */
+    height:calc(100% - var(--footer-h));
+    overflow:hidden;         /* evita rolagem na página */
+  }
+
+  footer{
+    text-align:center; font-size:13px; color:var(--muted);
+    height:var(--footer-h); line-height:var(--footer-h);
+    padding:0;              /* altura controlada pela var */
+  }
 
   #unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
   table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
@@ -65,26 +89,26 @@
   .muted{color:#64748b}
   .sticky{position:sticky; top:0; background:#fff; z-index:3; border-bottom:1px solid #eef2f8;}
 
-  /* listas com rolagem interna */
+  /* painéis com rolagem interna */
   .courses{
-    max-height: var(--panel-h);
+    max-height:var(--panel-h);
     overflow:auto; border:1px solid var(--line); border-radius:10px;
   }
-  .courses .rowc{display:grid; grid-template-columns: 70px 1fr; gap:10px; padding:10px 12px; border-bottom:1px solid #eef2f8; cursor:pointer;}
+  .courses .rowc{display:grid; grid-template-columns:70px 1fr; gap:10px; padding:10px 12px; border-bottom:1px solid #eef2f8; cursor:pointer;}
   .courses .rowc:hover{background:#f8fbff;}
   .courses .rowc.active{background:#e9f2ff;}
 
   .results{
-    max-height: var(--panel-h);
-    min-height: 300px;      /* garante espaço e evita “encavalamento” com o card de inserir */
+    max-height:var(--panel-h);
+    min-height:260px;          /* garante espaço estável */
     overflow:auto; border:1px solid var(--line); border-radius:10px;
-    margin-bottom:12px;     /* espaço pra não cobrir o “Inserir aprovação” */
+    margin-bottom:12px;        /* não encavalar o “Inserir aprovação” */
   }
   .results table thead{
-    position: sticky; top:0; background:#fff; z-index:2; box-shadow:0 1px 0 #eef2f8;
+    position:sticky; top:0; background:#fff; z-index:2; box-shadow:0 1px 0 #eef2f8;
   }
 
-  .sticky-approve{ position: sticky; top: 8px; z-index: 5; }
+  .sticky-approve{ position:sticky; top:8px; z-index:5; }
 
   .helper-text.ok { color:#16a34a; }
   .helper-text.err{ color:#dc2626; }
@@ -94,6 +118,7 @@
     aside{display:none;}
   }
 </style>
+
 
 </head>
 <body>
