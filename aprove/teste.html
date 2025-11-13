@@ -329,10 +329,11 @@ document.getElementById('form-aprovacao').addEventListener('submit', async e=>{
     const msg = document.getElementById('mensagem');
     if (msg) { msg.textContent = ''; } // some a mensagem fixa
 
-    if (data.ok) {
-    M.toast({ html: 'Aprovação registrada com sucesso.', classes: 'green' });
-    e.target.reset();
+    if (data.ok){
+    M.toast({ html: 'Aprovação registrada com sucesso!' });
+    resetFormUI();               // << limpa tudo, inclusive nomes
     carregarAprovacoes();
+    return;
     } else {
     M.toast({ html: data.msg || 'Falha ao salvar.', classes: 'red' });
     }
@@ -471,6 +472,37 @@ async function excluirAprovacao(){
     carregarAprovacoes();
   }
 }
+
+function resetFormUI(){
+  const f = document.getElementById('form-aprovacao');
+  if (!f) return;
+
+  // limpa campos
+  f.reset();
+
+  // limpa helpers e mensagem
+  ['nomeAluno','nomeVest','nomeCurso','mensagem'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el){
+      el.textContent = '';
+      el.style.color = ''; // remove verde/vermelho
+    }
+  });
+
+  // remove classes de validação dos inputs
+  ['codaluno','vest','codcurso','chamada','colocacao'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('valid','invalid');
+  });
+
+  // desabilita o botão até nova validação
+  const btn = document.querySelector('#form-aprovacao button[type="submit"]');
+  if (btn) btn.disabled = true;
+
+  M.updateTextFields();
+}
+
+
 </script>
 </body>
 </html>
