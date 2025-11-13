@@ -363,8 +363,17 @@ const toast = m => M.toast({html:m});
 const getVest = () => (document.getElementById('inpVest').value || '').trim();
 
 function enableLancar(){
-  const ok = ($('#selAlunoId').value) && ($('#selCursoCod').value.trim()) && getVest();
-  $('#btnLancar').disabled = !ok;
+  const temAluno = !!($('#selAlunoId').value);
+  const vestOk   = !!getVest();
+  const cod      = ($('#selCursoCod').value || '').trim();
+  const cursoOk  = isCursoValido(cod);
+
+  // feedback visual no input do código
+  const inp = $('#selCursoCod');
+  inp.classList.remove('valid','invalid');
+  if(cod) inp.classList.add(cursoOk ? 'valid' : 'invalid');
+
+  $('#btnLancar').disabled = !(temAluno && vestOk && cod && cursoOk);
 }
 
 // ===== cursos do vest
@@ -530,8 +539,14 @@ $('#inpBusca').addEventListener('input', carregarAlunos);
 $('#inpChamada').addEventListener('input', enableLancar);
 
 // quando o usuário DIGITAR o código do curso manualmente
-$('#selCursoCod').addEventListener('input', ()=>{
-  autoMatchCursoDigitado();
+$('#selCursoCod').addEventListener('input', (e) => {
+  const v = (e.target.value || '').trim();
+
+  // destaca na lista
+  document.querySelectorAll('#coursesBox .rowc')
+    .forEach(r => r.classList.toggle('active', r.dataset.codcurso === v));
+
+  // valida + (des)habilita botão
   enableLancar();
 });
 
@@ -544,11 +559,19 @@ $('#inpBusca').addEventListener('keydown', e=>{
 async function lancarAprovacao(){
   const codaluno = $('#selAlunoId').value;
   const vest     = getVest();
-  const codcurso = $('#selCursoCod').value;
+  const codcurso = ($('#selCursoCod').value || '').trim();
   const chamada  = parseInt($('#inpChamada').value || '1',10);
   const listagem = parseInt($('#inpListagem').value || '0',10);
   const colocacao = ($('#inpColocacao').value || '').trim();
-  if(!codaluno || !vest || !codcurso) return;
+
+  if(!codaluno || !vest || !codcurso){
+    return;
+  }
+  if(!isCursoValido(codcurso)){
+    M.toast({html:'Código de curso não pertence a este vestibular.'});
+    enableLancar();
+    return;
+  }
 
   $('#btnLancar').disabled = true;
 
@@ -559,20 +582,21 @@ async function lancarAprovacao(){
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ codaluno, vest, codcurso, chamada, listagem, colocacao })
     });
-
     const j = await r.json().catch(()=>({ok:false,msg:'Falha ao interpretar resposta.'}));
 
     if (j.ok) {
       M.toast({html:'Aprovação registrada!'});
-      $('#selAlunoId').value = '';
-      $('#selAlunoLabel').value = '';
+      // limpa APENAS o código do curso (como você pediu)
+      $('#selCursoCod').value = '';
+      document.querySelectorAll('#coursesBox .rowc').forEach(r=>r.classList.remove('active'));
+      $('#selCursoCod').classList.remove('valid','invalid');
+      // (opcional) manter o aluno selecionado para próximas inclusões
       $('#inpColocacao').value = '';
       M.updateTextFields();
       enableLancar();
       return;
     }
 
-    // --- mapeia mensagem técnica -> amigável ---
     const raw = (j.msg || '').toLowerCase();
     if (raw.includes('1062') || raw.includes('duplicate entry') || raw.includes('uq_aprovacao_unica')) {
       M.toast({html:'Esta aprovação já foi lançada para este aluno!'});
@@ -702,6 +726,12 @@ function fitPanels(){
 
 window.addEventListener('load', fitPanels);
 window.addEventListener('resize', fitPanels);
+
+// helper
+function isCursoValido(cod){
+  if(!cod) return false;
+  return cursosCache.some(c => String(c.cod) === String(cod));
+}
 
 </script>
 </body>
