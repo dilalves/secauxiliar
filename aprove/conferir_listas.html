@@ -11,75 +11,164 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <style>
-    :root{
-      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
-      --ink:#0f172a; --muted:#6b7280;
-      --primary:#0b3b78; --accent:#2563eb;
-      --aside-w:260px; --topbar-h:64px;
-      --panel-h: 420px;
-    }
-    html,body{height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
-    body{color:var(--ink);}
-    .app{display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
-    header.topbar{
-      position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
-      background:var(--primary); color:#fff; display:flex; align-items:center;
-      padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
-    }
-    aside{background:#fff; border-right:1px solid var(--line);
-      position:sticky; top:var(--topbar-h); height:calc(100vh - var(--topbar-h));
-      overflow:auto; z-index:6; padding-bottom:20px;}
-    .menu{list-style:none; margin:0; padding:0 0 12px;}
-    .menu a{display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:.25s;}
-    .menu a:hover{background:#f4f6fb; color:var(--primary);}
-    .menu .active > a{background:#eef3ff; font-weight:600; color:var(--primary);}
-    .menu-group{margin-bottom:12px;}
-    .group-title{font-weight:700; color:#0b3b78; text-transform:uppercase;
-      font-size:13px; letter-spacing:.5px; padding:10px 20px 6px; border-top:1px solid #eef2f8;}
-    main{display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
-    .page{padding:24px;}
-    footer{text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
-    #unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
-    table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
-    .section-title{font-weight:600; color:#0b3b78; margin:14px 0 8px;}
-    .pill{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background:#eef3ff; color:#0b3b78; font-weight:600;}
-    .courses{max-height:420px; overflow:auto; border:1px solid var(--line); border-radius:10px;}
-    .courses .rowc{display:grid; grid-template-columns: 70px 1fr; gap:10px; padding:10px 12px; border-bottom:1px solid #eef2f8; cursor:pointer;}
-    .courses .rowc:hover{background:#f8fbff;}
-    .courses .rowc.active{background:#e9f2ff;}
-    .sticky{position:sticky; top:0; background:#fff; z-index:3; border-bottom:1px solid #eef2f8;}
-    .muted{color:#64748b}
+<style>
+:root{
+  --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+  --ink:#0f172a; --muted:#6b7280;
+  --primary:#0b3b78; --accent:#2563eb;
+  --aside-w:260px; --topbar-h:64px;
+  --footer-h: 40px;
+  --chrome-h: 320px;
+  --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h));
+}
 
-    /* tabela de resultados com rolagem interna (igual aos cursos) */
-    .results { 
-      max-height: var(--panel-h);
-      overflow: auto;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-    }
+@media (min-width:1280px){
+  :root{ --chrome-h: 300px; --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h)); }
+}
+@media (max-width:1024px){
+  :root{ --chrome-h: 360px; --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h)); }
+}
 
-    /* cabeçalho da tabela fica fixo enquanto rola a lista */
-    .results table thead {
-      position: sticky;
-      top:          0;
-      background: #fff;
-      z-index: 2;
-      box-shadow: 0 1px 0 #eef2f8;
-    }
+html,body{
+  height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);
+  /* NOVO: trava a rolagem global */
+  overflow:hidden;
+}
+body{color:var(--ink);}
 
-    /* mantém o cartão de inserção sempre visível ao rolar a página */
-    .sticky-approve {
-      position: sticky;
-      top: 8px;            /* gruda no topo do viewport */
-      z-index: 4;
-    } 
+.app{
+  display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;
+}
 
-    .helper-text.ok { color:#16a34a; }   /* verde */
-    .helper-text.err{ color:#dc2626; }   /* vermelho */   
+header.topbar{
+  position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
+  background:var(--primary); color:#fff; display:flex; align-items:center;
+  padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+}
 
-    @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
-  </style>
+aside{
+  background:#fff; border-right:1px solid var(--line);
+  position:sticky; top:var(--topbar-h); height:calc(100vh - var(--topbar-h));
+  overflow:auto; z-index:6; padding-bottom:20px;
+}
+
+.menu{list-style:none; margin:0; padding:0 0 12px;}
+.menu a{display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:.25s;}
+.menu a:hover{background:#f4f6fb; color:var(--primary);}
+.menu .active > a{background:#eef3ff; font-weight:600; color:var(--primary);}
+.menu-group{margin-bottom:12px;}
+.group-title{font-weight:700; color:#0b3b78; text-transform:uppercase; font-size:13px; letter-spacing:.5px; padding:10px 20px 6px; border-top:1px solid #eef2f8;}
+
+/* ÁREA PRINCIPAL */
+main{
+  display:flex; flex-direction:column;
+  padding-top:calc(var(--topbar-h) + 8px);
+  height:calc(100vh - var(--topbar-h));
+  overflow:hidden;
+}
+.page{
+  padding:24px;
+  padding-bottom:8px;
+  height:calc(100% - var(--footer-h));
+  overflow:hidden;
+}
+
+/* COLUNA DIREITA: garante empilhamento dos cards */
+.row > .col.s12.m7.l8 {
+  display:flex;
+  flex-direction:column;
+  height:auto;
+  min-height:0;
+  overflow:visible !important;
+}
+
+/* CARD DE RESULTADOS ocupa espaço restante */
+.row > .col.s12.m7.l8 > .card:first-child {
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+
+/* RESULTADOS: rola só a tabela */
+.results {
+  flex: 1 1 auto;
+  min-height: 180px;
+  max-height: 320px; /* ajuste conforme desejar, 320px geralmente mostra 7-8 linhas */
+  overflow:auto;
+  border:1px solid var(--line); border-radius:10px;
+  margin-bottom:12px;
+}
+.results table thead{
+  position:sticky; top:0; background:#fff; z-index:2; box-shadow:0 1px 0 #eef2f8;
+}
+
+/* Linhas da tabela: compactas, estilo Excel */
+.results table.striped tbody tr {
+  height:32px;
+}
+.results table.striped td, .results table.striped th {
+  padding:4px 10px !important; /* menos espaço entre linhas e colunas */
+  font-size:15px;
+}
+
+/* Ícone azul de seleção: menor */
+.results .btn-small.blue {
+  min-width:24px;
+  height:24px;
+  padding:0 4px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.results .material-icons {
+  font-size:18px; /* ícone menor */
+}
+
+/* Bloco de INSERIR APROVAÇÃO: gruda embaixo */
+.sticky-approve {
+  position:sticky;
+  bottom:0;
+  top:auto;
+  z-index:5;
+  background:var(--card);
+  margin-top:8px;
+  box-shadow:0 -2px 8px rgba(16,24,40,.06); /* leve sombra p/ destaque */
+}
+
+/* outros estilos úteis */
+.courses{
+  max-height:var(--panel-h);
+  overflow:auto; border:1px solid var(--line); border-radius:10px;
+}
+.courses .rowc{display:grid; grid-template-columns:70px 1fr; gap:10px; padding:10px 12px; border-bottom:1px solid #eef2f8; cursor:pointer;}
+.courses .rowc:hover{background:#f8fbff;}
+.courses .rowc.active{background:#e9f2ff;}
+
+.section-title{font-weight:600; color:#0b3b78; margin:14px 0 8px;}
+.pill{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background:#eef3ff; color:#0b3b78; font-weight:600;}
+.muted{color:#64748b}
+.sticky{position:sticky; top:0; background:#fff; z-index:3; border-bottom:1px solid #eef2f8;}
+
+.helper-text.ok { color:#16a34a; }
+.helper-text.err{ color:#dc2626; }
+
+footer{
+  text-align:center; font-size:13px; color:var(--muted);
+  height:var(--footer-h); line-height:var(--footer-h);
+  padding:0;
+}
+
+#unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
+table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
+
+@media (max-width:1024px){
+  .results {max-height:220px;}
+  .results table.striped td, .results table.striped th {font-size:14px;}
+}
+</style>
+
+
 </head>
 <body>
 <div class="app">
@@ -569,6 +658,41 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if (getVest()) carregarDadosVest();
   document.getElementById('inpVest').focus();
 });
+
+function fitPanels(){
+  const root   = document.documentElement;
+  const topbar = parseInt(getComputedStyle(root).getPropertyValue('--topbar-h')) || 64;
+
+  // Elementos que ficam acima dos painéis
+  const pageEl    = document.querySelector('.page');
+  const titleEl   = pageEl?.querySelector('h4') || null;
+  const filtrosEl = pageEl?.querySelector('.row') || null; // seu bloco com inputs (é o 1º .row da page)
+  const footerEl  = document.querySelector('footer');
+
+  const hTitle    = titleEl ? titleEl.offsetHeight : 0;
+  const hFiltros  = filtrosEl ? filtrosEl.offsetHeight : 0;
+  const hFooter   = footerEl ? footerEl.offsetHeight : 0;
+
+  // respiros entre cards e cabeçalhos internos
+  const padding = 56;
+
+  const available =
+    window.innerHeight
+    - topbar
+    - hTitle
+    - hFiltros
+    - hFooter
+    - padding;
+
+  // mínimo pra não “espremer” em telas pequenas
+  const panelH = Math.max(320, available);
+
+  root.style.setProperty('--panel-h', panelH + 'px');
+}
+
+window.addEventListener('load', fitPanels);
+window.addEventListener('resize', fitPanels);
+
 </script>
 </body>
 </html>

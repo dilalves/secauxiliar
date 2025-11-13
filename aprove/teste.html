@@ -391,12 +391,13 @@ async function carregarCursosDoVest(){
     if (!j.ok) throw new Error(j.error || 'Falha ao listar cursos');
     const rows = j.rows || j.cursos || [];
 
-    // mapeia garantindo curso_id e período
+    // mapeia garantindo curso_id, período E SIGLA DA INSTITUIÇÃO
     cursosCache = rows.map(c => ({
-      cod:     c.curso_id ?? c.CURSO_ID ?? c.codcurso ?? c.codigc ?? c.codigo ?? c.id ?? '',
-      nome:    c.curso    ?? c.nome    ?? '',
-      ext:     c.extenso  ?? c.descricao ?? '',
-      periodo: c.periodo  ?? c.PERIODO ?? c.turno ?? ''    // Manhã / Noite / Integral...
+    cod:     c.curso_id ?? c.CURSO_ID ?? c.codcurso ?? c.codigc ?? c.codigo ?? c.id ?? '',
+    nome:    c.curso    ?? c.nome    ?? '',
+    ext:     c.extenso  ?? c.descricao ?? '',
+    periodo: c.periodo  ?? c.PERIODO ?? c.turno ?? '',                // Manhã / Noite / Integral...
+    sigla:   c.sigla    ?? c.SIGLA   ?? c.inst_sigla ?? c.instituicao_sigla ?? c.instituicao ?? '' // USP, UNESP, UNICAMP...
     })).filter(c => String(c.cod).trim() !== '');
 
     document.getElementById('cursoCount').textContent = cursosCache.length;
@@ -408,27 +409,36 @@ async function carregarCursosDoVest(){
     // render
     box.innerHTML = '';
     cursosCache.forEach(c => {
-      const row = document.createElement('div');
-      row.className = 'rowc';
-      row.dataset.codcurso = c.cod;
-      row.innerHTML = `
+    const row = document.createElement('div');
+    row.className = 'rowc';
+    row.dataset.codcurso = c.cod;
+
+    // monta linha com SIGLA + NOME + PERÍODO
+    // exemplo visual: [USP] Biotec. • I
+    const siglaTag = c.sigla ? `<span class="chip" style="margin-right:6px; background:#eef3ff; color:#0b3b78; height:22px; line-height:22px; font-weight:600;">${c.sigla}</span>` : '';
+
+    row.innerHTML = `
         <div class="muted">${c.cod}</div>
         <div>
-          <div style="font-weight:600">
-            ${c.nome} ${c.periodo ? `<span class="muted" style="font-weight:500">• ${c.periodo}</span>` : ''}
-          </div>
-          <div class="muted" style="font-size:13px">${c.ext}</div>
+        <div style="display:flex; align-items:center; gap:4px; font-weight:600">
+            ${siglaTag}
+            <span>${c.nome}</span>
+            ${c.periodo ? `<span class="muted" style="font-weight:500">• ${c.periodo}</span>` : ''}
         </div>
-      `;
-      row.addEventListener('click', () => {
+        <div class="muted" style="font-size:13px">${c.ext}</div>
+        </div>
+    `;
+
+    row.addEventListener('click', () => {
         box.querySelectorAll('.rowc').forEach(r => r.classList.remove('active'));
         row.classList.add('active');
         cursoSelecionado = c.cod;
         document.getElementById('selCursoCod').value = c.cod; // usa curso_id
         M.updateTextFields();
         enableLancar();
-      });
-      box.appendChild(row);
+    });
+
+    box.appendChild(row);
     });
 
     // se o usuário já tinha digitado um código, tenta destacar
