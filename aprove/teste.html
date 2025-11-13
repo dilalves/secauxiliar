@@ -12,111 +12,136 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 <style>
-  :root{
-    --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
-    --ink:#0f172a; --muted:#6b7280;
-    --primary:#0b3b78; --accent:#2563eb;
-    --aside-w:260px; --topbar-h:64px;
+:root{
+  --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+  --ink:#0f172a; --muted:#6b7280;
+  --primary:#0b3b78; --accent:#2563eb;
+  --aside-w:260px; --topbar-h:64px;
+  --footer-h: 40px;
+  --chrome-h: 320px;
+  --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h));
+}
 
-    /* NOVO: reservar espaço fixo p/ “cromo” (título + filtros + respiros) e rodapé */
-    --footer-h: 40px;
-    --chrome-h: 320px; /* cabeçalho da página + filtros + margens */
+@media (min-width:1280px){
+  :root{ --chrome-h: 300px; --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h)); }
+}
+@media (max-width:1024px){
+  :root{ --chrome-h: 360px; --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h)); }
+}
 
-    /* altura final dos painéis com rolagem interna (sem sobrar scroll da página) */
-    --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h));
-  }
+html,body{
+  height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);
+  /* NOVO: trava a rolagem global */
+  overflow:hidden;
+}
+body{color:var(--ink);}
 
-  /* finos por breakpoint — ajuste se quiser ainda menos/mais respiro */
-  @media (min-width:1280px){
-    :root{ --chrome-h: 300px; --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h)); }
-  }
-  @media (max-width:1024px){
-    :root{ --chrome-h: 360px; --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h)); }
-  }
+.app{
+  display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;
+}
 
-  html,body{
-    height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);
-    /* NOVO: trava a rolagem global */
-    overflow:hidden;
-  }
-  body{color:var(--ink);}
+header.topbar{
+  position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
+  background:var(--primary); color:#fff; display:flex; align-items:center;
+  padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+}
 
-  .app{display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
+aside{
+  background:#fff; border-right:1px solid var(--line);
+  position:sticky; top:var(--topbar-h); height:calc(100vh - var(--topbar-h));
+  overflow:auto; z-index:6; padding-bottom:20px;
+}
 
-  header.topbar{
-    position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
-    background:var(--primary); color:#fff; display:flex; align-items:center;
-    padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
-  }
+.menu{list-style:none; margin:0; padding:0 0 12px;}
+.menu a{display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:.25s;}
+.menu a:hover{background:#f4f6fb; color:var(--primary);}
+.menu .active > a{background:#eef3ff; font-weight:600; color:var(--primary);}
+.menu-group{margin-bottom:12px;}
+.group-title{font-weight:700; color:#0b3b78; text-transform:uppercase; font-size:13px; letter-spacing:.5px; padding:10px 20px 6px; border-top:1px solid #eef2f8;}
 
-  aside{
-    background:#fff; border-right:1px solid var(--line);
-    position:sticky; top:var(--topbar-h); height:calc(100vh - var(--topbar-h));
-    overflow:auto; z-index:6; padding-bottom:20px;
-  }
+/* ÁREA PRINCIPAL */
+main{
+  display:flex; flex-direction:column;
+  padding-top:calc(var(--topbar-h) + 8px);
+  height:calc(100vh - var(--topbar-h));
+  overflow:hidden;
+}
+.page{
+  padding:24px;
+  padding-bottom:8px;
+  height:calc(100% - var(--footer-h));
+  overflow:hidden;
+}
 
-  .menu{list-style:none; margin:0; padding:0 0 12px;}
-  .menu a{display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:.25s;}
-  .menu a:hover{background:#f4f6fb; color:var(--primary);}
-  .menu .active > a{background:#eef3ff; font-weight:600; color:var(--primary);}
-  .menu-group{margin-bottom:12px;}
-  .group-title{font-weight:700; color:#0b3b78; text-transform:uppercase; font-size:13px; letter-spacing:.5px; padding:10px 20px 6px; border-top:1px solid #eef2f8;}
+/* COLUNA DIREITA: garante empilhamento dos cards */
+.row > .col.s12.m7.l8 {
+  display:flex;
+  flex-direction:column;
+  height:auto;
+  min-height:0;
+  overflow:visible !important;
+}
 
-  /* NOVO: a área principal não rola; quem rola são os painéis internos */
-  main{
-    display:flex; flex-direction:column;
-    padding-top:calc(var(--topbar-h) + 8px);
-    height:calc(100vh - var(--topbar-h));
-    overflow:hidden;
-  }
-  .page{
-    padding:24px;
-    padding-bottom:8px;      /* pequeno respiro antes do footer */
-    height:calc(100% - var(--footer-h));
-    overflow:hidden;         /* evita rolagem na página */
-  }
+/* CARD DE RESULTADOS ocupa espaço restante */
+.row > .col.s12.m7.l8 > .card:first-child {
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
 
-  footer{
-    text-align:center; font-size:13px; color:var(--muted);
-    height:var(--footer-h); line-height:var(--footer-h);
-    padding:0;              /* altura controlada pela var */
-  }
+/* RESULTADOS: rola só a tabela */
+.results {
+  flex:1 1 auto;
+  min-height:260px;
+  max-height:var(--panel-h);
+  overflow:auto;
+  border:1px solid var(--line); border-radius:10px;
+  margin-bottom:12px;
+}
+.results table thead{
+  position:sticky; top:0; background:#fff; z-index:2; box-shadow:0 1px 0 #eef2f8;
+}
 
-  #unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
-  table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
-  .section-title{font-weight:600; color:#0b3b78; margin:14px 0 8px;}
-  .pill{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background:#eef3ff; color:#0b3b78; font-weight:600;}
-  .muted{color:#64748b}
-  .sticky{position:sticky; top:0; background:#fff; z-index:3; border-bottom:1px solid #eef2f8;}
+/* Bloco de INSERIR APROVAÇÃO: gruda embaixo */
+.sticky-approve{
+  position:sticky;
+  bottom:0;
+  top:auto;
+  z-index:5;
+  background:var(--card);
+}
 
-  /* painéis com rolagem interna */
-  .courses{
-    max-height:var(--panel-h);
-    overflow:auto; border:1px solid var(--line); border-radius:10px;
-  }
-  .courses .rowc{display:grid; grid-template-columns:70px 1fr; gap:10px; padding:10px 12px; border-bottom:1px solid #eef2f8; cursor:pointer;}
-  .courses .rowc:hover{background:#f8fbff;}
-  .courses .rowc.active{background:#e9f2ff;}
+/* outros estilos úteis */
+.courses{
+  max-height:var(--panel-h);
+  overflow:auto; border:1px solid var(--line); border-radius:10px;
+}
+.courses .rowc{display:grid; grid-template-columns:70px 1fr; gap:10px; padding:10px 12px; border-bottom:1px solid #eef2f8; cursor:pointer;}
+.courses .rowc:hover{background:#f8fbff;}
+.courses .rowc.active{background:#e9f2ff;}
 
-  .results{
-    max-height:var(--panel-h);
-    min-height:260px;          /* garante espaço estável */
-    overflow:auto; border:1px solid var(--line); border-radius:10px;
-    margin-bottom:12px;        /* não encavalar o “Inserir aprovação” */
-  }
-  .results table thead{
-    position:sticky; top:0; background:#fff; z-index:2; box-shadow:0 1px 0 #eef2f8;
-  }
+.section-title{font-weight:600; color:#0b3b78; margin:14px 0 8px;}
+.pill{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background:#eef3ff; color:#0b3b78; font-weight:600;}
+.muted{color:#64748b}
+.sticky{position:sticky; top:0; background:#fff; z-index:3; border-bottom:1px solid #eef2f8;}
 
-  .sticky-approve{ position:sticky; top:8px; z-index:5; }
+.helper-text.ok { color:#16a34a; }
+.helper-text.err{ color:#dc2626; }
 
-  .helper-text.ok { color:#16a34a; }
-  .helper-text.err{ color:#dc2626; }
+footer{
+  text-align:center; font-size:13px; color:var(--muted);
+  height:var(--footer-h); line-height:var(--footer-h);
+  padding:0;
+}
 
-  @media (max-width:992px){
-    .app{grid-template-columns:1fr;}
-    aside{display:none;}
-  }
+#unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
+table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
+
+@media (max-width:992px){
+  .app{grid-template-columns:1fr;}
+  aside{display:none;}
+}
 </style>
 
 
