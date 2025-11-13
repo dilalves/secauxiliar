@@ -17,6 +17,7 @@
       --ink:#0f172a; --muted:#6b7280;
       --primary:#0b3b78; --accent:#2563eb;
       --aside-w:260px; --topbar-h:64px;
+      --panel-h: 420px;
     }
     html,body{height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
     body{color:var(--ink);}
@@ -49,6 +50,34 @@
     .courses .rowc.active{background:#e9f2ff;}
     .sticky{position:sticky; top:0; background:#fff; z-index:3; border-bottom:1px solid #eef2f8;}
     .muted{color:#64748b}
+
+    /* tabela de resultados com rolagem interna (igual aos cursos) */
+    .results { 
+      max-height: var(--panel-h);
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    /* cabeçalho da tabela fica fixo enquanto rola a lista */
+    .results table thead {
+      position: sticky;
+      top:          0;
+      background: #fff;
+      z-index: 2;
+      box-shadow: 0 1px 0 #eef2f8;
+    }
+
+    /* mantém o cartão de inserção sempre visível ao rolar a página */
+    .sticky-approve {
+      position: sticky;
+      top: 8px;            /* gruda no topo do viewport */
+      z-index: 4;
+    } 
+
+    .helper-text.ok { color:#16a34a; }   /* verde */
+    .helper-text.err{ color:#dc2626; }   /* vermelho */   
+
     @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
   </style>
 </head>
@@ -160,49 +189,57 @@
               <div class="right muted" id="alunoCount">—</div>
             </div>
 
-            <table class="striped highlight responsive-table">
-              <thead>
-                <tr>
-                  <th>CodAluno</th>
-                  <th>Nome</th>
-                  <th>Série</th>
-                  <th>Unidade</th>
-                  <th>Cadastro</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="tbodyAlunos">
-                <tr><td colspan="6" class="center muted">Digite um nome para buscar…</td></tr>
-              </tbody>
-            </table>
+            <!-- wrapper com rolagem interna -->
+            <div id="resultsWrap" class="results">
+              <table class="striped highlight responsive-table">
+                <thead>
+                  <tr>
+                    <th>CodAluno</th>
+                    <th>Nome</th>
+                    <th>Série</th>
+                    <th>Unidade</th>
+                    <th>Cadastro</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyAlunos">
+                  <tr><td colspan="6" class="center muted">Digite um nome para buscar…</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <!-- Inserir aprovação -->
-          <div class="card z-depth-0" style="padding:14px;">
-            <span class="section-title">Inserir aprovação</span>
-            <div class="row" style="margin-bottom:0;">
-              <div class="input-field col s12 l6">
-                <input id="selAlunoLabel" type="text" readonly placeholder="Selecione um aluno acima">
-                <label class="active">Aluno</label>
+          <div class="card z-depth-0 sticky-approve" style="padding:14px;">
+              <div class="card z-depth-0" style="padding:14px;">
+                <span class="section-title">Inserir aprovação</span>
+                <div class="row" style="margin-bottom:0;">
+                  <div class="input-field col s12 l6">
+                    <input id="selAlunoLabel" type="text" readonly placeholder="Selecione um aluno acima">
+                    <label class="active">Aluno</label>
+                  </div>
+                  <div class="input-field col s6 l2">
+                    <input id="selCursoCod" type="text" placeholder="código">
+                    <label class="active">Código do curso</label>
+                  </div>
+                  <div class="input-field col s6 l2">
+                    <input id="inpColocacao" type="text" placeholder="ex.: 12º">
+                    <label>Colocação</label>
+                  </div>
+                  <div class="input-field col s12 l2 right-align">
+                    <button id="btnLancar" class="btn waves-effect" disabled>
+                      <i class="material-icons left">check</i>Lançar
+                    </button>
+                  </div>
+                </div>
+
+                <!-- hidden state -->
+                <input type="hidden" id="selAlunoId">
               </div>
-              <div class="input-field col s6 l2">
-                <input id="selCursoCod" type="text" placeholder="código">
-                <label class="active">Código do curso</label>
-              </div>
-              <div class="input-field col s6 l2">
-                <input id="inpColocacao" type="text" placeholder="ex.: 12º">
-                <label>Colocação</label>
-              </div>
-              <div class="input-field col s12 l2 right-align">
-                <button id="btnLancar" class="btn waves-effect" disabled>
-                  <i class="material-icons left">check</i>Lançar
-                </button>
-              </div>
+            
             </div>
 
-            <!-- hidden state -->
-            <input type="hidden" id="selAlunoId">
-          </div>
+
         </div>
       </div>
     </section>
@@ -516,12 +553,14 @@ document.getElementById('inpVest').addEventListener('keydown', e=>{
   if(e.key === 'Enter') carregarDadosVest();
 });
 
+
+/*
 document.getElementById('selCursoCod').addEventListener('input', (e) => {
   const v = (e.target.value || '').trim();
   document.querySelectorAll('#coursesBox .rowc')
     .forEach(r => r.classList.toggle('active', r.dataset.codcurso === v));
   enableLancar();
-});
+}); */
 
 // ===== init
 document.addEventListener('DOMContentLoaded', ()=>{
