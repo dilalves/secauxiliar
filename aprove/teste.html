@@ -326,21 +326,17 @@ document.getElementById('form-aprovacao').addEventListener('submit', async e=>{
   });
 
   const data = await res.json();
-  const msg = $('#mensagem');
-  msg.textContent = data.msg;
-  msg.style.color = data.ok ? 'green' : 'red';
+    const msg = document.getElementById('mensagem');
+    if (msg) { msg.textContent = ''; } // some a mensagem fixa
 
-  if(data.ok){
-    // limpa tudo e trava novamente
+    if (data.ok) {
+    M.toast({ html: 'Aprovação registrada com sucesso.', classes: 'green' });
     e.target.reset();
-    $('#nomeAluno').textContent = '';
-    $('#nomeVest').textContent  = '';
-    $('#nomeCurso').textContent = '';
-    $('#nomeCurso').classList.remove('green-text','red-text','text-darken-1');
-    cursoValido = false;
-    enableSalvar();
     carregarAprovacoes();
-  }
+    } else {
+    M.toast({ html: data.msg || 'Falha ao salvar.', classes: 'red' });
+    }
+
 });
 
 /* === LISTAGEM === */
@@ -384,6 +380,16 @@ async function carregarAprovacoes(){
 document.addEventListener('DOMContentLoaded', ()=>{
   carregarUsuario();
   M.Modal.init(document.querySelectorAll('.modal'));
+
+    ['codaluno','vest','codcurso','chamada','colocacao'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', ()=>{
+        const msg = document.getElementById('mensagem');
+        if (msg) msg.textContent = '';
+    });
+    });
+
 });
 
 /* ===== Modal de edição ===== */
