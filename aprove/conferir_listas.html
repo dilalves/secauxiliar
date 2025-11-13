@@ -13,98 +13,69 @@
 
   <style>
   :root{
-    --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
-    --ink:#0f172a; --muted:#6b7280;
-    --primary:#0b3b78; --accent:#2563eb;
-    --aside-w:260px; --topbar-h:64px;
-    --panel-h: 420px; /* valor inicial; o JS pode recalcular */
-  }
+  --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+  --ink:#0f172a; --muted:#6b7280;
+  --primary:#0b3b78; --accent:#2563eb;
+  --aside-w:260px; --topbar-h:64px;
 
-  /* ===== layout base ===== */
-  html,body{
-    height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);
-    color:var(--ink);
-    overflow: hidden;              /* sem barra de rolagem geral */
-  }
-  body{color:var(--ink);}
-  .app{display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
+  /* Altura dos painéis roláveis calculada p/ caber tudo na tela:
+     (viewport) - (topbar) - (título + filtros + respiros + footer)  */
+  --panel-h: calc(100vh - var(--topbar-h) - 360px);
+}
 
-  header.topbar{
-    position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
-    background:var(--primary); color:#fff; display:flex; align-items:center;
-    padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
-  }
+/* sem rolagem geral */
+html,body{
+  height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);
+  color:var(--ink);
+  overflow: hidden;
+}
 
-  /* área principal sem scroll, quem rola são os painéis internos */
-  main{
-    display:flex; flex-direction:column;
-    padding-top:calc(var(--topbar-h) + 8px);
-    height: calc(100vh - var(--topbar-h));
-    overflow: hidden;
-  }
+/* main não rola; quem rola são cursos/resultados */
+main{
+  display:flex; flex-direction:column;
+  padding-top:calc(var(--topbar-h) + 8px);
+  height: calc(100vh - var(--topbar-h));
+  overflow: hidden;
+}
 
-  aside{
-    background:#fff; border-right:1px solid var(--line);
-    position:sticky; top:var(--topbar-h); height:calc(100vh - var(--topbar-h));
-    overflow:auto; z-index:6; padding-bottom:20px;
-  }
+/* footer sempre visível e acima dos cartões */
+footer{
+  position: sticky; bottom:0; z-index: 6;
+  text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;
+  background: var(--bg);
+}
 
-  .menu{list-style:none; margin:0; padding:0 0 12px;}
-  .menu a{display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:.25s;}
-  .menu a:hover{background:#f4f6fb; color:var(--primary);}
-  .menu .active > a{background:#eef3ff; font-weight:600; color:var(--primary);}
-  .menu-group{margin-bottom:12px;}
-  .group-title{font-weight:700; color:#0b3b78; text-transform:uppercase;
-    font-size:13px; letter-spacing:.5px; padding:10px 20px 6px; border-top:1px solid #eef2f8;}
+/* listas roláveis com altura controlada por --panel-h */
+.courses,
+.results{
+  max-height: var(--panel-h);
+  overflow: auto;
+  border:1px solid var(--line);
+  border-radius:10px;
+}
 
-  .page{padding:24px;}
+/* cabeçalho da tabela fixo */
+.results table thead{
+  position: sticky; top:0; background:#fff; z-index:2; box-shadow:0 1px 0 #eef2f8;
+}
 
-  /* footer sempre visível */
-  footer{
-    position: sticky; bottom: 0; z-index:5;
-    text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;
-    background: transparent; /* mude para #fff se preferir */
-  }
+/* garante que o “Inserir aprovação” fique por cima do resultado */
+.sticky-approve{ position: sticky; top: 8px; z-index: 5; }
 
-  #unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
-  table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
-  .section-title{font-weight:600; color:#0b3b78; margin:14px 0 8px;}
-  .pill{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background:#eef3ff; color:#0b3b78; font-weight:600;}
-  .muted{color:#64748b}
-  .sticky{position:sticky; top:0; background:#fff; z-index:3; border-bottom:1px solid #eef2f8;}
+/* ajustes de z-index para o card de resultados não cobrir nada abaixo */
+.results{ position: relative; z-index: 2; }
 
-  /* ===== painéis roláveis ===== */
-  .courses{
-    max-height: var(--panel-h);
-    overflow:auto; border:1px solid var(--line); border-radius:10px;
-  }
-  .courses .rowc{display:grid; grid-template-columns: 70px 1fr; gap:10px; padding:10px 12px; border-bottom:1px solid #eef2f8; cursor:pointer;}
-  .courses .rowc:hover{background:#f8fbff;}
-  .courses .rowc.active{background:#e9f2ff;}
+/* pequeno respiro abaixo do resultado para não encostar no footer */
+.card .results{ margin-bottom: 12px; }
 
-  .results{
-    max-height: var(--panel-h);
-    overflow:auto; border:1px solid var(--line); border-radius:10px;
-  }
-  .results table thead{
-    position: sticky; top:0; background:#fff; z-index:2; box-shadow:0 1px 0 #eef2f8;
-  }
-
-  /* “Inserir aprovação” sempre à vista */
-  .sticky-approve{ position: sticky; top: 8px; z-index:4; }
-
-  .helper-text.ok { color:#16a34a; }
-  .helper-text.err{ color:#dc2626; }
-
-  @media (max-width:992px){
-    .app{grid-template-columns:1fr;}
-    aside{display:none;}
-  }
-
-  /* opcional: ganha alguns px em telas largas, até o JS recalcular */
-  @media (min-width:1280px){
-    :root{ --panel-h: 520px; }
-  }
+/* responsividade: dá um pouco mais de altura em telas largas
+   e segura melhor em telas menores */
+@media (min-width: 1366px){
+  :root{ --panel-h: calc(100vh - var(--topbar-h) - 320px); }
+}
+@media (max-width: 1200px){
+  :root{ --panel-h: calc(100vh - var(--topbar-h) - 380px); }
+}
 </style>
 
 </head>
@@ -652,6 +623,18 @@ carregarDadosVest = async function(){
   try { await _old_carregarDadosVest.apply(this, arguments); }
   finally { _ajustarDepois(); }
 };
+
+function fitPanels(){
+  const topbar = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topbar-h')) || 64;
+  const hTitle  = document.querySelector('.page h4')?.offsetHeight || 0;
+  const hFiltros= document.querySelector('.page .row')?.offsetHeight || 0; // o bloco dos inputs
+  const hFooter = document.querySelector('footer')?.offsetHeight || 0;
+  const padding = 56; // respiros/margens entre cards
+  const available = window.innerHeight - topbar - hTitle - hFiltros - hFooter - padding;
+  document.documentElement.style.setProperty('--panel-h', Math.max(260, available) + 'px');
+}
+window.addEventListener('load', fitPanels);
+window.addEventListener('resize', fitPanels);
 
 
 // ===== init
