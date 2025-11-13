@@ -252,39 +252,53 @@ async function carregarCursosDoVest(){
   document.getElementById('cursoCount').textContent = '—';
   cursoSelecionado = null;
   cursosCache = [];
-  
-  if(!vest){
+
+  if (!vest){
     box.innerHTML = '<div class="center muted" style="padding:12px">Informe o código da lista</div>';
     return;
   }
 
-  try{    
+  try {
     const url = API + `vestibular_cursos_list.php?vestibular_id=${encodeURIComponent(vest)}`;
-    const r = await fetch(url, {credentials:'include'});
+    const r = await fetch(url, { credentials:'include' });
     const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'Falha ao listar cursos');
     const rows = j.rows || j.cursos || [];
-    if(!j.ok) throw new Error(j.error || 'Falha ao listar cursos');
 
+    // mapeia garantindo curso_id e período
     cursosCache = rows.map(c => ({
-      cod: c.codigc ?? c.codigo ?? c.cod ?? c.id ?? '',
-      nome: c.curso ?? c.nome ?? '',
-      ext:  c.extenso ?? ''
-    }));
+      cod:     c.curso_id ?? c.CURSO_ID ?? c.codcurso ?? c.codigc ?? c.codigo ?? c.id ?? '',
+      nome:    c.curso    ?? c.nome    ?? '',
+      ext:     c.extenso  ?? c.descricao ?? '',
+      periodo: c.periodo  ?? c.PERIODO ?? c.turno ?? ''    // Manhã / Noite / Integral...
+    })).filter(c => String(c.cod).trim() !== '');
 
     document.getElementById('cursoCount').textContent = cursosCache.length;
-    if(!cursosCache.length){ box.innerHTML = '<div class="center muted" style="padding:12px">Nenhum curso cadastrado</div>'; return; }
+    if (!cursosCache.length){
+      box.innerHTML = '<div class="center muted" style="padding:12px">Nenhum curso cadastrado</div>';
+      return;
+    }
 
+    // render
     box.innerHTML = '';
-    cursosCache.forEach(c=>{
-      const row  = document.createElement('div');
+    cursosCache.forEach(c => {
+      const row = document.createElement('div');
       row.className = 'rowc';
       row.dataset.codcurso = c.cod;
-      row.innerHTML = `<div class="muted">${c.cod}</div><div><div style="font-weight:600">${c.nome}</div><div class="muted" style="font-size:13px">${c.ext}</div></div>`;
-      row.addEventListener('click', ()=>{
-        box.querySelectorAll('.rowc').forEach(r=>r.classList.remove('active'));
+      row.innerHTML = `
+        <div class="muted">${c.cod}</div>
+        <div>
+          <div style="font-weight:600">
+            ${c.nome} ${c.periodo ? `<span class="muted" style="font-weight:500">• ${c.periodo}</span>` : ''}
+          </div>
+          <div class="muted" style="font-size:13px">${c.ext}</div>
+        </div>
+      `;
+      row.addEventListener('click', () => {
+        box.querySelectorAll('.rowc').forEach(r => r.classList.remove('active'));
         row.classList.add('active');
         cursoSelecionado = c.cod;
-        document.getElementById('selCursoCod').value = c.cod;
+        document.getElementById('selCursoCod').value = c.cod; // usa curso_id
         M.updateTextFields();
         enableLancar();
       });
@@ -292,13 +306,14 @@ async function carregarCursosDoVest(){
     });
 
     // se o usuário já tinha digitado um código, tenta destacar
-    autoMatchCursoDigitado();
+    autoMatchCursoDigitado?.();
 
-  }catch(e){
+  } catch (e) {
     box.innerHTML = '<div class="center red-text" style="padding:12px">Erro ao carregar cursos</div>';
-    M.toast({html:e.message});
+    M.toast({ html: e.message });
   }
 }
+
 
 // tenta realçar na lista quando o usuário digita um código existente
 function autoMatchCursoDigitado(){
@@ -489,6 +504,13 @@ const debouncedVest = debounce(carregarDadosVest, 300);
 document.getElementById('inpVest').addEventListener('input', debouncedVest);
 document.getElementById('inpVest').addEventListener('keydown', e=>{
   if(e.key === 'Enter') carregarDadosVest();
+});
+
+document.getElementById('selCursoCod').addEventListener('input', (e) => {
+  const v = (e.target.value || '').trim();
+  document.querySelectorAll('#coursesBox .rowc')
+    .forEach(r => r.classList.toggle('active', r.dataset.codcurso === v));
+  enableLancar();
 });
 
 // ===== init
