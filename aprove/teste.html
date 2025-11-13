@@ -1,189 +1,69 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico"/>
-  <title>Conferir Listas • Aprove — Conferência de Aprovados</title>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Aprovações • Aprove — Conferência de Aprovados</title>
 
   <!-- Materialize -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-<style>
-:root{
-  --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
-  --ink:#0f172a; --muted:#6b7280;
-  --primary:#0b3b78; --accent:#2563eb;
-  --aside-w:260px; --topbar-h:64px;
-  --footer-h: 40px;
-  --chrome-h: 320px;
-  --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h));
-}
-
-@media (min-width:1280px){
-  :root{ --chrome-h: 300px; --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h)); }
-}
-@media (max-width:1024px){
-  :root{ --chrome-h: 360px; --panel-h: calc(100vh - var(--topbar-h) - var(--footer-h) - var(--chrome-h)); }
-}
-
-html,body{
-  height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);
-  /* NOVO: trava a rolagem global */
-  overflow:hidden;
-}
-body{color:var(--ink);}
-
-.app{
-  display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;
-}
-
-header.topbar{
-  position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
-  background:var(--primary); color:#fff; display:flex; align-items:center;
-  padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
-}
-
-aside{
-  background:#fff; border-right:1px solid var(--line);
-  position:sticky; top:var(--topbar-h); height:calc(100vh - var(--topbar-h));
-  overflow:auto; z-index:6; padding-bottom:20px;
-}
-
-.menu{list-style:none; margin:0; padding:0 0 12px;}
-.menu a{display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:.25s;}
-.menu a:hover{background:#f4f6fb; color:var(--primary);}
-.menu .active > a{background:#eef3ff; font-weight:600; color:var(--primary);}
-.menu-group{margin-bottom:12px;}
-.group-title{font-weight:700; color:#0b3b78; text-transform:uppercase; font-size:13px; letter-spacing:.5px; padding:10px 20px 6px; border-top:1px solid #eef2f8;}
-
-/* ÁREA PRINCIPAL */
-main{
-  display:flex; flex-direction:column;
-  padding-top:calc(var(--topbar-h) + 8px);
-  height:calc(100vh - var(--topbar-h));
-  overflow:hidden;
-}
-.page{
-  padding:24px;
-  padding-bottom:8px;
-  height:calc(100% - var(--footer-h));
-  overflow:hidden;
-}
-
-/* COLUNA DIREITA: garante empilhamento dos cards */
-.row > .col.s12.m7.l8 {
-  display:flex;
-  flex-direction:column;
-  height:auto;
-  min-height:0;
-  overflow:visible !important;
-}
-
-/* CARD DE RESULTADOS ocupa espaço restante */
-.row > .col.s12.m7.l8 > .card:first-child {
-  flex:1 1 auto;
-  min-height:0;
-  display:flex;
-  flex-direction:column;
-}
-
-/* RESULTADOS: rola só a tabela */
-.results {
-  flex: 1 1 auto;
-  min-height: 180px;
-  max-height: 320px; /* ajuste conforme desejar, 320px geralmente mostra 7-8 linhas */
-  overflow:auto;
-  border:1px solid var(--line); border-radius:10px;
-  margin-bottom:12px;
-}
-.results table thead{
-  position:sticky; top:0; background:#fff; z-index:2; box-shadow:0 1px 0 #eef2f8;
-}
-
-/* Linhas da tabela: compactas, estilo Excel */
-.results table.striped tbody tr {
-  height:32px;
-}
-.results table.striped td, .results table.striped th {
-  padding:4px 10px !important; /* menos espaço entre linhas e colunas */
-  font-size:15px;
-}
-
-/* Ícone azul de seleção: menor */
-.results .btn-small.blue {
-  min-width:24px;
-  height:24px;
-  padding:0 4px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.results .material-icons {
-  font-size:18px; /* ícone menor */
-}
-
-/* Bloco de INSERIR APROVAÇÃO: gruda embaixo */
-.sticky-approve {
-  position:sticky;
-  bottom:0;
-  top:auto;
-  z-index:5;
-  background:var(--card);
-  margin-top:8px;
-  box-shadow:0 -2px 8px rgba(16,24,40,.06); /* leve sombra p/ destaque */
-}
-
-/* outros estilos úteis */
-.courses{
-  max-height:var(--panel-h);
-  overflow:auto; border:1px solid var(--line); border-radius:10px;
-}
-.courses .rowc{display:grid; grid-template-columns:70px 1fr; gap:10px; padding:10px 12px; border-bottom:1px solid #eef2f8; cursor:pointer;}
-.courses .rowc:hover{background:#f8fbff;}
-.courses .rowc.active{background:#e9f2ff;}
-
-.section-title{font-weight:600; color:#0b3b78; margin:14px 0 8px;}
-.pill{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background:#eef3ff; color:#0b3b78; font-weight:600;}
-.muted{color:#64748b}
-.sticky{position:sticky; top:0; background:#fff; z-index:3; border-bottom:1px solid #eef2f8;}
-
-.helper-text.ok { color:#16a34a; }
-.helper-text.err{ color:#dc2626; }
-
-footer{
-  text-align:center; font-size:13px; color:var(--muted);
-  height:var(--footer-h); line-height:var(--footer-h);
-  padding:0;
-}
-
-#unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
-table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
-
-@media (max-width:1024px){
-  .results {max-height:220px;}
-  .results table.striped td, .results table.striped th {font-size:14px;}
-}
-</style>
-
-
+  <style>
+    :root {
+      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+      --ink:#0f172a; --muted:#6b7280; 
+      --primary:#0b3b78; --accent:#2563eb;
+      --aside-w:260px; --topbar-h:64px;
+    }
+    html, body {height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
+    body {color:var(--ink);}
+    .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
+    header.topbar {
+      position:fixed; top:0; left:0; right:0; height:var(--topbar-h);
+      background:var(--primary); color:#fff; display:flex; align-items:center;
+      padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+      z-index:20;
+    }
+    aside {
+      background:#fff; border-right:1px solid var(--line);
+      position:sticky; top:var(--topbar-h);
+      height:calc(100vh - var(--topbar-h)); overflow:auto; z-index:6;
+    }
+    .menu {list-style:none; margin:0; padding:0;}
+    .menu a {display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:0.25s;}
+    .menu a:hover {background:#f4f6fb; color:var(--primary);}
+    .menu .active > a {background:#eef3ff; font-weight:600; color:var(--primary);}
+    .group-title {
+      font-weight:700; color:#0b3b78; text-transform:uppercase;
+      font-size:13px; letter-spacing:0.5px;
+      padding:10px 20px 6px; border-top:1px solid #eef2f8;
+    }
+    main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
+    .page {padding:24px;}
+    footer {text-align:center; font-size:13px; color:#6b7280; padding:16px 0 10px;}
+    #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
+    table.striped th {background:#f2f5ff; color:#0b3b78; font-weight:600;}
+    .helper {font-size:0.9rem;}
+  </style>
 </head>
+
 <body>
-<div class="app">
+  <div class="app">
   <!-- ===== SIDEBAR ===== -->
   <aside>
     <div class="center" style="padding:18px 0 8px;">
       <span class="title" style="font-weight:700; color:#0b3b78">Aprove</span>
     </div>
+
     <ul class="menu">
       <li><a href="/aprove/painel.html">Início</a></li>
 
       <li class="menu-group">
         <div class="group-title">Atualizações</div>
         <ul>
-          <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
+          <li class="active"><a href="/aprove/aprovacoes.html">Aprovações</a></li>
           <li><a href="/aprove/alunos.html">Alunos</a></li>
           <li><a href="/aprove/instituicoes.html">Instituições</a></li>
           <li><a href="/aprove/cursos.html">Cursos</a></li>
@@ -196,7 +76,7 @@ table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
       <li class="menu-group">
         <div class="group-title">Ferramentas</div>
         <ul>
-          <li class="active"><a href="/aprove/conferir_listas.html">Conferir Listas</a></li>
+          <li><a href="/aprove/conferir_listas.html">Conferir Listas</a></li>
           <li><a href="/aprove/importar_aprovacoes.html">Importar Aprovações</a></li>
         </ul>
       </li>
@@ -204,9 +84,7 @@ table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
       <li class="menu-group">
         <div class="group-title">Relatórios</div>
         <ul>
-          <li><a href="/aprove/convocados2fase.html">Convocados 2ª Fase</a></li>
           <li><a href="/aprove/aprovados_rel.html">Aprovados</a></li>
-          <li><a href="/aprove/porcentagem_lista.html">Porcentagem Lista</a></li>
           <li><a href="/aprove/totais_curso.html">Totais por Curso</a></li>
           <li><a href="/aprove/totais_instituicao.html">Totais por Instituição</a></li>
         </ul>
@@ -220,519 +98,373 @@ table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
       <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
         <div style="display:flex; align-items:center; gap:12px;">
           <img src="/aprove/logo-mini.png" alt="Logo" style="height:28px; width:auto;">
-          <h5 style="margin:0; font-weight:600;">
-            Aprove — Conferência de Aprovados — <span id="unitLabel">—</span>
-          </h5>
+          <h5 style="margin:0; font-weight:600;">Aprove — Conferência de Aprovados — <span id="unitLabel">—</span></h5>
         </div>
-        <div><a class="btn-flat waves-effect white-text" href="#!" onclick="logout()">Sair</a></div>
+        <a class="btn-flat waves-effect white-text" href="#!" onclick="logout()">Sair</a>
       </div>
     </header>
 
     <section class="page">
-      <h4 class="section-title">Conferência de Listas</h4>
+      <h4 style="color:#0b3b78; font-weight:600;">
+        Cadastro de Aprovações — <span class="grey-text text-darken-1">Listagem 2026</span>
+      </h4>
+      <p class="grey-text text-darken-1">Informe os códigos e cadastre aprovações diretamente no sistema.</p>
 
-      <!-- Filtros fixos (vest, chamada, listagem) -->
-      <div class="row" style="margin-bottom:0;">
-
-        <!-- Código da Lista (menor) -->
-        <div class="input-field col s6 m2 l2">
-          <input id="inpVest" type="number" min="1" placeholder="ex.: 1234">
-          <label for="inpVest">Código da Lista (Vestibular)</label>
-          <span id="vestHelper" class="helper-text">Fica fixo durante a conferência</span>
-        </div>
-
-        <div class="input-field col s3 m2 l2">
-          <input id="inpChamada" type="number" min="1" value="1">
-          <label for="inpChamada" class="active">Chamada</label>
-        </div>
-
-        <div class="input-field col s3 m2 l2">
-          <input id="inpListagem" type="number" value="" readonly>
-          <label for="inpListagem" class="active">Listagem</label>
-        </div>
-
-        <!-- Nome (maior) -->
-        <div class="input-field col s12 m6 l6">
-          <input id="inpBusca" type="text" placeholder="Buscar aluno por nome…">
-          <label for="inpBusca">Nome</label>
-        </div>
-      </div>
-
-      <!-- Duas colunas: Cursos do vestibular (esquerda) / Resultado da busca (direita) -->
-      <div class="row">
-        <div class="col s12 m5 l4">
-          <div class="card z-depth-0" style="padding:14px;">
-            <div class="sticky" style="padding:6px 8px;">
-              <div class="pill"><i class="material-icons tiny">list</i> Cursos do Vestibular</div>
-              <div class="right muted" id="cursoCount">—</div>
+      <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
+        <form id="form-aprovacao">
+          <div class="row">
+            <div class="input-field col s3">
+              <input id="codaluno" name="codaluno" type="number" required>
+              <label for="codaluno">Código do Aluno</label>
+              <span id="nomeAluno" class="helper grey-text text-darken-1"></span>
             </div>
-            <div id="coursesBox" class="courses"></div>
-            <p class="muted" style="margin-top:8px">Clique para selecionar o curso (ou digite o código no quadro “Inserir aprovação”).</p>
-          </div>
-        </div>
-
-        <div class="col s12 m7 l8">
-          <div class="card z-depth-0" style="padding:14px;">
-            <div class="sticky" style="padding:6px 8px;">
-              <div class="pill"><i class="material-icons tiny">search</i> Resultado da busca</div>
-              <div class="right muted" id="alunoCount">—</div>
+            <div class="input-field col s2">
+              <input id="vest" name="vest" type="number" required>
+              <label for="vest">Código do Vestibular</label>
+              <span id="nomeVest" class="helper grey-text text-darken-1"></span>
             </div>
-
-            <!-- wrapper com rolagem interna -->
-            <div id="resultsWrap" class="results">
-              <table class="striped highlight responsive-table">
-                <thead>
-                  <tr>
-                    <th>CodAluno</th>
-                    <th>Nome</th>
-                    <th>Série</th>
-                    <th>Unidade</th>
-                    <th>Cadastro</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody id="tbodyAlunos">
-                  <tr><td colspan="6" class="center muted">Digite um nome para buscar…</td></tr>
-                </tbody>
-              </table>
+            <div class="input-field col s2">
+              <input id="codcurso" name="codcurso" type="text" maxlength="10" required>
+              <label for="codcurso">Código do Curso</label>
+              <span id="nomeCurso" class="helper"></span>
+            </div>
+            <div class="input-field col s1">
+              <input id="chamada" name="chamada" type="number" value="1" required>
+              <label for="chamada">Chamada</label>
+            </div>
+            <div class="input-field col s1">
+              <input id="colocacao" name="colocacao" type="number">
+              <label for="colocacao">Colocação</label>
             </div>
           </div>
-
-          <!-- Inserir aprovação -->
-          <div class="card z-depth-0 sticky-approve" style="padding:14px;">
-              <div class="card z-depth-0" style="padding:14px;">
-                <span class="section-title">Inserir aprovação</span>
-                <div class="row" style="margin-bottom:0;">
-                  <div class="input-field col s12 l6">
-                    <input id="selAlunoLabel" type="text" readonly placeholder="Selecione um aluno acima">
-                    <label class="active">Aluno</label>
-                  </div>
-                  <div class="input-field col s6 l2">
-                    <input id="selCursoCod" type="text" placeholder="código">
-                    <label class="active">Código do curso</label>
-                  </div>
-                  <div class="input-field col s6 l2">
-                    <input id="inpColocacao" type="text" placeholder="ex.: 12º">
-                    <label>Colocação</label>
-                  </div>
-                  <div class="input-field col s12 l2 right-align">
-                    <button id="btnLancar" class="btn waves-effect" disabled>
-                      <i class="material-icons left">check</i>Lançar
-                    </button>
-                  </div>
-                </div>
-
-                <!-- hidden state -->
-                <input type="hidden" id="selAlunoId">
-              </div>
-            
-            </div>
-
-
-        </div>
+          <div class="row center-align">
+            <!-- Botão agora identificado e desabilitado por padrão -->
+            <button id="btnSalvar" type="submit" class="btn waves-effect waves-light blue darken-2" disabled>
+              Salvar Aprovação
+            </button>
+          </div>
+        </form>
+        <div id="mensagem" class="center-align" style="margin-top:20px; font-weight:500;"></div>
       </div>
+
+      <h5 class="section-title" style="color:#0b3b78; font-weight:600;">Minhas Aprovações</h5>
+      <table class="striped highlight responsive-table" id="tabela-aprovacoes">
+        <thead>
+          <tr>
+            <th>Aluno</th>
+            <th>Série</th>
+            <th>Unidade</th>
+            <th>Curso</th>
+            <th>Instituição</th>
+            <th>Chamada</th>
+            <th>Classificação</th>
+            <th>Data</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p id="msg-lista" class="center grey-text">Nenhuma aprovação cadastrada ainda.</p>
     </section>
 
     <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
   </main>
+
+  <!-- MODAL DE EDIÇÃO -->
+  <div id="modal-editar" class="modal">
+    <div class="modal-content">
+      <h5 style="color:#0b3b78; font-weight:600;">Editar Aprovação</h5>
+      <div id="edit-info" style="margin-bottom:20px; line-height:1.5;">
+        <p><b>ID:</b> <span id="edit-id-label"></span></p>
+        <p><b>Aluno:</b> <span id="edit-nomeAluno"></span></p>
+        <p><b>Cód. Vestibular:</b> <span id="edit-vest"></span></p>
+        <p><b>Chamada:</b> <span id="edit-chamada"></span></p>
+      </div>
+
+      <form id="form-editar">
+        <input type="hidden" id="edit-id">
+        <div class="input-field">
+          <input id="edit-codcurso" type="text" required>
+          <label for="edit-codcurso">Código do Curso</label>
+          <span id="edit-nomeCurso" class="helper"></span>
+        </div>
+        <div class="input-field">
+          <input id="edit-colocacao" type="number">
+          <label for="edit-colocacao">Colocação</label>
+        </div>
+        <div class="right-align" style="margin-top:20px;">
+          <a href="#!" class="btn red lighten-1" onclick="excluirAprovacao()">
+            <i class="material-icons left">delete</i>Excluir
+          </a>
+          <button type="submit" class="btn blue darken-2">
+            <i class="material-icons left">save</i>Salvar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 </div>
 
 <script>
 const API = 'https://apisec.secauxiliar.com.br/aprove/';
+const LOGIN_URL = '/aprove/index.html';
+let usuarioAtual = '';
+let cursoValido = false; // controla a habilitação
+const $ = sel => document.querySelector(sel);
 
-// ===== topbar user
-async function carregarUsuario(){
-  try{
-    const r = await fetch(API+'auth_me.php',{credentials:'include'});
-    const j = await r.json();
-    if(j.ok && j.user){
-      document.getElementById('unitLabel').textContent =
-        `${j.user.login ?? ''} — ${j.user.nome ?? 'Usuário'}`;
-    }
-  }catch{}
-}
 async function logout(){
-  try{ await fetch(API+'auth_login_out.php',{credentials:'include'});}catch(_){}
-  location.replace('/aprove/index.html');
+  try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); }
+  catch(_) {}
+  location.replace(LOGIN_URL);
 }
 
-// ===== helpers
-const $ = s => document.querySelector(s);
-const debounce = (fn,ms=300)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); } };
-const toast = m => M.toast({html:m});
-const getVest = () => (document.getElementById('inpVest').value || '').trim();
-
-function enableLancar(){
-  const temAluno = !!($('#selAlunoId').value);
-  const vestOk   = !!getVest();
-  const cod      = ($('#selCursoCod').value || '').trim();
-  const cursoOk  = isCursoValido(cod);
-
-  // feedback visual no input do código
-  const inp = $('#selCursoCod');
-  inp.classList.remove('valid','invalid');
-  if(cod) inp.classList.add(cursoOk ? 'valid' : 'invalid');
-
-  $('#btnLancar').disabled = !(temAluno && vestOk && cod && cursoOk);
-}
-
-// ===== cursos do vest
-let cursosCache = [];     // guarda pra auto-match do código digitado
-let cursoSelecionado = null;
-
-async function carregarCursosDoVest(){
-  const vest = getVest();
-  const box = document.getElementById('coursesBox');
-  box.innerHTML = '<div class="center muted" style="padding:12px">Carregando…</div>';
-  document.getElementById('cursoCount').textContent = '—';
-  cursoSelecionado = null;
-  cursosCache = [];
-
-  if (!vest){
-    box.innerHTML = '<div class="center muted" style="padding:12px">Informe o código da lista</div>';
-    return;
-  }
-
+async function carregarUsuario(){
   try {
-    const url = API + `vestibular_cursos_list.php?vestibular_id=${encodeURIComponent(vest)}`;
-    const r = await fetch(url, { credentials:'include' });
-    const j = await r.json();
-    if (!j.ok) throw new Error(j.error || 'Falha ao listar cursos');
-    const rows = j.rows || j.cursos || [];
-
-    // mapeia garantindo curso_id, período E SIGLA DA INSTITUIÇÃO
-    cursosCache = rows.map(c => ({
-    cod:     c.curso_id ?? c.CURSO_ID ?? c.codcurso ?? c.codigc ?? c.codigo ?? c.id ?? '',
-    nome:    c.curso    ?? c.nome    ?? '',
-    ext:     c.extenso  ?? c.descricao ?? '',
-    periodo: c.periodo  ?? c.PERIODO ?? c.turno ?? '',
-    sigla:   c.sigla_inst ?? c.sigla ?? ''               // <-- NOVO
-    })).filter(c => String(c.cod).trim() !== '');
-
-    document.getElementById('cursoCount').textContent = cursosCache.length;
-    if (!cursosCache.length){
-      box.innerHTML = '<div class="center muted" style="padding:12px">Nenhum curso cadastrado</div>';
-      return;
+    const res = await fetch(API + 'auth_me.php', { credentials:'include' });
+    const data = await res.json();
+    if (data.ok && data.user){
+      usuarioAtual = data.user.login;
+      $('#unitLabel').textContent = `${usuarioAtual} — ${data.user.nome}`;
+      carregarAprovacoes();
     }
-
-    // render
-    box.innerHTML = '';
-    cursosCache.forEach(c => {
-    const row = document.createElement('div');
-    row.className = 'rowc';
-    row.dataset.codcurso = c.cod;
-
-    // monta linha com SIGLA + NOME + PERÍODO
-    // exemplo visual: [USP] Biotec. • I
-    const siglaTag = c.sigla ? `<span class="chip" style="margin-right:6px; background:#eef3ff; color:#0b3b78; height:22px; line-height:22px; font-weight:600;">${c.sigla}</span>` : '';
-
-    row.innerHTML = `
-    <div class="muted">${c.cod}</div>
-    <div>
-        <div style="font-weight:600">
-        ${c.nome}
-        ${c.sigla ? `<span class="muted"> (${c.sigla})</span>` : ''}
-        ${c.periodo ? `<span class="muted" style="font-weight:500"> • ${c.periodo}</span>` : ''}
-        </div>
-        <div class="muted" style="font-size:13px">${c.ext}</div>
-    </div>
-    `;
-
-    row.addEventListener('click', () => {
-        box.querySelectorAll('.rowc').forEach(r => r.classList.remove('active'));
-        row.classList.add('active');
-        cursoSelecionado = c.cod;
-        document.getElementById('selCursoCod').value = c.cod; // usa curso_id
-        M.updateTextFields();
-        enableLancar();
-    });
-
-    box.appendChild(row);
-    });
-
-    // se o usuário já tinha digitado um código, tenta destacar
-    autoMatchCursoDigitado?.();
-
-  } catch (e) {
-    box.innerHTML = '<div class="center red-text" style="padding:12px">Erro ao carregar cursos</div>';
-    M.toast({ html: e.message });
+  } catch(e){
+    $('#unitLabel').textContent = '— Erro de conexão';
   }
 }
 
-
-// tenta realçar na lista quando o usuário digita um código existente
-function autoMatchCursoDigitado(){
-  const cod = ($('#selCursoCod').value || '').trim();
-  const box = document.getElementById('coursesBox');
-  if(!cod || !cursosCache.length) return;
-  const hit = cursosCache.find(c => String(c.cod) === String(cod));
-  box.querySelectorAll('.rowc').forEach(r=>r.classList.remove('active'));
-  if(hit){
-    const el = box.querySelector(`.rowc[data-codcurso="${CSS.escape(String(hit.cod))}"]`);
-    if(el){ el.classList.add('active'); cursoSelecionado = hit.cod; }
-  }else{
-    cursoSelecionado = null;
-  }
+/* ===== Helpers de habilitação ===== */
+function enableSalvar(){
+  const alunoOk = $('#codaluno').value.trim() !== '';
+  const vestOk  = $('#vest').value.trim()     !== '';
+  const cursoOk = $('#codcurso').value.trim() !== '' && cursoValido === true;
+  $('#btnSalvar').disabled = !(alunoOk && vestOk && cursoOk);
 }
 
-// ===== busca de alunos
-const carregarAlunos = debounce(async ()=>{
-  const nome = $('#inpBusca').value.trim();
-  const tbody = $('#tbodyAlunos');
-  $('#alunoCount').textContent = '—';
+/* Valida curso no vestibular (atualiza helper e cursoValido) */
+async function validarCurso(vest, codcurso, helperEl){
+  cursoValido = false;
+  helperEl.textContent = '';
+  helperEl.classList.remove('green-text','red-text','text-darken-1');
 
-  if(!nome){
-    tbody.innerHTML = '<tr><td colspan="6" class="center muted">Digite um nome para buscar…</td></tr>';
+  if(!vest || !codcurso){
+    enableSalvar();
     return;
   }
-
-  tbody.innerHTML = '<tr><td colspan="6" class="center muted">Buscando…</td></tr>';
-
   try{
-    const r = await fetch(API+'alunos_list.php?nome='+encodeURIComponent(nome),{credentials:'include'});
+    const r = await fetch(`${API}buscar_curso.php?vest=${encodeURIComponent(vest)}&codcurso=${encodeURIComponent(codcurso)}`, {credentials:'include'});
     const j = await r.json();
-    const rows = j.rows || [];
-    $('#alunoCount').textContent = rows.length;
-
-    if(!(j.ok && rows.length)){
-      tbody.innerHTML = '<tr><td colspan="6" class="center muted">Nenhum aluno encontrado.</td></tr>';
-      return;
+    if(j && j.ok){
+      helperEl.textContent = `${j.curso} (${j.instituicao})`;
+      helperEl.classList.add('green-text','text-darken-1');
+      cursoValido = true;
+    }else{
+      helperEl.textContent = 'Curso não encontrado neste vestibular';
+      helperEl.classList.add('red-text','text-darken-1');
+      cursoValido = false;
     }
-
-    tbody.innerHTML = '';
-    rows.forEach(a=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${a.ID ?? a.id}</td>
-        <td>${a.NOME ?? a.nome}</td>
-        <td>${a.SERIE ?? a.serie ?? ''}</td>
-        <td>${a.UNIDADE ?? a.codunidade ?? ''}</td>
-        <td>${a.CADASTRO ?? a.cadastro ?? ''}</td>
-        <td class="right-align">
-          <button class="btn-small blue" title="Selecionar" data-pick="${a.ID ?? a.id}">
-            <i class="material-icons">done</i>
-          </button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
-
-    // bind seleção do aluno
-    tbody.querySelectorAll('[data-pick]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const id = btn.getAttribute('data-pick');
-        const linha = btn.closest('tr');
-        const nome = linha.children[1].textContent;
-        $('#selAlunoId').value = id;
-        $('#selAlunoLabel').value = `${id} — ${nome}`;
-        M.updateTextFields();
-        enableLancar();
-        window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'});
-      });
-    });
-
   }catch(e){
-    tbody.innerHTML = '<tr><td colspan="6" class="center red-text">Erro ao buscar.</td></tr>';
+    helperEl.textContent = 'Erro ao verificar curso';
+    helperEl.classList.add('red-text','text-darken-1');
+    cursoValido = false;
+  }finally{
+    enableSalvar();
   }
-}, 300);
+}
 
-$('#inpBusca').addEventListener('input', carregarAlunos);
-$('#inpChamada').addEventListener('input', enableLancar);
-
-// quando o usuário DIGITAR o código do curso manualmente
-$('#selCursoCod').addEventListener('input', (e) => {
-  const v = (e.target.value || '').trim();
-
-  // destaca na lista
-  document.querySelectorAll('#coursesBox .rowc')
-    .forEach(r => r.classList.toggle('active', r.dataset.codcurso === v));
-
-  // valida + (des)habilita botão
-  enableLancar();
+/* === BUSCAS AUTOMÁTICAS === */
+$('#codaluno').addEventListener('input', async e=>{
+  const val = e.target.value.trim();
+  if(!val){ $('#nomeAluno').textContent=''; enableSalvar(); return; }
+  const res = await fetch(`${API}buscar_aluno.php?id=${val}`, {credentials:'include'});
+  const data = await res.json();
+  $('#nomeAluno').textContent = data.ok ? data.nome : 'Aluno não encontrado';
+  enableSalvar();
 });
 
-// Enter na busca tenta salvar se tudo pronto
-$('#inpBusca').addEventListener('keydown', e=>{
-  if(e.key==='Enter' && !$('#btnLancar').disabled) lancarAprovacao();
+$('#vest').addEventListener('input', async e=>{
+  const val = e.target.value.trim();
+  if(!val){
+    $('#nomeVest').textContent='';
+    // mudando o vestibular, revalide o curso
+    validarCurso('', $('#codcurso').value.trim(), $('#nomeCurso'));
+    return;
+  }
+  const res = await fetch(`${API}buscar_vestibular.php?id=${val}`, {credentials:'include'});
+  const data = await res.json();
+  $('#nomeVest').textContent = data.ok
+    ? `${data.instituicao} — ${data.semestre}º semestre / ${data.listagem}`
+    : 'Vestibular não encontrado';
+
+  // sempre revalida o curso quando muda o vest
+  await validarCurso(val, $('#codcurso').value.trim(), $('#nomeCurso'));
 });
 
-// ===== lançar aprovação
-async function lancarAprovacao(){
-  const codaluno = $('#selAlunoId').value;
-  const vest     = getVest();
-  const codcurso = ($('#selCursoCod').value || '').trim();
-  const chamada  = parseInt($('#inpChamada').value || '1',10);
-  const listagem = parseInt($('#inpListagem').value || '0',10);
-  const colocacao = ($('#inpColocacao').value || '').trim();
+$('#codcurso').addEventListener('input', async e=>{
+  await validarCurso($('#vest').value.trim(), e.target.value.trim(), $('#nomeCurso'));
+});
 
-  if(!codaluno || !vest || !codcurso){
-    return;
-  }
-  if(!isCursoValido(codcurso)){
-    M.toast({html:'Código de curso não pertence a este vestibular.'});
-    enableLancar();
+/* === ENVIO DO FORM === */
+document.getElementById('form-aprovacao').addEventListener('submit', async e=>{
+  e.preventDefault();
+
+  // segurança extra
+  if(!cursoValido){
+    M.toast({html:'Informe um curso válido para este vestibular.', classes:'red'});
+    enableSalvar();
     return;
   }
 
-  $('#btnLancar').disabled = true;
+  const formData = Object.fromEntries(new FormData(e.target).entries());
+  formData.listagem = 2026;
 
+  const res = await fetch(API + 'aprovacoes_insert.php', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    credentials:'include',
+    body:JSON.stringify(formData)
+  });
+
+  const data = await res.json();
+  const msg = $('#mensagem');
+  msg.textContent = data.msg;
+  msg.style.color = data.ok ? 'green' : 'red';
+
+  if(data.ok){
+    // limpa tudo e trava novamente
+    e.target.reset();
+    $('#nomeAluno').textContent = '';
+    $('#nomeVest').textContent  = '';
+    $('#nomeCurso').textContent = '';
+    $('#nomeCurso').classList.remove('green-text','red-text','text-darken-1');
+    cursoValido = false;
+    enableSalvar();
+    carregarAprovacoes();
+  }
+});
+
+/* === LISTAGEM === */
+async function carregarAprovacoes(){
+  const tbody = document.querySelector('#tabela-aprovacoes tbody');
+  tbody.innerHTML = '';
+  $('#msg-lista').textContent = 'Carregando...';
   try {
-    const r = await fetch(API+'aprovacoes_insert.php', {
-      method:'POST',
-      credentials:'include',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ codaluno, vest, codcurso, chamada, listagem, colocacao })
-    });
-    const j = await r.json().catch(()=>({ok:false,msg:'Falha ao interpretar resposta.'}));
-
-    if (j.ok) {
-      M.toast({html:'Aprovação registrada!'});
-      // limpa APENAS o código do curso (como você pediu)
-      $('#selCursoCod').value = '';
-      document.querySelectorAll('#coursesBox .rowc').forEach(r=>r.classList.remove('active'));
-      $('#selCursoCod').classList.remove('valid','invalid');
-      // (opcional) manter o aluno selecionado para próximas inclusões
-      $('#inpColocacao').value = '';
-      M.updateTextFields();
-      enableLancar();
-      return;
-    }
-
-    const raw = (j.msg || '').toLowerCase();
-    if (raw.includes('1062') || raw.includes('duplicate entry') || raw.includes('uq_aprovacao_unica')) {
-      M.toast({html:'Esta aprovação já foi lançada para este aluno!'});
+    const res = await fetch(API + 'aprovacoes_list.php?user=' + encodeURIComponent(usuarioAtual), {credentials:'include'});
+    const data = await res.json();
+    if(data.ok && data.rows.length){
+      $('#msg-lista').textContent = '';
+      data.rows.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.nome_aluno}</td>
+          <td>${r.serie || '-'}</td>
+          <td>${r.unidade || '-'}</td>
+          <td>${r.curso}</td>
+          <td>${r.instituicao}</td>
+          <td>${r.chamada}</td>
+          <td>${r.colocacao || '-'}</td>
+          <td>${r.created_at}</td>
+          <td>
+            <a href="#modal-editar" class="btn-small blue lighten-1 modal-trigger" 
+              onclick="abrirEdicao(${r.id}, ${r.vest}, '${r.codcurso}', '${(r.colocacao||'')}', ${r.chamada}, '${r.nome_aluno.replace(/'/g, "\\'")}')">
+              <i class='material-icons'>edit</i>
+            </a>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
     } else {
-      M.toast({html: j.msg || 'Falha ao salvar.'});
+      $('#msg-lista').textContent = 'Nenhuma aprovação cadastrada.';
     }
-  } catch (e) {
-    M.toast({html:'Erro de conexão ao salvar.'});
-  } finally {
-    $('#btnLancar').disabled = false;
+  } catch(e){
+    $('#msg-lista').textContent = 'Erro ao carregar aprovações.';
   }
 }
 
-
-$('#btnLancar').addEventListener('click', lancarAprovacao);
-
-// ===== carregar listagem a partir do código e puxar cursos
-async function carregarDadosVest() {
-  const vest = getVest();
-  const listagemEl = document.getElementById('inpListagem');
-  const helper = document.getElementById('vestHelper');
-  const inp = document.getElementById('inpVest');
-
-  // reset UI
-  listagemEl.value = '';
-  helper.textContent = 'Fica fixo durante a conferência';
-  helper.classList.remove('ok','err');
-  inp.classList.remove('valid','invalid');
-  M.updateTextFields();
-
-  if (!vest) { return; }
-
-  try {
-    const r = await fetch(API + 'vestibulares_get.php?id=' + encodeURIComponent(vest), { credentials:'include' });
-    const j = await r.json();
-
-    if (!(j && j.ok && j.row)) {
-      // inválido
-      helper.textContent = 'Código não encontrado';
-      helper.classList.add('err');
-      inp.classList.add('invalid');
-      // limpa cursos
-      document.getElementById('coursesBox').innerHTML =
-        '<div class="center muted" style="padding:12px">Informe um código válido</div>';
-      document.getElementById('cursoCount').textContent = '0';
-      return;
-    }
-
-    // válido
-    const row = j.row;
-    listagemEl.value = row.listagem || '';
-    const label = [
-      (row.sigla || row.instituicao || '').trim(),
-      [row.listagem, row.semestre].filter(Boolean).join('-')
-    ].filter(Boolean).join(' • ');
-
-    helper.textContent = label || 'Vestibular válido';
-    helper.classList.add('ok');
-    inp.classList.add('valid');
-    M.updateTextFields();
-
-    // carrega cursos do vest válido
-    await carregarCursosDoVest();
-    enableLancar();
-  } catch (e) {
-    helper.textContent = 'Erro ao validar';
-    helper.classList.add('err');
-    inp.classList.add('invalid');
-  }
-}
-
-
-// listeners do campo de código
-const debouncedVest = debounce(carregarDadosVest, 300);
-document.getElementById('inpVest').addEventListener('input', debouncedVest);
-document.getElementById('inpVest').addEventListener('keydown', e=>{
-  if(e.key === 'Enter') carregarDadosVest();
-});
-
-
-/*
-document.getElementById('selCursoCod').addEventListener('input', (e) => {
-  const v = (e.target.value || '').trim();
-  document.querySelectorAll('#coursesBox .rowc')
-    .forEach(r => r.classList.toggle('active', r.dataset.codcurso === v));
-  enableLancar();
-}); */
-
-// ===== init
 document.addEventListener('DOMContentLoaded', ()=>{
   carregarUsuario();
-  M.AutoInit();
-  if (getVest()) carregarDadosVest();
-  document.getElementById('inpVest').focus();
+  M.Modal.init(document.querySelectorAll('.modal'));
 });
 
-function fitPanels(){
-  const root   = document.documentElement;
-  const topbar = parseInt(getComputedStyle(root).getPropertyValue('--topbar-h')) || 64;
-
-  // Elementos que ficam acima dos painéis
-  const pageEl    = document.querySelector('.page');
-  const titleEl   = pageEl?.querySelector('h4') || null;
-  const filtrosEl = pageEl?.querySelector('.row') || null; // seu bloco com inputs (é o 1º .row da page)
-  const footerEl  = document.querySelector('footer');
-
-  const hTitle    = titleEl ? titleEl.offsetHeight : 0;
-  const hFiltros  = filtrosEl ? filtrosEl.offsetHeight : 0;
-  const hFooter   = footerEl ? footerEl.offsetHeight : 0;
-
-  // respiros entre cards e cabeçalhos internos
-  const padding = 56;
-
-  const available =
-    window.innerHeight
-    - topbar
-    - hTitle
-    - hFiltros
-    - hFooter
-    - padding;
-
-  // mínimo pra não “espremer” em telas pequenas
-  const panelH = Math.max(320, available);
-
-  root.style.setProperty('--panel-h', panelH + 'px');
+/* ===== Modal de edição ===== */
+function abrirEdicao(id, vest, codcurso, colocacao, chamada, nomeAluno){
+  $('#edit-id').value = id;
+  $('#edit-id-label').textContent = id;
+  $('#edit-codcurso').value = codcurso || '';
+  $('#edit-nomeCurso').textContent = '';
+  $('#edit-colocacao').value = colocacao || '';
+  $('#edit-vest').textContent = vest || '-';
+  $('#edit-chamada').textContent = chamada || '-';
+  $('#edit-nomeAluno').textContent = nomeAluno || 'Aluno não identificado';
+  M.updateTextFields();
 }
 
-window.addEventListener('load', fitPanels);
-window.addEventListener('resize', fitPanels);
+// valida curso no modal (somente helper visual)
+$('#edit-codcurso').addEventListener('change', async e=>{
+  const codcurso = e.target.value.trim();
+  const vest = $('#edit-vest').textContent.trim();
+  const helper = $('#edit-nomeCurso');
 
-// helper
-function isCursoValido(cod){
-  if(!cod) return false;
-  return cursosCache.some(c => String(c.cod) === String(cod));
+  if(!codcurso || !vest){
+    helper.textContent = 'Informe o código do curso e o vestibular.';
+    helper.classList.add('red-text');
+    return;
+  }
+
+  try{
+    const res = await fetch(`${API}buscar_curso.php?vest=${vest}&codcurso=${codcurso}`, {credentials:'include'});
+    const data = await res.json();
+    helper.classList.remove('green-text','red-text');
+    if(data.ok){
+      helper.textContent = `${data.curso} (${data.instituicao})`;
+      helper.classList.add('green-text');
+    } else {
+      helper.textContent = 'Curso não encontrado neste vestibular.';
+      helper.classList.add('red-text');
+    }
+  }catch(err){
+    helper.textContent = 'Erro ao verificar curso.';
+    helper.classList.add('red-text');
+  }
+});
+
+// Salvar alterações do modal
+document.getElementById('form-editar').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const dados = {
+    id: $('#edit-id').value,
+    codcurso: $('#edit-codcurso').value.trim(),
+    colocacao: $('#edit-colocacao').value.trim()
+  };
+
+  const res = await fetch(API + 'aprovacoes_update.php', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    credentials:'include',
+    body:JSON.stringify(dados)
+  });
+  const data = await res.json();
+  M.toast({html:data.msg, classes:data.ok?'green':'red'});
+  if(data.ok){
+    const modal = M.Modal.getInstance(document.getElementById('modal-editar'));
+    modal.close();
+    carregarAprovacoes();
+  }
+});
+
+// Excluir
+async function excluirAprovacao(){
+  const id = $('#edit-id').value;
+  if(!confirm('Deseja realmente excluir esta aprovação?')) return;
+  const res = await fetch(API + 'aprovacoes_delete.php?id=' + id, {credentials:'include'});
+  const data = await res.json();
+  M.toast({html:data.msg, classes:data.ok?'green':'red'});
+  if(data.ok){
+    const modal = M.Modal.getInstance(document.getElementById('modal-editar'));
+    modal.close();
+    carregarAprovacoes();
+  }
 }
-
 </script>
 </body>
 </html>
