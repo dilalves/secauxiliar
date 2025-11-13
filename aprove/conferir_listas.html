@@ -252,8 +252,7 @@ async function carregarCursosDoVest(){
   document.getElementById('cursoCount').textContent = '—';
   cursoSelecionado = null;
   cursosCache = [];
-  // não limpamos selCursoCod: usuário pode digitar manualmente
-
+  
   if(!vest){
     box.innerHTML = '<div class="center muted" style="padding:12px">Informe o código da lista</div>';
     return;
@@ -433,31 +432,57 @@ $('#btnLancar').addEventListener('click', lancarAprovacao);
 async function carregarDadosVest() {
   const vest = getVest();
   const listagemEl = document.getElementById('inpListagem');
+  const helper = document.getElementById('vestHelper');
+  const inp = document.getElementById('inpVest');
+
+  // reset UI
   listagemEl.value = '';
+  helper.textContent = 'Fica fixo durante a conferência';
+  helper.classList.remove('ok','err');
+  inp.classList.remove('valid','invalid');
   M.updateTextFields();
+
   if (!vest) { return; }
 
   try {
-    let j;
-    try {
-      const r1 = await fetch(API + 'vestibulares_get.php?id=' + encodeURIComponent(vest), { credentials:'include' });
-      j = await r1.json();
-      if (!(j && j.ok && j.row)) throw new Error('sem_get');
-      listagemEl.value = j.row.listagem || '';
-    } catch {
-      const r2 = await fetch(API + 'vestibulares_list.php', { credentials:'include' });
-      const j2 = await r2.json();
-      const row = (j2.rows || []).find(x => String(x.id) === String(vest));
-      listagemEl.value = row ? (row.listagem || '') : '';
-    }
-    M.updateTextFields();
-  } catch(e) {
-    // silencioso
-  }
+    const r = await fetch(API + 'vestibulares_get.php?id=' + encodeURIComponent(vest), { credentials:'include' });
+    const j = await r.json();
 
-  await carregarCursosDoVest();
-  enableLancar();
+    if (!(j && j.ok && j.row)) {
+      // inválido
+      helper.textContent = 'Código não encontrado';
+      helper.classList.add('err');
+      inp.classList.add('invalid');
+      // limpa cursos
+      document.getElementById('coursesBox').innerHTML =
+        '<div class="center muted" style="padding:12px">Informe um código válido</div>';
+      document.getElementById('cursoCount').textContent = '0';
+      return;
+    }
+
+    // válido
+    const row = j.row;
+    listagemEl.value = row.listagem || '';
+    const label = [
+      (row.sigla || row.instituicao || '').trim(),
+      [row.listagem, row.semestre].filter(Boolean).join('-')
+    ].filter(Boolean).join(' • ');
+
+    helper.textContent = label || 'Vestibular válido';
+    helper.classList.add('ok');
+    inp.classList.add('valid');
+    M.updateTextFields();
+
+    // carrega cursos do vest válido
+    await carregarCursosDoVest();
+    enableLancar();
+  } catch (e) {
+    helper.textContent = 'Erro ao validar';
+    helper.classList.add('err');
+    inp.classList.add('invalid');
+  }
 }
+
 
 // listeners do campo de código
 const debouncedVest = debounce(carregarDadosVest, 300);
