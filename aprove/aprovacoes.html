@@ -42,10 +42,10 @@
     }
     main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
     .page {padding:24px;}
-    footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
+    footer {text-align:center; font-size:13px; color:#6b7280; padding:16px 0 10px;}
     #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
     table.striped th {background:#f2f5ff; color:#0b3b78; font-weight:600;}
-    .helper {color:#6b7280; font-size:0.9rem;}
+    .helper {font-size:0.9rem;}
   </style>
 </head>
 
@@ -116,12 +116,12 @@
             <div class="input-field col s3">
               <input id="codaluno" name="codaluno" type="number" required>
               <label for="codaluno">Código do Aluno</label>
-              <span id="nomeAluno" class="helper"></span>
+              <span id="nomeAluno" class="helper grey-text text-darken-1"></span>
             </div>
             <div class="input-field col s2">
               <input id="vest" name="vest" type="number" required>
               <label for="vest">Código do Vestibular</label>
-              <span id="nomeVest" class="helper"></span>
+              <span id="nomeVest" class="helper grey-text text-darken-1"></span>
             </div>
             <div class="input-field col s2">
               <input id="codcurso" name="codcurso" type="text" maxlength="10" required>
@@ -138,13 +138,16 @@
             </div>
           </div>
           <div class="row center-align">
-            <button type="submit" class="btn waves-effect waves-light blue darken-2">Salvar Aprovação</button>
+            <!-- Botão agora identificado e desabilitado por padrão -->
+            <button id="btnSalvar" type="submit" class="btn waves-effect waves-light blue darken-2" disabled>
+              Salvar Aprovação
+            </button>
           </div>
         </form>
         <div id="mensagem" class="center-align" style="margin-top:20px; font-weight:500;"></div>
       </div>
 
-      <h5 class="section-title">Minhas Aprovações</h5>
+      <h5 class="section-title" style="color:#0b3b78; font-weight:600;">Minhas Aprovações</h5>
       <table class="striped highlight responsive-table" id="tabela-aprovacoes">
         <thead>
           <tr>
@@ -167,7 +170,7 @@
     <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
   </main>
 
- <!-- MODAL DE EDIÇÃO -->
+  <!-- MODAL DE EDIÇÃO -->
   <div id="modal-editar" class="modal">
     <div class="modal-content">
       <h5 style="color:#0b3b78; font-weight:600;">Editar Aprovação</h5>
@@ -183,7 +186,7 @@
         <div class="input-field">
           <input id="edit-codcurso" type="text" required>
           <label for="edit-codcurso">Código do Curso</label>
-          <span id="edit-nomeCurso" class="helper"></span> <!-- 🔹 AJUSTE -->
+          <span id="edit-nomeCurso" class="helper"></span>
         </div>
         <div class="input-field">
           <input id="edit-colocacao" type="number">
@@ -204,10 +207,11 @@
 </div>
 
 <script>
-
 const API = 'https://apisec.secauxiliar.com.br/aprove/';
 const LOGIN_URL = '/aprove/index.html';
 let usuarioAtual = '';
+let cursoValido = false; // controla a habilitação
+const $ = sel => document.querySelector(sel);
 
 async function logout(){
   try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); }
@@ -221,47 +225,95 @@ async function carregarUsuario(){
     const data = await res.json();
     if (data.ok && data.user){
       usuarioAtual = data.user.login;
-      document.getElementById('unitLabel').textContent = `${usuarioAtual} — ${data.user.nome}`;
+      $('#unitLabel').textContent = `${usuarioAtual} — ${data.user.nome}`;
       carregarAprovacoes();
     }
   } catch(e){
-    document.getElementById('unitLabel').textContent = '— Erro de conexão';
+    $('#unitLabel').textContent = '— Erro de conexão';
+  }
+}
+
+/* ===== Helpers de habilitação ===== */
+function enableSalvar(){
+  const alunoOk = $('#codaluno').value.trim() !== '';
+  const vestOk  = $('#vest').value.trim()     !== '';
+  const cursoOk = $('#codcurso').value.trim() !== '' && cursoValido === true;
+  $('#btnSalvar').disabled = !(alunoOk && vestOk && cursoOk);
+}
+
+/* Valida curso no vestibular (atualiza helper e cursoValido) */
+async function validarCurso(vest, codcurso, helperEl){
+  cursoValido = false;
+  helperEl.textContent = '';
+  helperEl.classList.remove('green-text','red-text','text-darken-1');
+
+  if(!vest || !codcurso){
+    enableSalvar();
+    return;
+  }
+  try{
+    const r = await fetch(`${API}buscar_curso.php?vest=${encodeURIComponent(vest)}&codcurso=${encodeURIComponent(codcurso)}`, {credentials:'include'});
+    const j = await r.json();
+    if(j && j.ok){
+      helperEl.textContent = `${j.curso} (${j.instituicao})`;
+      helperEl.classList.add('green-text','text-darken-1');
+      cursoValido = true;
+    }else{
+      helperEl.textContent = 'Curso não encontrado neste vestibular';
+      helperEl.classList.add('red-text','text-darken-1');
+      cursoValido = false;
+    }
+  }catch(e){
+    helperEl.textContent = 'Erro ao verificar curso';
+    helperEl.classList.add('red-text','text-darken-1');
+    cursoValido = false;
+  }finally{
+    enableSalvar();
   }
 }
 
 /* === BUSCAS AUTOMÁTICAS === */
-document.getElementById('codaluno').addEventListener('change', async e=>{
+$('#codaluno').addEventListener('input', async e=>{
   const val = e.target.value.trim();
-  if(!val) return;
+  if(!val){ $('#nomeAluno').textContent=''; enableSalvar(); return; }
   const res = await fetch(`${API}buscar_aluno.php?id=${val}`, {credentials:'include'});
   const data = await res.json();
-  document.getElementById('nomeAluno').textContent = data.ok ? data.nome : 'Aluno não encontrado';
+  $('#nomeAluno').textContent = data.ok ? data.nome : 'Aluno não encontrado';
+  enableSalvar();
 });
 
-document.getElementById('vest').addEventListener('change', async e=>{
+$('#vest').addEventListener('input', async e=>{
   const val = e.target.value.trim();
-  if(!val) return;
+  if(!val){
+    $('#nomeVest').textContent='';
+    // mudando o vestibular, revalide o curso
+    validarCurso('', $('#codcurso').value.trim(), $('#nomeCurso'));
+    return;
+  }
   const res = await fetch(`${API}buscar_vestibular.php?id=${val}`, {credentials:'include'});
   const data = await res.json();
-  document.getElementById('nomeVest').textContent = data.ok
-  ? `${data.instituicao} — ${data.semestre}º semestre / ${data.listagem}`
-  : 'Vestibular não encontrado';
+  $('#nomeVest').textContent = data.ok
+    ? `${data.instituicao} — ${data.semestre}º semestre / ${data.listagem}`
+    : 'Vestibular não encontrado';
+
+  // sempre revalida o curso quando muda o vest
+  await validarCurso(val, $('#codcurso').value.trim(), $('#nomeCurso'));
 });
 
-document.getElementById('codcurso').addEventListener('change', async e=>{
-  const codcurso = e.target.value.trim();
-  const vest = document.getElementById('vest').value.trim();
-  if(!codcurso || !vest) return;
-  const res = await fetch(`${API}buscar_curso.php?vest=${vest}&codcurso=${codcurso}`, {credentials:'include'});
-  const data = await res.json();
-  document.getElementById('nomeCurso').textContent = data.ok
-    ? `${data.curso} (${data.instituicao})`
-    : 'Curso não encontrado neste vestibular';
+$('#codcurso').addEventListener('input', async e=>{
+  await validarCurso($('#vest').value.trim(), e.target.value.trim(), $('#nomeCurso'));
 });
 
 /* === ENVIO DO FORM === */
 document.getElementById('form-aprovacao').addEventListener('submit', async e=>{
   e.preventDefault();
+
+  // segurança extra
+  if(!cursoValido){
+    M.toast({html:'Informe um curso válido para este vestibular.', classes:'red'});
+    enableSalvar();
+    return;
+  }
 
   const formData = Object.fromEntries(new FormData(e.target).entries());
   formData.listagem = 2026;
@@ -274,25 +326,30 @@ document.getElementById('form-aprovacao').addEventListener('submit', async e=>{
   });
 
   const data = await res.json();
-  const msg = document.getElementById('mensagem');
-  msg.textContent = data.msg;
-  msg.style.color = data.ok ? 'green' : 'red';
-  if(data.ok){
-    e.target.reset();
+    const msg = document.getElementById('mensagem');
+    if (msg) { msg.textContent = ''; } // some a mensagem fixa
+
+    if (data.ok){
+    M.toast({ html: 'Aprovação registrada com sucesso!' });
+    resetFormUI();               // << limpa tudo, inclusive nomes
     carregarAprovacoes();
-  }
+    return;
+    } else {
+    M.toast({ html: data.msg || 'Falha ao salvar.', classes: 'red' });
+    }
+
 });
 
 /* === LISTAGEM === */
 async function carregarAprovacoes(){
   const tbody = document.querySelector('#tabela-aprovacoes tbody');
   tbody.innerHTML = '';
-  document.getElementById('msg-lista').textContent = 'Carregando...';
+  $('#msg-lista').textContent = 'Carregando...';
   try {
     const res = await fetch(API + 'aprovacoes_list.php?user=' + encodeURIComponent(usuarioAtual), {credentials:'include'});
     const data = await res.json();
     if(data.ok && data.rows.length){
-      document.getElementById('msg-lista').textContent = '';
+      $('#msg-lista').textContent = '';
       data.rows.forEach(r=>{
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -306,7 +363,7 @@ async function carregarAprovacoes(){
           <td>${r.created_at}</td>
           <td>
             <a href="#modal-editar" class="btn-small blue lighten-1 modal-trigger" 
-              onclick="abrirEdicao(${r.id}, ${r.vest}, '${r.codcurso}', '${r.colocacao || ''}', ${r.chamada}, '${r.nome_aluno.replace(/'/g, "\\'")}')">
+              onclick="abrirEdicao(${r.id}, ${r.vest}, '${r.codcurso}', '${(r.colocacao||'')}', ${r.chamada}, '${r.nome_aluno.replace(/'/g, "\\'")}')">
               <i class='material-icons'>edit</i>
             </a>
           </td>
@@ -314,67 +371,77 @@ async function carregarAprovacoes(){
         tbody.appendChild(tr);
       });
     } else {
-      document.getElementById('msg-lista').textContent = 'Nenhuma aprovação cadastrada.';
+      $('#msg-lista').textContent = 'Nenhuma aprovação cadastrada.';
     }
   } catch(e){
-    document.getElementById('msg-lista').textContent = 'Erro ao carregar aprovações.';
+    $('#msg-lista').textContent = 'Erro ao carregar aprovações.';
   }
 }
 
-document.addEventListener('DOMContentLoaded', carregarUsuario);
-
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', ()=>{
+  carregarUsuario();
   M.Modal.init(document.querySelectorAll('.modal'));
+
+    ['codaluno','vest','codcurso','chamada','colocacao'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', ()=>{
+        const msg = document.getElementById('mensagem');
+        if (msg) msg.textContent = '';
+    });
+    });
+
 });
 
-// Abre modal e preenche dados
+/* ===== Modal de edição ===== */
 function abrirEdicao(id, vest, codcurso, colocacao, chamada, nomeAluno){
-  document.getElementById('edit-id').value = id;
-  document.getElementById('edit-id-label').textContent = id;
-  document.getElementById('edit-codcurso').value = codcurso || '';
-  document.getElementById('edit-nomeCurso').textContent = '';
-  document.getElementById('edit-colocacao').value = colocacao || '';
-  document.getElementById('edit-vest').textContent = vest || '-';
-  document.getElementById('edit-chamada').textContent = chamada || '-';
-  document.getElementById('edit-nomeAluno').textContent = nomeAluno || 'Aluno não identificado';
+  $('#edit-id').value = id;
+  $('#edit-id-label').textContent = id;
+  $('#edit-codcurso').value = codcurso || '';
+  $('#edit-nomeCurso').textContent = '';
+  $('#edit-colocacao').value = colocacao || '';
+  $('#edit-vest').textContent = vest || '-';
+  $('#edit-chamada').textContent = chamada || '-';
+  $('#edit-nomeAluno').textContent = nomeAluno || 'Aluno não identificado';
   M.updateTextFields();
 }
 
-// 🔹 AJUSTE: valida automaticamente o curso digitado no modal
-document.getElementById('edit-codcurso').addEventListener('change', async e=>{
+// valida curso no modal (somente helper visual)
+$('#edit-codcurso').addEventListener('change', async e=>{
   const codcurso = e.target.value.trim();
-  const vest = document.getElementById('edit-vest').textContent.trim();
-  const helper = document.getElementById('edit-nomeCurso');
+  const vest = $('#edit-vest').textContent.trim();
+  const helper = $('#edit-nomeCurso');
 
   if(!codcurso || !vest){
     helper.textContent = 'Informe o código do curso e o vestibular.';
-    helper.style.color = 'red';
+    helper.classList.add('red-text');
     return;
   }
 
   try{
     const res = await fetch(`${API}buscar_curso.php?vest=${vest}&codcurso=${codcurso}`, {credentials:'include'});
     const data = await res.json();
+    helper.classList.remove('green-text','red-text');
     if(data.ok){
       helper.textContent = `${data.curso} (${data.instituicao})`;
-      helper.style.color = 'green';
+      helper.classList.add('green-text');
     } else {
       helper.textContent = 'Curso não encontrado neste vestibular.';
-      helper.style.color = 'red';
+      helper.classList.add('red-text');
     }
   }catch(err){
     helper.textContent = 'Erro ao verificar curso.';
-    helper.style.color = 'red';
+    helper.classList.add('red-text');
   }
 });
 
-// Salvar alterações
+// Salvar alterações do modal
 document.getElementById('form-editar').addEventListener('submit', async e=>{
   e.preventDefault();
   const dados = {
-    id: document.getElementById('edit-id').value,
-    codcurso: document.getElementById('edit-codcurso').value.trim(),
-    colocacao: document.getElementById('edit-colocacao').value.trim()
+    id: $('#edit-id').value,
+    codcurso: $('#edit-codcurso').value.trim(),
+    colocacao: $('#edit-colocacao').value.trim()
   };
 
   const res = await fetch(API + 'aprovacoes_update.php', {
@@ -394,7 +461,7 @@ document.getElementById('form-editar').addEventListener('submit', async e=>{
 
 // Excluir
 async function excluirAprovacao(){
-  const id = document.getElementById('edit-id').value;
+  const id = $('#edit-id').value;
   if(!confirm('Deseja realmente excluir esta aprovação?')) return;
   const res = await fetch(API + 'aprovacoes_delete.php?id=' + id, {credentials:'include'});
   const data = await res.json();
@@ -405,6 +472,36 @@ async function excluirAprovacao(){
     carregarAprovacoes();
   }
 }
+
+function resetFormUI(){
+  const f = document.getElementById('form-aprovacao');
+  if (!f) return;
+
+  // limpa campos
+  f.reset();
+
+  // limpa helpers e mensagem
+  ['nomeAluno','nomeVest','nomeCurso','mensagem'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el){
+      el.textContent = '';
+      el.style.color = ''; // remove verde/vermelho
+    }
+  });
+
+  // remove classes de validação dos inputs
+  ['codaluno','vest','codcurso','chamada','colocacao'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('valid','invalid');
+  });
+
+  // desabilita o botão até nova validação
+  const btn = document.querySelector('#form-aprovacao button[type="submit"]');
+  if (btn) btn.disabled = true;
+
+  M.updateTextFields();
+}
+
 
 </script>
 </body>
