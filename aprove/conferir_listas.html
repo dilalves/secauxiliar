@@ -12,74 +12,101 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <style>
-    :root{
-      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
-      --ink:#0f172a; --muted:#6b7280;
-      --primary:#0b3b78; --accent:#2563eb;
-      --aside-w:260px; --topbar-h:64px;
-      --panel-h: 420px;
-    }
-    html,body{height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
-    body{color:var(--ink);}
-    .app{display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
-    header.topbar{
-      position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
-      background:var(--primary); color:#fff; display:flex; align-items:center;
-      padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
-    }
-    aside{background:#fff; border-right:1px solid var(--line);
-      position:sticky; top:var(--topbar-h); height:calc(100vh - var(--topbar-h));
-      overflow:auto; z-index:6; padding-bottom:20px;}
-    .menu{list-style:none; margin:0; padding:0 0 12px;}
-    .menu a{display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:.25s;}
-    .menu a:hover{background:#f4f6fb; color:var(--primary);}
-    .menu .active > a{background:#eef3ff; font-weight:600; color:var(--primary);}
-    .menu-group{margin-bottom:12px;}
-    .group-title{font-weight:700; color:#0b3b78; text-transform:uppercase;
-      font-size:13px; letter-spacing:.5px; padding:10px 20px 6px; border-top:1px solid #eef2f8;}
-    main{display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
-    .page{padding:24px;}
-    footer{text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
-    #unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
-    table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
-    .section-title{font-weight:600; color:#0b3b78; margin:14px 0 8px;}
-    .pill{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background:#eef3ff; color:#0b3b78; font-weight:600;}
-    .courses{max-height:420px; overflow:auto; border:1px solid var(--line); border-radius:10px;}
-    .courses .rowc{display:grid; grid-template-columns: 70px 1fr; gap:10px; padding:10px 12px; border-bottom:1px solid #eef2f8; cursor:pointer;}
-    .courses .rowc:hover{background:#f8fbff;}
-    .courses .rowc.active{background:#e9f2ff;}
-    .sticky{position:sticky; top:0; background:#fff; z-index:3; border-bottom:1px solid #eef2f8;}
-    .muted{color:#64748b}
+  :root{
+    --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+    --ink:#0f172a; --muted:#6b7280;
+    --primary:#0b3b78; --accent:#2563eb;
+    --aside-w:260px; --topbar-h:64px;
+    --panel-h: 420px; /* valor inicial; o JS pode recalcular */
+  }
 
-    /* tabela de resultados com rolagem interna (igual aos cursos) */
-    .results { 
-      max-height: var(--panel-h);
-      overflow: auto;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-    }
+  /* ===== layout base ===== */
+  html,body{
+    height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);
+    color:var(--ink);
+    overflow: hidden;              /* sem barra de rolagem geral */
+  }
+  body{color:var(--ink);}
+  .app{display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
 
-    /* cabeçalho da tabela fica fixo enquanto rola a lista */
-    .results table thead {
-      position: sticky;
-      top:          0;
-      background: #fff;
-      z-index: 2;
-      box-shadow: 0 1px 0 #eef2f8;
-    }
+  header.topbar{
+    position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
+    background:var(--primary); color:#fff; display:flex; align-items:center;
+    padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+  }
 
-    /* mantém o cartão de inserção sempre visível ao rolar a página */
-    .sticky-approve {
-      position: sticky;
-      top: 8px;            /* gruda no topo do viewport */
-      z-index: 4;
-    } 
+  /* área principal sem scroll, quem rola são os painéis internos */
+  main{
+    display:flex; flex-direction:column;
+    padding-top:calc(var(--topbar-h) + 8px);
+    height: calc(100vh - var(--topbar-h));
+    overflow: hidden;
+  }
 
-    .helper-text.ok { color:#16a34a; }   /* verde */
-    .helper-text.err{ color:#dc2626; }   /* vermelho */   
+  aside{
+    background:#fff; border-right:1px solid var(--line);
+    position:sticky; top:var(--topbar-h); height:calc(100vh - var(--topbar-h));
+    overflow:auto; z-index:6; padding-bottom:20px;
+  }
 
-    @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
-  </style>
+  .menu{list-style:none; margin:0; padding:0 0 12px;}
+  .menu a{display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:.25s;}
+  .menu a:hover{background:#f4f6fb; color:var(--primary);}
+  .menu .active > a{background:#eef3ff; font-weight:600; color:var(--primary);}
+  .menu-group{margin-bottom:12px;}
+  .group-title{font-weight:700; color:#0b3b78; text-transform:uppercase;
+    font-size:13px; letter-spacing:.5px; padding:10px 20px 6px; border-top:1px solid #eef2f8;}
+
+  .page{padding:24px;}
+
+  /* footer sempre visível */
+  footer{
+    position: sticky; bottom: 0; z-index:5;
+    text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;
+    background: transparent; /* mude para #fff se preferir */
+  }
+
+  #unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
+  table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
+  .section-title{font-weight:600; color:#0b3b78; margin:14px 0 8px;}
+  .pill{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background:#eef3ff; color:#0b3b78; font-weight:600;}
+  .muted{color:#64748b}
+  .sticky{position:sticky; top:0; background:#fff; z-index:3; border-bottom:1px solid #eef2f8;}
+
+  /* ===== painéis roláveis ===== */
+  .courses{
+    max-height: var(--panel-h);
+    overflow:auto; border:1px solid var(--line); border-radius:10px;
+  }
+  .courses .rowc{display:grid; grid-template-columns: 70px 1fr; gap:10px; padding:10px 12px; border-bottom:1px solid #eef2f8; cursor:pointer;}
+  .courses .rowc:hover{background:#f8fbff;}
+  .courses .rowc.active{background:#e9f2ff;}
+
+  .results{
+    max-height: var(--panel-h);
+    overflow:auto; border:1px solid var(--line); border-radius:10px;
+  }
+  .results table thead{
+    position: sticky; top:0; background:#fff; z-index:2; box-shadow:0 1px 0 #eef2f8;
+  }
+
+  /* “Inserir aprovação” sempre à vista */
+  .sticky-approve{ position: sticky; top: 8px; z-index:4; }
+
+  .helper-text.ok { color:#16a34a; }
+  .helper-text.err{ color:#dc2626; }
+
+  @media (max-width:992px){
+    .app{grid-template-columns:1fr;}
+    aside{display:none;}
+  }
+
+  /* opcional: ganha alguns px em telas largas, até o JS recalcular */
+  @media (min-width:1280px){
+    :root{ --panel-h: 520px; }
+  }
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -562,6 +589,71 @@ document.getElementById('selCursoCod').addEventListener('input', (e) => {
   enableLancar();
 }); */
 
+function ajustarAlturaPaineis(){
+  // onde começam os painéis roláveis (resultado/cursos)
+  const cardCursos   = document.getElementById('coursesBox')?.closest('.card');
+  const cardResultado= document.getElementById('resultsWrap')?.closest('.card');
+  const topoCursos   = cardCursos?.getBoundingClientRect().top ?? 0;
+  const topoResultado= cardResultado?.getBoundingClientRect().top ?? topoCursos;
+
+  // usa o maior topo (garante que os dois caibam)
+  const topoPainel   = Math.max(topoCursos, topoResultado);
+
+  // posição do footer
+  const footer       = document.querySelector('footer');
+  const base         = footer ? footer.getBoundingClientRect().top : window.innerHeight;
+
+  // margem de respiro entre painel e footer
+  const margem       = 16;
+
+  // altura útil
+  let h = base - topoPainel - margem;
+  // limites de segurança
+  h = Math.max(280, Math.min(h, window.innerHeight)); 
+
+  // aplica na variável CSS
+  document.documentElement.style.setProperty('--panel-h', `${Math.round(h)}px`);
+}
+
+// recalcula em eventos relevantes
+window.addEventListener('resize', ajustarAlturaPaineis);
+window.addEventListener('orientationchange', ajustarAlturaPaineis);
+
+// sempre que conteúdo “cresce”, recalcula depois de renderizar
+const _ajustarDepois = () => setTimeout(ajustarAlturaPaineis, 0);
+
+// chame isso ao fim de carregamentos ou mudanças que mexam no layout:
+const _reflowTriggers = [
+  'DOMContentLoaded','load'
+];
+_reflowTriggers.forEach(ev => window.addEventListener(ev, ajustarAlturaPaineis));
+
+/* Integre com pontos existentes do seu código:
+   - após carregar cursos
+   - após resultado de alunos
+   - após validar o código de lista
+*/
+const _old_carregarCursosDoVest = carregarCursosDoVest;
+carregarCursosDoVest = async function(){
+  try { await _old_carregarCursosDoVest.apply(this, arguments); }
+  finally { _ajustarDepois(); }
+};
+
+const _old_carregarAlunos = carregarAlunos;
+const carregarAlunos_wrapped = (...a) => {
+  _old_carregarAlunos(...a);
+  _ajustarDepois();
+};
+document.getElementById('inpBusca').removeEventListener?.('input', carregarAlunos);
+document.getElementById('inpBusca').addEventListener('input', carregarAlunos_wrapped);
+
+const _old_carregarDadosVest = carregarDadosVest;
+carregarDadosVest = async function(){
+  try { await _old_carregarDadosVest.apply(this, arguments); }
+  finally { _ajustarDepois(); }
+};
+
+
 // ===== init
 document.addEventListener('DOMContentLoaded', ()=>{
   carregarUsuario();
@@ -569,6 +661,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if (getVest()) carregarDadosVest();
   document.getElementById('inpVest').focus();
 });
+
+
+
 </script>
 </body>
 </html>
