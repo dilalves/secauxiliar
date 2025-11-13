@@ -92,9 +92,9 @@ main{
 
 /* RESULTADOS: rola só a tabela */
 .results {
-  flex:1 1 auto;
-  min-height:260px;
-  max-height:var(--panel-h);
+  flex: 1 1 auto;
+  min-height: 180px;
+  max-height: 320px; /* ajuste conforme desejar, 320px geralmente mostra 7-8 linhas */
   overflow:auto;
   border:1px solid var(--line); border-radius:10px;
   margin-bottom:12px;
@@ -103,13 +103,37 @@ main{
   position:sticky; top:0; background:#fff; z-index:2; box-shadow:0 1px 0 #eef2f8;
 }
 
+/* Linhas da tabela: compactas, estilo Excel */
+.results table.striped tbody tr {
+  height:32px;
+}
+.results table.striped td, .results table.striped th {
+  padding:4px 10px !important; /* menos espaço entre linhas e colunas */
+  font-size:15px;
+}
+
+/* Ícone azul de seleção: menor */
+.results .btn-small.blue {
+  min-width:24px;
+  height:24px;
+  padding:0 4px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.results .material-icons {
+  font-size:18px; /* ícone menor */
+}
+
 /* Bloco de INSERIR APROVAÇÃO: gruda embaixo */
-.sticky-approve{
+.sticky-approve {
   position:sticky;
   bottom:0;
   top:auto;
   z-index:5;
   background:var(--card);
+  margin-top:8px;
+  box-shadow:0 -2px 8px rgba(16,24,40,.06); /* leve sombra p/ destaque */
 }
 
 /* outros estilos úteis */
@@ -138,9 +162,9 @@ footer{
 #unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:.9;}
 table.striped th{background:#f2f5ff; color:#0b3b78; font-weight:600;}
 
-@media (max-width:992px){
-  .app{grid-template-columns:1fr;}
-  aside{display:none;}
+@media (max-width:1024px){
+  .results {max-height:220px;}
+  .results table.striped td, .results table.striped th {font-size:14px;}
 }
 </style>
 
