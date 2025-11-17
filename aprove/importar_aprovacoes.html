@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Importar Aprovações • Aprove</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+
+  <!-- Materialize -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <style>
+    :root {
+      --bg:#f7f8fb; --card:#ffffff; --line:#e5e7eb;
+      --ink:#0f172a; --muted:#6b7280;
+      --primary:#0b3b78; --accent:#2563eb;
+    }
+    html, body {
+      margin:0; padding:0;
+      font-family:'Roboto', sans-serif;
+      background:var(--bg);
+      color:var(--ink);
+    }
+    header.topbar {
+      height:56px;
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      padding:0 20px;
+      box-shadow:0 2px 4px rgba(0,0,0,0.16);
+    }
+    header.topbar h1 {
+      font-size:18px;
+      margin:0;
+      font-weight:500;
+    }
+    main {
+      max-width:960px;
+      margin:24px auto;
+      padding:0 12px;
+    }
+    .card-panel {
+      border-radius:12px;
+      box-shadow:0 4px 14px rgba(15,23,42,0.06);
+    }
+    .helper {
+      font-size:13px;
+      color:var(--muted);
+    }
+    .status-area {
+      margin-top:16px;
+      font-size:14px;
+    }
+    .status-area pre {
+      background:#f3f4f6;
+      padding:8px 10px;
+      border-radius:8px;
+      max-height:200px;
+      overflow:auto;
+      font-size:12px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>Aprove • Importar Aprovações</h1>
+</header>
+
+<main>
+  <div class="card-panel">
+    <h5 style="margin-top:0;">Envio de arquivo de aprovações</h5>
+    <p class="helper">
+      Envie o arquivo Excel gerado pelo validador (com as colunas
+      <strong>NOME, CURSO, CLS, codaluno, CODLISTA, CODCURSO, CHAMADA</strong>, etc.).
+      O sistema gravará apenas as colunas necessárias na tabela <code>aprovacoes</code>.
+    </p>
+
+    <div class="row">
+      <form id="form-import" class="col s12">
+        <div class="file-field input-field">
+          <div class="btn blue darken-3">
+            <span>Selecionar arquivo</span>
+            <input type="file" id="arquivo" name="arquivo" accept=".xlsx,.xls,.csv">
+          </div>
+          <div class="file-path-wrapper">
+            <input class="file-path validate" type="text" placeholder="Escolha o arquivo de resultado">
+          </div>
+        </div>
+
+        <div class="input-field">
+          <input id="listagem" type="text" value="2026" disabled>
+          <label for="listagem" class="active">Listagem (ano)</label>
+          <span class="helper-text">Valor fixo que será gravado no campo <code>listagem</code>.</span>
+        </div>
+
+        <button class="btn waves-effect waves-light blue darken-3" type="submit">
+          Importar Aprovações
+        </button>
+      </form>
+    </div>
+
+    <div class="status-area">
+      <div id="status-text" class="helper">Aguardando envio...</div>
+      <pre id="status-log" style="display:none;"></pre>
+    </div>
+  </div>
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    M.AutoInit();
+
+    const form   = document.getElementById('form-import');
+    const input  = document.getElementById('arquivo');
+    const status = document.getElementById('status-text');
+    const logEl  = document.getElementById('status-log');
+
+    const token = localStorage.getItem('aprove_token');
+    if (!token) {
+      status.textContent = 'Sessão expirada. Faça login novamente.';
+      M.toast({html: 'Sessão expirada. Faça login novamente.'});
+      // window.location.href = 'login.html'; // se quiser redirecionar
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!input.files.length) {
+        M.toast({html: 'Selecione um arquivo primeiro.'});
+        return;
+      }
+
+      const file = input.files[0];
+      const fd = new FormData();
+      fd.append('arquivo', file);
+
+      status.textContent = 'Enviando arquivo e processando importação...';
+      logEl.style.display = 'none';
+      logEl.textContent = '';
+
+      try {
+        const resp = await fetch('https://SEU_DOMINIO/aprove/import_aprovacoes.php', {
+          method: 'POST',
+          body: fd,
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok || !data.ok) {
+          const msg = data.error || 'Erro ao importar aprovações.';
+          status.textContent = msg;
+          logEl.style.display = 'block';
+          logEl.textContent = JSON.stringify(data, null, 2);
+          M.toast({html: msg});
+          return;
+        }
+
+        status.textContent =
+          `Importação concluída: ${data.importados} registros inseridos/atualizados de ${data.linhas_validas} linhas válidas.`;
+        logEl.style.display = 'block';
+        logEl.textContent = JSON.stringify(data, null, 2);
+        M.toast({html: 'Importação concluída com sucesso!'});
+      } catch (err) {
+        console.error(err);
+        status.textContent = 'Falha na comunicação com o servidor.';
+        logEl.style.display = 'block';
+        logEl.textContent = err.toString();
+        M.toast({html: 'Erro de comunicação com o servidor.'});
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
