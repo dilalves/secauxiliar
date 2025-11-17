@@ -2,10 +2,9 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Importar Aprovações • Aprove</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
   <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Importar Aprovações • Aprove — Conferência de Aprovados</title>
 
   <!-- Materialize -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
@@ -13,171 +12,301 @@
 
   <style>
     :root {
-      --bg:#f7f8fb; --card:#ffffff; --line:#e5e7eb;
+      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
       --ink:#0f172a; --muted:#6b7280;
       --primary:#0b3b78; --accent:#2563eb;
+      --aside-w:260px; --topbar-h:64px;
     }
-    html, body {
-      margin:0; padding:0;
-      font-family:'Roboto', sans-serif;
-      background:var(--bg);
-      color:var(--ink);
-    }
+
+    html, body {height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
+    body {color:var(--ink);}
+    .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
+
     header.topbar {
-      height:56px;
-      background:var(--primary);
-      color:#fff;
+      position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
+      background:var(--primary); color:#fff; display:flex; align-items:center;
+      padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+
+    aside {
+      background:#fff; border-right:1px solid var(--line);
+      position:sticky; top:var(--topbar-h);
+      height:calc(100vh - var(--topbar-h)); overflow:auto; z-index:6;
+      padding-bottom:20px;
+    }
+
+    .menu {list-style:none; margin:0; padding:0 0 12px;}
+    .menu a {display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:0.25s;}
+    .menu a:hover {background:#f4f6fb; color:var(--primary);}
+    .menu .active > a {background:#eef3ff; font-weight:600; color:var(--primary);}
+    .menu-group {margin-bottom:12px;}
+    .group-title {
+      font-weight:700; color:#0b3b78; text-transform:uppercase;
+      font-size:13px; letter-spacing:0.5px;
+      padding:10px 20px 6px; border-top:1px solid #eef2f8;
+    }
+
+    main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
+    .page {padding:24px;}
+    footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
+    #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
+
+    .card-import {
+      padding:24px;
+      border-radius:12px;
+      box-shadow:0 10px 25px rgba(15,23,42,0.08);
+    }
+
+    .file-row {
       display:flex;
       align-items:center;
-      padding:0 20px;
-      box-shadow:0 2px 4px rgba(0,0,0,0.16);
+      gap:16px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
     }
-    header.topbar h1 {
-      font-size:18px;
-      margin:0;
-      font-weight:500;
-    }
-    main {
-      max-width:960px;
-      margin:24px auto;
-      padding:0 12px;
-    }
-    .card-panel {
-      border-radius:12px;
-      box-shadow:0 4px 14px rgba(15,23,42,0.06);
-    }
-    .helper {
-      font-size:13px;
-      color:var(--muted);
-    }
-    .status-area {
-      margin-top:16px;
+
+    .file-name {
+      flex:1;
+      min-width:220px;
+      padding:10px 12px;
+      border-radius:6px;
+      border:1px dashed #d1d5db;
+      background:#f9fafb;
       font-size:14px;
+      color:#4b5563;
     }
-    .status-area pre {
-      background:#f3f4f6;
-      padding:8px 10px;
+
+    .status-box {
+      margin-top:18px;
+      padding:12px 14px;
       border-radius:8px;
-      max-height:200px;
-      overflow:auto;
-      font-size:12px;
+      background:#f9fafb;
+      border:1px solid #e5e7eb;
+      font-size:14px;
+      color:#374151;
+      min-height:42px;
+    }
+
+    @media (max-width:992px){
+      .app{grid-template-columns:1fr;}
+      aside{display:none;}
     }
   </style>
 </head>
 <body>
+<div class="app">
+  <!-- ===== SIDEBAR ===== -->
+  <aside>
+    <div class="center" style="padding:18px 0 8px;">
+      <span class="title" style="font-weight:700; color:#0b3b78">Aprove</span>
+    </div>
 
-<header class="topbar">
-  <h1>Aprove • Importar Aprovações</h1>
-</header>
+    <ul class="menu">
+      <li><a href="/aprove/painel.html">Início</a></li>
 
-<main>
-  <div class="card-panel">
-    <h5 style="margin-top:0;">Envio de arquivo de aprovações</h5>
-    <p class="helper">
-      Envie o arquivo Excel gerado pelo validador (com as colunas
-      <strong>NOME, CURSO, CLS, codaluno, CODLISTA, CODCURSO, CHAMADA</strong>, etc.).
-      O sistema gravará apenas as colunas necessárias na tabela <code>aprovacoes</code>.
-    </p>
+      <li class="menu-group">
+        <div class="group-title">Atualizações</div>
+        <ul>
+          <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
+          <li><a href="/aprove/alunos.html">Alunos</a></li>
+          <li><a href="/aprove/instituicoes.html">Instituições</a></li>
+          <li><a href="/aprove/cursos.html">Cursos</a></li>
+          <li><a href="/aprove/unidades.html">Unidades</a></li>
+          <li><a href="/aprove/autorizacoes.html">Autorização de Imagem</a></li>
+          <li><a href="/aprove/vestibulares.html">Listas de Aprovados</a></li>
+        </ul>
+      </li>
 
-    <div class="row">
-      <form id="form-import" class="col s12">
-        <div class="file-field input-field">
-          <div class="btn blue darken-3">
-            <span>Selecionar arquivo</span>
-            <input type="file" id="arquivo" name="arquivo" accept=".xlsx,.xls,.csv">
-          </div>
-          <div class="file-path-wrapper">
-            <input class="file-path validate" type="text" placeholder="Escolha o arquivo de resultado">
-          </div>
+      <li class="menu-group">
+        <div class="group-title">Ferramentas</div>
+        <ul>
+          <li><a href="/aprove/conferir_listas.html">Conferir Listas</a></li>
+          <li class="active"><a href="/aprove/importar_aprovacoes.html">Importar Aprovações</a></li>
+        </ul>
+      </li>
+
+      <li class="menu-group">
+        <div class="group-title">Relatórios</div>
+        <ul>
+          <li><a href="/aprove/convocados2fase.html">Convocados 2ª Fase</a></li>
+          <li><a href="/aprove/aprovados_rel.html">Aprovados</a></li>
+          <li><a href="/aprove/porcentagem_lista.html">Porcentagem Lista</a></li>
+          <li><a href="/aprove/totais_curso.html">Totais por Curso</a></li>
+          <li><a href="/aprove/totais_instituicao.html">Totais por Instituição</a></li>
+        </ul>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main>
+    <header class="topbar">
+      <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="/aprove/logo-mini.png" alt="Logo" style="height:28px; width:auto;">
+          <h5 style="margin:0; font-weight:600;">
+            Aprove — Conferência de Aprovados — <span id="unitLabel">—</span>
+          </h5>
+        </div>
+        <div style="display:flex; align-items:center;">
+          <a class="btn-flat waves-effect white-text" href="#!" onclick="logout()">Sair</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="page">
+      <h4 style="color:#0b3b78; font-weight:600;">Envio de arquivo de aprovações</h4>
+      <p class="grey-text text-darken-1">
+        Envie o arquivo Excel gerado pelo validador (com as colunas NOME, CURSO, CLS, codaluno,
+        CODLISTA, CODCURSO, CHAMADA, etc.). O sistema gravará apenas as colunas necessárias na tabela
+        <b>aprovacoes</b>.
+      </p>
+
+      <div class="card card-import z-depth-0">
+        <!-- Seleção de arquivo -->
+        <div class="file-row">
+          <input type="file" id="arquivo" accept=".xlsx,.xls" style="display:none;">
+          <button class="btn blue darken-2" type="button" onclick="document.getElementById('arquivo').click();">
+            Selecionar arquivo
+          </button>
+          <div class="file-name" id="arquivoNome">Escolha o arquivo de resultado</div>
         </div>
 
-        <div class="input-field">
-          <input id="listagem" type="text" value="2026" disabled>
-          <label for="listagem" class="active">Listagem (ano)</label>
+        <!-- Listagem (ano) -->
+        <div class="input-field" style="max-width:200px;">
+          <input id="listagem" type="text" value="2026">
+          <label class="active" for="listagem">Listagem (ano)</label>
           <span class="helper-text">Valor fixo que será gravado no campo <code>listagem</code>.</span>
         </div>
 
-        <button class="btn waves-effect waves-light blue darken-3" type="submit">
-          Importar Aprovações
-        </button>
-      </form>
-    </div>
+        <!-- Botão importar -->
+        <div style="margin-top:18px;">
+          <button class="btn blue darken-2" type="button" onclick="importarAprovacoes()">
+            Importar aprovações
+          </button>
+        </div>
 
-    <div class="status-area">
-      <div id="status-text" class="helper">Aguardando envio...</div>
-      <pre id="status-log" style="display:none;"></pre>
-    </div>
-  </div>
-</main>
+        <!-- Status -->
+        <div class="status-box" id="statusBox">
+          Sessão pronta. Selecione o arquivo e clique em "Importar aprovações".
+        </div>
+      </div>
+    </section>
+
+    <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
+  </main>
+</div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    M.AutoInit();
+  const API       = 'https://apisec.secauxiliar.com.br/aprove/';
+  const LOGIN_URL = '/aprove/index.html';
 
-    const form   = document.getElementById('form-import');
-    const input  = document.getElementById('arquivo');
-    const status = document.getElementById('status-text');
-    const logEl  = document.getElementById('status-log');
+  function setStatus(msg) {
+    document.getElementById('statusBox').textContent = msg;
+  }
 
-    const token = localStorage.getItem('aprove_token');
-    if (!token) {
-      status.textContent = 'Sessão expirada. Faça login novamente.';
-      M.toast({html: 'Sessão expirada. Faça login novamente.'});
-      // window.location.href = 'login.html'; // se quiser redirecionar
-    }
+  async function logout(){
+    try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); }
+    catch(_) {}
+    location.replace(LOGIN_URL);
+  }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      if (!input.files.length) {
-        M.toast({html: 'Selecione um arquivo primeiro.'});
+  async function carregarUsuario() {
+    try {
+      const res  = await fetch(API + 'auth_me.php', { credentials:'include' });
+      if (res.status === 401) {
+        M.toast({ html:'Sessão expirada. Faça login novamente.' });
+        setStatus('Sessão expirada. Faça login novamente.');
+        setTimeout(()=> location.href = LOGIN_URL, 1500);
         return;
       }
+      const data = await res.json();
+      if (data.ok && data.user) {
+        const nome  = data.user.nome  ?? 'Usuário';
+        const login = data.user.login ?? '';
+        document.getElementById('unitLabel').textContent = `${login} — ${nome}`;
+      } else {
+        setStatus('Sessão expirada. Faça login novamente.');
+        setTimeout(()=> location.href = LOGIN_URL, 1500);
+      }
+    } catch (e) {
+      setStatus('Erro de conexão com o servidor de autenticação.');
+    }
+  }
 
-      const file = input.files[0];
-      const fd = new FormData();
-      fd.append('arquivo', file);
-
-      status.textContent = 'Enviando arquivo e processando importação...';
-      logEl.style.display = 'none';
-      logEl.textContent = '';
-
-
-            try {
-        const resp = await fetch('https://apisec.secauxiliar.com.br/aprove//import_aprovacoes.php', {
-          method: 'POST',
-          body: fd,
-          headers: {
-            'Authorization': 'Bearer ' + token
-          }
-        });
-
-        const data = await resp.json();
-
-        if (!resp.ok || !data.ok) {
-          const msg = data.error || 'Erro ao importar aprovações.';
-          status.textContent = msg;
-          logEl.style.display = 'block';
-          logEl.textContent = JSON.stringify(data, null, 2);
-          M.toast({html: msg});
-          return;
-        }
-
-        status.textContent =
-          `Importação concluída: ${data.importados} registros inseridos/atualizados de ${data.linhas_validas} linhas válidas.`;
-        logEl.style.display = 'block';
-        logEl.textContent = JSON.stringify(data, null, 2);
-        M.toast({html: 'Importação concluída com sucesso!'});
-      } catch (err) {
-        console.error(err);
-        status.textContent = 'Falha na comunicação com o servidor.';
-        logEl.style.display = 'block';
-        logEl.textContent = err.toString();
-        M.toast({html: 'Erro de comunicação com o servidor.'});
+  // atualização do nome do arquivo
+  document.addEventListener('DOMContentLoaded', () => {
+    const inp = document.getElementById('arquivo');
+    const lbl = document.getElementById('arquivoNome');
+    inp.addEventListener('change', () => {
+      if (inp.files && inp.files.length) {
+        lbl.textContent = inp.files[0].name;
+      } else {
+        lbl.textContent = 'Escolha o arquivo de resultado';
       }
     });
   });
-</script>
 
+  async function importarAprovacoes(){
+    const fileInput = document.getElementById('arquivo');
+    const listagem = document.getElementById('listagem').value.trim() || '2026';
+
+    if (!fileInput.files || !fileInput.files.length) {
+      M.toast({ html:'Selecione o arquivo de resultado primeiro.' });
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('file', fileInput.files[0]);
+    fd.append('listagem', listagem);
+
+    setStatus('Enviando arquivo para o servidor...');
+
+    try {
+      const resp = await fetch(API + 'import_aprovacoes.php', {
+        method: 'POST',
+        body: fd,
+        credentials: 'include'
+      });
+
+      if (resp.status === 401) {
+        M.toast({ html:'Sessão expirada. Faça login novamente.' });
+        setStatus('Sessão expirada. Faça login novamente.');
+        setTimeout(()=> location.href = LOGIN_URL, 1500);
+        return;
+      }
+
+      const data = await resp.json().catch(()=> ({}));
+
+      if (data.ok) {
+        const total   = data.linhas_total   ?? 0;
+        const validas = data.linhas_validas ?? 0;
+        const imp     = data.importados     ?? 0;
+        const ano     = data.listagem       ?? listagem;
+
+        setStatus(
+          `Importação concluída.\n` +
+          `Linhas no arquivo: ${total} | Linhas válidas: ${validas} | ` +
+          `Registros inseridos/atualizados: ${imp} | Listagem: ${ano}.`
+        );
+        M.toast({ html:'Importação concluída com sucesso!' });
+      } else {
+        const msg = data.error || 'Erro ao processar o arquivo no servidor.';
+        setStatus(msg);
+        M.toast({ html: msg });
+      }
+
+    } catch (e) {
+      console.error(e);
+      setStatus('Falha na comunicação com o servidor.');
+      M.toast({ html:'Falha na comunicação com o servidor.' });
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    M.AutoInit();
+    carregarUsuario();
+  });
+</script>
 </body>
 </html>
