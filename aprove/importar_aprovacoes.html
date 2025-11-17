@@ -85,6 +85,7 @@
       font-size:14px;
       color:#374151;
       min-height:42px;
+      white-space:pre-line;
     }
 
     @media (max-width:992px){
@@ -157,26 +158,29 @@
     <section class="page">
       <h4 style="color:#0b3b78; font-weight:600;">Envio de arquivo de aprovações</h4>
       <p class="grey-text text-darken-1">
-        Envie o arquivo Excel gerado pelo validador (com as colunas NOME, CURSO, CLS, codaluno,
+        Envie o arquivo <b>CSV</b> gerado pelo validador (com as colunas CLS, CODALUNO,
         CODLISTA, CODCURSO, CHAMADA, etc.). O sistema gravará apenas as colunas necessárias na tabela
-        <b>aprovacoes</b>.
+        <b>aprovacoes</b>.<br>
+        <b>Importante:</b> somente serão importadas combinações de vestibular/curso que existirem
+        na tabela <code>vestibular_cursos</code>, e registros já existentes em <code>aprovacoes</code>
+        (mesmo CODALUNO+CODLISTA+CODCURSO) serão ignorados.
       </p>
 
       <div class="card card-import z-depth-0">
         <!-- Seleção de arquivo -->
         <div class="file-row">
-          <input type="file" id="arquivo" accept=".xlsx,.xls" style="display:none;">
+          <input type="file" id="arquivo" accept=".csv,text/csv" style="display:none;">
           <button class="btn blue darken-2" type="button" onclick="document.getElementById('arquivo').click();">
-            Selecionar arquivo
+            Selecionar arquivo CSV
           </button>
-          <div class="file-name" id="arquivoNome">Escolha o arquivo de resultado</div>
+          <div class="file-name" id="arquivoNome">Escolha o arquivo CSV de resultado</div>
         </div>
 
         <!-- Listagem (ano) -->
         <div class="input-field" style="max-width:200px;">
           <input id="listagem" type="text" value="2026">
           <label class="active" for="listagem">Listagem (ano)</label>
-          <span class="helper-text">Valor fixo que será gravado no campo <code>listagem</code>.</span>
+          <span class="helper-text">Valor que será gravado no campo <code>listagem</code>.</span>
         </div>
 
         <!-- Botão importar -->
@@ -188,7 +192,12 @@
 
         <!-- Status -->
         <div class="status-box" id="statusBox">
-          Sessão pronta. Selecione o arquivo e clique em "Importar aprovações".
+          Sessão pronta. Selecione o arquivo CSV e clique em "Importar aprovações".
+        </div>
+
+        <!-- Erros de vestibular/curso -->
+        <div class="status-box" id="errosVestCursos" style="display:none; margin-top:10px;">
+          <!-- preenchido via JS -->
         </div>
       </div>
     </section>
@@ -242,7 +251,7 @@
       if (inp.files && inp.files.length) {
         lbl.textContent = inp.files[0].name;
       } else {
-        lbl.textContent = 'Escolha o arquivo de resultado';
+        lbl.textContent = 'Escolha o arquivo CSV de resultado';
       }
     });
   });
@@ -250,9 +259,13 @@
   async function importarAprovacoes(){
     const fileInput = document.getElementById('arquivo');
     const listagem = document.getElementById('listagem').value.trim() || '2026';
+    const errosDiv = document.getElementById('errosVestCursos');
+
+    errosDiv.style.display = 'none';
+    errosDiv.textContent = '';
 
     if (!fileInput.files || !fileInput.files.length) {
-      M.toast({ html:'Selecione o arquivo de resultado primeiro.' });
+      M.toast({ html:'Selecione o arquivo CSV de resultado primeiro.' });
       return;
     }
 
@@ -282,14 +295,38 @@
         const total   = data.linhas_total   ?? 0;
         const validas = data.linhas_validas ?? 0;
         const imp     = data.importados     ?? 0;
+        const dup     = data.duplicados     ?? 0;
         const ano     = data.listagem       ?? listagem;
+        const erros   = data.erros_vest_curso || [];
 
-        setStatus(
+        let msg =
           `Importação concluída.\n` +
           `Linhas no arquivo: ${total} | Linhas válidas: ${validas} | ` +
-          `Registros inseridos/atualizados: ${imp} | Listagem: ${ano}.`
-        );
-        M.toast({ html:'Importação concluída com sucesso!' });
+          `Registros importados: ${imp} | Já existentes (ignorados): ${dup} | ` +
+          `Listagem: ${ano}.`;
+
+        if (erros.length > 0) {
+          msg += `\n\nForam encontradas ${erros.length} combinações de vestibular/curso ` +
+                 `inexistentes em VESTIBULAR_CURSOS. Veja abaixo para corrigir o CSV e importar novamente.`;
+        }
+
+        setStatus(msg);
+        M.toast({ html:'Importação concluída.' });
+
+        // Monta lista de erros de vest/codcurso, se houver
+        if (erros.length > 0) {
+          let html = '<strong>Códigos de vestibular/curso inválidos:</strong><br><ul style="margin-top:6px;">';
+          erros.forEach(item => {
+            html += `<li>Vestibular (CODLISTA): <b>${item.vest}</b> &nbsp;•&nbsp; ` +
+                    `Curso (CODCURSO): <b>${item.codcurso}</b> &nbsp;—&nbsp; ` +
+                    `Ocorrências no CSV: <b>${item.ocorrencias}</b></li>`;
+          });
+          html += '</ul>';
+
+          errosDiv.innerHTML = html;
+          errosDiv.style.display = 'block';
+        }
+
       } else {
         const msg = data.error || 'Erro ao processar o arquivo no servidor.';
         setStatus(msg);
