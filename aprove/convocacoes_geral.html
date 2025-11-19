@@ -150,8 +150,6 @@
               <th>Cadastro</th>
               <th>Curso</th>
               <th>Instituição</th>
-              <th>Chamada</th>
-              <th>Classificação</th>
               <th>Listagem</th>
               <th>Usuário</th>
               <th>Data de lançamento</th>
@@ -202,20 +200,20 @@ async function carregarAprovacoes(){
   msg.textContent = 'Carregando aprovações...';
 
   try {
-    const res = await fetch(API + 'aprovacoes_list_geral.php', { credentials:'include' });
+    const res = await fetch(API + 'aprovacoes_list_convoc_geral.php', { credentials:'include' });
     const data = await res.json();
 
     if (data.ok && data.rows && data.rows.length){
       listaAprov = data.rows;
       popularFiltroUsuarios();
       renderTabela(listaAprov);
-      msg.textContent = `Total: ${listaAprov.length} aprovações encontradas.`;
+      msg.textContent = `Total: ${listaAprov.length} convocações encontradas.`;
     } else {
-      msg.textContent = 'Nenhuma aprovação cadastrada.';
+      msg.textContent = 'Nenhuma convocação cadastrada.';
     }
   } catch (e){
     console.error(e);
-    msg.textContent = 'Erro ao carregar aprovações.';
+    msg.textContent = 'Erro ao carregar convocação.';
   }
 }
 
@@ -234,8 +232,6 @@ function renderTabela(rows){
       <td>${r.cadastro}</td>
       <td>${r.curso}</td>
       <td>${r.instituicao}</td>
-      <td>${r.chamada}</td>
-      <td>${r.colocacao ?? '-'}</td>
       <td>${r.listagem}</td>
       <td>${r.usuario_nome}</td> 
       <td>${r.created_at}</td>
