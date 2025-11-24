@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Novo Envelope • DigiSing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f3f4f6;}
+    .topbar{height:56px;background:#0b3b78;color:#e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 2px 8px rgba(15,23,42,.45);}
+    .brand{display:flex;align-items:center;gap:8px;font-weight:600;}
+    .brand .logo-dot{width:26px;height:26px;border-radius:50%;background:#facc15;box-shadow:0 0 0 3px rgba(250,204,21,.4);}
+    .top-user{display:flex;align-items:center;gap:8px;font-size:.8rem;}
+    .top-user button{background:transparent;border:1px solid rgba(248,250,252,.3);border-radius:999px;padding:4px 8px;color:#fee2e2;cursor:pointer;font-size:.75rem;}
+    main{max-width:900px;margin:16px auto;padding:0 12px 24px;}
+    h1{margin-top:0;}
+    .card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(15,23,42,.1);}
+    label{display:block;font-size:.8rem;margin-bottom:4px;color:#374151;}
+    input[type="text"],input[type="file"]{
+      width:100%;padding:8px 10px;border-radius:8px;border:1px solid #cbd5e1;font-size:.9rem;margin-bottom:10px;
+    }
+    .btn{padding:8px 14px;border-radius:999px;border:none;background:#1d4ed8;color:#fff;font-size:.9rem;cursor:pointer;}
+    .btn:hover{filter:brightness(1.05);}
+    .msg{margin-top:10px;font-size:.85rem;}
+    .msg.ok{color:#059669;}
+    .msg.err{color:#b91c1c;}
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo-dot"></div>
+    <div>ZapSign 3A</div>
+  </div>
+  <div class="top-user">
+    <span id="userNome">Usuário</span>
+    <button id="btnSair">Sair</button>
+  </div>
+</header>
+
+<main>
+  <h1>Novo Envelope</h1>
+  <div class="card">
+    <form id="formEnvelope">
+      <label for="titulo">Título do envelope</label>
+      <input type="text" id="titulo" name="titulo"
+             placeholder="Ex.: Contrato Matrícula ENEM — João da Silva" required>
+
+      <label for="pdf">Arquivo PDF do contrato</label>
+      <input type="file" id="pdf" name="pdf" accept="application/pdf" required>
+
+      <!-- depois: dados do contratante/aluno, modelo de contrato, etc. -->
+
+      <button type="submit" class="btn">Criar envelope</button>
+    </form>
+
+    <div id="msg" class="msg"></div>
+  </div>
+</main>
+
+<script>
+  const API_BASE = 'https://api.seu-dominio.com/zapsign';
+
+  function getToken() { return localStorage.getItem('zs_token'); }
+  function getUser() {
+    try { return JSON.parse(localStorage.getItem('zs_user') || 'null'); } catch { return null; }
+  }
+
+  function ensureAuth() {
+    const token = getToken();
+    const user = getUser();
+    if (!token || !user) {
+      window.location.href = 'login.html';
+    }
+    return { token, user };
+  }
+
+  (function init(){
+    const { token, user } = ensureAuth();
+    document.getElementById('userNome').textContent = user.nome;
+    document.getElementById('btnSair').addEventListener('click', () => {
+      localStorage.removeItem('zs_token');
+      localStorage.removeItem('zs_user');
+      window.location.href = 'login.html';
+    });
+
+    const form = document.getElementById('formEnvelope');
+    const msg = document.getElementById('msg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = '';
+      msg.className = 'msg';
+
+      const fd = new FormData(form);
+      try {
+        const resp = await fetch(API_BASE + '/api/envelopes/create.php', {
+          method: 'POST',
+          headers: {
+            // NÃO colocar Content-Type aqui; o browser cuida por causa do FormData
+            'Authorization': 'Bearer ' + token
+          },
+          body: fd
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok || !data.ok) {
+          msg.textContent = data.error || 'Erro ao criar envelope.';
+          msg.className = 'msg err';
+          return;
+        }
+        msg.textContent = 'Envelope criado com sucesso! ID: ' + data.envelope_id;
+        msg.className = 'msg ok';
+        form.reset();
+      } catch (err) {
+        console.error(err);
+        msg.textContent = 'Falha ao conectar ao servidor.';
+        msg.className = 'msg err';
+      }
+    });
+  })();
+</script>
+</body>
+</html>
