@@ -1,122 +1,101 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Novo Envelope • DigiSing</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f3f4f6;}
-    .topbar{height:56px;background:#0b3b78;color:#e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 2px 8px rgba(15,23,42,.45);}
-    .brand{display:flex;align-items:center;gap:8px;font-weight:600;}
-    .brand .logo-dot{width:26px;height:26px;border-radius:50%;background:#facc15;box-shadow:0 0 0 3px rgba(250,204,21,.4);}
-    .top-user{display:flex;align-items:center;gap:8px;font-size:.8rem;}
-    .top-user button{background:transparent;border:1px solid rgba(248,250,252,.3);border-radius:999px;padding:4px 8px;color:#fee2e2;cursor:pointer;font-size:.75rem;}
-    main{max-width:900px;margin:16px auto;padding:0 12px 24px;}
-    h1{margin-top:0;}
-    .card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(15,23,42,.1);}
-    label{display:block;font-size:.8rem;margin-bottom:4px;color:#374151;}
-    input[type="text"],input[type="file"]{
-      width:100%;padding:8px 10px;border-radius:8px;border:1px solid #cbd5e1;font-size:.9rem;margin-bottom:10px;
-    }
-    .btn{padding:8px 14px;border-radius:999px;border:none;background:#1d4ed8;color:#fff;font-size:.9rem;cursor:pointer;}
-    .btn:hover{filter:brightness(1.05);}
-    .msg{margin-top:10px;font-size:.85rem;}
-    .msg.ok{color:#059669;}
-    .msg.err{color:#b91c1c;}
-  </style>
+<meta charset="UTF-8">
+<title>Novo Envelope • DigiSign</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* (estilo igual do painel/admin) */
+body { margin:0; font-family:Arial; background:#f3f4f6; }
+.container { max-width:700px; margin:40px auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,.1); }
+h1 { margin:0 0 20px; }
+label { display:block; font-size:.9rem; margin:10px 0 6px; }
+input[type="text"], input[type="file"] {
+    width:100%; padding:10px; border-radius:8px;
+    border:1px solid #ccc; font-size:1rem;
+}
+button {
+    margin-top:20px; background:#0b3b78; color:#fff;
+    padding:12px 20px; border:none; border-radius:8px;
+    cursor:pointer; font-size:1rem;
+}
+button:hover { filter:brightness(1.1); }
+.msg { margin-top:15px; padding:12px; border-radius:8px; display:none; }
+.msg.ok { background:#dcfce7; color:#166534; }
+.msg.err { background:#fee2e2; color:#b91c1c; }
+</style>
 </head>
+
 <body>
-<header class="topbar">
-  <div class="brand">
-    <div class="logo-dot"></div>
-    <div>ZapSign 3A</div>
-  </div>
-  <div class="top-user">
-    <span id="userNome">Usuário</span>
-    <button id="btnSair">Sair</button>
-  </div>
-</header>
-
-<main>
+<div class="container">
   <h1>Novo Envelope</h1>
-  <div class="card">
-    <form id="formEnvelope">
-      <label for="titulo">Título do envelope</label>
-      <input type="text" id="titulo" name="titulo"
-             placeholder="Ex.: Contrato Matrícula ENEM — João da Silva" required>
 
-      <label for="pdf">Arquivo PDF do contrato</label>
-      <input type="file" id="pdf" name="pdf" accept="application/pdf" required>
+  <label>Título do documento</label>
+  <input type="text" id="titulo" placeholder="Ex: Contrato de matrícula">
 
-      <!-- depois: dados do contratante/aluno, modelo de contrato, etc. -->
+  <label>Arquivo PDF</label>
+  <input type="file" id="pdf" accept="application/pdf">
 
-      <button type="submit" class="btn">Criar envelope</button>
-    </form>
+  <button id="btnCriar">Criar Envelope</button>
 
-    <div id="msg" class="msg"></div>
-  </div>
-</main>
+  <div class="msg" id="mensagem"></div>
+</div>
 
 <script>
-  const API_BASE = 'https://api.seu-dominio.com/zapsign';
+const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
 
-  function getToken() { return localStorage.getItem('zs_token'); }
-  function getUser() {
-    try { return JSON.parse(localStorage.getItem('zs_user') || 'null'); } catch { return null; }
+document.getElementById('btnCriar').onclick = async () => {
+  const titulo = document.getElementById('titulo').value.trim();
+  const pdf = document.getElementById('pdf').files[0];
+  const msg = document.getElementById('mensagem');
+
+  msg.style.display = 'none';
+
+  if (!titulo || !pdf) {
+    msg.className = 'msg err';
+    msg.textContent = 'Preencha o título e escolha um PDF.';
+    msg.style.display = 'block';
+    return;
   }
 
-  function ensureAuth() {
-    const token = getToken();
-    const user = getUser();
-    if (!token || !user) {
-      window.location.href = 'login.html';
+  const form = new FormData();
+  form.append('titulo', titulo);
+  form.append('pdf', pdf);
+
+  const token = localStorage.getItem('zs_token');
+
+  try {
+    const resp = await fetch(API_BASE + '/envelope_create.php', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token
+      },
+      body: form
+    });
+
+    const data = await resp.json();
+
+    if (!data.ok) {
+      msg.className = 'msg err';
+      msg.textContent = data.error;
+      msg.style.display = 'block';
+      return;
     }
-    return { token, user };
+
+    msg.className = 'msg ok';
+    msg.innerHTML = 'Envelope criado!<br>ID: ' + data.envelope_id;
+
+    setTimeout(() => {
+      window.location.href = 'envelope_dest.html?id=' + data.envelope_id;
+    }, 1500);
+
+  } catch (err) {
+    msg.className = 'msg err';
+    msg.textContent = 'Erro ao conectar ao servidor.';
+    msg.style.display = 'block';
   }
-
-  (function init(){
-    const { token, user } = ensureAuth();
-    document.getElementById('userNome').textContent = user.nome;
-    document.getElementById('btnSair').addEventListener('click', () => {
-      localStorage.removeItem('zs_token');
-      localStorage.removeItem('zs_user');
-      window.location.href = 'login.html';
-    });
-
-    const form = document.getElementById('formEnvelope');
-    const msg = document.getElementById('msg');
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      msg.textContent = '';
-      msg.className = 'msg';
-
-      const fd = new FormData(form);
-      try {
-        const resp = await fetch(API_BASE + '/api/envelopes/create.php', {
-          method: 'POST',
-          headers: {
-            // NÃO colocar Content-Type aqui; o browser cuida por causa do FormData
-            'Authorization': 'Bearer ' + token
-          },
-          body: fd
-        });
-        const data = await resp.json().catch(() => ({}));
-        if (!resp.ok || !data.ok) {
-          msg.textContent = data.error || 'Erro ao criar envelope.';
-          msg.className = 'msg err';
-          return;
-        }
-        msg.textContent = 'Envelope criado com sucesso! ID: ' + data.envelope_id;
-        msg.className = 'msg ok';
-        form.reset();
-      } catch (err) {
-        console.error(err);
-        msg.textContent = 'Falha ao conectar ao servidor.';
-        msg.className = 'msg err';
-      }
-    });
-  })();
+};
 </script>
 </body>
 </html>
