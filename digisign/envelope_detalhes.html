@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalhes do Envelope • DigiSign</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root{
+      --bg:#f3f4f6;
+      --nav:#0b3b78;
+      --nav-light:#1d4ed8;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --pill-bg:#e5e7eb;
+      --pill-border:#d1d5db;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:#0f172a;
+    }
+    .topbar{
+      height:56px;
+      background:var(--nav);
+      color:#e5e7eb;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 16px;
+      box-shadow:0 2px 8px rgba(15,23,42,.45);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:600;
+      letter-spacing:.02em;
+    }
+    .brand .logo-dot{
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      background:#facc15;
+      box-shadow:0 0 0 3px rgba(250,204,21,.4);
+    }
+    .brand span.sub{
+      display:block;
+      font-size:.7rem;
+      opacity:.8;
+    }
+    .top-nav{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-size:.9rem;
+    }
+    .top-nav a{
+      color:#e5e7eb;
+      text-decoration:none;
+      padding:6px 10px;
+      border-radius:999px;
+    }
+    .top-nav a:hover{
+      background:rgba(15,23,42,.35);
+    }
+    .top-user{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:.8rem;
+    }
+    .chip-role{
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(209,213,219,.7);
+      font-size:.7rem;
+    }
+    .top-user button{
+      background:transparent;
+      border:1px solid rgba(248,250,252,.3);
+      border-radius:999px;
+      padding:4px 8px;
+      color:#fee2e2;
+      cursor:pointer;
+      font-size:.75rem;
+    }
+    .top-user button:hover{
+      background:rgba(248,250,252,.12);
+    }
+
+    main{
+      max-width:1120px;
+      margin:16px auto 24px;
+      padding:0 12px;
+    }
+    .breadcrumbs{
+      font-size:.8rem;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+    .breadcrumbs a{
+      color:var(--nav-light);
+      text-decoration:none;
+    }
+    .breadcrumbs a:hover{text-decoration:underline;}
+
+    .header-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+    h1{
+      margin:6px 0 4px;
+      font-size:1.4rem;
+    }
+    .subtitle{
+      font-size:.85rem;
+      color:var(--muted);
+    }
+    .status-pill{
+      display:inline-flex;
+      align-items:center;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:.75rem;
+      border:1px solid var(--pill-border);
+      background:var(--pill-bg);
+    }
+    .status-pill[data-status="sent"]{background:#fef3c7;border-color:#facc15;}
+    .status-pill[data-status="draft"]{background:#e5e7eb;}
+    .status-pill[data-status="completed"]{background:#dcfce7;border-color:#22c55e;}
+    .status-pill[data-status="voided"]{background:#fee2e2;border-color:#f87171;}
+
+    .cards-grid{
+      display:grid;
+      grid-template-columns:2fr 3fr;
+      gap:16px;
+      margin-top:16px;
+    }
+    @media (max-width:900px){
+      .cards-grid{grid-template-columns:1fr;}
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:12px;
+      padding:14px 16px;
+      box-shadow:0 1px 4px rgba(15,23,42,.1);
+    }
+    .card h2{
+      margin:0 0 8px;
+      font-size:1rem;
+    }
+    .card p{
+      margin:0;
+      font-size:.85rem;
+      color:var(--muted);
+    }
+    .meta-list{
+      margin:8px 0 0;
+      padding:0;
+      list-style:none;
+      font-size:.83rem;
+    }
+    .meta-list li{
+      margin-bottom:4px;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      padding:2px 8px;
+      border-radius:999px;
+      background:#e5e7eb;
+      font-size:.75rem;
+      margin-right:4px;
+      margin-bottom:4px;
+    }
+    .chip span.dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      margin-right:6px;
+    }
+    .chip[data-status="pending"] span.dot{background:#9ca3af;}
+    .chip[data-status="sent"] span.dot{background:#facc15;}
+    .chip[data-status="signed"] span.dot{background:#22c55e;}
+    .chip[data-status="declined"] span.dot{background:#ef4444;}
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.85rem;
+    }
+    thead{
+      background:#f9fafb;
+    }
+    th,td{
+      padding:6px 8px;
+      text-align:left;
+      border-bottom:1px solid #e5e7eb;
+    }
+    th{
+      font-weight:600;
+      color:#4b5563;
+    }
+
+    .btn-link{
+      border:none;
+      background:none;
+      color:var(--nav-light);
+      font-size:.8rem;
+      cursor:pointer;
+      padding:0;
+    }
+    .btn-link:hover{text-decoration:underline;}
+
+    .badge-small{
+      display:inline-block;
+      padding:2px 6px;
+      border-radius:999px;
+      font-size:.7rem;
+      background:#e5e7eb;
+      color:#4b5563;
+      margin-left:4px;
+    }
+
+    .alert-top{
+      margin-top:8px;
+      font-size:.8rem;
+      color:#065f46;
+      background:#d1fae5;
+      border-radius:8px;
+      padding:6px 10px;
+      display:none;
+    }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo-dot"></div>
+    <div>
+      DigiSign
+      <span class="sub">Curso Objetivo • Painel de Assinaturas</span>
+    </div>
+  </div>
+
+  <nav class="top-nav">
+    <a href="admin.html">Dashboard</a>
+    <a href="envelope_novo.html">Novo Envelope</a>
+    <a href="envelopes_lista.html">Meus Envelopes</a>
+  </nav>
+
+  <div class="top-user">
+    <span id="userNome">Usuário</span>
+    <span id="userRole" class="chip-role">role</span>
+    <button id="btnSair">Sair</button>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumbs">
+    <a href="envelopes_lista.html">&larr; Meus Envelopes</a>
+  </div>
+
+  <div class="header-row">
+    <div>
+      <h1 id="envTitulo">Envelope</h1>
+      <div class="subtitle">
+        Criado em <span id="envCriadoEm">--/--/----</span>
+      </div>
+    </div>
+    <div>
+      <div class="status-pill" id="envStatusPill" data-status="draft">Rascunho</div>
+      <div class="subtitle" id="envResumoAssinaturas"></div>
+    </div>
+  </div>
+
+  <div class="alert-top" id="alertLinks"></div>
+
+  <div class="cards-grid">
+    <!-- Coluna esquerda: info e documentos -->
+    <section class="card">
+      <h2>Resumo do envelope</h2>
+      <ul class="meta-list">
+        <li><strong>ID:</strong> <span id="envId">—</span></li>
+        <li><strong>Status:</strong> <span id="envStatusLabel">—</span></li>
+        <li><strong>Destinatários:</strong>
+          <span id="statTotal">0</span> total •
+          <span id="statAssinados">0</span> assinados •
+          <span id="statPendentes">0</span> pendentes •
+          <span id="statEnviados">0</span> enviados
+        </li>
+      </ul>
+
+      <h2 style="margin-top:16px;">Documentos</h2>
+      <p id="docsEmpty" style="display:none;">Nenhum documento anexado.</p>
+      <ul class="meta-list" id="docsLista"></ul>
+    </section>
+
+    <!-- Coluna direita: destinatários -->
+    <section class="card">
+      <h2>Destinatários e links de assinatura</h2>
+      <p>Veja quem já recebeu e copie o link de assinatura para enviar por WhatsApp, e-mail etc.</p>
+
+      <div style="margin:8px 0;" id="chipsDest"></div>
+
+      <div style="overflow-x:auto;margin-top:6px;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nome / E-mail</th>
+              <th>Status</th>
+              <th>Link</th>
+            </tr>
+          </thead>
+          <tbody id="destTableBody">
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+  const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+
+  function getToken() {
+    return localStorage.getItem('zs_token');
+  }
+  function getUser() {
+    const raw = localStorage.getItem('zs_user');
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch { return null; }
+  }
+  function ensureAuth() {
+    const token = getToken();
+    const user = getUser();
+    if (!token || !user) {
+      window.location.href = 'index.html';
+    }
+    return { token, user };
+  }
+
+  function getQueryId() {
+    const params = new URLSearchParams(window.location.search);
+    return parseInt(params.get('id') || '0', 10);
+  }
+
+  function formatDataBr(iso) {
+    if (!iso) return '--/--/----';
+    const d = new Date(iso.replace(' ', 'T'));
+    if (Number.isNaN(d.getTime())) return iso;
+    const dia = String(d.getDate()).padStart(2,'0');
+    const mes = String(d.getMonth()+1).padStart(2,'0');
+    const ano = d.getFullYear();
+    const hh  = String(d.getHours()).padStart(2,'0');
+    const mm  = String(d.getMinutes()).padStart(2,'0');
+    return `${dia}/${mes}/${ano}, ${hh}:${mm}`;
+  }
+
+  function mapStatusLabel(st) {
+    switch(st){
+      case 'draft': return 'Rascunho';
+      case 'sent': return 'Enviado';
+      case 'completed': return 'Concluído';
+      case 'voided': return 'Cancelado';
+      default: return st;
+    }
+  }
+
+  function copiarTexto(texto) {
+    navigator.clipboard.writeText(texto).then(() => {
+      const alert = document.getElementById('alertLinks');
+      alert.textContent = 'Link copiado para a área de transferência.';
+      alert.style.display = 'block';
+      setTimeout(() => { alert.style.display = 'none'; }, 3000);
+    }).catch(() => {
+      alert('Não foi possível copiar o link. Copie manualmente.');
+    });
+  }
+
+  (function init(){
+    const { token, user } = ensureAuth();
+
+    // preenche topo
+    document.getElementById('userNome').textContent = user.nome;
+    document.getElementById('userRole').textContent = user.role || 'atendimento';
+    document.getElementById('btnSair').addEventListener('click', () => {
+      localStorage.removeItem('zs_token');
+      localStorage.removeItem('zs_user');
+      window.location.href = 'index.html';
+    });
+
+    const envId = getQueryId();
+    if (!envId) {
+      alert('Envelope inválido. Volte para a lista.');
+      window.location.href = 'envelopes_lista.html';
+      return;
+    }
+
+    fetch(`${API_BASE}/envelope_details.php?id=${envId}`, {
+      method:'GET',
+      headers:{
+        'Authorization':'Bearer ' + token
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) {
+        alert(data.error || 'Falha ao carregar detalhes do envelope.');
+        return;
+      }
+
+      const env = data.envelope;
+      const stats = data.stats || {};
+      const dests = data.destinatarios || [];
+      const docs  = data.documentos || [];
+
+      // header
+      document.getElementById('envTitulo').textContent = env.titulo;
+      document.getElementById('envCriadoEm').textContent = formatDataBr(env.created_at);
+      document.getElementById('envId').textContent = env.id;
+      document.getElementById('envStatusLabel').textContent = mapStatusLabel(env.status);
+
+      const pill = document.getElementById('envStatusPill');
+      pill.dataset.status = env.status;
+      pill.textContent = mapStatusLabel(env.status);
+
+      document.getElementById('statTotal').textContent = stats.total ?? dests.length;
+      document.getElementById('statAssinados').textContent = stats.assinados ?? 0;
+      document.getElementById('statPendentes').textContent = stats.pendentes ?? 0;
+      document.getElementById('statEnviados').textContent = stats.enviados ?? 0;
+
+      document.getElementById('envResumoAssinaturas').textContent =
+        `${stats.assinados ?? 0} de ${stats.total ?? dests.length} concluídas`;
+
+      // documentos
+      const ulDocs = document.getElementById('docsLista');
+      const docsEmpty = document.getElementById('docsEmpty');
+      if (!docs.length) {
+        docsEmpty.style.display = 'block';
+      } else {
+        docsEmpty.style.display = 'none';
+        docs.forEach(d => {
+          const li = document.createElement('li');
+          const nome = d.nome_original || ('Documento #' + d.id);
+          const paginas = d.paginas ? ` • ${d.paginas} pág.` : '';
+          li.textContent = nome + paginas;
+          ulDocs.appendChild(li);
+        });
+      }
+
+      // chips rápidos dos destinatários
+      const chips = document.getElementById('chipsDest');
+      dests.forEach(d => {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.dataset.status = d.status;
+        chip.innerHTML = `<span class="dot"></span>${d.nome} • ${mapStatusLabel(d.status)}`;
+        chips.appendChild(chip);
+      });
+
+      // tabela de destinatários
+      const tbody = document.getElementById('destTableBody');
+      if (!dests.length) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 4;
+        td.textContent = 'Nenhum destinatário cadastrado.';
+        tbody.appendChild(tr).appendChild(td);
+      } else {
+        dests.forEach((d, idx) => {
+          const tr = document.createElement('tr');
+
+          const tdIdx = document.createElement('td');
+          tdIdx.textContent = d.ordem || (idx+1);
+
+          const tdNome = document.createElement('td');
+          tdNome.innerHTML = `<strong>${d.nome}</strong><br><span style="color:#6b7280;font-size:.8rem;">${d.email}</span>`;
+
+          const tdStatus = document.createElement('td');
+          tdStatus.innerHTML = `<span class="badge-small">${mapStatusLabel(d.status)}</span>`;
+
+          const tdLink = document.createElement('td');
+          const btn = document.createElement('button');
+          btn.className = 'btn-link';
+          btn.type = 'button';
+          btn.textContent = 'Copiar link';
+          btn.addEventListener('click', () => copiarTexto(d.link_assinatura));
+          tdLink.appendChild(btn);
+
+          tr.appendChild(tdIdx);
+          tr.appendChild(tdNome);
+          tr.appendChild(tdStatus);
+          tr.appendChild(tdLink);
+
+          tbody.appendChild(tr);
+        });
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Erro ao carregar detalhes do envelope.');
+    });
+  })();
+</script>
+</body>
+</html>
