@@ -111,53 +111,57 @@
     3A Sistemas • Curso Objetivo
   </div>
 
-  <script>
-    const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+ <script>
+  const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
 
-    // Se já estiver logado, pula o login e vai pro painel
-    const tokenExistente = localStorage.getItem('zs_token');
-    const userExistente = localStorage.getItem('zs_user');
-    if (tokenExistente && userExistente) {
-      window.location.href = 'admin.html';
-    }
+  // Se já estiver logado, pula o login
+  const tokenExistente = localStorage.getItem('zs_token');
+  const userExistente  = localStorage.getItem('zs_user');
+  if (tokenExistente && userExistente) {
+    window.location.href = 'admin.html';
+  }
 
-    const form = document.getElementById('formLogin');
-    const divErro = document.getElementById('erro');
+  const form   = document.getElementById('formLogin');
+  const divErro = document.getElementById('erro');
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      divErro.style.display = 'none';
-      divErro.textContent = '';
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    divErro.style.display = 'none';
+    divErro.textContent = '';
 
-      const email = document.getElementById('email').value.trim();
-      const senha = document.getElementById('senha').value;
+    const email = document.getElementById('email').value.trim();
+    const senha = document.getElementById('senha').value;
 
-      try {
-        const resp = await fetch(API_BASE + '/auth_login.php', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ email, senha })
-        });
+    // IMPORTANTE: usar FormData (POST "simples", sem JSON)
+    const fd = new FormData();
+    fd.append('email', email);
+    fd.append('senha', senha);
 
-        const data = await resp.json().catch(() => ({}));
+    try {
+      const resp = await fetch(API_BASE + '/auth_login.php', {
+        method: 'POST',
+        body: fd   // sem headers Content-Type -> browser usa x-www-form-urlencoded/multipart
+      });
 
-        if (!resp.ok || !data.ok) {
-          divErro.textContent = data.error || 'Falha no login.';
-          divErro.style.display = 'block';
-          return;
-        }
+      const data = await resp.json().catch(() => ({}));
 
-        // Guarda token e dados do usuário
-        localStorage.setItem('zs_token', data.token);
-        localStorage.setItem('zs_user', JSON.stringify(data.user));
-
-        window.location.href = 'admin.html';
-      } catch (err) {
-        console.error(err);
-        divErro.textContent = 'Erro ao conectar com o servidor.';
+      if (!resp.ok || !data.ok) {
+        divErro.textContent = data.error || 'Falha no login.';
         divErro.style.display = 'block';
+        return;
       }
-    });
-  </script>
+
+      localStorage.setItem('zs_token', data.token);
+      localStorage.setItem('zs_user', JSON.stringify(data.user));
+
+      window.location.href = 'admin.html';
+    } catch (err) {
+      console.error(err);
+      divErro.textContent = 'Erro ao conectar com o servidor.';
+      divErro.style.display = 'block';
+    }
+  });
+</script>
+
 </body>
 </html>
