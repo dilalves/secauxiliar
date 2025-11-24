@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Meus Envelopes • DigiSign</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root{
+      --bg:#f3f4f6;
+      --nav:#0b3b78;
+      --nav-light:#1d4ed8;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --chip-draft:#e5e7eb;
+      --chip-sent:#fef3c7;
+      --chip-completed:#dcfce7;
+      --chip-voided:#fee2e2;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:#0f172a;
+    }
+    .topbar{
+      height:56px;
+      background:var(--nav);
+      color:#e5e7eb;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 16px;
+      box-shadow:0 2px 8px rgba(15,23,42,.45);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:600;
+      letter-spacing:.02em;
+    }
+    .brand .logo-dot{
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      background:#facc15;
+      box-shadow:0 0 0 3px rgba(250,204,21,.4);
+    }
+    .brand span.sub{
+      display:block;
+      font-size:.7rem;
+      opacity:.8;
+    }
+    .top-nav{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-size:.9rem;
+    }
+    .top-nav a{
+      color:#e5e7eb;
+      text-decoration:none;
+      padding:6px 10px;
+      border-radius:999px;
+    }
+    .top-nav a:hover{
+      background:rgba(15,23,42,.35);
+    }
+    .top-user{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:.8rem;
+    }
+    .chip-role{
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(209,213,219,.7);
+      font-size:.7rem;
+    }
+    .top-user button{
+      background:transparent;
+      border:1px solid rgba(248,250,252,.3);
+      border-radius:999px;
+      padding:4px 8px;
+      color:#fee2e2;
+      cursor:pointer;
+      font-size:.75rem;
+    }
+    .top-user button:hover{
+      background:rgba(248,250,252,.12);
+    }
+
+    main{
+      max-width:1120px;
+      margin:16px auto 32px;
+      padding:0 12px;
+    }
+    .page-header{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:8px;
+      margin-bottom:12px;
+    }
+    .page-header h1{
+      margin:0;
+      font-size:1.4rem;
+    }
+    .page-header p{
+      margin:4px 0 0;
+      font-size:.9rem;
+      color:var(--muted);
+    }
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      margin-bottom:10px;
+    }
+    .search-box{
+      position:relative;
+      flex:1 1 220px;
+      max-width:320px;
+    }
+    .search-box input{
+      width:100%;
+      padding:8px 10px;
+      padding-left:28px;
+      border-radius:999px;
+      border:1px solid #cbd5e1;
+      font-size:.9rem;
+      background:#f9fafb;
+    }
+    .search-box span.icon{
+      position:absolute;
+      left:9px;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:.8rem;
+      color:#9ca3af;
+    }
+    .status-filters{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      font-size:.8rem;
+    }
+    .chip-filter{
+      padding:5px 10px;
+      border-radius:999px;
+      border:1px solid #d1d5db;
+      background:#fff;
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip-filter.active{
+      background:#0b3b78;
+      color:#fff;
+      border-color:#0b3b78;
+    }
+
+    .btn-primary{
+      padding:8px 14px;
+      border-radius:999px;
+      border:none;
+      background:var(--nav-light);
+      color:#fff;
+      font-size:.85rem;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .btn-primary:hover{filter:brightness(1.05);}
+
+    .card-list{
+      background:var(--card);
+      border-radius:12px;
+      box-shadow:0 1px 4px rgba(15,23,42,.1);
+      overflow:hidden;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.85rem;
+    }
+    th, td{
+      padding:10px 12px;
+      text-align:left;
+      border-bottom:1px solid #e5e7eb;
+    }
+    th{
+      font-size:.8rem;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      color:#6b7280;
+      background:#f9fafb;
+    }
+    tr:hover td{
+      background:#f3f4ff;
+    }
+    .col-titulo{
+      font-weight:500;
+    }
+    .col-sub{
+      font-size:.8rem;
+      color:#6b7280;
+    }
+
+    .chip-status{
+      display:inline-flex;
+      align-items:center;
+      padding:3px 8px;
+      border-radius:999px;
+      font-size:.75rem;
+      font-weight:500;
+    }
+    .chip-status.draft{
+      background:var(--chip-draft);
+      color:#374151;
+    }
+    .chip-status.sent{
+      background:var(--chip-sent);
+      color:#92400e;
+    }
+    .chip-status.completed{
+      background:var(--chip-completed);
+      color:#166534;
+    }
+    .chip-status.voided{
+      background:var(--chip-voided);
+      color:#991b1b;
+    }
+
+    .actions{
+      display:flex;
+      gap:6px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .btn-link{
+      border:none;
+      background:none;
+      padding:2px 0;
+      font-size:.8rem;
+      color:#1d4ed8;
+      cursor:pointer;
+      text-decoration:underline;
+    }
+
+    .empty-state{
+      padding:24px 20px;
+      text-align:center;
+      font-size:.9rem;
+      color:#6b7280;
+    }
+
+    .msg{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:8px;
+      font-size:.85rem;
+      display:none;
+    }
+    .msg.err{background:#fee2e2;color:#b91c1c;}
+    .msg.info{background:#e0f2fe;color:#075985;}
+
+    @media (max-width:768px){
+      .top-nav{display:none;}
+      table thead{display:none;}
+      table,tbody,tr,td{display:block;width:100%;}
+      tr{border-bottom:1px solid #e5e7eb;margin-bottom:4px;}
+      td{
+        border-bottom:none;
+        padding:6px 10px;
+      }
+      td[data-label]:before{
+        content:attr(data-label) " ";
+        font-weight:600;
+        color:#6b7280;
+        display:block;
+        margin-bottom:2px;
+      }
+      .actions{justify-content:flex-start;margin-top:4px;}
+    }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo-dot"></div>
+    <div>
+      DigiSign
+      <span class="sub">Curso Objetivo • Painel de Assinaturas</span>
+    </div>
+  </div>
+
+  <nav class="top-nav">
+    <a href="admin.html">Dashboard</a>
+    <a href="envelope_novo.html">Novo Envelope</a>
+    <a href="envelopes_lista.html">Meus Envelopes</a>
+  </nav>
+
+  <div class="top-user">
+    <span id="userNome">Usuário</span>
+    <span id="userRole" class="chip-role">atendimento</span>
+    <button id="btnSair">Sair</button>
+  </div>
+</header>
+
+<main>
+  <div class="page-header">
+    <div>
+      <h1>Meus Envelopes</h1>
+      <p>Acompanhe o andamento dos documentos enviados para assinatura.</p>
+    </div>
+    <a href="envelope_novo.html" class="btn-primary">
+      + Novo envelope
+    </a>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <span class="icon">🔍</span>
+      <input id="busca" type="text" placeholder="Buscar por título ou destinatário...">
+    </div>
+
+    <div class="status-filters">
+      <div class="chip-filter active" data-status="">Todos</div>
+      <div class="chip-filter" data-status="draft">Rascunho</div>
+      <div class="chip-filter" data-status="sent">Enviados</div>
+      <div class="chip-filter" data-status="completed">Concluídos</div>
+      <div class="chip-filter" data-status="voided">Cancelados</div>
+    </div>
+  </div>
+
+  <div id="mensagem" class="msg"></div>
+
+  <div class="card-list" id="listaWrapper">
+    <div class="empty-state" id="emptyState" style="display:none;">
+      Nenhum envelope encontrado. Crie um novo para começar.
+    </div>
+    <table id="tblEnvelopes" style="display:none;">
+      <thead>
+        <tr>
+          <th>Documento</th>
+          <th style="width:130px;">Status</th>
+          <th style="width:160px;">Criado em</th>
+          <th style="width:170px;">Assinaturas</th>
+          <th style="width:160px;">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyEnvelopes"></tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+  const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+
+  function getUser() {
+    try { return JSON.parse(localStorage.getItem('zs_user') || 'null'); }
+    catch { return null; }
+  }
+  function getToken() {
+    return localStorage.getItem('zs_token');
+  }
+
+  // header / auth básica
+  (function initHeader(){
+    const user = getUser();
+    const token = getToken();
+    if (!user || !token) {
+      window.location.href = 'index.html';
+      return;
+    }
+    document.getElementById('userNome').textContent = user.nome;
+    document.getElementById('userRole').textContent = user.role || 'atendimento';
+
+    document.getElementById('btnSair').addEventListener('click', () => {
+      localStorage.removeItem('zs_token');
+      localStorage.removeItem('zs_user');
+      window.location.href = 'index.html';
+    });
+  })();
+
+  const msgBox = document.getElementById('mensagem');
+  const tbody  = document.getElementById('tbodyEnvelopes');
+  const tbl    = document.getElementById('tblEnvelopes');
+  const empty  = document.getElementById('emptyState');
+  const busca  = document.getElementById('busca');
+  const filters= document.querySelectorAll('.chip-filter');
+
+  let envelopes = [];
+  let filtroStatus = '';
+  let termoBusca   = '';
+
+  function mostrarMensagem(texto, tipo='info') {
+    msgBox.className = 'msg ' + tipo;
+    msgBox.textContent = texto;
+    msgBox.style.display = 'block';
+  }
+
+  function limparMensagem() {
+    msgBox.style.display = 'none';
+    msgBox.textContent = '';
+  }
+
+  function formatarData(iso) {
+    if (!iso) return '';
+    const d = new Date(iso.replace(' ', 'T'));
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleString('pt-BR', {
+      day:'2-digit', month:'2-digit', year:'numeric',
+      hour:'2-digit', minute:'2-digit'
+    });
+  }
+
+  function getStatusLabel(status) {
+    switch(status){
+      case 'draft': return 'Rascunho';
+      case 'sent': return 'Enviado';
+      case 'completed': return 'Concluído';
+      case 'voided': return 'Cancelado';
+      default: return status;
+    }
+  }
+
+  function renderizarLista() {
+    limparMensagem();
+
+    let filtrados = envelopes.slice();
+
+    if (filtroStatus) {
+      filtrados = filtrados.filter(e => e.status === filtroStatus);
+    }
+
+    if (termoBusca) {
+      const t = termoBusca.toLowerCase();
+      filtrados = filtrados.filter(e =>
+        (e.titulo || '').toLowerCase().includes(t) ||
+        (e.destinatarios_txt || '').toLowerCase().includes(t)
+      );
+    }
+
+    tbody.innerHTML = '';
+
+    if (filtrados.length === 0) {
+      tbl.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+
+    tbl.style.display = 'table';
+    empty.style.display = 'none';
+
+    filtrados.forEach(env => {
+      const tr = document.createElement('tr');
+
+      const tdDoc = document.createElement('td');
+      tdDoc.className = 'col-titulo';
+      tdDoc.setAttribute('data-label','Documento');
+      tdDoc.innerHTML = `
+        <div>${env.titulo}</div>
+        <div class="col-sub">
+          ${env.qtd_documentos} PDF(s) • ${env.qtd_destinatarios} destinatário(s)
+        </div>
+      `;
+
+      const tdStatus = document.createElement('td');
+      tdStatus.setAttribute('data-label','Status');
+      tdStatus.innerHTML = `<span class="chip-status ${env.status}">${getStatusLabel(env.status)}</span>`;
+
+      const tdData = document.createElement('td');
+      tdData.setAttribute('data-label','Criado em');
+      tdData.textContent = formatarData(env.created_at);
+
+      const tdAss = document.createElement('td');
+      tdAss.setAttribute('data-label','Assinaturas');
+      tdAss.textContent = `${env.qtd_assinados} de ${env.qtd_destinatarios} concluídas`;
+
+      const tdAcoes = document.createElement('td');
+      tdAcoes.className = 'actions';
+      tdAcoes.setAttribute('data-label','Ações');
+      tdAcoes.innerHTML = `
+        <button class="btn-link" data-id="${env.id}" data-acao="ver">Detalhes</button>
+        <button class="btn-link" data-id="${env.id}" data-acao="enviar">Enviar</button>
+      `;
+
+      tr.appendChild(tdDoc);
+      tr.appendChild(tdStatus);
+      tr.appendChild(tdData);
+      tr.appendChild(tdAss);
+      tr.appendChild(tdAcoes);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function carregarEnvelopes() {
+    mostrarMensagem('Carregando envelopes...', 'info');
+
+    const token = getToken();
+    try {
+      const url = API_BASE + '/envelope_list.php' + (filtroStatus ? ('?status='+encodeURIComponent(filtroStatus)) : '');
+      const resp = await fetch(url, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await resp.json();
+
+      if (!resp.ok || !data.ok) {
+        mostrarMensagem(data.error || 'Falha ao carregar envelopes.', 'err');
+        return;
+      }
+
+      envelopes = data.envelopes || [];
+
+      // campo auxiliar de texto de destinatários (por enquanto vazio; depois podemos preencher via join)
+      envelopes = envelopes.map(e => ({ ...e, destinatarios_txt: '' }));
+
+      limparMensagem();
+      renderizarLista();
+
+    } catch (e) {
+      console.error(e);
+      mostrarMensagem('Erro de conexão com o servidor.', 'err');
+    }
+  }
+
+  // busca
+  busca.addEventListener('input', () => {
+    termoBusca = busca.value.trim();
+    renderizarLista();
+  });
+
+  // filtros por status
+  filters.forEach(chip => {
+    chip.addEventListener('click', () => {
+      filters.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      filtroStatus = chip.dataset.status || '';
+      carregarEnvelopes();
+    });
+  });
+
+  // ações (futuras telas)
+  tbody.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('.btn-link');
+    if (!btn) return;
+    const id  = btn.dataset.id;
+    const acao= btn.dataset.acao;
+
+    if (acao === 'ver') {
+      // futura tela de detalhes
+      window.location.href = 'envelope_view.html?id=' + id;
+    } else if (acao === 'enviar') {
+      // no futuro: chamar envelope_send.php
+      alert('Ação "Enviar" ainda será implementada para o envelope #' + id);
+    }
+  });
+
+  // inicia carregando
+  carregarEnvelopes();
+</script>
+</body>
+</html>
