@@ -404,7 +404,7 @@
 
   function mostrarMensagem(texto, tipo='info') {
     msgBox.className = 'msg ' + tipo;
-    msgBox.textContent = texto;
+    msgBox.innerHTML = texto;
     msgBox.style.display = 'block';
   }
 
@@ -489,9 +489,13 @@
       const tdAcoes = document.createElement('td');
       tdAcoes.className = 'actions';
       tdAcoes.setAttribute('data-label','Ações');
+
+      // botão Enviar some se não for rascunho, se você quiser
+      const podeEnviar = (env.status === 'draft' || env.status === 'sent');
+
       tdAcoes.innerHTML = `
         <button class="btn-link" data-id="${env.id}" data-acao="ver">Detalhes</button>
-        <button class="btn-link" data-id="${env.id}" data-acao="enviar">Enviar</button>
+        ${podeEnviar ? `<button class="btn-link" data-id="${env.id}" data-acao="enviar">Enviar</button>` : ''}
       `;
 
       tr.appendChild(tdDoc);
@@ -521,8 +525,6 @@
       }
 
       envelopes = data.envelopes || [];
-
-      // campo auxiliar de texto de destinatários (por enquanto vazio; depois podemos preencher via join)
       envelopes = envelopes.map(e => ({ ...e, destinatarios_txt: '' }));
 
       limparMensagem();
@@ -550,7 +552,59 @@
     });
   });
 
-  // ações (futuras telas)
+  // --- NOVO: função para enviar envelope ---
+  async function enviarEnvelope(id) {
+    const token = getToken();
+    if (!token) {
+      window.location.href = 'index.html';
+      return;
+    }
+
+    if (!confirm('Deseja enviar este envelope para assinatura?')) {
+      return;
+    }
+
+    mostrarMensagem('Enviando e-mails de assinatura...', 'info');
+
+    try {
+      const resp = await fetch(API_BASE + '/envelope_send.php', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ envelope_id: id })
+      });
+
+      const data = await resp.json().catch(() => ({}));
+
+      if (!resp.ok || !data.ok) {
+        mostrarMensagem(data.error || 'Falha ao enviar envelope.', 'err');
+        return;
+      }
+
+      // Monta texto com os links de assinatura
+      let html = 'Envelope enviado com sucesso.<br><br><strong>Links de assinatura:</strong><br>';
+      (data.enviados || []).forEach(d => {
+        html += `${d.nome} (${d.email})<br><span style="font-size:11px;">${d.url}</span><br><br>`;
+      });
+
+      if (data.erros && data.erros.length) {
+        html += '<strong>Atenção:</strong><br>' + data.erros.join('<br>');
+      }
+
+      mostrarMensagem(html, 'info');
+
+      // Recarrega lista para atualizar status (rascunho -> enviado)
+      carregarEnvelopes();
+
+    } catch (e) {
+      console.error(e);
+      mostrarMensagem('Erro de conexão ao enviar envelope.', 'err');
+    }
+  }
+
+  // ações (detalhes / enviar)
   tbody.addEventListener('click', (ev) => {
     const btn = ev.target.closest('.btn-link');
     if (!btn) return;
@@ -558,16 +612,16 @@
     const acao= btn.dataset.acao;
 
     if (acao === 'ver') {
-      // futura tela de detalhes
-      window.location.href = 'envelope_view.html?id=' + id;
+      window.location.href = 'envelope_view.html?id=' + id; // futura tela
     } else if (acao === 'enviar') {
-      // no futuro: chamar envelope_send.php
-      alert('Ação "Enviar" ainda será implementada para o envelope #' + id);
+      enviarEnvelope(id);
     }
   });
 
   // inicia carregando
   carregarEnvelopes();
 </script>
+
+
 </body>
 </html>
