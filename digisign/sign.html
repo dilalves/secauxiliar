@@ -119,6 +119,10 @@
       font-size: 12px;
       color: #2563eb;
       text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
     }
     .doc-link:hover {
       text-decoration: underline;
@@ -206,6 +210,23 @@
         </div>
       </div>
 
+      <!-- NOVO CARD: visualizador de PDF -->
+      <div class="sign-card" id="viewerCard" style="margin-top:16px;">
+        <div class="sign-card-header">
+          <h2 class="sign-card-title">Visualizar documento</h2>
+          <p class="sign-card-subtitle">
+            O documento selecionado será exibido abaixo. Role até o fim para ler tudo.
+          </p>
+        </div>
+        <div class="sign-card-body" style="height: 80vh; padding: 0; border-radius: 0 0 12px 12px; overflow: hidden;">
+          <iframe id="pdfViewer"
+                  src=""
+                  style="width:100%; height:100%; border:0;"
+                  title="Visualizador de documento">
+          </iframe>
+        </div>
+      </div>
+
       <div class="actions" id="area-assinatura">
         <div class="checkline">
           <input type="checkbox" id="chk-concordo" />
@@ -249,6 +270,13 @@
   const areaAssinatura = document.getElementById('area-assinatura');
   const areaJaAssinado = document.getElementById('area-ja-assinado');
 
+  // helper para trocar o PDF no iframe
+  function setPdfViewer(url) {
+    const iframe = document.getElementById('pdfViewer');
+    if (!iframe) return;
+    iframe.src = url + '#view=FitH';
+  }
+
   if (!token) {
     tituloPrincipal.textContent = 'Link inválido';
     subtitulo.textContent = 'O link de assinatura informado é inválido.';
@@ -287,17 +315,25 @@
     destStatus.textContent = statusLabel(d.status);
 
     // Documentos
-    if (data.arquivos && data.arquivos.length) {
+    const arquivos = data.arquivos || [];
+    if (arquivos.length) {
       listaDocs.innerHTML = '';
-      data.arquivos.forEach((arq, idx) => {
+      arquivos.forEach((arq, idx) => {
         const div = document.createElement('div');
         div.className = 'doc-item';
         div.innerHTML = `
           <span>${idx + 1}. ${arq.nome}</span>
-          <a href="${arq.url}" target="_blank" class="doc-link">Abrir PDF</a>
+          <button type="button"
+                  class="doc-link btn-open-doc"
+                  data-url="${arq.url}">
+            Abrir PDF
+          </button>
         `;
         listaDocs.appendChild(div);
       });
+
+      // abre o primeiro PDF automaticamente no visualizador
+      setPdfViewer(arquivos[0].url);
     } else {
       listaDocs.innerHTML = '<div style="font-size:13px;color:#6b7280;">Nenhum arquivo encontrado.</div>';
     }
@@ -345,6 +381,15 @@
       setMensagem('Erro ao registrar assinatura. Tente novamente.', 'error');
       btnAssinar.disabled = false;
     });
+  });
+
+  // click nos botões "Abrir PDF" para trocar o documento exibido
+  document.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('.btn-open-doc');
+    if (!btn) return;
+    ev.preventDefault();
+    const url = btn.getAttribute('data-url');
+    if (url) setPdfViewer(url);
   });
 
   function statusLabel(code) {
