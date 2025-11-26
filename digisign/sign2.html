@@ -62,17 +62,6 @@
       font-size: 13px;
       margin-bottom: 18px;
     }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: #eff6ff;
-      color: #1d4ed8;
-      font-size: 11px;
-      font-weight: 500;
-    }
     .section {
       border-top: 1px solid var(--line);
       padding-top: 14px;
@@ -174,6 +163,46 @@
       font-size: 11px;
       color: var(--muted);
     }
+
+    /* assinatura */
+    #signature-wrapper {
+      margin: 10px 0 14px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background:#f9fafb;
+      border:1px solid var(--line);
+    }
+    #signature-wrapper p {
+      margin:0 0 6px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    #sigCanvas {
+      width:100%;
+      max-width:400px;
+      height:160px;
+      background:#fff;
+      border:1px dashed #9ca3af;
+      border-radius:6px;
+      cursor:crosshair;
+      display:block;
+    }
+    #btn-limpar-assinatura {
+      margin-top:6px;
+      background:none;
+      border:none;
+      padding:0;
+      font-size:12px;
+      color:#2563eb;
+      cursor:pointer;
+    }
+    #sig-status {
+      margin-left:8px;
+      font-size:12px;
+      color:var(--success);
+      display:none;
+    }
+
     @media (max-width: 640px) {
       .card { padding: 18px 16px 18px; }
       .section {
@@ -186,7 +215,7 @@
 <div class="wrap">
   <div class="card">
     <div class="top-logo">
-      <b>DigiSign</b> • Curso Objetivo
+      <b>DigiSign</b> • Assinatura Digital
     </div>
     <h1 id="titulo-principal">Carregando...</h1>
     <div class="sub" id="subtitulo">
@@ -210,7 +239,7 @@
         </div>
       </div>
 
-      <!-- NOVO CARD: visualizador de PDF -->
+      <!-- visualizador de PDF -->
       <div class="sign-card" id="viewerCard" style="margin-top:16px;">
         <div class="sign-card-header">
           <h2 class="sign-card-title">Visualizar documento</h2>
@@ -227,6 +256,7 @@
         </div>
       </div>
 
+      <!-- área de assinatura -->
       <div class="actions" id="area-assinatura">
         <div class="checkline">
           <input type="checkbox" id="chk-concordo" />
@@ -234,6 +264,15 @@
             Declaro que li o(s) documento(s) acima e concordo com os termos apresentados.
           </label>
         </div>
+
+        <!-- quadro de assinatura: aparece só depois de marcar o checkbox -->
+        <div id="signature-wrapper" style="display:none;">
+          <p>Assine no quadro abaixo usando o mouse (computador) ou o dedo (celular).</p>
+          <canvas id="sigCanvas" width="400" height="160"></canvas>
+          <button type="button" id="btn-limpar-assinatura">Limpar assinatura</button>
+          <span id="sig-status">Assinatura registrada ✔</span>
+        </div>
+
         <div class="btn-row">
           <button class="btn-primary" id="btn-assinar" disabled>Assinar documento</button>
           <div class="msg" id="mensagem"></div>
@@ -269,12 +308,103 @@
   const msg = document.getElementById('mensagem');
   const areaAssinatura = document.getElementById('area-assinatura');
   const areaJaAssinado = document.getElementById('area-ja-assinado');
+  const signatureWrapper = document.getElementById('signature-wrapper');
+  const sigCanvas = document.getElementById('sigCanvas');
+  const sigStatus = document.getElementById('sig-status');
+  const btnLimparAss = document.getElementById('btn-limpar-assinatura');
 
-  // helper para trocar o PDF no iframe
+  // ---- assinatura (canvas) ----
+  let sigCtx = null;
+  let desenhando = false;
+  let assinaturaDataUrl = null;
+
+  function setMensagem(texto, tipo) {
+    msg.textContent = texto || '';
+    msg.className = 'msg' + (tipo ? ' ' + tipo : '');
+  }
+
   function setPdfViewer(url) {
     const iframe = document.getElementById('pdfViewer');
     if (!iframe) return;
     iframe.src = url + '#view=FitH';
+  }
+
+  function statusLabel(code) {
+    switch (code) {
+      case 'pending': return 'Pendente';
+      case 'sent':    return 'Enviado';
+      case 'signed':  return 'Assinado';
+      case 'canceled':return 'Cancelado';
+      default:        return code || '—';
+    }
+  }
+
+  // inicializa o canvas
+  function initSignaturePad() {
+    if (!sigCanvas) return;
+    sigCtx = sigCanvas.getContext('2d');
+    sigCtx.strokeStyle = '#000';
+    sigCtx.lineWidth = 2;
+    sigCtx.lineCap = 'round';
+    sigCtx.lineJoin = 'round';
+
+    const getPos = (e) => {
+      const rect = sigCanvas.getBoundingClientRect();
+      if (e.touches && e.touches.length) {
+        return {
+          x: e.touches[0].clientX - rect.left,
+          y: e.touches[0].clientY - rect.top
+        };
+      }
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    };
+
+    const startDraw = (e) => {
+      e.preventDefault();
+      desenhando = true;
+      const p = getPos(e);
+      sigCtx.beginPath();
+      sigCtx.moveTo(p.x, p.y);
+    };
+
+    const moveDraw = (e) => {
+      if (!desenhando) return;
+      e.preventDefault();
+      const p = getPos(e);
+      sigCtx.lineTo(p.x, p.y);
+      sigCtx.stroke();
+    };
+
+    const endDraw = (e) => {
+      if (!desenhando) return;
+      e.preventDefault();
+      desenhando = false;
+      assinaturaDataUrl = sigCanvas.toDataURL('image/png');
+      sigStatus.style.display = 'inline';
+      // só habilita o botão se o checkbox estiver marcado
+      if (chkConcordo.checked) {
+        btnAssinar.disabled = false;
+      }
+    };
+
+    sigCanvas.addEventListener('mousedown', startDraw);
+    sigCanvas.addEventListener('mousemove', moveDraw);
+    sigCanvas.addEventListener('mouseup', endDraw);
+    sigCanvas.addEventListener('mouseleave', endDraw);
+
+    sigCanvas.addEventListener('touchstart', startDraw, { passive:false });
+    sigCanvas.addEventListener('touchmove', moveDraw, { passive:false });
+    sigCanvas.addEventListener('touchend', endDraw, { passive:false });
+
+    btnLimparAss.addEventListener('click', () => {
+      sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+      assinaturaDataUrl = null;
+      sigStatus.style.display = 'none';
+      btnAssinar.disabled = true;
+    });
   }
 
   if (!token) {
@@ -283,12 +413,20 @@
     return;
   }
 
-  function setMensagem(texto, tipo) {
-    msg.textContent = texto || '';
-    msg.className = 'msg' + (tipo ? ' ' + tipo : '');
-  }
+  // marcar checkbox: mostra/esconde quadro de assinatura
+  chkConcordo.addEventListener('change', () => {
+    if (chkConcordo.checked) {
+      signatureWrapper.style.display = 'block';
+      // só libera botão se já tiver rabisco
+      btnAssinar.disabled = !assinaturaDataUrl;
+    } else {
+      signatureWrapper.style.display = 'none';
+      btnAssinar.disabled = true;
+      setMensagem('', '');
+    }
+  });
 
-  // Carrega informações do token
+  // carregar info do token
   fetch('https://apisec.secauxiliar.com.br/digisign/sign_info.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -314,7 +452,6 @@
     envTitulo.textContent = e.titulo;
     destStatus.textContent = statusLabel(d.status);
 
-    // Documentos
     const arquivos = data.arquivos || [];
     if (arquivos.length) {
       listaDocs.innerHTML = '';
@@ -331,17 +468,17 @@
         `;
         listaDocs.appendChild(div);
       });
-
-      // abre o primeiro PDF automaticamente no visualizador
       setPdfViewer(arquivos[0].url);
     } else {
       listaDocs.innerHTML = '<div style="font-size:13px;color:#6b7280;">Nenhum arquivo encontrado.</div>';
     }
 
-    // Se já assinado, desabilita tudo
+    // se já assinado, não mostra área de assinatura
     if (d.status === 'signed') {
       areaAssinatura.style.display = 'none';
       areaJaAssinado.style.display = 'block';
+    } else {
+      initSignaturePad();
     }
   })
   .catch(err => {
@@ -350,19 +487,29 @@
     subtitulo.textContent = 'Tente novamente em alguns instantes.';
   });
 
-  chkConcordo.addEventListener('change', () => {
-    btnAssinar.disabled = !chkConcordo.checked;
-  });
-
+  // clicar em "Assinar documento"
   btnAssinar.addEventListener('click', () => {
     if (btnAssinar.disabled) return;
+
+    if (!chkConcordo.checked) {
+      setMensagem('Você precisa declarar que leu e concorda com o(s) documento(s).', 'error');
+      return;
+    }
+    if (!assinaturaDataUrl) {
+      setMensagem('Por favor, faça sua assinatura no quadro antes de confirmar.', 'error');
+      return;
+    }
+
     setMensagem('Registrando sua assinatura...', '');
     btnAssinar.disabled = true;
 
     fetch('https://apisec.secauxiliar.com.br/digisign/sign_confirm.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token })
+      body: JSON.stringify({
+        token: token,
+        assinatura: assinaturaDataUrl   // imagem da assinatura (PNG base64)
+      })
     })
     .then(r => r.json())
     .then(data => {
@@ -383,7 +530,7 @@
     });
   });
 
-  // click nos botões "Abrir PDF" para trocar o documento exibido
+  // trocar PDF quando clicar em "Abrir PDF"
   document.addEventListener('click', (ev) => {
     const btn = ev.target.closest('.btn-open-doc');
     if (!btn) return;
@@ -391,16 +538,6 @@
     const url = btn.getAttribute('data-url');
     if (url) setPdfViewer(url);
   });
-
-  function statusLabel(code) {
-    switch (code) {
-      case 'pending': return 'Pendente';
-      case 'sent':    return 'Enviado';
-      case 'signed':  return 'Assinado';
-      case 'canceled':return 'Cancelado';
-      default:        return code || '—';
-    }
-  }
 })();
 </script>
 </body>
