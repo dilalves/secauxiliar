@@ -33,7 +33,7 @@
     }
     .card {
       width: 100%;
-      max-width: 720px;
+      max-width: 900px;
       background: var(--card);
       border-radius: 14px;
       box-shadow: 0 18px 45px rgba(15,23,42,0.18);
@@ -62,6 +62,7 @@
       font-size: 13px;
       margin-bottom: 18px;
     }
+
     .section {
       border-top: 1px solid var(--line);
       padding-top: 14px;
@@ -91,44 +92,45 @@
       max-height: 180px;
       overflow: auto;
       background: #f9fafb;
-      font-size: 13px;
-      color: var(--ink);
     }
     .doc-item {
-      padding: 4px 0;
+      padding: 6px 0;
       border-bottom: 1px dashed #e5e7eb;
+      font-size: 13px;
+      color: var(--ink);
     }
     .doc-item:last-child {
       border-bottom: none;
     }
 
-    /* seção dos PDFs em tela cheia (dentro do card) */
-    .pdf-section {
-      margin-top: 18px;
+    /* área dos PDFs empilhados */
+    #pdf-section {
       border-top: 1px solid var(--line);
-      padding-top: 12px;
+      margin-top: 18px;
+      padding-top: 14px;
     }
-    .pdf-section h2 {
+    #pdf-section h2 {
       margin: 0 0 4px;
       font-size: 14px;
       color: var(--ink);
     }
-    .pdf-section p {
-      margin: 0 0 10px;
+    #pdf-section p {
+      margin: 0 0 12px;
       font-size: 13px;
       color: var(--muted);
     }
-    #pdfContainer {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+    .pdf-card {
+      margin-bottom: 24px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 4px 20px rgba(15,23,42,0.25);
     }
     .pdf-frame {
       width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      height: 900px; /* altura confortável para desktop */
-      background: #000;
+      height: 900px;        /* altura grande, estilo ZapSign */
+      border: none;
+      display: block;
     }
 
     .actions {
@@ -218,13 +220,13 @@
       display:none;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 720px) {
       .card { padding: 18px 16px 18px; }
       .section {
         grid-template-columns: 1fr;
       }
       .pdf-frame {
-        height: 520px; /* menor altura no celular */
+        height: 600px;
       }
     }
   </style>
@@ -246,7 +248,7 @@
           <h2>Dados da assinatura</h2>
           <div class="fieldline">Destinatário: <span id="dest-nome">–</span></div>
           <div class="fieldline">E-mail: <span id="dest-email">–</span></div>
-          <div class="fieldline">Título do documento: <span id="env-titulo">–</span></div>
+          <div class="fieldline">Título do envelope: <span id="env-titulo">–</span></div>
           <div class="fieldline">Status atual: <span id="dest-status">–</span></div>
         </div>
         <div>
@@ -257,12 +259,12 @@
         </div>
       </div>
 
-      <!-- PDFs em tela (um embaixo do outro) -->
-      <div class="pdf-section">
+      <!-- PDFs empilhados em tela grande -->
+      <section id="pdf-section">
         <h2>Visualizar documento(s)</h2>
-        <p>Os documentos anexados a este envelope são exibidos abaixo, na ordem enviada. Role a página até o final para ler tudo antes de assinar.</p>
+        <p>Os documentos anexados a este envelope são exibidos abaixo, na ordem enviada. Role até o final para ler tudo antes de assinar.</p>
         <div id="pdfContainer"></div>
-      </div>
+      </section>
 
       <!-- área de assinatura -->
       <div class="actions" id="area-assinatura">
@@ -270,6 +272,10 @@
           <input type="checkbox" id="chk-concordo" />
           <label for="chk-concordo">
             Declaro que li o(s) documento(s) acima e concordo com os termos apresentados.
+            <br>
+            <small id="scroll-info" style="color:var(--muted);font-size:11px;">
+              Role até o final dos documentos para habilitar esta opção.
+            </small>
           </label>
         </div>
 
@@ -308,11 +314,14 @@
   const conteudo = document.getElementById('conteudo');
   const listaDocs = document.getElementById('lista-docs');
   const pdfContainer = document.getElementById('pdfContainer');
+
   const destNome = document.getElementById('dest-nome');
   const destEmail = document.getElementById('dest-email');
   const envTitulo = document.getElementById('env-titulo');
   const destStatus = document.getElementById('dest-status');
+
   const chkConcordo = document.getElementById('chk-concordo');
+  const scrollInfo = document.getElementById('scroll-info');
   const btnAssinar = document.getElementById('btn-assinar');
   const msg = document.getElementById('mensagem');
   const areaAssinatura = document.getElementById('area-assinatura');
@@ -326,6 +335,7 @@
   let sigCtx = null;
   let desenhando = false;
   let assinaturaDataUrl = null;
+  let leituraLiberada = false; // se já rolou até o final
 
   function setMensagem(texto, tipo) {
     msg.textContent = texto || '';
@@ -387,8 +397,8 @@
       desenhando = false;
       assinaturaDataUrl = sigCanvas.toDataURL('image/png');
       sigStatus.style.display = 'inline';
-      // só habilita o botão se o checkbox estiver marcado
-      if (chkConcordo.checked) {
+      // só habilita o botão se checkbox estiver marcado E leitura liberada
+      if (chkConcordo.checked && leituraLiberada) {
         btnAssinar.disabled = false;
       }
     };
@@ -410,6 +420,20 @@
     });
   }
 
+  // libera o checkbox quando o usuário chegar ao final da página
+  function verificarScrollLeitura() {
+    if (leituraLiberada) return;
+    const scrolled = window.innerHeight + window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - 40;
+    if (scrolled >= docHeight) {
+      leituraLiberada = true;
+      chkConcordo.disabled = false;
+      if (scrollInfo) {
+        scrollInfo.textContent = 'Você já rolou todos os documentos. Agora marque a opção acima para habilitar a assinatura.';
+      }
+    }
+  }
+
   if (!token) {
     tituloPrincipal.textContent = 'Link inválido';
     subtitulo.textContent = 'O link de assinatura informado é inválido.';
@@ -420,8 +444,8 @@
   chkConcordo.addEventListener('change', () => {
     if (chkConcordo.checked) {
       signatureWrapper.style.display = 'block';
-      // só libera botão se já tiver rabisco
-      btnAssinar.disabled = !assinaturaDataUrl;
+      // só libera botão se já tiver rabisco e leitura liberada
+      btnAssinar.disabled = !(assinaturaDataUrl && leituraLiberada);
     } else {
       signatureWrapper.style.display = 'none';
       btnAssinar.disabled = true;
@@ -456,27 +480,33 @@
     destStatus.textContent = statusLabel(d.status);
 
     const arquivos = data.arquivos || [];
-    // Lista textual dos documentos
+
+    // lista simples com os nomes
     if (arquivos.length) {
       listaDocs.innerHTML = '';
       arquivos.forEach((arq, idx) => {
         const div = document.createElement('div');
         div.className = 'doc-item';
-        div.textContent = `${idx + 1}. ${arq.nome}`;
+        div.textContent = (idx + 1) + '. ' + arq.nome;
         listaDocs.appendChild(div);
-      });
-
-      // Renderiza todos os PDFs em sequência
-      pdfContainer.innerHTML = '';
-      arquivos.forEach((arq, idx) => {
-        const frame = document.createElement('iframe');
-        frame.className = 'pdf-frame';
-        frame.src = arq.url + '#view=FitH';
-        frame.title = 'Documento ' + (idx + 1);
-        pdfContainer.appendChild(frame);
       });
     } else {
       listaDocs.innerHTML = '<div style="font-size:13px;color:#6b7280;">Nenhum arquivo encontrado.</div>';
+    }
+
+    // monta os PDFs empilhados
+    if (arquivos.length) {
+      pdfContainer.innerHTML = '';
+      arquivos.forEach((arq) => {
+        const card = document.createElement('div');
+        card.className = 'pdf-card';
+        // remove toolbar e deixa modo largura ajustada
+        const src = arq.url + '#toolbar=0&view=FitH';
+        card.innerHTML = '<iframe class="pdf-frame" src="' + src + '" title="Documento PDF"></iframe>';
+        pdfContainer.appendChild(card);
+      });
+    } else {
+      pdfContainer.innerHTML = '<p style="font-size:13px;color:#6b7280;">Nenhum PDF disponível para visualização.</p>';
     }
 
     // se já assinado, não mostra área de assinatura
@@ -484,6 +514,10 @@
       areaAssinatura.style.display = 'none';
       areaJaAssinado.style.display = 'block';
     } else {
+      // bloqueia o checkbox até o usuário rolar tudo
+      chkConcordo.disabled = true;
+      leituraLiberada = false;
+      window.addEventListener('scroll', verificarScrollLeitura);
       initSignaturePad();
     }
   })
