@@ -490,16 +490,20 @@
       tdAss.textContent = `${env.qtd_assinados} de ${env.qtd_destinatarios} concluídas`;
 
       const tdAcoes = document.createElement('td');
-      tdAcoes.className = 'actions';
       tdAcoes.setAttribute('data-label','Ações');
 
-      // botão Enviar some se não for rascunho, se você quiser
+      const divActions = document.createElement('div');
+      divActions.className = 'actions';
+
       const podeEnviar = (env.status === 'draft' || env.status === 'sent');
 
-      tdAcoes.innerHTML = `
+      divActions.innerHTML = `
         <button class="btn-link" data-id="${env.id}" data-acao="ver">Detalhes</button>
         ${podeEnviar ? `<button class="btn-link" data-id="${env.id}" data-acao="enviar">Enviar</button>` : ''}
       `;
+
+      tdAcoes.appendChild(divActions);
+
 
       tr.appendChild(tdDoc);
       tr.appendChild(tdStatus);
