@@ -53,9 +53,34 @@
     #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
 
     table.striped th {background:#f2f5ff; color:#0b3b78; font-weight:600;}
-    .search-box {display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
-    .search-box input {flex:1; min-width:220px;}
-    .search-box .filtro-usuario {min-width:240px;}
+
+    /* Campo de busca ocupa a linha inteira */
+    .search-box {
+      margin-bottom: 8px;
+    }
+    .search-box input {
+      width: 100%;
+    }
+
+    /* Linha de filtros centralizada */
+    .filters-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    /* Selects com largura mínima bonitinha */
+    .filters-row .filtro-usuario {
+      min-width: 200px;
+    }
+
+    .filters-row button {
+      flex: 0 0 auto;
+    }
+
 
     @media (max-width:992px){
       .app{grid-template-columns:1fr;}
@@ -132,15 +157,27 @@
       </p>
 
       <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
+
+        <!-- Busca por nome (linha inteira) -->
         <div class="search-box">
           <input id="search" type="text" placeholder="Filtrar por nome do aluno..." oninput="filtrarAprovacoes()">
+        </div>
+
+        <!-- Filtros (todos na mesma linha, centralizados) -->
+        <div class="filters-row">
           <select id="filtro-usuario" class="browser-default filtro-usuario" onchange="filtrarAprovacoes()">
             <option value="">Todos os usuários</option>
           </select>
-          <!-- NOVO: filtro por instituição -->
+
           <select id="filtro-instituicao" class="browser-default filtro-usuario" onchange="filtrarAprovacoes()">
             <option value="">Todas as instituições</option>
           </select>
+
+          <!-- NOVO: filtro por ano de cadastro -->
+          <select id="filtro-cadastro" class="browser-default filtro-usuario" onchange="filtrarAprovacoes()">
+            <option value="">Todos os anos</option>
+          </select>
+
           <button class="btn blue darken-2" onclick="resetFiltros()">Limpar filtros</button>
         </div>
 
@@ -149,8 +186,8 @@
             <tr>
               <th>ID</th>
               <th>Aluno</th>
+              <th>Unidade</th>
               <th>Serie</th>
-              <th>Unidade</th>             
               <th>Cadastro</th>
               <th>Curso</th>
               <th>Instituição</th>
@@ -164,6 +201,7 @@
 
         <p class="center grey-text" id="msg-status">Carregando aprovações...</p>
       </div>
+
     </section>
 
     <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
@@ -211,6 +249,7 @@ async function carregarAprovacoes(){
       listaAprov = data.rows;
       popularFiltroUsuarios();
       popularFiltroInstituicoes(); // <--- NOVO
+      popularFiltroCadastro();      // <--- NOVO
       renderTabela(listaAprov);
       msg.textContent = `Total: ${listaAprov.length} convocações encontradas.`;
     } else {
@@ -285,12 +324,37 @@ function popularFiltroInstituicoes(){
   });
 }
 
+/* ===== POPULA O SELECT DE ANO DE CADASTRO ===== */
+function popularFiltroCadastro(){
+  const select = document.getElementById('filtro-cadastro');
+  select.innerHTML = '<option value="">Todos os anos</option>';
+
+  const anosSet = new Set();
+
+  listaAprov.forEach(r => {
+    const ano = (r.cadastro || '').toString().trim();
+    if (ano && !anosSet.has(ano)) {
+      anosSet.add(ano);
+    }
+  });
+
+  // ordenar anos
+  Array.from(anosSet).sort().forEach(ano => {
+    const opt = document.createElement('option');
+    opt.value = ano;
+    opt.textContent = ano;
+    select.appendChild(opt);
+  });
+}
+
+
 
 /* ===== FILTROS (NOME + USUÁRIO) ===== */
 function filtrarAprovacoes(){
   const termo       = document.getElementById('search').value.trim().toLowerCase();
   const usuario     = document.getElementById('filtro-usuario').value;
   const instituicao = document.getElementById('filtro-instituicao').value;
+  const anoCad      = document.getElementById('filtro-cadastro').value;
 
   let filtrados = listaAprov;
 
@@ -308,6 +372,10 @@ function filtrarAprovacoes(){
     filtrados = filtrados.filter(r => (r.instituicao || '') === instituicao);
   }
 
+  if (anoCad){
+    filtrados = filtrados.filter(r => String(r.cadastro) === anoCad);
+  }
+
   renderTabela(filtrados);
 
   const msg = document.getElementById('msg-status');
@@ -318,11 +386,13 @@ function filtrarAprovacoes(){
   }
 }
 
+
 /* ===== LIMPAR FILTROS ===== */
 function resetFiltros(){
   document.getElementById('search').value = '';
   document.getElementById('filtro-usuario').value = '';
   document.getElementById('filtro-instituicao').value = ''; // <--- NOVO
+  document.getElementById('filtro-cadastro').value = '';   // <--- NOVO
   renderTabela(listaAprov);
   document.getElementById('msg-status').textContent =
     `Total: ${listaAprov.length} aprovações encontradas.`;
