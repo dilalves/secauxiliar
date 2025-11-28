@@ -259,8 +259,30 @@
       <input type="file" id="pdfs" accept="application/pdf" multiple>
 
       <p style="font-size:.8rem;color:#6b7280;margin-top:4px;">
-        Você pode anexar mais de um PDF (ex.: contrato + autorização de imagem).
+        Você pode anexar mais de um PDF (ex.: contrato + autorização de imagem). Cada arquivo deve ser de no máximo 10MB.
       </p>
+
+      <hr style="margin:12px 0; border:none; border-top:1px solid #e5e7eb;">
+
+      <label style="font-weight:600; font-size:.85rem; margin-bottom:6px;">
+        Opções de verificação do signatário
+      </label>
+
+      <div style="font-size:.8rem; color:#4b5563; margin-bottom:6px;">
+        Você pode solicitar selfie e foto de documento para reforçar a identificação do signatário.
+      </div>
+
+      <div style="font-size:.8rem; color:#111827; display:flex; flex-direction:column; gap:4px;">
+        <label style="display:flex; align-items:center; gap:6px;">
+          <input type="checkbox" id="chkSelfie">
+          Exigir selfie do signatário
+        </label>
+        <label style="display:flex; align-items:center; gap:6px;">
+          <input type="checkbox" id="chkDoc">
+          Exigir foto de documento (frente)
+        </label>
+      </div>
+
     </div>
 
     <!-- COLUNA DIREITA: Destinatários -->
@@ -404,6 +426,13 @@
     fd.append('titulo', titulo);
     arquivos.forEach(f => fd.append('pdfs[]', f));
     fd.append('destinatarios_json', JSON.stringify(dests));
+
+    // novas flags
+    const requireSelfie = document.getElementById('chkSelfie').checked ? '1' : '0';
+    const requireDoc    = document.getElementById('chkDoc').checked ? '1' : '0';
+
+    fd.append('require_selfie', requireSelfie);
+    fd.append('require_doc_photo', requireDoc);
 
     const token = getToken();
 
