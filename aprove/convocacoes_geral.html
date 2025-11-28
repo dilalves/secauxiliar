@@ -72,14 +72,17 @@
       margin-bottom: 12px;
     }
 
-    /* Selects com largura mínima bonitinha */
-    .filters-row .filtro-usuario {
-      min-width: 200px;
-    }
-
     .filters-row button {
       flex: 0 0 auto;
     }
+
+    /* Força os selects da linha de filtros a ficarem lado a lado */
+    .filters-row .browser-default {
+      display: inline-block;  /* em vez de block */
+      width: auto;            /* tira o 100% do Materialize */
+      min-width: 200px;       /* mantém uma largura legal */
+    }
+
 
 
     @media (max-width:992px){
@@ -158,12 +161,11 @@
 
       <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
 
-        <!-- Busca por nome (linha inteira) -->
         <div class="search-box">
           <input id="search" type="text" placeholder="Filtrar por nome do aluno..." oninput="filtrarAprovacoes()">
         </div>
 
-        <!-- Filtros (todos na mesma linha, centralizados) -->
+        <!-- TODOS OS FILTROS NA MESMA LINHA -->
         <div class="filters-row">
           <select id="filtro-usuario" class="browser-default filtro-usuario" onchange="filtrarAprovacoes()">
             <option value="">Todos os usuários</option>
@@ -173,12 +175,11 @@
             <option value="">Todas as instituições</option>
           </select>
 
-          <!-- NOVO: filtro por ano de cadastro -->
           <select id="filtro-cadastro" class="browser-default filtro-usuario" onchange="filtrarAprovacoes()">
             <option value="">Todos os anos</option>
           </select>
 
-          <button class="btn blue darken-2" onclick="resetFiltros()">Limpar filtros</button>
+          <button class="btn blue darken-2" onclick="resetFiltros()">LIMPAR FILTROS</button>
         </div>
 
         <table class="striped highlight responsive-table" id="tabela-aprovacoes">
