@@ -687,8 +687,8 @@ async function abrirNovoAluno(){
   // Reset sessão
   document.getElementById('novo-codunidade').value = '';
   document.getElementById('novo-unidade').value = '';
-  document.getElementById('novo-cadastro').value = '2025';
-  document.getElementById('novo-listagem').value = '2026';
+  document.getElementById('novo-cadastro').value = '2025';                  //   <<<<------- ESSES 2 CAMPOS PRECISAM DE AJUSTES EM CADA ANO DE LISTAGEM
+  document.getElementById('novo-listagem').value = '2026';                  //   <<<<------- ESSES 2 CAMPOS PRECISAM DE AJUSTES EM CADA ANO DE LISTAGEM
   document.getElementById('tbody-novo').innerHTML = '';
 
   // Ao abrir, já cria uma linha
@@ -791,6 +791,14 @@ async function salvarLinhaNovo(idx){
   fd.append('codunidade', codunidade);
   fd.append('cadastro', cadastro);
   fd.append('listagem', listagem);
+
+  // 👇 NOVO: valor do checkbox (1 marcado, 0 desmarcado)
+  const excluir = document.querySelector('#excluir').checked ? 1 : 0;
+  fd.append('excluir', excluir);
+
+  // (garante também que o ID está indo)
+  fd.append('id', idAluno);
+
 
   try {
     const res = await fetch(API + 'alunos_insert.php', {
