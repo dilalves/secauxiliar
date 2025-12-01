@@ -311,7 +311,7 @@ function popularFiltroUsuarios(){
   });
 }
 
-/* ===== POPULA O SELECT DE INSTITUIÇÕES ===== */
+/* ===== POPULA O SELECT DE INSTITUIÇÕES (ORDENADO) ===== */
 function popularFiltroInstituicoes(){
   const select = document.getElementById('filtro-instituicao');
   select.innerHTML = '<option value="">Todas as instituições</option>';
@@ -320,13 +320,21 @@ function popularFiltroInstituicoes(){
 
   listaAprov.forEach(r => {
     const inst = (r.instituicao || '').trim();
-    if (inst && !instSet.has(inst)) {
+    if (inst) {
       instSet.add(inst);
-      const opt = document.createElement('option');
-      opt.value = inst;
-      opt.textContent = inst;
-      select.appendChild(opt);
     }
+  });
+
+  // transforma em array e ordena em ordem alfabética (pt-BR)
+  const instsOrdenadas = Array.from(instSet).sort((a, b) =>
+    a.localeCompare(b, 'pt-BR')
+  );
+
+  instsOrdenadas.forEach(inst => {
+    const opt = document.createElement('option');
+    opt.value = inst;
+    opt.textContent = inst;
+    select.appendChild(opt);
   });
 }
 
@@ -353,8 +361,8 @@ function popularFiltroCadastro(){
   });
 }
 
-/* ===== POPULA O SELECT DE UNIDADES (DINÂMICO) ===== */
-function popularFiltroUnidades(baseRows, unidadeSelecionada = ''){
+/* ===== POPULA O SELECT DE UNIDADES (DINÂMICO + ORDENADO) ===== */
+function popularFiltroUnidades(baseRows, unidadeSelecionada = '') {
   const select = document.getElementById('filtro-unidade');
   const valorAtual = unidadeSelecionada || select.value || '';
 
@@ -362,15 +370,25 @@ function popularFiltroUnidades(baseRows, unidadeSelecionada = ''){
 
   const uniSet = new Set();
 
+  // junta todas as unidades existentes nesse conjunto de linhas
   baseRows.forEach(r => {
     const uni = (r.unidade || '').trim();
-    if (uni && !uniSet.has(uni)) {
+    if (uni) {
       uniSet.add(uni);
-      const opt = document.createElement('option');
-      opt.value = uni;
-      opt.textContent = uni;
-      select.appendChild(opt);
     }
+  });
+
+  // ordena alfabeticamente (pt-BR)
+  const unidadesOrdenadas = Array.from(uniSet).sort((a, b) =>
+    a.localeCompare(b, 'pt-BR')
+  );
+
+  // cria as <option> na ordem certa
+  unidadesOrdenadas.forEach(uni => {
+    const opt = document.createElement('option');
+    opt.value = uni;
+    opt.textContent = uni;
+    select.appendChild(opt);
   });
 
   // se a unidade selecionada ainda existir na lista, mantém
@@ -380,6 +398,7 @@ function popularFiltroUnidades(baseRows, unidadeSelecionada = ''){
     select.value = '';
   }
 }
+
 
 
 
