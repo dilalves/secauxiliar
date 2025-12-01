@@ -568,8 +568,10 @@ async function abrirEdicao(id) {
       set('ddd', r.ddd);
       set('celular', r.celular);
       set('email', r.email);
-      set('excluir', r.excluir);
       set('listagem', r.listagem);
+
+      // 🔹 checkbox não usa .value, usa .checked
+      document.getElementById('excluir').checked = (r.excluir == 1);
 
       M.updateTextFields();
       modal.open();
@@ -587,6 +589,10 @@ async function abrirEdicao(id) {
 async function salvarEdicao() {
   const form = document.getElementById('form-editar');
   const fd = new FormData(form);
+
+  // 🔹 força o campo EXCLUIR a ser 0 ou 1
+  const excluirMarcado = document.getElementById('excluir').checked ? 1 : 0;
+  fd.set('excluir', excluirMarcado);
 
   try {
     const res = await fetch(API + 'alunos_update.php', {
