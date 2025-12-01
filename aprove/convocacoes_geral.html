@@ -179,6 +179,10 @@
             <option value="">Todos os anos</option>
           </select>
 
+          <select id="filtro-unidade" class="browser-default filtro-usuario" onchange="filtrarAprovacoes()">
+            <option value="">Todas as unidades</option>
+          </select>
+
           <button class="btn blue darken-2" onclick="resetFiltros()">LIMPAR FILTROS</button>
         </div>
 
@@ -251,6 +255,7 @@ async function carregarAprovacoes(){
       popularFiltroUsuarios();
       popularFiltroInstituicoes(); // <--- NOVO
       popularFiltroCadastro();      // <--- NOVO
+      popularFiltroUnidades();   // <--- NOVO
       renderTabela(listaAprov);
       msg.textContent = `Total: ${listaAprov.length} convocações encontradas.`;
     } else {
@@ -348,6 +353,26 @@ function popularFiltroCadastro(){
   });
 }
 
+/* ===== POPULA O SELECT DE UNIDADES ===== */
+function popularFiltroUnidades(){
+  const select = document.getElementById('filtro-unidade');
+  select.innerHTML = '<option value="">Todas as unidades</option>';
+
+  const uniSet = new Set();
+
+  listaAprov.forEach(r => {
+    const uni = (r.unidade || '').trim();
+    if (uni && !uniSet.has(uni)) {
+      uniSet.add(uni);
+      const opt = document.createElement('option');
+      opt.value = uni;
+      opt.textContent = uni;
+      select.appendChild(opt);
+    }
+  });
+}
+
+
 
 
 /* ===== FILTROS (NOME + USUÁRIO) ===== */
@@ -355,6 +380,7 @@ function filtrarAprovacoes(){
   const termo       = document.getElementById('search').value.trim().toLowerCase();
   const usuario     = document.getElementById('filtro-usuario').value;
   const instituicao = document.getElementById('filtro-instituicao').value;
+  const unidade     = document.getElementById('filtro-unidade').value;   // NOVO
   const anoCad      = document.getElementById('filtro-cadastro').value;
 
   let filtrados = listaAprov;
@@ -373,6 +399,10 @@ function filtrarAprovacoes(){
     filtrados = filtrados.filter(r => (r.instituicao || '') === instituicao);
   }
 
+  if (unidade){
+    filtrados = filtrados.filter(r => (r.unidade || '') === unidade);
+  }
+
   if (anoCad){
     filtrados = filtrados.filter(r => String(r.cadastro) === anoCad);
   }
@@ -388,12 +418,14 @@ function filtrarAprovacoes(){
 }
 
 
+
 /* ===== LIMPAR FILTROS ===== */
 function resetFiltros(){
   document.getElementById('search').value = '';
   document.getElementById('filtro-usuario').value = '';
-  document.getElementById('filtro-instituicao').value = ''; // <--- NOVO
-  document.getElementById('filtro-cadastro').value = '';   // <--- NOVO
+  document.getElementById('filtro-instituicao').value = '';
+  document.getElementById('filtro-unidade').value = '';     // <--- NOVO
+  document.getElementById('filtro-cadastro').value = '';
   renderTabela(listaAprov);
   document.getElementById('msg-status').textContent =
     `Total: ${listaAprov.length} aprovações encontradas.`;
