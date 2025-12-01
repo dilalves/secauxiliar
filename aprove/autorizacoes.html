@@ -180,32 +180,32 @@
         <ul id="fileList" class="collection" style="margin-top:12px"></ul>
       </div>
 
-        <!-- Card: Listagem de autorizações -->
-        <div class="card z-depth-0" style="padding:20px; margin-top:16px;">
+      <!-- Card: Listagem de autorizações -->
+      <div class="card z-depth-0" style="padding:20px; margin-top:16px;">
         <div style="display:flex; gap:12px; align-items:center; margin-bottom:8px;">
-            <h5 class="section-title" style="margin:0; flex:1;">Autorizações cadastradas</h5>
-            <div class="input-field" style="margin:0; width:340px; max-width:50%;">
+          <h5 class="section-title" style="margin:0; flex:1;">Autorizações cadastradas</h5>
+          <div class="input-field" style="margin:0; width:340px; max-width:50%;">
             <input id="buscaAut" type="text" placeholder="Buscar por CPF ou nome">
-            </div>
-            <button id="btnBuscarAut" class="btn">Buscar</button>
+          </div>
+          <button id="btnBuscarAut" class="btn">Buscar</button>
         </div>
 
         <table class="striped highlight responsive-table">
-            <thead>
-            <tr>
-                <th>CPF</th>
-                <th>Aluno</th>
-                <th>Flags</th>
-                <th>Arquivos</th>
-                <th>Atualizado</th>
-                <th>Ações</th>
-            </tr>
-            </thead>
-            <tbody id="tbody-auts"></tbody>
+          <thead>
+          <tr>
+            <th>CPF</th>
+            <th>Aluno</th>
+            <th>Flags</th>
+            <th>Arquivos</th>
+            <th>Atualizado</th>
+            <th>Ações</th>
+          </tr>
+          </thead>
+          <tbody id="tbody-auts"></tbody>
         </table>
 
         <div id="paginacao" class="right-align" style="margin-top:10px;"></div>
-        </div>
+      </div>
 
     </section>
 
@@ -224,8 +224,6 @@
   </div>
 </div>
 
-
-
 <script>
   // === API base
   const API = 'https://apisec.secauxiliar.com.br/aprove/';
@@ -234,14 +232,50 @@
   const $ = s => document.querySelector(s);
   const toast = msg => M.toast({html: msg});
   const digits = v => (v||'').replace(/\D+/g,'');
+
   function maskCPF(v){
     v = digits(v).slice(0,11);
     return v.replace(/(\d{3})(\d)/, '$1.$2')
             .replace(/(\d{3})(\d)/, '$1.$2')
             .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
   }
-  function fmtBytes(x){ const u=['B','KB','MB','GB']; let i=0,n=+x; while(n>=1024&&i<u.length-1){n/=1024;i++;} return `${n.toFixed(n<10&&i?1:0)} ${u[i]}`; }
-  function iconByMime(m){ if(!m) return 'insert_drive_file'; if(m.includes('pdf')) return 'picture_as_pdf'; if(m.includes('image/')) return 'image'; if(m.includes('word')) return 'description'; return 'insert_drive_file'; }
+
+  // >>> NOVO: validação real de CPF
+  function cpfValido(cpf){
+    cpf = digits(cpf);
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+    let soma = 0, resto;
+
+    // 1º dígito verificador
+    for (let i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpf[9])) return false;
+
+    // 2º dígito verificador
+    soma = 0;
+    for (let i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpf[10])) return false;
+
+    return true;
+  }
+
+  function fmtBytes(x){
+    const u=['B','KB','MB','GB'];
+    let i=0,n=+x;
+    while(n>=1024&&i<u.length-1){n/=1024;i++;}
+    return `${n.toFixed(n<10&&i?1:0)} ${u[i]}`;
+  }
+  function iconByMime(m){
+    if(!m) return 'insert_drive_file';
+    if(m.includes('pdf')) return 'picture_as_pdf';
+    if(m.includes('image/')) return 'image';
+    if(m.includes('word')) return 'description';
+    return 'insert_drive_file';
+  }
 
   // === Topbar
   async function carregarUsuario(){
@@ -275,12 +309,21 @@
   const cpfInfo = $('#cpfInfo');
 
   // Máscara CPF
-  cpfInput.addEventListener('input', () => { cpfInput.value = maskCPF(cpfInput.value); });
+  cpfInput.addEventListener('input', () => {
+    cpfInput.value = maskCPF(cpfInput.value);
+    cpfInput.classList.remove('invalid');
+  });
 
-  // Salvar/CRiar pasta
+  // Salvar / Criar pasta
   btnSalvar.addEventListener('click', async () => {
     const cpf = digits(cpfInput.value);
-    if (cpf.length !== 11) return toast('CPF inválido.');
+
+    if (!cpfValido(cpf)) {
+      toast('CPF inválido.');
+      cpfInput.classList.add('invalid');
+      return;
+    }
+    cpfInput.classList.remove('invalid');
 
     const payload = {
       cpf_aluno: cpf,
@@ -309,15 +352,29 @@
 
   // Dropzone
   dropzone.addEventListener('click', () => fileInput.click());
-  ['dragenter','dragover'].forEach(ev => dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add('dragover'); }));
-  ['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove('dragover'); }));
-  dropzone.addEventListener('drop', e => { if(e.dataTransfer.files?.length) uploadFiles(e.dataTransfer.files); });
-  fileInput.addEventListener('change', () => { if(fileInput.files?.length) uploadFiles(fileInput.files); });
+  ['dragenter','dragover'].forEach(ev => dropzone.addEventListener(ev, e => {
+    e.preventDefault(); dropzone.classList.add('dragover');
+  }));
+  ['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, e => {
+    e.preventDefault(); dropzone.classList.remove('dragover');
+  }));
+  dropzone.addEventListener('drop', e => {
+    if(e.dataTransfer.files?.length) uploadFiles(e.dataTransfer.files);
+  });
+  fileInput.addEventListener('change', () => {
+    if(fileInput.files?.length) uploadFiles(fileInput.files);
+  });
 
   // Upload com progresso (via XHR)
   async function uploadFiles(files){
     const cpf = digits(cpfInput.value);
-    if (cpf.length !== 11){ toast('CPF inválido.'); return; }
+
+    if (!cpfValido(cpf)) {
+      toast('CPF inválido.');
+      cpfInput.classList.add('invalid');
+      return;
+    }
+    cpfInput.classList.remove('invalid');
 
     const fd = new FormData();
     fd.append('cpf_aluno', cpf);
@@ -338,6 +395,7 @@
     }catch(e){ toast('Erro no upload: '+e.message); }
     finally{ progressWrap.style.display = 'none'; fileInput.value=''; }
   }
+
   function xhrUpload(url, formData, onProgress){
     return new Promise((resolve, reject)=>{
       const xhr = new XMLHttpRequest();
@@ -345,7 +403,10 @@
       xhr.withCredentials = true;
       xhr.upload.onprogress = e => { if(onProgress) onProgress(e.loaded, e.total); };
       xhr.onload = () => {
-        try{ const j = JSON.parse(xhr.responseText||'{}'); j.ok ? resolve(j) : reject(new Error(j.error||'Falha no upload')); }
+        try{
+          const j = JSON.parse(xhr.responseText||'{}');
+          j.ok ? resolve(j) : reject(new Error(j.error||'Falha no upload'));
+        }
         catch(err){ reject(err); }
       };
       xhr.onerror = () => reject(new Error('Erro de rede'));
@@ -353,7 +414,7 @@
     });
   }
 
-  // Listagem
+  // Listagem de arquivos por CPF
   async function loadFilesByCPF(cpf){
     try{
       const r = await fetch(API+`list_files.php?cpf_aluno=${cpf}`, {credentials:'include'});
@@ -373,38 +434,38 @@
       cardUpload.style.display = '';
     }catch(e){ toast('Erro ao listar: '+e.message); }
   }
-    function renderFiles(files){
+
+  function renderFiles(files){
     fileList.innerHTML = '';
     if(!files.length){
-        fileList.innerHTML = '<li class="collection-item">Nenhum arquivo enviado ainda.</li>';
-        return;
+      fileList.innerHTML = '<li class="collection-item">Nenhum arquivo enviado ainda.</li>';
+      return;
     }
     files.forEach(f=>{
-        const li = document.createElement('li');
-        li.className = 'collection-item avatar';
-        const url = API + 'download_file.php?id=' + f.id; // abre inline p/ PDF/JPG/PNG
-        li.innerHTML = `
+      const li = document.createElement('li');
+      li.className = 'collection-item avatar';
+      const url = API + 'download_file.php?id=' + f.id;
+      li.innerHTML = `
         <i class="material-icons circle">${iconByMime(f.mime_type)}</i>
         <span class="title" style="font-weight:600">
-            <a href="${url}" target="_blank" style="text-decoration:none">${f.nome_original}</a>
+          <a href="${url}" target="_blank" style="text-decoration:none">${f.nome_original}</a>
         </span>
         <p class="grey-text">${f.mime_type} • ${fmtBytes(f.tamanho_bytes)}<br>
-            <small>Enviado em ${new Date(f.uploaded_at.replace(' ','T')).toLocaleString()}</small>
+          <small>Enviado em ${new Date(f.uploaded_at.replace(' ','T')).toLocaleString()}</small>
         </p>
         <div class="secondary-content" style="display:flex;gap:8px">
-            <a class="btn-flat tooltipped" data-tooltip="Abrir em nova aba" href="${url}" target="_blank">
+          <a class="btn-flat tooltipped" data-tooltip="Abrir em nova aba" href="${url}" target="_blank">
             <i class="material-icons">open_in_new</i>
-            </a>
-            <a class="btn-flat tooltipped" data-tooltip="Baixar" href="${url}" download>
+          </a>
+          <a class="btn-flat tooltipped" data-tooltip="Baixar" href="${url}" download>
             <i class="material-icons">download</i>
-            </a>
+          </a>
         </div>
-        `;
-        fileList.appendChild(li);
+      `;
+      fileList.appendChild(li);
     });
     M.Tooltip.init(document.querySelectorAll('.tooltipped'));
-    }
-
+  }
 
   // Init
   document.addEventListener('DOMContentLoaded', ()=>{
@@ -412,52 +473,52 @@
     carregarUsuario();
   });
 
-// ======= LISTAGEM =======
-const tbodyAuts = document.getElementById('tbody-auts');
-const buscaAut  = document.getElementById('buscaAut');
-const btnBuscarAut = document.getElementById('btnBuscarAut');
-const pagDiv    = document.getElementById('paginacao');
+  // ======= LISTAGEM =======
+  const tbodyAuts = document.getElementById('tbody-auts');
+  const buscaAut  = document.getElementById('buscaAut');
+  const btnBuscarAut = document.getElementById('btnBuscarAut');
+  const pagDiv    = document.getElementById('paginacao');
 
-let AUT_PAGE = 1;
-const AUT_PAGESIZE = 20;
+  let AUT_PAGE = 1;
+  const AUT_PAGESIZE = 20;
 
-btnBuscarAut.addEventListener('click', ()=>{ AUT_PAGE=1; carregarLista(); });
-buscaAut.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ AUT_PAGE=1; carregarLista(); }});
+  btnBuscarAut.addEventListener('click', ()=>{ AUT_PAGE=1; carregarLista(); });
+  buscaAut.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ AUT_PAGE=1; carregarLista(); }});
 
-async function carregarLista() {
-  tbodyAuts.innerHTML = '<tr><td colspan="6" class="center grey-text">Carregando...</td></tr>';
-  pagDiv.innerHTML = '';
+  async function carregarLista() {
+    tbodyAuts.innerHTML = '<tr><td colspan="6" class="center grey-text">Carregando...</td></tr>';
+    pagDiv.innerHTML = '';
 
-  const q = encodeURIComponent(buscaAut.value.trim());
-  const url = API+`autorizacoes_list.php?q=${q}&page=${AUT_PAGE}&pagesize=${AUT_PAGESIZE}`;
+    const q = encodeURIComponent(buscaAut.value.trim());
+    const url = API+`autorizacoes_list.php?q=${q}&page=${AUT_PAGE}&pagesize=${AUT_PAGESIZE}`;
 
-  try{
-    const r = await fetch(url, {credentials:'include'});
-    const j = await r.json();
-    if(!j.ok) throw new Error(j.error || 'Falha ao listar');
+    try{
+      const r = await fetch(url, {credentials:'include'});
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.error || 'Falha ao listar');
 
-    renderLista(j.rows || []);
-    renderPaginacao(j.page, j.pagesize, j.total);
-  }catch(e){
-    tbodyAuts.innerHTML = `<tr><td colspan="6" class="center red-text">Erro: ${e.message}</td></tr>`;
-  }
-}
-
-function renderLista(rows){
-  tbodyAuts.innerHTML = '';
-  if(!rows.length){
-    tbodyAuts.innerHTML = '<tr><td colspan="6" class="center">Nenhuma autorização encontrada.</td></tr>';
-    return;
+      renderLista(j.rows || []);
+      renderPaginacao(j.page, j.pagesize, j.total);
+    }catch(e){
+      tbodyAuts.innerHTML = `<tr><td colspan="6" class="center red-text">Erro: ${e.message}</td></tr>`;
+    }
   }
 
-  for (const r of rows){
-    const flags = [
-      r.foto ? 'Foto' : null,
-      r.entrevista ? 'Entrev.' : null,
-      r.publicidade ? 'Publ.' : null
-    ].filter(Boolean).join(', ') || '—';
+  function renderLista(rows){
+    tbodyAuts.innerHTML = '';
+    if(!rows.length){
+      tbodyAuts.innerHTML = '<tr><td colspan="6" class="center">Nenhuma autorização encontrada.</td></tr>';
+      return;
+    }
 
-    const tr = document.createElement('tr');
+    for (const r of rows){
+      const flags = [
+        r.foto ? 'Foto' : null,
+        r.entrevista ? 'Entrev.' : null,
+        r.publicidade ? 'Publ.' : null
+      ].filter(Boolean).join(', ') || '—';
+
+      const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${maskCPF(r.cpf_aluno)}</td>
         <td>${r.aluno_nome || '—'}</td>
@@ -465,35 +526,33 @@ function renderLista(rows){
         <td>${r.arquivos}</td>
         <td>${(r.updated_at || r.created_at || '').replace('T',' ').slice(0,19) || '—'}</td>
         <td style="display:flex; gap:6px;">
-            <button class="btn-small blue" data-abrir="${r.cpf_aluno}">Abrir</button>
-            <button class="btn-small teal" data-ver="${r.id}">Ver</button>
-            <a class="btn-small grey" target="_blank"
-            href="${API}download_zip.php?autorizacao_id=${r.id}">ZIP</a>
+          <button class="btn-small blue" data-abrir="${r.cpf_aluno}">Abrir</button>
+          <button class="btn-small teal" data-ver="${r.id}">Ver</button>
+          <a class="btn-small grey" target="_blank"
+             href="${API}download_zip.php?autorizacao_id=${r.id}">ZIP</a>
         </td>
-        `;
-    tbodyAuts.appendChild(tr);
-  }
+      `;
+      tbodyAuts.appendChild(tr);
+    }
 
-  // ação Abrir -> joga o CPF lá em cima e carrega a autorização/arquivos
-  tbodyAuts.querySelectorAll('[data-abrir]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const cpf = btn.getAttribute('data-abrir');
-      cpfInput.value = maskCPF(cpf);
-      M.updateTextFields();
-      // carrega flags/arquivos do CPF
-      await loadFilesByCPF(cpf);
-      // sobe a página pro topo
-      window.scrollTo({top:0, behavior:'smooth'});
-      // garante que cardUpload apareça
-      cardUpload.style.display = '';
-      cpfInfo.style.display = '';
-      cpfInfo.textContent = maskCPF(cpf);
+    // ação Abrir -> joga o CPF lá em cima e carrega a autorização/arquivos
+    tbodyAuts.querySelectorAll('[data-abrir]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const cpf = btn.getAttribute('data-abrir');
+        cpfInput.value = maskCPF(cpf);
+        cpfInput.classList.remove('invalid');
+        M.updateTextFields();
+        await loadFilesByCPF(cpf);
+        window.scrollTo({top:0, behavior:'smooth'});
+        cardUpload.style.display = '';
+        cpfInfo.style.display = '';
+        cpfInfo.textContent = maskCPF(cpf);
+      });
     });
-  });
 
-  // ação VER -> abre modal e lista arquivos com links diretos
+    // ação VER -> abre modal e lista arquivos
     tbodyAuts.querySelectorAll('[data-ver]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
+      btn.addEventListener('click', async ()=>{
         const autId = btn.getAttribute('data-ver');
         const ul = document.getElementById('lista-arqs-modal');
         ul.innerHTML = '<li class="collection-item grey-text center">Carregando...</li>';
@@ -503,69 +562,77 @@ function renderLista(rows){
         modal.open();
 
         try{
-        const r = await fetch(API+`list_files.php?autorizacao_id=${autId}`, {credentials:'include'});
-        const j = await r.json();
-        if(!j.ok) throw new Error(j.error||'Falha ao listar');
+          const r = await fetch(API+`list_files.php?autorizacao_id=${autId}`, {credentials:'include'});
+          const j = await r.json();
+          if(!j.ok) throw new Error(j.error||'Falha ao listar');
 
-        const files = j.files||[];
-        if(!files.length){ ul.innerHTML = '<li class="collection-item center">Sem arquivos.</li>'; return; }
+          const files = j.files||[];
+          if(!files.length){
+            ul.innerHTML = '<li class="collection-item center">Sem arquivos.</li>';
+            return;
+          }
 
-        ul.innerHTML = '';
-        files.forEach(f=>{
+          ul.innerHTML = '';
+          files.forEach(f=>{
             const url = API + 'download_file.php?id=' + f.id;
             const li = document.createElement('li');
             li.className = 'collection-item';
             li.innerHTML = `
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
                 <div>
-                <div style="font-weight:600"><a href="${url}" target="_blank" rel="noopener">${f.nome_original}</a></div>
-                <div class="grey-text">${f.mime_type} • ${fmtBytes(f.tamanho_bytes)}</div>
+                  <div style="font-weight:600">
+                    <a href="${url}" target="_blank" rel="noopener">${f.nome_original}</a>
+                  </div>
+                  <div class="grey-text">${f.mime_type} • ${fmtBytes(f.tamanho_bytes)}</div>
                 </div>
                 <div>
-                <a class="btn-flat" href="${url}" target="_blank" rel="noopener" title="Abrir"><i class="material-icons">open_in_new</i></a>
-                <a class="btn-flat" href="${url}" download title="Baixar"><i class="material-icons">download</i></a>
+                  <a class="btn-flat" href="${url}" target="_blank" rel="noopener" title="Abrir">
+                    <i class="material-icons">open_in_new</i>
+                  </a>
+                  <a class="btn-flat" href="${url}" download title="Baixar">
+                    <i class="material-icons">download</i>
+                  </a>
                 </div>
-            </div>`;
+              </div>`;
             ul.appendChild(li);
-        });
+          });
         }catch(e){
-        ul.innerHTML = `<li class="collection-item red-text">Erro: ${e.message}</li>`;
+          ul.innerHTML = `<li class="collection-item red-text">Erro: ${e.message}</li>`;
         }
+      });
     });
-    });
-
-}
-
-function renderPaginacao(page, pagesize, total){
-  const pages = Math.max(1, Math.ceil(total / pagesize));
-  if (pages <= 1){ pagDiv.innerHTML = ''; return; }
-
-  let html = `<span class="grey-text" style="margin-right:10px">Total: ${total}</span>`;
-  const prevDis = page<=1 ? 'disabled' : '';
-  const nextDis = page>=pages ? 'disabled' : '';
-
-  html += `<button class="btn-flat ${prevDis}" id="pagPrev">Anterior</button>`;
-  html += `<span style="margin:0 8px">Página ${page}/${pages}</span>`;
-  html += `<button class="btn-flat ${nextDis}" id="pagNext">Próxima</button>`;
-  pagDiv.innerHTML = html;
-
-  const prev = document.getElementById('pagPrev');
-  const next = document.getElementById('pagNext');
-  if (prev && !prev.classList.contains('disabled')) {
-    prev.addEventListener('click', ()=>{ AUT_PAGE=Math.max(1, page-1); carregarLista(); });
   }
-  if (next && !next.classList.contains('disabled')) {
-    next.addEventListener('click', ()=>{ AUT_PAGE=page+1; carregarLista(); });
+
+  function renderPaginacao(page, pagesize, total){
+    const pages = Math.max(1, Math.ceil(total / pagesize));
+    if (pages <= 1){ pagDiv.innerHTML = ''; return; }
+
+    let html = `<span class="grey-text" style="margin-right:10px">Total: ${total}</span>`;
+    const prevDis = page<=1 ? 'disabled' : '';
+    const nextDis = page>=pages ? 'disabled' : '';
+
+    html += `<button class="btn-flat ${prevDis}" id="pagPrev">Anterior</button>`;
+    html += `<span style="margin:0 8px">Página ${page}/${pages}</span>`;
+    html += `<button class="btn-flat ${nextDis}" id="pagNext">Próxima</button>`;
+    pagDiv.innerHTML = html;
+
+    const prev = document.getElementById('pagPrev');
+    const next = document.getElementById('pagNext');
+    if (prev && !prev.classList.contains('disabled')) {
+      prev.addEventListener('click', ()=>{ AUT_PAGE=Math.max(1, page-1); carregarLista(); });
+    }
+    if (next && !next.classList.contains('disabled')) {
+      next.addEventListener('click', ()=>{ AUT_PAGE=page+1; carregarLista(); });
+    }
   }
-}
 
-// carrega a lista na abertura
-document.addEventListener('DOMContentLoaded', carregarLista);
+  // carrega a lista na abertura
+  document.addEventListener('DOMContentLoaded', carregarLista);
 
-
-// garantir inicialização do modal
-document.addEventListener('DOMContentLoaded', ()=>{ M.Modal.init(document.querySelectorAll('.modal')); });
-
+  // garantir inicialização do modal
+  document.addEventListener('DOMContentLoaded', ()=>{
+    M.Modal.init(document.querySelectorAll('.modal'));
+  });
 </script>
 </body>
 </html>
