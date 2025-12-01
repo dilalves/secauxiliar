@@ -259,7 +259,35 @@ async function carregarUsuario() {
     document.getElementById('unitLabel').textContent = '— Erro de conexão';
   }
 }
-document.addEventListener('DOMContentLoaded', carregarUsuario);
+
+document.addEventListener('DOMContentLoaded', () => {
+  carregarUsuario();
+  carregarKpis();
+});
+
+async function carregarKpis() {
+  const el = document.getElementById('kpiGeral');
+  if (!el) return;
+
+  el.textContent = '…'; // loading
+
+  try {
+    const res = await fetch(API + 'painel_kpi_geral.php', {
+      credentials: 'include'
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      el.textContent = (data.total ?? 0).toLocaleString('pt-BR');
+    } else {
+      el.textContent = '—';
+      console.error(data.error || 'Falha ao carregar KPI Geral');
+    }
+  } catch (e) {
+    el.textContent = '—';
+    console.error('Erro KPI Geral:', e);
+  }
+}
 
 </script>
 </body>
