@@ -590,21 +590,29 @@ async function abrirModalAutorizacao(cpf) {
       const li = document.createElement('li');
       li.className = 'collection-item';
 
-      const url = arq.caminho_relativo || '#';
+      arquivos.forEach(arq => {
+        const li = document.createElement('li');
+        li.className = 'collection-item';
 
-      li.innerHTML = `
-        <div>
-          <a href="${url}" target="_blank">
-            ${escapeHtml(arq.nome_original || '')}
-          </a>
-          <span class="grey-text text-darken-1" style="display:block; font-size:12px;">
-            ${escapeHtml(arq.mime_type || '')} · ${arq.tamanho_kb || 0} KB
-          </span>
-          <a href="${url}" target="_blank" class="secondary-content" title="Abrir">
-            <i class="material-icons">open_in_new</i>
-          </a>
-        </div>
-      `;
+        // monta o link via download_file.php, igual à tela de Autorizações
+        const url = API + 'download_file.php?id=' + encodeURIComponent(arq.id);
+
+        li.innerHTML = `
+            <div>
+            <a href="${url}" target="_blank">
+                ${escapeHtml(arq.nome_original || '')}
+            </a>
+            <span class="grey-text text-darken-1" style="display:block; font-size:12px;">
+                ${escapeHtml(arq.mime_type || '')} · ${arq.tamanho_kb || 0} KB
+            </span>
+            <a href="${url}" target="_blank" class="secondary-content" title="Abrir">
+                <i class="material-icons">open_in_new</i>
+            </a>
+            </div>
+        `;
+        ul.appendChild(li);
+        });
+
       ul.appendChild(li);
     });
 
