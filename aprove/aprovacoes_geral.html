@@ -284,7 +284,7 @@ async function carregarAprovacoes(){
 }
 
 /* ===== MONTA A TABELA NA TELA ===== */
-function renderTabela(rows){
+function renderTabela(rows) {
   const tbody = document.querySelector('#tabela-aprovacoes tbody');
   tbody.innerHTML = '';
 
@@ -294,27 +294,28 @@ function renderTabela(rows){
     }[s] || s));
   }
 
-  const tagAut = (row.tem_autorizacao == 1 || row.tem_autorizacao === '1')
-    ? `<span class="chip-aut" data-cpf="${row.cpf}">Aut</span>`
-    : '';
-
   rows.forEach(r => {
+    const tagAut = (r.tem_autorizacao == 1 || r.tem_autorizacao === '1')
+      ? `<span class="chip-aut" data-cpf="${r.cpf}">Aut</span>`
+      : '';
+
     const tr = document.createElement('tr');
     tr.innerHTML = `    
-      <td>${escapeHtml(row.nome_aluno)} ${tagAut}</td>
-      <td>${r.serie}</td>
-      <td>${r.unidade}</td>
-      <td>${r.cadastro}</td>
-      <td>${r.curso}</td>
-      <td>${r.instituicao}</td>
-      <td>${r.listagem}</td>
-      <td>${r.colocacao}</td>
-      <td>${r.chamada}</td>
-      <td>${r.usuario_nome}</td>    
+      <td>${escapeHtml(r.nome_aluno)} ${tagAut}</td>
+      <td>${r.serie ?? ''}</td>
+      <td>${r.unidade ?? ''}</td>
+      <td>${r.cadastro ?? ''}</td>
+      <td>${r.curso ?? ''}</td>
+      <td>${r.instituicao ?? ''}</td>
+      <td>${r.listagem ?? ''}</td>
+      <td>${r.colocacao ?? ''}</td>
+      <td>${r.chamada ?? ''}</td>
+      <td>${r.usuario_nome ?? ''}</td>    
     `;
     tbody.appendChild(tr);
   });
 }
+
 
 /* ===== POPULA O SELECT DE USUÁRIOS ===== */
 function popularFiltroUsuarios(){
