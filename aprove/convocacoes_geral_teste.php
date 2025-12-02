@@ -8,6 +8,9 @@
 
   <!-- Materialize -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
   <style>
@@ -180,9 +183,9 @@
     </header>
 
     <section class="page">
-      <h4 style="color:#0b3b78; font-weight:600;">Aprovações cadastradas</h4>
+      <h4 style="color:#0b3b78; font-weight:600;">Convocações para Segunda Fase cadastradas</h4>
       <p class="grey-text text-darken-1">
-        Visualize todas as aprovações cadastradas, com filtros por aluno e por usuário que lançou.
+        Visualize todas as convocações cadastradas, com filtros por aluno e por usuário que lançou.
       </p>
 
       <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
@@ -273,7 +276,7 @@ async function carregarAprovacoes(){
   msg.textContent = 'Carregando aprovações...';
 
   try {
-    const res = await fetch(API + 'aprovacoes_list_geral.php', { credentials:'include' });
+    const res = await fetch(API + 'aprovacoes_list_convoc_geral.php', { credentials:'include' });
     const data = await res.json();
 
     if (data.ok && data.rows && data.rows.length){
@@ -604,24 +607,24 @@ async function abrirModalAutorizacao(cpf) {
         const li = document.createElement('li');
         li.className = 'collection-item';
 
-        // monta o link via download_file.php, igual à tela de Autorizações
         const url = API + 'download_file.php?id=' + encodeURIComponent(arq.id);
 
         li.innerHTML = `
-            <div>
+          <div>
             <a href="${url}" target="_blank">
-                ${escapeHtml(arq.nome_original || '')}
+              ${escapeHtml(arq.nome_original || '')}
             </a>
             <span class="grey-text text-darken-1" style="display:block; font-size:12px;">
-                ${escapeHtml(arq.mime_type || '')} · ${arq.tamanho_kb || 0} KB
+              ${escapeHtml(arq.mime_type || '')} · ${arq.tamanho_kb || 0} KB
+              ${arq.uploaded_em ? ' · enviado em ' + escapeHtml(arq.uploaded_em) : ''}
             </span>
             <a href="${url}" target="_blank" class="secondary-content" title="Abrir">
-                <i class="material-icons">open_in_new</i>
+              <i class="material-icons">open_in_new</i>
             </a>
-            </div>
+          </div>
         `;
         ul.appendChild(li);
-        });
+      });
 
       ul.appendChild(li);
     });
