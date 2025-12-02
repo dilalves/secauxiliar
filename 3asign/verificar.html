@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>3aSign - Verificador de autenticidade</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* mesmo layout bonito que você já viu no PHP,
+       só que aqui é puro HTML+CSS */
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b1230;
+      color: #111827;
+    }
+    .page { min-height:100vh; display:flex; }
+    .left {
+      flex:1; padding:40px 32px; color:#f9fafb;
+      background: radial-gradient(circle at top left,#1e3a8a,#020617);
+      display:flex; flex-direction:column; justify-content:center;
+    }
+    .left h1 { font-size:28px; margin-bottom:16px; }
+    .left p { font-size:15px; margin-bottom:16px; max-width:420px; line-height:1.5; }
+    .left ul { margin-top:8px; margin-left:20px; font-size:14px; }
+
+    .right {
+      flex:1.3; padding:32px;
+      display:flex; justify-content:center; align-items:flex-start;
+      background:#020617;
+    }
+    .card {
+      width:100%; max-width:640px; background:#fff;
+      border-radius:16px; padding:24px 24px 16px;
+      box-shadow:0 15px 35px rgba(15,23,42,0.35);
+    }
+    .card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+    .card-header h2{font-size:20px;margin-bottom:4px;}
+    .card-header small{color:#6b7280;font-size:12px;}
+    .badge{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;display:inline-block;}
+    .badge-ok{background:#dcfce7;color:#166534;}
+    .badge-pending{background:#fef9c3;color:#854d0e;}
+    .badge-cancel{background:#fee2e2;color:#991b1b;}
+
+    .section-title{font-size:14px;font-weight:600;margin-top:18px;margin-bottom:4px;}
+    dl{font-size:13px;color:#374151;}
+    dt{font-weight:600;margin-top:8px;}
+    dd{margin-left:0;}
+
+    .doc-buttons{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;}
+    .btn{border-radius:999px;border:1px solid #d1d5db;padding:6px 14px;font-size:13px;background:#f9fafb;text-decoration:none;color:#111827;}
+    .btn:hover{background:#e5e7eb;}
+
+    .signers{margin-top:8px;border-radius:10px;border:1px solid #e5e7eb;padding:8px 10px;max-height:210px;overflow:auto;}
+    .signer{border-bottom:1px solid #e5e7eb;padding:6px 0;font-size:12px;}
+    .signer:last-child{border-bottom:none;}
+    .signer strong{display:block;}
+
+    .footer-note{margin-top:14px;font-size:11px;color:#6b7280;border-top:1px solid #e5e7eb;padding-top:8px;}
+
+    .alert{padding:16px;border-radius:12px;background:#f9fafb;border:1px solid #e5e7eb;font-size:14px;}
+    .alert-error{background:#fef2f2;border-color:#fecaca;color:#991b1b;}
+
+    @media(max-width:900px){
+      .page{flex-direction:column;}
+      .left{padding:24px 20px;align-items:flex-start;}
+      .right{padding:20px;}
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="left">
+    <div style="margin-bottom:20px;">
+      <span style="display:inline-block;font-weight:800;font-size:22px;">3aSign</span>
+      <span style="display:block;font-size:12px;opacity:.8;">Assinatura digital 3A Sistemas</span>
+    </div>
+    <h1>Verificador de autenticidade</h1>
+    <p>
+      Verifique, de maneira rápida e segura, se este documento foi realmente assinado via 3aSign
+      e se não sofreu alterações após a assinatura.
+    </p>
+    <ul>
+      <li>Valide documentos sem fricção</li>
+      <li>Mitigue riscos de falsificação de documentos</li>
+      <li>Previna fraudes por manipulação do arquivo assinado</li>
+    </ul>
+  </div>
+
+  <div class="right">
+    <div class="card" id="card">
+      <div id="loading">Carregando informações do documento...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const params = new URLSearchParams(location.search);
+  const env = params.get('env');
+
+  const card = document.getElementById('card');
+  const loading = document.getElementById('loading');
+
+  if (!env) {
+    card.innerHTML = `
+      <div class="card-header">
+        <div>
+          <h2>Documento não encontrado</h2>
+          <small>Verifique se o link está completo ou se o QRCode é válido.</small>
+        </div>
+      </div>`;
+    return;
+  }
+
+  fetch(`https://apisec.secauxiliar.com.br/digisign/verify.php?env=${encodeURIComponent(env)}`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) {
+        card.innerHTML = `
+          <div class="card-header">
+            <div>
+              <h2>Documento não encontrado</h2>
+              <small>Verifique se o link está completo ou se o QRCode é válido.</small>
+            </div>
+          </div>`;
+        return;
+      }
+
+      const env = data.envelope;
+      const doc = data.documento;
+      const dests = data.destinatarios || [];
+
+      const statusClass =
+        env.status === 'completed' ? 'badge-ok' :
+        env.status === 'voided'    ? 'badge-cancel' :
+                                     'badge-pending';
+
+      const created = env.created_at || '';
+      const final   = env.final_at   || '';
+
+      const urlOriginal = doc && doc.caminho ? doc.caminho : null;
+      const urlFinal    = env.final_pdf || null;
+
+      card.innerHTML = `
+        <div class="card-header">
+          <div>
+            <h2>Verificador de autenticidade</h2>
+            <small>${final || created || ''}</small>
+          </div>
+          <span class="badge ${statusClass}">${env.status_label}</span>
+        </div>
+
+        <div>
+          <div class="section-title">Envelope</div>
+          <dl>
+            <dt>Código interno:</dt>
+            <dd>#${env.id}</dd>
+
+            ${env.titulo ? `<dt>Título:</dt><dd>${env.titulo}</dd>` : ''}
+
+            ${created ? `<dt>Data de criação:</dt><dd>${created}</dd>` : ''}
+
+            ${final ? `<dt>Data de conclusão:</dt><dd>${final}</dd>` : ''}
+          </dl>
+
+          <div class="section-title">Documento</div>
+          <dl>
+            <dt>Download do documento:</dt>
+            <dd class="doc-buttons">
+              ${urlOriginal ? `<a class="btn" href="${urlOriginal}" target="_blank">Original</a>` : ''}
+              ${urlFinal    ? `<a class="btn" href="${urlFinal}" target="_blank">Assinado</a>` : ''}
+            </dd>
+          </dl>
+
+          ${(doc && (doc.sha256 || env.final_sha256)) ? `
+            <div class="section-title">Hash do documento (SHA256)</div>
+            <dl>
+              ${doc.sha256 ? `<dt>Arquivo original:</dt><dd><code>${doc.sha256}</code></dd>` : ''}
+              ${env.final_sha256 ? `<dt>Arquivo assinado:</dt><dd><code>${env.final_sha256}</code></dd>` : ''}
+            </dl>
+          ` : ''}
+
+          <div class="section-title">Assinaturas registradas</div>
+          <div class="signers">
+            ${dests.length === 0 ? `
+              <div class="signer">Nenhum destinatário localizado para este envelope.</div>
+            ` : dests.map(d => `
+              <div class="signer">
+                <strong>${d.nome}</strong>
+                <span>${d.email}${d.telefone ? ' · ' + d.telefone : ''}</span><br>
+                ${d.signed_at ? `<span>Assinado em ${d.signed_at}</span><br>` : '<span>Ainda não assinado</span><br>'}
+                ${(d.ip || d.user_agent) ? `
+                  <span>IP: ${d.ip || '-'}</span><br>
+                  <span>Dispositivo: ${d.user_agent || '-'}</span>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="footer-note">
+            Esta é uma assinatura eletrônica baseada em evidências técnicas
+            (e-mail, IP, data e hora, dispositivo e trilha de eventos).
+            Não se trata de certificado digital ICP-Brasil.
+          </div>
+        </div>
+      `;
+    })
+    .catch(err => {
+      console.error(err);
+      card.innerHTML = `
+        <div class="alert alert-error">
+          Ocorreu um erro ao carregar as informações deste documento.
+          Tente novamente em alguns instantes.
+        </div>`;
+    });
+})();
+</script>
+</body>
+</html>
