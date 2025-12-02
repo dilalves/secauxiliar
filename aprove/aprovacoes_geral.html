@@ -99,6 +99,16 @@
       opacity: .85;
     }
 
+    /* Remove a borda da lista de arquivos dentro da modal */
+    #modal-autorizacao .collection {
+    border: none;
+    box-shadow: none;
+    }
+
+    #modal-autorizacao .collection .collection-item {
+    border-bottom: 1px solid #e0e0e0;
+    }
+
 
 
     @media (max-width:992px){
@@ -296,7 +306,7 @@ function renderTabela(rows) {
 
   rows.forEach(r => {
     const tagAut = (r.tem_autorizacao == 1 || r.tem_autorizacao === '1')
-      ? `<span class="chip-aut" data-cpf="${r.cpf}">Aut</span>`
+      ? `<span class="chip-aut" data-cpf="${r.cpf}">Aut. Imagem</span>`
       : '';
 
     const tr = document.createElement('tr');
@@ -499,8 +509,156 @@ function resetFiltros(){
 document.addEventListener('DOMContentLoaded', () => {
   carregarUsuario();
   carregarAprovacoes();
+
+  // inicializa todas as modais
+  const elems = document.querySelectorAll('.modal');
+  M.Modal.init(elems);
+
+  // clique no "Aut" dentro da tabela
+  const tabela = document.getElementById('tabela-aprovacoes');
+  tabela.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip-aut');
+    if (!chip) return;
+
+    const cpf = chip.dataset.cpf;
+    abrirModalAutorizacao(cpf);
+  });
 });
 
+
+
+
+/* ==== script para modal - autoriações === */
+function escapeHtml(str) {
+  return (str || '').replace(/[&<>"']/g, s => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[s] || s));
+}
+
+function formatCpf(cpf) {
+  const digits = (cpf || '').replace(/\D+/g, '');
+  if (digits.length !== 11) return cpf;
+  return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+async function abrirModalAutorizacao(cpf) {
+  const modalElem = document.getElementById('modal-autorizacao');
+  const modal = M.Modal.getInstance(modalElem);
+  const ul = document.getElementById('aut-arquivos');
+
+  // estado inicial
+  document.getElementById('aut-nome').textContent = 'Carregando...';
+  document.getElementById('aut-cpf').textContent = formatCpf(cpf);
+  document.getElementById('aut-data').textContent = '';
+  document.getElementById('aut-obs').textContent = '';
+  document.getElementById('aut-foto').textContent = '';
+  document.getElementById('aut-entrevista').textContent = '';
+  document.getElementById('aut-publicidade').textContent = '';
+  ul.innerHTML = '<li class="collection-item">Buscando arquivos...</li>';
+
+  modal.open();
+
+  try {
+    const resp = await fetch(API + 'autorizacao_detalhe.php?cpf=' + encodeURIComponent(cpf), {
+      credentials: 'include'  // igual aos outros endpoints do Aprove
+    });
+    const data = await resp.json();
+
+    if (!data.ok) {
+      document.getElementById('aut-nome').textContent = 'Nenhuma autorização encontrada';
+      ul.innerHTML = '';
+      return;
+    }
+
+    const cab = data.cabecalho;
+    const arquivos = data.arquivos || [];
+
+    // cabeçalho
+    document.getElementById('aut-nome').textContent = cab.nome_aluno || '';
+    document.getElementById('aut-cpf').textContent = formatCpf(cab.cpf_aluno || cpf);
+    document.getElementById('aut-data').textContent = cab.data_cadastro || '';
+    document.getElementById('aut-obs').textContent = cab.observacao || '';
+
+    // flags 0/1 -> Sim / Não
+    document.getElementById('aut-foto').textContent =
+      cab.foto == 1 ? 'Sim' : 'Não';
+
+    document.getElementById('aut-entrevista').textContent =
+      cab.entrevista == 1 ? 'Sim' : 'Não';
+
+    document.getElementById('aut-publicidade').textContent =
+      cab.publicidade == 1 ? 'Sim' : 'Não';
+
+    // arquivos
+    if (!arquivos.length) {
+      ul.innerHTML = '<li class="collection-item">Nenhum arquivo cadastrado.</li>';
+      return;
+    }
+
+    ul.innerHTML = '';
+    arquivos.forEach(arq => {
+      const li = document.createElement('li');
+      li.className = 'collection-item';
+
+      arquivos.forEach(arq => {
+        const li = document.createElement('li');
+        li.className = 'collection-item';
+
+        // monta o link via download_file.php, igual à tela de Autorizações
+        const url = API + 'download_file.php?id=' + encodeURIComponent(arq.id);
+
+        li.innerHTML = `
+            <div>
+            <a href="${url}" target="_blank">
+                ${escapeHtml(arq.nome_original || '')}
+            </a>
+            <span class="grey-text text-darken-1" style="display:block; font-size:12px;">
+                ${escapeHtml(arq.mime_type || '')} · ${arq.tamanho_kb || 0} KB
+            </span>
+            <a href="${url}" target="_blank" class="secondary-content" title="Abrir">
+                <i class="material-icons">open_in_new</i>
+            </a>
+            </div>
+        `;
+        ul.appendChild(li);
+        });
+
+      ul.appendChild(li);
+    });
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('aut-nome').textContent = 'Erro ao carregar autorização';
+    ul.innerHTML = '';
+  }
+}
+
 </script>
+
+
+<div id="modal-autorizacao" class="modal modal-fixed-footer">
+  <div class="modal-content">
+    <h5>Arquivos da autorização</h5>
+
+    <p><strong>Aluno:</strong> <span id="aut-nome"></span></p>
+    <p><strong>CPF:</strong> <span id="aut-cpf"></span></p>
+    <p><strong>Data de cadastro:</strong> <span id="aut-data"></span></p>
+    <p><strong>Observações:</strong> <span id="aut-obs"></span></p>
+    <p><strong>Foto:</strong> <span id="aut-foto"></span></p>
+    <p><strong>Entrevista:</strong> <span id="aut-entrevista"></span></p>
+    <p><strong>Publicidade:</strong> <span id="aut-publicidade"></span></p>
+
+    <h6 style="margin-top:16px;">Arquivos</h6>
+    <ul id="aut-arquivos" class="collection" style="margin-top:8px;"></ul>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#!" class="modal-close btn-flat">Fechar</a>
+  </div>
+</div>
+
+
+
+
 </body>
 </html>
