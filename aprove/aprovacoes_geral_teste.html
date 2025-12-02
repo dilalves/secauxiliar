@@ -541,13 +541,16 @@ async function abrirModalAutorizacao(cpf) {
   document.getElementById('aut-cpf').textContent = formatCpf(cpf);
   document.getElementById('aut-data').textContent = '';
   document.getElementById('aut-obs').textContent = '';
+  document.getElementById('aut-foto').textContent = '';
+  document.getElementById('aut-entrevista').textContent = '';
+  document.getElementById('aut-publicidade').textContent = '';
   ul.innerHTML = '<li class="collection-item">Buscando arquivos...</li>';
 
   modal.open();
 
   try {
     const resp = await fetch(API + 'autorizacao_detalhe.php?cpf=' + encodeURIComponent(cpf), {
-        credentials: 'include'  // igual aos outros endpoints do Aprove
+      credentials: 'include'  // igual aos outros endpoints do Aprove
     });
     const data = await resp.json();
 
@@ -560,11 +563,23 @@ async function abrirModalAutorizacao(cpf) {
     const cab = data.cabecalho;
     const arquivos = data.arquivos || [];
 
+    // cabeçalho
     document.getElementById('aut-nome').textContent = cab.nome_aluno || '';
     document.getElementById('aut-cpf').textContent = formatCpf(cab.cpf_aluno || cpf);
     document.getElementById('aut-data').textContent = cab.data_cadastro || '';
-    document.getElementById('aut-obs').textContent = cab.obs || '';
+    document.getElementById('aut-obs').textContent = cab.observacao || '';
 
+    // flags 0/1 -> Sim / Não
+    document.getElementById('aut-foto').textContent =
+      cab.foto == 1 ? 'Sim' : 'Não';
+
+    document.getElementById('aut-entrevista').textContent =
+      cab.entrevista == 1 ? 'Sim' : 'Não';
+
+    document.getElementById('aut-publicidade').textContent =
+      cab.publicidade == 1 ? 'Sim' : 'Não';
+
+    // arquivos
     if (!arquivos.length) {
       ul.innerHTML = '<li class="collection-item">Nenhum arquivo cadastrado.</li>';
       return;
@@ -575,15 +590,17 @@ async function abrirModalAutorizacao(cpf) {
       const li = document.createElement('li');
       li.className = 'collection-item';
 
+      const url = arq.caminho_relativo || '#';
+
       li.innerHTML = `
         <div>
-          <a href="${arq.url_arquivo}" target="_blank">
-            ${escapeHtml(arq.nome_arquivo)}
+          <a href="${url}" target="_blank">
+            ${escapeHtml(arq.nome_original || '')}
           </a>
           <span class="grey-text text-darken-1" style="display:block; font-size:12px;">
             ${escapeHtml(arq.mime_type || '')} · ${arq.tamanho_kb || 0} KB
           </span>
-          <a href="${arq.url_arquivo}" target="_blank" class="secondary-content" title="Abrir">
+          <a href="${url}" target="_blank" class="secondary-content" title="Abrir">
             <i class="material-icons">open_in_new</i>
           </a>
         </div>
@@ -598,7 +615,6 @@ async function abrirModalAutorizacao(cpf) {
   }
 }
 
-
 </script>
 
 
@@ -610,8 +626,12 @@ async function abrirModalAutorizacao(cpf) {
     <p><strong>CPF:</strong> <span id="aut-cpf"></span></p>
     <p><strong>Data de cadastro:</strong> <span id="aut-data"></span></p>
     <p><strong>Observações:</strong> <span id="aut-obs"></span></p>
+    <p><strong>Foto:</strong> <span id="aut-foto"></span></p>
+    <p><strong>Entrevista:</strong> <span id="aut-entrevista"></span></p>
+    <p><strong>Publicidade:</strong> <span id="aut-publicidade"></span></p>
 
-    <ul id="aut-arquivos" class="collection" style="margin-top:16px;"></ul>
+    <h6 style="margin-top:16px;">Arquivos</h6>
+    <ul id="aut-arquivos" class="collection" style="margin-top:8px;"></ul>
   </div>
 
   <div class="modal-footer">
