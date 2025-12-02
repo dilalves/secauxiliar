@@ -8,6 +8,9 @@
 
   <!-- Materialize -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
   <style>
@@ -83,6 +86,32 @@
       min-width: 200px;       /* mantém uma largura legal */
     }
 
+    .chip-aut {
+      display: inline-block;
+      margin-left: 4px;
+      padding: 0 6px;
+      font-size: 10px;
+      border-radius: 999px;
+      background: #0b3b78;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      cursor: pointer;
+    }
+    .chip-aut:hover {
+      opacity: .85;
+    }
+
+    /* Remove a borda da lista de arquivos dentro da modal */
+    #modal-autorizacao .collection {
+    border: none;
+    box-shadow: none;
+    }
+
+    #modal-autorizacao .collection .collection-item {
+    border-bottom: 1px solid #e0e0e0;
+    }
+
 
 
     @media (max-width:992px){
@@ -154,9 +183,9 @@
     </header>
 
     <section class="page">
-      <h4 style="color:#0b3b78; font-weight:600;">Convocações cadastradas</h4>
+      <h4 style="color:#0b3b78; font-weight:600;">Convocações para Segunda Fase cadastradas</h4>
       <p class="grey-text text-darken-1">
-        Visualize todas as convocações para segunda fase cadastradas, com filtros por aluno e por usuário que lançou.
+        Visualize todas as convocações cadastradas, com filtros por aluno e por usuário que lançou.
       </p>
 
       <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
@@ -189,7 +218,6 @@
         <table class="striped highlight responsive-table" id="tabela-aprovacoes">
           <thead>
             <tr>
-              <th>ID</th>
               <th>Aluno</th>
               <th>Serie</th>
               <th>Unidade</th>              
@@ -197,8 +225,7 @@
               <th>Curso</th>
               <th>Instituição</th>
               <th>Listagem</th>
-              <th>Usuário</th>
-              <th>Data de lançamento</th>
+              <th>Usuário</th>     
             </tr>
           </thead>
           <tbody></tbody>
@@ -257,7 +284,7 @@ async function carregarAprovacoes(){
       popularFiltroCadastro();      // <--- NOVO
       popularFiltroUnidades(listaAprov);   // agora precisa da base
       renderTabela(listaAprov);
-      msg.textContent = `Total: ${listaAprov.length} convocações encontradas.`;
+      msg.textContent = `Total: ${listaAprov.length} aprovações encontradas.`;
     } else {
       msg.textContent = 'Nenhuma convocação cadastrada.';
     }
@@ -268,27 +295,36 @@ async function carregarAprovacoes(){
 }
 
 /* ===== MONTA A TABELA NA TELA ===== */
-function renderTabela(rows){
+function renderTabela(rows) {
   const tbody = document.querySelector('#tabela-aprovacoes tbody');
   tbody.innerHTML = '';
 
+  function escapeHtml(str) {
+    return (str || '').replace(/[&<>"']/g, s => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[s] || s));
+  }
+
   rows.forEach(r => {
+    const tagAut = (r.tem_autorizacao == 1 || r.tem_autorizacao === '1')
+      ? `<span class="chip-aut" data-cpf="${r.cpf}">Aut. Imagem</span>`
+      : '';
+
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${r.id}</td>
-      <td>${r.nome_aluno}</td>
-      <td>${r.serie}</td>
-      <td>${r.unidade}</td>
-      <td>${r.cadastro}</td>
-      <td>${r.curso}</td>
-      <td>${r.instituicao}</td>
-      <td>${r.listagem}</td>
-      <td>${r.usuario_nome}</td> 
-      <td>${r.created_at}</td>
+    tr.innerHTML = `    
+      <td>${escapeHtml(r.nome_aluno)} ${tagAut}</td>
+      <td>${r.serie ?? ''}</td>
+      <td>${r.unidade ?? ''}</td>
+      <td>${r.cadastro ?? ''}</td>
+      <td>${r.curso ?? ''}</td>
+      <td>${r.instituicao ?? ''}</td>
+      <td>${r.listagem ?? ''}</td>
+      <td>${r.usuario_nome ?? ''}</td>    
     `;
     tbody.appendChild(tr);
   });
 }
+
 
 /* ===== POPULA O SELECT DE USUÁRIOS ===== */
 function popularFiltroUsuarios(){
@@ -311,7 +347,7 @@ function popularFiltroUsuarios(){
   });
 }
 
-/* ===== POPULA O SELECT DE INSTITUIÇÕES ===== */
+/* ===== POPULA O SELECT DE INSTITUIÇÕES (ORDENADO) ===== */
 function popularFiltroInstituicoes(){
   const select = document.getElementById('filtro-instituicao');
   select.innerHTML = '<option value="">Todas as instituições</option>';
@@ -320,13 +356,21 @@ function popularFiltroInstituicoes(){
 
   listaAprov.forEach(r => {
     const inst = (r.instituicao || '').trim();
-    if (inst && !instSet.has(inst)) {
+    if (inst) {
       instSet.add(inst);
-      const opt = document.createElement('option');
-      opt.value = inst;
-      opt.textContent = inst;
-      select.appendChild(opt);
     }
+  });
+
+  // transforma em array e ordena em ordem alfabética (pt-BR)
+  const instsOrdenadas = Array.from(instSet).sort((a, b) =>
+    a.localeCompare(b, 'pt-BR')
+  );
+
+  instsOrdenadas.forEach(inst => {
+    const opt = document.createElement('option');
+    opt.value = inst;
+    opt.textContent = inst;
+    select.appendChild(opt);
   });
 }
 
@@ -353,8 +397,8 @@ function popularFiltroCadastro(){
   });
 }
 
-/* ===== POPULA O SELECT DE UNIDADES (DINÂMICO) ===== */
-function popularFiltroUnidades(baseRows, unidadeSelecionada = ''){
+/* ===== POPULA O SELECT DE UNIDADES (DINÂMICO + ORDENADO) ===== */
+function popularFiltroUnidades(baseRows, unidadeSelecionada = '') {
   const select = document.getElementById('filtro-unidade');
   const valorAtual = unidadeSelecionada || select.value || '';
 
@@ -362,15 +406,25 @@ function popularFiltroUnidades(baseRows, unidadeSelecionada = ''){
 
   const uniSet = new Set();
 
+  // junta todas as unidades existentes nesse conjunto de linhas
   baseRows.forEach(r => {
     const uni = (r.unidade || '').trim();
-    if (uni && !uniSet.has(uni)) {
+    if (uni) {
       uniSet.add(uni);
-      const opt = document.createElement('option');
-      opt.value = uni;
-      opt.textContent = uni;
-      select.appendChild(opt);
     }
+  });
+
+  // ordena alfabeticamente (pt-BR)
+  const unidadesOrdenadas = Array.from(uniSet).sort((a, b) =>
+    a.localeCompare(b, 'pt-BR')
+  );
+
+  // cria as <option> na ordem certa
+  unidadesOrdenadas.forEach(uni => {
+    const opt = document.createElement('option');
+    opt.value = uni;
+    opt.textContent = uni;
+    select.appendChild(opt);
   });
 
   // se a unidade selecionada ainda existir na lista, mantém
@@ -380,6 +434,7 @@ function popularFiltroUnidades(baseRows, unidadeSelecionada = ''){
     select.value = '';
   }
 }
+
 
 
 
@@ -453,8 +508,153 @@ function resetFiltros(){
 document.addEventListener('DOMContentLoaded', () => {
   carregarUsuario();
   carregarAprovacoes();
+
+  // inicializa todas as modais
+  const elems = document.querySelectorAll('.modal');
+  M.Modal.init(elems);
+
+  // clique no "Aut" dentro da tabela
+  const tabela = document.getElementById('tabela-aprovacoes');
+  tabela.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip-aut');
+    if (!chip) return;
+
+    const cpf = chip.dataset.cpf;
+    abrirModalAutorizacao(cpf);
+  });
 });
 
+
+
+
+/* ==== script para modal - autoriações === */
+function escapeHtml(str) {
+  return (str || '').replace(/[&<>"']/g, s => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[s] || s));
+}
+
+function formatCpf(cpf) {
+  const digits = (cpf || '').replace(/\D+/g, '');
+  if (digits.length !== 11) return cpf;
+  return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+async function abrirModalAutorizacao(cpf) {
+  const modalElem = document.getElementById('modal-autorizacao');
+  const modal = M.Modal.getInstance(modalElem);
+  const ul = document.getElementById('aut-arquivos');
+
+  // estado inicial
+  document.getElementById('aut-nome').textContent = 'Carregando...';
+  document.getElementById('aut-cpf').textContent = formatCpf(cpf);
+  document.getElementById('aut-data').textContent = '';
+  document.getElementById('aut-obs').textContent = '';
+  document.getElementById('aut-foto').textContent = '';
+  document.getElementById('aut-entrevista').textContent = '';
+  document.getElementById('aut-publicidade').textContent = '';
+  ul.innerHTML = '<li class="collection-item">Buscando arquivos...</li>';
+
+  modal.open();
+
+  try {
+    const resp = await fetch(API + 'autorizacao_detalhe.php?cpf=' + encodeURIComponent(cpf), {
+      credentials: 'include'  // igual aos outros endpoints do Aprove
+    });
+    const data = await resp.json();
+
+    if (!data.ok) {
+      document.getElementById('aut-nome').textContent = 'Nenhuma autorização encontrada';
+      ul.innerHTML = '';
+      return;
+    }
+
+    const cab = data.cabecalho;
+    const arquivos = data.arquivos || [];
+
+    // cabeçalho
+    document.getElementById('aut-nome').textContent = cab.nome_aluno || '';
+    document.getElementById('aut-cpf').textContent = formatCpf(cab.cpf_aluno || cpf);
+    document.getElementById('aut-data').textContent = cab.data_cadastro || '';
+    document.getElementById('aut-obs').textContent = cab.observacao || '';
+
+    // flags 0/1 -> Sim / Não
+    document.getElementById('aut-foto').textContent =
+      cab.foto == 1 ? 'Sim' : 'Não';
+
+    document.getElementById('aut-entrevista').textContent =
+      cab.entrevista == 1 ? 'Sim' : 'Não';
+
+    document.getElementById('aut-publicidade').textContent =
+      cab.publicidade == 1 ? 'Sim' : 'Não';
+
+    // arquivos
+    if (!arquivos.length) {
+      ul.innerHTML = '<li class="collection-item">Nenhum arquivo cadastrado.</li>';
+      return;
+    }
+
+    ul.innerHTML = '';
+    arquivos.forEach(arq => {
+      const li = document.createElement('li');
+      li.className = 'collection-item';
+
+      arquivos.forEach(arq => {
+        const li = document.createElement('li');
+        li.className = 'collection-item';
+
+        const url = API + 'download_file.php?id=' + encodeURIComponent(arq.id);
+
+        li.innerHTML = `
+          <div>
+            <a href="${url}" target="_blank">
+              ${escapeHtml(arq.nome_original || '')}
+            </a>
+            <span class="grey-text text-darken-1" style="display:block; font-size:12px;">
+              ${escapeHtml(arq.mime_type || '')} · ${arq.tamanho_kb || 0} KB
+              ${arq.uploaded_em ? ' · enviado em ' + escapeHtml(arq.uploaded_em) : ''}
+            </span>
+            <a href="${url}" target="_blank" class="secondary-content" title="Abrir">
+              <i class="material-icons">open_in_new</i>
+            </a>
+          </div>
+        `;
+        ul.appendChild(li);
+      });
+
+      ul.appendChild(li);
+    });
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('aut-nome').textContent = 'Erro ao carregar autorização';
+    ul.innerHTML = '';
+  }
+}
+
 </script>
+
+
+<div id="modal-autorizacao" class="modal modal-fixed-footer">
+  <div class="modal-content">
+    <h5>Arquivos da autorização</h5>
+
+    <p><strong>Aluno:</strong> <span id="aut-nome"></span></p>
+    <p><strong>CPF:</strong> <span id="aut-cpf"></span></p>
+    <p><strong>Data de cadastro:</strong> <span id="aut-data"></span></p>
+    <p><strong>Observações:</strong> <span id="aut-obs"></span></p>
+    <p><strong>Foto:</strong> <span id="aut-foto"></span></p>
+    <p><strong>Entrevista:</strong> <span id="aut-entrevista"></span></p>
+    <p><strong>Publicidade:</strong> <span id="aut-publicidade"></span></p>
+
+    <h6 style="margin-top:16px;">Arquivos</h6>
+    <ul id="aut-arquivos" class="collection" style="margin-top:8px;"></ul>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#!" class="modal-close btn-flat">Fechar</a>
+  </div>
+</div>
+
 </body>
 </html>
