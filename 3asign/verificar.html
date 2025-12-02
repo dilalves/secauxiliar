@@ -96,12 +96,12 @@
 <script>
 (function(){
   const params = new URLSearchParams(location.search);
-  const env = params.get('env');
+  const k = params.get('k');
 
   const card = document.getElementById('card');
   const loading = document.getElementById('loading');
 
-  if (!env) {
+  if (!k) {
     card.innerHTML = `
       <div class="card-header">
         <div>
@@ -112,7 +112,7 @@
     return;
   }
 
-  fetch(`https://apisec.secauxiliar.com.br/digisign/verify.php?env=${encodeURIComponent(env)}`)
+  fetch(`https://apisec.secauxiliar.com.br/digisign/verify.php?k=${encodeURIComponent(k)}`)
     .then(r => r.json())
     .then(data => {
       if (!data.ok) {
