@@ -250,6 +250,9 @@
       align-items:center;      /* alinha verticalmente */
       flex-wrap:nowrap;        /* NÃO quebra pra linha de baixo */
     }
+    .btn-link.danger{
+      color:#b91c1c;           /* vermelho */
+    }
 
     .btn-link{
       border:none;
@@ -499,12 +502,22 @@
       const divActions = document.createElement('div');
       divActions.className = 'actions';
 
-      const podeEnviar = (env.status === 'draft' || env.status === 'sent');
+      const podeEnviar   = (env.status === 'draft' || env.status === 'sent');
+      // pode cancelar: rascunho OU enviado sem nenhuma assinatura concluída
+      const podeCancelar = (env.status === 'draft' || (env.status === 'sent' && env.qtd_assinados === 0));
 
       divActions.innerHTML = `
         <button class="btn-link" data-id="${env.id}" data-acao="ver">Detalhes</button>
-        ${podeEnviar ? `<button class="btn-link" data-id="${env.id}" data-acao="enviar">Enviar</button>` : ''}
+        ${podeEnviar
+          ? `<button class="btn-link" data-id="${env.id}" data-acao="enviar">Enviar</button>`
+          : ''
+        }
+        ${podeCancelar
+          ? `<button class="btn-link danger" data-id="${env.id}" data-acao="cancelar">Cancelar</button>`
+          : ''
+        }
       `;
+
 
       tdAcoes.appendChild(divActions);
 
@@ -616,21 +629,73 @@
   }
 
   // ações (detalhes / enviar)
-  tbody.addEventListener('click', (ev) => {
+    tbody.addEventListener('click', (ev) => {
     const btn = ev.target.closest('.btn-link');
     if (!btn) return;
-    const id  = btn.dataset.id;
-    const acao= btn.dataset.acao;
+    const id   = btn.dataset.id;
+    const acao = btn.dataset.acao;
 
     if (acao === 'ver') {
       window.location.href = 'envelope_detalhes.html?id=' + id; 
     } else if (acao === 'enviar') {
       enviarEnvelope(id);
+    } else if (acao === 'cancelar') {
+      cancelarEnvelope(id);
     }
   });
 
+
   // inicia carregando
   carregarEnvelopes();
+
+
+  function cancelarEnvelope(envId) {
+    if (!envId) return;
+
+    // acha o envelope em memória só pra pegar o título bonitinho
+    const env = envelopes.find(e => String(e.id) === String(envId));
+    const titulo = env ? env.titulo : ('#' + envId);
+
+    const ok = confirm(
+      `Tem certeza que deseja CANCELAR o envelope "${titulo}"?\n` +
+      'Após o cancelamento, os links de assinatura deixam de funcionar.'
+    );
+    if (!ok) return;
+
+    const token = getToken();
+    if (!token) {
+      alert('Sessão expirada. Faça login novamente.');
+      window.location.href = 'index.html';
+      return;
+    }
+
+    fetch(`${API_BASE}/envelope_cancel.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ envelope_id: Number(envId) })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) {
+        alert(data.error || 'Não foi possível cancelar o envelope.');
+        return;
+      }
+
+      alert('Envelope cancelado com sucesso.');
+      // recarrega a lista com o filtro atual
+      carregarEnvelopes();
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Erro de comunicação ao cancelar envelope.');
+    });
+  }
+
+
+
 </script>
 
 
