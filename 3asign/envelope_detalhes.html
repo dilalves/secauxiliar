@@ -722,10 +722,14 @@
 
       if (env.status === 'completed' && env.final_pdf) {
         // final_pdf veio do banco como "final/<hash>.pdf"
-        const urlFinal = `${API_BASE}/storage/${env.final_pdf}`; 
-        // fica: https://apisec.secauxiliar.com.br/digisign/storage/final/<hash>.pdf
+        const urlFinal = `${API_BASE}/storage/${env.final_pdf}`;
+        // https://apisec.secauxiliar.com.br/digisign/storage/final/<hash>.pdf
 
         finalLink.href = urlFinal;
+        finalLink.target = '_blank';           // abre em nova aba
+        finalLink.rel = 'noopener';            // segurança
+        finalLink.setAttribute('download', ''); // sugere download do arquivo
+
         finalWrap.style.display = 'block';
 
         if (env.final_at) {
@@ -736,6 +740,7 @@
       } else {
         finalWrap.style.display = 'none';
       }
+
 
       const pill = document.getElementById('envStatusPill');
       pill.dataset.status = env.status;
