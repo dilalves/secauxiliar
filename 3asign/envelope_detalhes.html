@@ -411,6 +411,15 @@
       <h2 style="margin-top:16px;">Documentos</h2>
       <p id="docsEmpty" style="display:none;">Nenhum documento anexado.</p>
       <ul class="meta-list" id="docsLista"></ul>
+
+      <!-- NOVO BLOCO: download do documento final assinado -->
+      <div id="finalDownloadWrapper" style="margin-top:12px; display:none;">
+        <a id="linkFinalAssinado" href="#" class="btn-link">
+          Baixar documento assinado (PDF)
+        </a>
+        <div id="finalInfo" style="font-size:.78rem;color:#6b7280;margin-top:2px;"></div>
+      </div>
+
     </section>
 
     <!-- Coluna direita: destinatários -->
@@ -705,6 +714,28 @@
       document.getElementById('envCriadoEm').textContent = formatDataBr(env.created_at);
       document.getElementById('envId').textContent = env.id;
       document.getElementById('envStatusLabel').textContent = mapStatusLabel(env.status);
+
+      // --- download do documento final assinado ---
+      const finalWrap = document.getElementById('finalDownloadWrapper');
+      const finalLink = document.getElementById('linkFinalAssinado');
+      const finalInfo = document.getElementById('finalInfo');
+
+      if (env.status === 'completed' && env.final_pdf) {
+        // final_pdf veio do banco como "final/<hash>.pdf"
+        const urlFinal = `${API_BASE}/storage/${env.final_pdf}`; 
+        // fica: https://apisec.secauxiliar.com.br/digisign/storage/final/<hash>.pdf
+
+        finalLink.href = urlFinal;
+        finalWrap.style.display = 'block';
+
+        if (env.final_at) {
+          finalInfo.textContent = 'Documento final gerado em ' + formatDataBr(env.final_at);
+        } else {
+          finalInfo.textContent = 'Documento final assinado disponível para download.';
+        }
+      } else {
+        finalWrap.style.display = 'none';
+      }
 
       const pill = document.getElementById('envStatusPill');
       pill.dataset.status = env.status;
