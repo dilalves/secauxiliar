@@ -580,7 +580,7 @@
     });
 
 
-        function reenviarEmail(destId, nomeDest, emailDest) {
+    function reenviarEmail(destId, nomeDest) {
       if (!destId) return;
 
       const alertBox = document.getElementById('alertLinks');
@@ -604,7 +604,10 @@
           return;
         }
 
-        alertBox.textContent = `E-mail de assinatura reenviado para ${nomeDest} (${emailDest}).`;
+        // e-mail vindo do PHP (já atualizado no banco)
+        const emailFinal = data.reenviado_para || 'e-mail atualizado';
+
+        alertBox.textContent = `E-mail de assinatura reenviado para ${nomeDest} (${emailFinal}).`;
         alertBox.style.display = 'block';
         alertBox.style.background = '#d1fae5';
         alertBox.style.color = '#065f46';
@@ -619,6 +622,7 @@
         setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
       });
     }
+
 
 
     modalSave.addEventListener('click', () => {
@@ -823,7 +827,7 @@
             btnReenviar.title = 'Não é possível reenviar após a assinatura ou conclusão do envelope.';
           } else {
             btnReenviar.addEventListener('click', () => {
-              reenviarEmail(d.id, d.nome, d.email);
+              reenviarEmail(d.id, d.nome);
             });
           }
 
