@@ -247,6 +247,107 @@
       color:#991b1b;
       background:#fee2e2;
     }
+
+    /* ===== MODAL EDITAR E-MAIL ===== */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:50;
+    }
+    .modal-card{
+      background:#ffffff;
+      border-radius:12px;
+      padding:16px 18px 14px;
+      width:100%;
+      max-width:420px;
+      box-shadow:0 20px 45px rgba(15,23,42,.35);
+      font-size:.9rem;
+    }
+    .modal-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:6px;
+    }
+    .modal-header h3{
+      margin:0;
+      font-size:1rem;
+    }
+    .modal-close{
+      border:none;
+      background:none;
+      cursor:pointer;
+      font-size:1.1rem;
+      color:#6b7280;
+    }
+    .modal-close:hover{
+      color:#111827;
+    }
+    .modal-body{
+      margin-top:4px;
+      font-size:.85rem;
+    }
+    .modal-body label{
+      display:block;
+      margin:8px 0 4px;
+      font-size:.8rem;
+      color:#4b5563;
+    }
+    .modal-body input[type="email"]{
+      width:100%;
+      padding:6px 8px;
+      border-radius:8px;
+      border:1px solid #d1d5db;
+      font-size:.9rem;
+    }
+    .modal-body input[type="email"]:focus{
+      outline:none;
+      border-color:#1d4ed8;
+      box-shadow:0 0 0 1px rgba(37,99,235,.25);
+    }
+    .modal-footer{
+      margin-top:12px;
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+    }
+    .btn-secondary{
+      border-radius:999px;
+      border:1px solid #d1d5db;
+      background:#f9fafb;
+      padding:6px 14px;
+      font-size:.85rem;
+      cursor:pointer;
+    }
+    .btn-secondary:hover{
+      background:#e5e7eb;
+    }
+    .btn-primary-sm{
+      border-radius:999px;
+      border:none;
+      background:#1d4ed8;
+      color:#fff;
+      padding:6px 16px;
+      font-size:.85rem;
+      cursor:pointer;
+    }
+    .btn-primary-sm[disabled]{
+      opacity:.7;
+      cursor:default;
+    }
+    .modal-msg{
+      margin-top:6px;
+      font-size:.8rem;
+      color:#b91c1c;
+    }
+    .modal-msg.ok{
+      color:#15803d;
+    }
+
   </style>
 </head>
 <body>
@@ -337,6 +438,32 @@
   </div>
 </main>
 
+<!-- MODAL EDITAR E-MAIL -->
+<div class="modal-backdrop" id="modalEmail">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Editar e-mail do destinatário</h3>
+      <button class="modal-close" id="modalEmailClose" type="button">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:.8rem;color:#6b7280;">
+        Destinatário: <strong id="modalDestNome">—</strong><br>
+        Envelope: <span id="modalEnvTitulo">—</span>
+      </div>
+
+      <label for="modalEmailInput">Novo e-mail</label>
+      <input type="email" id="modalEmailInput" autocomplete="off" />
+
+      <div class="modal-msg" id="modalEmailMsg"></div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="modalEmailCancelar">Cancelar</button>
+        <button type="button" class="btn-primary-sm" id="modalEmailSalvar">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
 
@@ -384,74 +511,21 @@
     }
   }
 
-  function showAlert(text, isError = false) {
-    const alert = document.getElementById('alertLinks');
-    alert.textContent = text;
-    alert.classList.toggle('error', !!isError);
-    alert.style.display = 'block';
-    setTimeout(() => { alert.style.display = 'none'; }, 4000);
-  }
-
   function copiarTexto(texto) {
     navigator.clipboard.writeText(texto).then(() => {
-      showAlert('Link copiado para a área de transferência.');
+      const alert = document.getElementById('alertLinks');
+      alert.textContent = 'Link copiado para a área de transferência.';
+      alert.style.display = 'block';
+      setTimeout(() => { alert.style.display = 'none'; }, 3000);
     }).catch(() => {
       alert('Não foi possível copiar o link. Copie manualmente.');
     });
   }
 
-  // ---- NOVO: editar e-mail do destinatário ----
-  async function editarEmailDestinatario(dest, token) {
-    const atual = dest.email || '';
-    const novo = prompt('Informe o novo e-mail para este destinatário:', atual);
-    if (!novo || novo.trim() === atual.trim()) return;
-
-    const email = novo.trim();
-    // validação bem simples
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-      alert('E-mail inválido. Verifique e tente novamente.');
-      return;
-    }
-
-    try {
-      const resp = await fetch(`${API_BASE}/dest_update_email.php`, {
-        method: 'POST',
-        headers: {
-          'Content-Type':'application/json',
-          'Authorization':'Bearer ' + token
-        },
-        body: JSON.stringify({
-          destinatario_id: dest.id,
-          email
-        })
-      });
-      const data = await resp.json();
-      if (!resp.ok || !data.ok) {
-        showAlert(data.error || 'Não foi possível atualizar o e-mail.', true);
-        return;
-      }
-
-      // atualiza objeto em memória
-      dest.email = email;
-      if (data.link_assinatura) {
-        dest.link_assinatura = data.link_assinatura;
-      }
-
-      // atualiza célula visual
-      const spanEmail = document.querySelector(`[data-dest-email-id="${dest.id}"]`);
-      if (spanEmail) spanEmail.textContent = email;
-
-      showAlert('E-mail atualizado com sucesso.');
-    } catch (e) {
-      console.error(e);
-      showAlert('Erro na comunicação ao atualizar o e-mail.', true);
-    }
-  }
-
   (function init(){
     const { token, user } = ensureAuth();
 
-    // preenche topo
+    // topo
     document.getElementById('userNome').textContent = user.nome;
     document.getElementById('userRole').textContent = user.role || 'atendimento';
     document.getElementById('btnSair').addEventListener('click', () => {
@@ -467,6 +541,100 @@
       return;
     }
 
+    // ====== CONTROLES DA MODAL ======
+    const modal      = document.getElementById('modalEmail');
+    const modalClose = document.getElementById('modalEmailClose');
+    const modalCancel= document.getElementById('modalEmailCancelar');
+    const modalSave  = document.getElementById('modalEmailSalvar');
+    const modalNome  = document.getElementById('modalDestNome');
+    const modalEnv   = document.getElementById('modalEnvTitulo');
+    const modalInput = document.getElementById('modalEmailInput');
+    const modalMsg   = document.getElementById('modalEmailMsg');
+    let   modalDestId = null;
+    let   modalRowEmailSpan = null; // referência ao span do e-mail na tabela
+
+    function openEditEmailModal(dest, rowEmailSpan, envTitulo) {
+      modalDestId = dest.id;
+      modalRowEmailSpan = rowEmailSpan;
+
+      modalNome.textContent = dest.nome;
+      modalEnv.textContent  = envTitulo || '';
+      modalInput.value      = dest.email || '';
+      modalMsg.textContent  = '';
+      modalMsg.className    = 'modal-msg';
+
+      modal.style.display = 'flex';
+      modalInput.focus();
+    }
+
+    function closeEditEmailModal() {
+      modal.style.display = 'none';
+      modalDestId = null;
+      modalRowEmailSpan = null;
+    }
+
+    modalClose.addEventListener('click', closeEditEmailModal);
+    modalCancel.addEventListener('click', closeEditEmailModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeEditEmailModal();
+    });
+
+    modalSave.addEventListener('click', () => {
+      if (!modalDestId) return;
+      const novoEmail = modalInput.value.trim();
+      if (!novoEmail) {
+        modalMsg.textContent = 'Informe um e-mail.';
+        modalMsg.className = 'modal-msg';
+        return;
+      }
+
+      modalSave.disabled = true;
+      modalMsg.textContent = 'Salvando...';
+      modalMsg.className = 'modal-msg';
+
+      fetch(`${API_BASE}/dest_update_email.php`, {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':'Bearer ' + token
+        },
+        body: JSON.stringify({
+          destinatario_id: modalDestId,
+          email: novoEmail
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok) {
+          modalMsg.textContent = data.error || 'Não foi possível atualizar o e-mail.';
+          modalMsg.className = 'modal-msg';
+          modalSave.disabled = false;
+          return;
+        }
+
+        // atualiza texto na tabela
+        if (modalRowEmailSpan) {
+          modalRowEmailSpan.textContent = novoEmail;
+        }
+
+        modalMsg.textContent = 'E-mail atualizado com sucesso.';
+        modalMsg.className = 'modal-msg ok';
+
+        // fecha depois de 1s
+        setTimeout(() => {
+          closeEditEmailModal();
+          modalSave.disabled = false;
+        }, 900);
+      })
+      .catch(err => {
+        console.error(err);
+        modalMsg.textContent = 'Erro de comunicação. Tente novamente.';
+        modalMsg.className = 'modal-msg';
+        modalSave.disabled = false;
+      });
+    });
+    // ====== FIM CONTROLES MODAL ======
+
     fetch(`${API_BASE}/envelope_details.php?id=${envId}`, {
       method:'GET',
       headers:{
@@ -480,10 +648,10 @@
         return;
       }
 
-      const env = data.envelope;
-      const stats = data.stats || {};
-      const dests = data.destinatarios || [];
-      const docs  = data.documentos || [];
+      const env  = data.envelope;
+      const stats= data.stats || {};
+      const dests= data.destinatarios || [];
+      const docs = data.documentos || [];
 
       // header
       document.getElementById('envTitulo').textContent = env.titulo;
@@ -495,10 +663,10 @@
       pill.dataset.status = env.status;
       pill.textContent = mapStatusLabel(env.status);
 
-      document.getElementById('statTotal').textContent = stats.total ?? dests.length;
+      document.getElementById('statTotal').textContent     = stats.total ?? dests.length;
       document.getElementById('statAssinados').textContent = stats.assinados ?? 0;
       document.getElementById('statPendentes').textContent = stats.pendentes ?? 0;
-      document.getElementById('statEnviados').textContent = stats.enviados ?? 0;
+      document.getElementById('statEnviados').textContent  = stats.enviados ?? 0;
 
       document.getElementById('envResumoAssinaturas').textContent =
         `${stats.assinados ?? 0} de ${stats.total ?? dests.length} concluídas`;
@@ -519,7 +687,7 @@
         });
       }
 
-      // chips rápidos dos destinatários
+      // chips destinatários
       const chips = document.getElementById('chipsDest');
       dests.forEach(d => {
         const chip = document.createElement('div');
@@ -529,14 +697,15 @@
         chips.appendChild(chip);
       });
 
-      // tabela de destinatários
+      // tabela destinatários
       const tbody = document.getElementById('destTableBody');
       if (!dests.length) {
         const tr = document.createElement('tr');
         const td = document.createElement('td');
         td.colSpan = 4;
         td.textContent = 'Nenhum destinatário cadastrado.';
-        tbody.appendChild(tr).appendChild(td);
+        tr.appendChild(td);
+        tbody.appendChild(tr);
       } else {
         dests.forEach((d, idx) => {
           const tr = document.createElement('tr');
@@ -545,31 +714,43 @@
           tdIdx.textContent = d.ordem || (idx+1);
 
           const tdNome = document.createElement('td');
-          tdNome.innerHTML = `
-            <strong>${d.nome}</strong><br>
-            <span data-dest-email-id="${d.id}"
-                  style="color:#6b7280;font-size:.8rem;">${d.email}</span>
-          `;
+          const spanEmail = document.createElement('span');
+          spanEmail.style.color = '#6b7280';
+          spanEmail.style.fontSize = '.8rem';
+          spanEmail.textContent = d.email;
+
+          const btnEdit = document.createElement('button');
+          btnEdit.type = 'button';
+          btnEdit.className = 'btn-link';
+          btnEdit.textContent = 'Editar e-mail';
+          btnEdit.style.marginLeft = '4px';
+
+          // só deixa editar se ainda não assinou e envelope não está concluído/cancelado
+          if (d.status === 'signed' || env.status === 'completed' || env.status === 'voided') {
+            btnEdit.disabled = true;
+            btnEdit.style.opacity = .5;
+            btnEdit.title = 'Não é possível alterar e-mail após assinatura ou conclusão do envelope.';
+          } else {
+            btnEdit.addEventListener('click', () => {
+              openEditEmailModal(d, spanEmail, env.titulo);
+            });
+          }
+
+          tdNome.innerHTML = `<strong>${d.nome}</strong><br/>`;
+          tdNome.appendChild(spanEmail);
+          tdNome.appendChild(document.createElement('br'));
+          tdNome.appendChild(btnEdit);
 
           const tdStatus = document.createElement('td');
           tdStatus.innerHTML = `<span class="badge-small">${mapStatusLabel(d.status)}</span>`;
 
           const tdLink = document.createElement('td');
-          const btnCopy = document.createElement('button');
-          btnCopy.className = 'btn-link';
-          btnCopy.type = 'button';
-          btnCopy.textContent = 'Copiar link';
-          btnCopy.addEventListener('click', () => copiarTexto(d.link_assinatura));
-
-          const btnEdit = document.createElement('button');
-          btnEdit.className = 'btn-link';
-          btnEdit.type = 'button';
-          btnEdit.style.marginLeft = '8px';
-          btnEdit.textContent = 'Editar e-mail';
-          btnEdit.addEventListener('click', () => editarEmailDestinatario(d, token));
-
-          tdLink.appendChild(btnCopy);
-          tdLink.appendChild(btnEdit);
+          const btn = document.createElement('button');
+          btn.className = 'btn-link';
+          btn.type = 'button';
+          btn.textContent = 'Copiar link';
+          btn.addEventListener('click', () => copiarTexto(d.link_assinatura));
+          tdLink.appendChild(btn);
 
           tr.appendChild(tdIdx);
           tr.appendChild(tdNome);
@@ -586,5 +767,4 @@
     });
   })();
 </script>
-</body>
-</html>
+
