@@ -101,6 +101,8 @@
   const card = document.getElementById('card');
   const loading = document.getElementById('loading');
 
+  const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+
   if (!k) {
     card.innerHTML = `
       <div class="card-header">
@@ -138,8 +140,11 @@
       const created = env.created_at || '';
       const final   = env.final_at   || '';
 
-      const urlOriginal = doc && doc.caminho ? doc.caminho : null;
-      const urlFinal    = env.final_pdf || null;
+
+      let urlFinal = null;
+      if (env.final_pdf) {
+        urlFinal = `${API_BASE}/storage/${env.final_pdf}`;
+      }
 
       card.innerHTML = `
         <div class="card-header">
@@ -167,7 +172,6 @@
           <dl>
             <dt>Download do documento:</dt>
             <dd class="doc-buttons">
-              ${urlOriginal ? `<a class="btn" href="${urlOriginal}" target="_blank">Original</a>` : ''}
               ${urlFinal    ? `<a class="btn" href="${urlFinal}" target="_blank">Assinado</a>` : ''}
             </dd>
           </dl>
@@ -200,7 +204,6 @@
           <div class="footer-note">
             Esta é uma assinatura eletrônica baseada em evidências técnicas
             (e-mail, IP, data e hora, dispositivo e trilha de eventos).
-            Não se trata de certificado digital ICP-Brasil.
           </div>
         </div>
       `;
