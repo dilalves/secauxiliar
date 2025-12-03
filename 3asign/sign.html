@@ -357,7 +357,7 @@
 <script>
 (function() {
   const token = new URLSearchParams(window.location.search).get('token');
-
+  const SIGNATURE_KEY = '3asign_signature'; // assinatura salva no dispositivo
   const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
 
   // flags de verificação
@@ -410,6 +410,11 @@
     assinaturaDataUrl = null;
     sigStatus.style.display = 'none';
     atualizarEstadoBotao();
+    try {
+      localStorage.removeItem(SIGNATURE_KEY);
+    } catch (err) {
+      console.warn('Não foi possível remover assinatura salva:', err);
+    }
   }
 
   function setMensagem(texto, tipo) {
@@ -450,6 +455,24 @@
     sigCtx.lineCap = 'round';
     sigCtx.lineJoin = 'round';
 
+    // tenta carregar assinatura salva anteriormente
+    try {
+      const savedSig = localStorage.getItem(SIGNATURE_KEY);
+      if (savedSig) {
+        const img = new Image();
+        img.onload = () => {
+          sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+          sigCtx.drawImage(img, 0, 0, sigCanvas.width, sigCanvas.height);
+          assinaturaDataUrl = savedSig;
+          sigStatus.style.display = 'inline';
+          atualizarEstadoBotao();
+        };
+        img.src = savedSig;
+      }
+    } catch (err) {
+      console.warn('Não foi possível ler assinatura salva:', err);
+    }
+
     const getPos = (e) => {
       const rect = sigCanvas.getBoundingClientRect();
       if (e.touches && e.touches.length) {
@@ -484,8 +507,17 @@
       if (!desenhando) return;
       e.preventDefault();
       desenhando = false;
+
       assinaturaDataUrl = sigCanvas.toDataURL('image/png');
       sigStatus.style.display = 'inline';
+
+      // salva assinatura no dispositivo
+      try {
+        localStorage.setItem(SIGNATURE_KEY, assinaturaDataUrl);
+      } catch (err) {
+        console.warn('Não foi possível salvar assinatura localmente:', err);
+      }
+
       atualizarEstadoBotao();
     };
 
@@ -797,11 +829,8 @@
       setMensagem('Erro ao registrar assinatura. Tente novamente.', 'error');
       btnAssinar.disabled = false;
     });
-  });
-
-  
+  }); 
 })();
-
 
 </script>
 </body>
