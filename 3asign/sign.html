@@ -402,7 +402,15 @@
   let sigCtx = null;
   let desenhando = false;
   let assinaturaDataUrl = null;
-  let leituraLiberada = false; // se já rolou até o final
+  let leituraLiberada = false;
+
+  function limparAssinatura() {
+    if (!sigCanvas || !sigCtx) return;
+    sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+    assinaturaDataUrl = null;
+    sigStatus.style.display = 'none';
+    atualizarEstadoBotao();
+  }
 
   function setMensagem(texto, tipo) {
     msg.textContent = texto || '';
@@ -490,11 +498,15 @@
     sigCanvas.addEventListener('touchmove', moveDraw, { passive:false });
     sigCanvas.addEventListener('touchend', endDraw, { passive:false });
 
-    sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-    assinaturaDataUrl = null;
-    sigStatus.style.display = 'none';
-    atualizarEstadoBotao();
+    limparAssinatura();
 
+  }
+
+  if (btnLimparAss) {
+    btnLimparAss.addEventListener('click', (e) => {
+      e.preventDefault();
+      limparAssinatura();
+    });
   }
 
   // libera o checkbox quando o usuário chegar ao final da página
@@ -645,15 +657,13 @@
   }
 
   // marcar checkbox: mostra/esconde quadro de assinatura
-    chkConcordo.addEventListener('change', () => {
+  chkConcordo.addEventListener('change', () => {
     if (chkConcordo.checked) {
       signatureWrapper.style.display = 'block';
     } else {
       signatureWrapper.style.display = 'none';
-      assinaturaDataUrl = null;
-      sigStatus.style.display = 'none';
+      limparAssinatura();
     }
-    atualizarEstadoBotao();
     setMensagem('', '');
   });
 
@@ -791,7 +801,6 @@
 
   
 })();
-
 
 
 </script>
