@@ -579,6 +579,48 @@
       if (e.target === modal) closeEditEmailModal();
     });
 
+
+        function reenviarEmail(destId, nomeDest, emailDest) {
+      if (!destId) return;
+
+      const alertBox = document.getElementById('alertLinks');
+
+      fetch(`${API_BASE}/dest_resend_email.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ destinatario_id: destId })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok) {
+          alertBox.textContent = data.error || 'Não foi possível reenviar o e-mail.';
+          alertBox.style.display = 'block';
+          alertBox.style.background = '#fee2e2';
+          alertBox.style.color = '#991b1b';
+          setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
+          return;
+        }
+
+        alertBox.textContent = `E-mail de assinatura reenviado para ${nomeDest} (${emailDest}).`;
+        alertBox.style.display = 'block';
+        alertBox.style.background = '#d1fae5';
+        alertBox.style.color = '#065f46';
+        setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
+      })
+      .catch(err => {
+        console.error(err);
+        alertBox.textContent = 'Erro de comunicação ao reenviar o e-mail.';
+        alertBox.style.display = 'block';
+        alertBox.style.background = '#fee2e2';
+        alertBox.style.color = '#991b1b';
+        setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
+      });
+    }
+
+
     modalSave.addEventListener('click', () => {
       if (!modalDestId) return;
       const novoEmail = modalInput.value.trim();
@@ -633,6 +675,7 @@
         modalSave.disabled = false;
       });
     });
+
     // ====== FIM CONTROLES MODAL ======
 
     fetch(`${API_BASE}/envelope_details.php?id=${envId}`, {
@@ -711,26 +754,30 @@
           const tr = document.createElement('tr');
 
           const tdIdx = document.createElement('td');
-          tdIdx.textContent = d.ordem || (idx+1);
+          tdIdx.textContent = d.ordem || (idx + 1);
 
           const tdNome = document.createElement('td');
+
+          // span do e-mail (vamos atualizar aqui quando editar)
           const spanEmail = document.createElement('span');
           spanEmail.style.color = '#6b7280';
           spanEmail.style.fontSize = '.8rem';
           spanEmail.textContent = d.email;
 
-          const btnEdit = document.createElement('button');
-          btnEdit.type = 'button';
-          btnEdit.className = 'btn-link';
-          btnEdit.textContent = 'Editar e-mail';
-          btnEdit.style.marginLeft = '4px';
+          // botão "Editar e-mail" – só se ainda não assinou e envelope não concluído/cancelado
+          let btnEdit = null;
+          const podeEditar = (
+            d.status !== 'signed' &&
+            env.status !== 'completed' &&
+            env.status !== 'voided'
+          );
 
-          // só deixa editar se ainda não assinou e envelope não está concluído/cancelado
-          if (d.status === 'signed' || env.status === 'completed' || env.status === 'voided') {
-            btnEdit.disabled = true;
-            btnEdit.style.opacity = .5;
-            btnEdit.title = 'Não é possível alterar e-mail após assinatura ou conclusão do envelope.';
-          } else {
+          if (podeEditar) {
+            btnEdit = document.createElement('button');
+            btnEdit.type = 'button';
+            btnEdit.className = 'btn-link';
+            btnEdit.textContent = 'Editar e-mail';
+            btnEdit.style.marginLeft = '0';
             btnEdit.addEventListener('click', () => {
               openEditEmailModal(d, spanEmail, env.titulo);
             });
@@ -738,19 +785,49 @@
 
           tdNome.innerHTML = `<strong>${d.nome}</strong><br/>`;
           tdNome.appendChild(spanEmail);
-          tdNome.appendChild(document.createElement('br'));
-          tdNome.appendChild(btnEdit);
+
+          if (btnEdit) {
+            tdNome.appendChild(document.createElement('br'));
+            tdNome.appendChild(btnEdit);
+          }
 
           const tdStatus = document.createElement('td');
           tdStatus.innerHTML = `<span class="badge-small">${mapStatusLabel(d.status)}</span>`;
 
           const tdLink = document.createElement('td');
-          const btn = document.createElement('button');
-          btn.className = 'btn-link';
-          btn.type = 'button';
-          btn.textContent = 'Copiar link';
-          btn.addEventListener('click', () => copiarTexto(d.link_assinatura));
-          tdLink.appendChild(btn);
+
+          // botão COPIAR LINK
+          const btnCopy = document.createElement('button');
+          btnCopy.className = 'btn-link';
+          btnCopy.type = 'button';
+          btnCopy.textContent = 'Copiar link';
+          btnCopy.addEventListener('click', () => copiarTexto(d.link_assinatura));
+          tdLink.appendChild(btnCopy);
+
+          // botão REENVIAR – só se ainda não assinou e envelope não concluído/cancelado
+          const podeReenviar = (
+            d.status !== 'signed' &&
+            env.status !== 'completed' &&
+            env.status !== 'voided'
+          );
+
+          const btnReenviar = document.createElement('button');
+          btnReenviar.className = 'btn-link';
+          btnReenviar.type = 'button';
+          btnReenviar.textContent = 'Reenviar';
+          btnReenviar.style.marginLeft = '8px';
+
+          if (!podeReenviar) {
+            btnReenviar.disabled = true;
+            btnReenviar.style.opacity = 0.5;
+            btnReenviar.title = 'Não é possível reenviar após a assinatura ou conclusão do envelope.';
+          } else {
+            btnReenviar.addEventListener('click', () => {
+              reenviarEmail(d.id, d.nome, d.email);
+            });
+          }
+
+          tdLink.appendChild(btnReenviar);
 
           tr.appendChild(tdIdx);
           tr.appendChild(tdNome);
@@ -760,6 +837,7 @@
           tbody.appendChild(tr);
         });
       }
+
     })
     .catch(err => {
       console.error(err);
