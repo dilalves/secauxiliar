@@ -243,6 +243,10 @@
       padding:6px 10px;
       display:none;
     }
+    .alert-top.error{
+      color:#991b1b;
+      background:#fee2e2;
+    }
   </style>
 </head>
 <body>
@@ -380,15 +384,68 @@
     }
   }
 
+  function showAlert(text, isError = false) {
+    const alert = document.getElementById('alertLinks');
+    alert.textContent = text;
+    alert.classList.toggle('error', !!isError);
+    alert.style.display = 'block';
+    setTimeout(() => { alert.style.display = 'none'; }, 4000);
+  }
+
   function copiarTexto(texto) {
     navigator.clipboard.writeText(texto).then(() => {
-      const alert = document.getElementById('alertLinks');
-      alert.textContent = 'Link copiado para a área de transferência.';
-      alert.style.display = 'block';
-      setTimeout(() => { alert.style.display = 'none'; }, 3000);
+      showAlert('Link copiado para a área de transferência.');
     }).catch(() => {
       alert('Não foi possível copiar o link. Copie manualmente.');
     });
+  }
+
+  // ---- NOVO: editar e-mail do destinatário ----
+  async function editarEmailDestinatario(dest, token) {
+    const atual = dest.email || '';
+    const novo = prompt('Informe o novo e-mail para este destinatário:', atual);
+    if (!novo || novo.trim() === atual.trim()) return;
+
+    const email = novo.trim();
+    // validação bem simples
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      alert('E-mail inválido. Verifique e tente novamente.');
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API_BASE}/dest_update_email.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type':'application/json',
+          'Authorization':'Bearer ' + token
+        },
+        body: JSON.stringify({
+          destinatario_id: dest.id,
+          email
+        })
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.ok) {
+        showAlert(data.error || 'Não foi possível atualizar o e-mail.', true);
+        return;
+      }
+
+      // atualiza objeto em memória
+      dest.email = email;
+      if (data.link_assinatura) {
+        dest.link_assinatura = data.link_assinatura;
+      }
+
+      // atualiza célula visual
+      const spanEmail = document.querySelector(`[data-dest-email-id="${dest.id}"]`);
+      if (spanEmail) spanEmail.textContent = email;
+
+      showAlert('E-mail atualizado com sucesso.');
+    } catch (e) {
+      console.error(e);
+      showAlert('Erro na comunicação ao atualizar o e-mail.', true);
+    }
   }
 
   (function init(){
@@ -488,18 +545,31 @@
           tdIdx.textContent = d.ordem || (idx+1);
 
           const tdNome = document.createElement('td');
-          tdNome.innerHTML = `<strong>${d.nome}</strong><br><span style="color:#6b7280;font-size:.8rem;">${d.email}</span>`;
+          tdNome.innerHTML = `
+            <strong>${d.nome}</strong><br>
+            <span data-dest-email-id="${d.id}"
+                  style="color:#6b7280;font-size:.8rem;">${d.email}</span>
+          `;
 
           const tdStatus = document.createElement('td');
           tdStatus.innerHTML = `<span class="badge-small">${mapStatusLabel(d.status)}</span>`;
 
           const tdLink = document.createElement('td');
-          const btn = document.createElement('button');
-          btn.className = 'btn-link';
-          btn.type = 'button';
-          btn.textContent = 'Copiar link';
-          btn.addEventListener('click', () => copiarTexto(d.link_assinatura));
-          tdLink.appendChild(btn);
+          const btnCopy = document.createElement('button');
+          btnCopy.className = 'btn-link';
+          btnCopy.type = 'button';
+          btnCopy.textContent = 'Copiar link';
+          btnCopy.addEventListener('click', () => copiarTexto(d.link_assinatura));
+
+          const btnEdit = document.createElement('button');
+          btnEdit.className = 'btn-link';
+          btnEdit.type = 'button';
+          btnEdit.style.marginLeft = '8px';
+          btnEdit.textContent = 'Editar e-mail';
+          btnEdit.addEventListener('click', () => editarEmailDestinatario(d, token));
+
+          tdLink.appendChild(btnCopy);
+          tdLink.appendChild(btnEdit);
 
           tr.appendChild(tdIdx);
           tr.appendChild(tdNome);
