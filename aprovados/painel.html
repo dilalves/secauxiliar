@@ -180,64 +180,72 @@ async function logout(){
   location.replace(LOGIN_URL);
 }
 
-/* ===== Mostra código e nome da unidade logada ===== */async function carregarUsuario() {
-  const label = document.getElementById('unitLabel');
-  if (!label) return;
+/* ===== Mostra código e nome da unidade logada ===== */
+async function carregarUsuario() {
+  const unitLabel = document.getElementById('unitLabel');
+  unitLabel.textContent = '— carregando...';
 
   try {
-    const res = await fetch(API + 'auth_me_unidade.php', {
-      credentials: 'include'
-    });
+    const res = await fetch(API + 'auth_me_unidade.php', { credentials: 'include' });
     const data = await res.json();
 
     if (data.ok) {
       const login   = data.login   || '';
       const unidade = data.unidade || '';
-      label.textContent = `${login} — ${unidade}`;
+      unitLabel.textContent = `${login} — ${unidade}`;
     } else {
-      label.textContent = '— Sessão expirada';
-      console.warn('auth_me_unidade erro:', data.error);
+      unitLabel.textContent = '— Sessão expirada';
     }
   } catch (e) {
-    console.error(e);
-    label.textContent = '— Erro de conexão';
+    console.error('auth_me_unidade erro:', e);
+    unitLabel.textContent = '— Erro de conexão';
   }
 }
 
-
-/* ===== Busca aprovações da unidade no ano 2025 ===== */
 async function carregarAprovacoes() {
-  const tbody = document.getElementById('tbodyAprov');
-  const info  = document.getElementById('infoResumo');
-  tbody.innerHTML = '';
-  info.textContent = 'Carregando dados...';
+  const tbody = document.querySelector('#tabela-aprovacoes tbody');
+  const msg   = document.getElementById('msg-lista');
+  if (tbody) tbody.innerHTML = '';
+  if (msg)   msg.textContent = 'Carregando...';
 
   try {
-    const res = await fetch(API + 'aprovacoes_unidade_list.php?ano=' + ANO_ALVO, {
-      credentials:'include'
+    const res = await fetch(API + 'aprovacoes_unidade_list.php?ano=2025', {
+      credentials: 'include'
     });
     const data = await res.json();
 
     if (!data.ok) {
-      info.textContent = data.error || 'Falha ao carregar aprovações.';
+      msg.textContent = data.error || 'Erro ao carregar aprovações.';
       return;
     }
 
-    APROV_ROWS = data.rows || [];
-
-    if (!APROV_ROWS.length) {
-      info.textContent = 'Nenhuma aprovação cadastrada para 2025 nesta unidade.';
-      return;
-    }
-
-    info.textContent = `${APROV_ROWS.length} aprovação(ões) encontradas.`;
-    renderTabela(APROV_ROWS);
-
+    msg.textContent = '';
+    (data.rows || []).forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.aluno ?? ''}</td>
+        <td>${r.serie ?? ''}</td>
+        <td>${r.unidade ?? ''}</td>
+        <td>${r.cadastro ?? ''}</td>
+        <td>${r.curso ?? ''}</td>
+        <td>${r.instituicao ?? ''}</td>
+        <td>${r.lista ?? ''}</td>
+        <td>${r.chamada ?? ''}</td>
+        <td>${r.usuario ?? ''}</td>
+      `;
+      tbody.appendChild(tr);
+    });
   } catch (e) {
-    console.error(e);
-    info.textContent = 'Erro ao carregar aprovações.';
+    console.error('Erro ao carregar lista:', e);
+    msg.textContent = 'Erro de conexão ao carregar aprovações.';
   }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  carregarUsuario();
+  carregarAprovacoes();
+});
+
 
 /* ===== Render da tabela ===== */
 function renderTabela(rows) {
