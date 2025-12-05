@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/config.php';
 
-// ==== CORS (ajuste se o front estiver em outro domínio) ====
+// CORS
 header('Access-Control-Allow-Origin: https://secauxiliar.com.br');
 header('Vary: Origin');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
@@ -16,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// ==== Lê JSON enviado pelo index.html ====
 $raw  = file_get_contents('php://input');
 $data = json_decode($raw, true) ?? [];
 
@@ -45,24 +44,29 @@ try {
     $stmt->execute([':login' => $login]);
     $row = $stmt->fetch();
 
-    // Confere se achou a unidade e se está ativa
-    if (!$row || (int)$row['ativo'] !== 1) {
-        json_error('Login ou senha inválidos.', 401);
+    // ===== DEBUG PASSO A PASSO =====
+    if (!$row) {
+        json_error('Login não encontrado: ' . $login, 401);
     }
 
-    // Confere a senha com password_verify (assumindo que você usou password_hash)
+    if ((int)$row['ativo'] !== 1) {
+        json_error('Unidade encontrada, mas não está ativa.', 401);
+    }
+
+    if (empty($row['hash_senha'])) {
+        json_error('Unidade sem hash_senha cadastrado.', 401);
+    }
+
     if (!password_verify($senha, $row['hash_senha'])) {
-        json_error('Login ou senha inválidos.', 401);
+        json_error('Senha não confere para este login.', 401);
     }
+    // ===== FIM DEBUG =====
 
-    // Aqui você pode abrir sessão ou gerar um token; vou usar sessão simples:
     session_start();
-    $_SESSION['aprov_unidade_id']   = (int)$row['id'];
-    $_SESSION['aprov_unidade_nome'] = $row['unidade'];
-    $_SESSION['aprov_unidade_login']= $row['login'];
+    $_SESSION['aprov_unidade_id']    = (int)$row['id'];
+    $_SESSION['aprov_unidade_nome']  = $row['unidade'];
+    $_SESSION['aprov_unidade_login'] = $row['login'];
 
-    // PHP vai mandar o cookie de sessão (PHPSESSID) automaticamente.
-    // O front só precisa de um ok + informações básicas da unidade.
     json_ok([
         'id'      => (int)$row['id'],
         'unidade' => $row['unidade'],
