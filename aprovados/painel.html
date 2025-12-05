@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Painel • Aprove — Conferência de Aprovados</title>
+
+  <!-- Materialize -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <style>
+    :root {
+      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+      --ink:#0f172a; --muted:#6b7280; 
+      --primary:#0b3b78; --accent:#2563eb;
+      --aside-w:260px; --topbar-h:64px;
+    }
+
+    html, body {height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
+    body {color:var(--ink);}
+    .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
+
+    /* ===== TOPBAR ===== */
+    header.topbar {
+      position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
+      background:var(--primary); color:#fff; display:flex; align-items:center;
+      padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+
+    /* ===== SIDEBAR ===== */
+    aside {
+      background:#fff; border-right:1px solid var(--line);
+      position:sticky; top:var(--topbar-h);
+      height:calc(100vh - var(--topbar-h)); overflow:auto; z-index:6;
+      padding-bottom:20px;
+    }
+
+    .menu {list-style:none; margin:0; padding:0 0 12px;}
+    .menu a {
+      display:block; padding:10px 22px; color:#111827; text-decoration:none;
+      font-size:15px; transition:0.25s;
+    }
+    .menu a:hover {background:#f4f6fb; color:var(--primary);}
+    .menu .active > a {background:#eef3ff; font-weight:600; color:var(--primary);}
+    .menu-group {margin-bottom:12px;}
+    .group-title {
+      font-weight:700; color:#0b3b78; text-transform:uppercase;
+      font-size:13px; letter-spacing:0.5px;
+      padding:10px 20px 6px; border-top:1px solid #eef2f8;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
+    .page {padding:24px;}
+    .card {border-radius:14px; box-shadow:0 6px 18px rgba(16,24,40,.06);}
+    .value {font-size:22px; font-weight:700;}
+    .label {color:var(--muted); font-size:13px;}
+    #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
+    footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
+    
+    @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
+  </style>
+</head>
+
+<body>
+<div class="app">
+  <!-- ===== SIDEBAR ===== -->
+  <aside>
+    <div class="center" style="padding:18px 0 8px;">
+      <span class="title" style="font-weight:700; color:#0b3b78">Aprove</span>
+    </div>
+
+    <ul class="menu">
+      <li><a href="/aprove/painel.html">Início</a></li>
+
+      <li class="menu-group">
+        <div class="group-title">Atualizações</div>
+        <ul>
+          <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
+          <li class="active"><a href="/aprove/alunos.html">Alunos</a></li>
+          <li><a href="/aprove/instituicoes.html">Instituições</a></li>
+          <li><a href="/aprove/cursos.html">Cursos</a></li>
+          <li><a href="/aprove/unidades.html">Unidades</a></li>
+          <li><a href="/aprove/autorizacoes.html">Autorização de Imagem</a></li>
+          <li><a href="/aprove/vestibulares.html">Listas de Aprovados</a></li>
+        </ul>
+      </li>
+
+      <li class="menu-group">
+        <div class="group-title">Ferramentas</div>
+        <ul>
+          <li><a href="/aprove/conferir_listas.html">Conferir Listas</a></li>
+          <li><a href="/aprove/importar_aprovacoes.html">Importar Aprovações</a></li>
+        </ul>
+      </li>
+
+      <li class="menu-group">
+        <div class="group-title">Relatórios</div>
+        <ul>
+          <li><a href="/aprove/convocacoes_geral.html">Convocados 2ª Fase</a></li>
+          <li><a href="/aprove/aprovacoes_geral.html">Aprovados</a></li>
+          <li><a href="/aprove/porcentagem_lista.html">Porcentagem Lista</a></li>
+          <li><a href="/aprove/totais_curso.html">Totais por Curso</a></li>
+          <li><a href="/aprove/totais_instituicao.html">Totais por Instituição</a></li>
+        </ul>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main>
+    <header class="topbar">
+      <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="/aprove/logo-mini.png" alt="Logo" style="height:28px; width:auto;">
+          <h5 style="margin:0; font-weight:600;">
+            Aprove — Conferência de Aprovados — <span id="unitLabel">—</span>
+          </h5>
+        </div>
+        <div style="display:flex; align-items:center;">
+          <a class="btn-flat waves-effect white-text" href="#!" onclick="logout()">Sair</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="page">
+      <div class="row" style="margin-bottom:10px">
+        <div class="col s12 m6 l2">
+          <div class="card z-depth-0">
+            <div class="card-content center">
+              <div class="value" id="kpiGeral">—</div>
+              <div class="label">Geral</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m6 l2">
+          <div class="card z-depth-0">
+            <div class="card-content center">
+              <div class="value" id="kpiUsp">—</div>
+              <div class="label">USP</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m6 l2">
+          <div class="card z-depth-0">
+            <div class="card-content center">
+              <div class="value" id="kpiUnicamp">—</div>
+              <div class="label">UNICAMP</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m6 l2">
+          <div class="card z-depth-0">
+            <div class="card-content center">
+              <div class="value" id="kpiUnesp">—</div>
+              <div class="label">UNESP</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m6 l2">
+          <div class="card z-depth-0">
+            <div class="card-content center">
+              <div class="value" id="kpiSisu">—</div>
+              <div class="label">SISU</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m6 l2">
+          <div class="card z-depth-0">
+            <div class="card-content center">
+              <div class="value" id="kpiUnifesp">—</div>
+              <div class="label">UNIFESP</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="row">
+        <div class="col s12 m4">
+          <div class="card hoverable center">
+            <div class="card-content"><div class="title" style="font-weight:700">Aprovações</div>              
+            </div>
+            <div class="card-action"><a href="/aprove/aprovacoes_geral.html" class="btn waves-effect waves-light blue darken-2">Abrir</a></div>
+          </div>
+        </div>
+
+        <div class="col s12 m4">
+          <div class="card hoverable center">
+            <div class="card-content"><div class="title" style="font-weight:700">Convocações Segunda Fase</div>
+            </div>
+            <div class="card-action"><a href="/aprove/convocacoes_geral.html" class="btn waves-effect waves-light blue darken-2">Abrir</a></div>
+          </div>
+        </div>
+
+        <div class="col s12 m4">
+          <div class="card hoverable center">
+            <div class="card-content"><div class="title" style="font-weight:700">Relatórios</div>
+              <p class="grey-text">Visualizar estatísticas de aprovações</p>
+            </div>
+            <div class="card-action"><a href="#" class="btn-flat grey-text">Abrir</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
+  </main>
+</div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/aprove/';
+const LOGIN_URL = '/aprove/index.html';
+
+/* ===== Logout ===== */
+async function logout(){
+  try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); }
+  catch(_) {}
+  location.replace(LOGIN_URL);
+}
+
+/* ===== Exemplo de atualização dos KPIs ===== */
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const res = await fetch(API + 'dashboard_stats.php', {credentials:'include'});
+    const data = await res.json();
+    const d = data.data || {};
+    const nf = new Intl.NumberFormat('pt-BR');
+    document.getElementById('kpiTotal').textContent = nf.format(d.total ?? 0);
+    document.getElementById('kpiNovos').textContent = nf.format(d.novos ?? 0);
+    document.getElementById('kpiConfirmados').textContent = nf.format(d.confirmados ?? 0);
+    document.getElementById('kpiPendentes').textContent = nf.format(d.pendentes ?? 0);
+  } catch(e) {
+    console.warn('Falha ao carregar KPIs', e);
+  }
+});
+
+
+/* ===== Mostra nome e login do usuário ===== */
+async function carregarUsuario() {
+  try {
+    const res = await fetch(API + 'auth_me.php', { credentials:'include' });
+    const data = await res.json();
+    if (data.ok && data.user) {
+      const nome  = data.user.nome  ?? 'Usuário';
+      const login = data.user.login ?? '';
+      document.getElementById('unitLabel').textContent = `${login} — ${nome}`;
+    } else {
+      document.getElementById('unitLabel').textContent = '— Sessão expirada';
+    }
+  } catch (e) {
+    document.getElementById('unitLabel').textContent = '— Erro de conexão';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  carregarUsuario();
+  carregarKpis();
+});
+
+async function carregarKpis() {
+  const el = document.getElementById('kpiGeral');
+  if (!el) return;
+
+  el.textContent = '…'; // loading
+
+  try {
+    const res = await fetch(API + 'painel_kpi_geral.php', {
+      credentials: 'include'
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      el.textContent = (data.total ?? 0).toLocaleString('pt-BR');
+    } else {
+      el.textContent = '—';
+      console.error(data.error || 'Falha ao carregar KPI Geral');
+    }
+  } catch (e) {
+    el.textContent = '—';
+    console.error('Erro KPI Geral:', e);
+  }
+}
+
+</script>
+</body>
+</html>
