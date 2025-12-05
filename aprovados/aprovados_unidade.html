@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Aprove • Aprovados da Unidade</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <style>
+    :root{
+      --primary:#0b3b78;
+      --bg:#f7f8fb;
+      --line:#e5e7eb;
+    }
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:var(--bg);
+    }
+    header.topbar{
+      position:fixed;
+      top:0; left:0; right:0;
+      height:64px;
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 24px;
+      box-shadow:0 2px 8px rgba(15,23,42,.35);
+      z-index:10;
+    }
+    header.topbar h5{
+      margin:0;
+      font-size:18px;
+      font-weight:600;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    main{
+      max-width:1180px;
+      margin:88px auto 40px;
+      padding:0 16px;
+    }
+    .page-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:8px;
+    }
+    .page-title h4{
+      margin:0;
+      font-size:24px;
+      font-weight:700;
+      color:#111827;
+    }
+    .subtitle{
+      margin:0 0 16px;
+      color:#6b7280;
+      font-size:14px;
+    }
+    table.striped > tbody > tr:nth-child(odd){
+      background:#f9fafb;
+    }
+    table th{
+      font-size:13px;
+      color:#6b7280;
+      white-space:nowrap;
+    }
+    table td{
+      font-size:13px;
+      padding:6px 10px;
+      border-bottom:1px solid #eef2f7;
+    }
+    .pill-year{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:#e0edff;
+      color:#1d4ed8;
+      font-size:13px;
+      font-weight:500;
+    }
+    .search-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-bottom:10px;
+      align-items:center;
+    }
+    .search-row input{
+      max-width:260px;
+    }
+    .msg{
+      font-size:14px;
+      color:#6b7280;
+      margin-top:8px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <h5>
+    <img src="/aprove/logo-mini.png" alt="Logo" style="height:28px">
+    Aprove — Conferência de Aprovados
+    <span id="unitLabel" style="font-size:14px; font-weight:400; opacity:.9">—</span>
+  </h5>
+  <button class="btn-flat waves-effect white-text" onclick="logout()">Sair</button>
+</header>
+
+<main>
+  <div class="page-title">
+    <div>
+      <h4>Aprovações cadastradas</h4>
+      <p class="subtitle">
+        Abaixo estão as aprovações cadastradas para <strong>cadastro 2025</strong>, filtradas pela sua unidade.
+      </p>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+      <span class="pill-year">
+        Cadastro <span id="anoSpan">2025</span>
+      </span>
+      <a href="aprovados_novos_unidade.html" class="btn waves-effect waves-light blue darken-2">
+        Cadastrar novos aprovados
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-content">
+      <div class="search-row">
+        <div class="input-field" style="margin-top:0;">
+          <input id="filtroNome" type="text" placeholder="Filtrar por nome do aluno...">
+        </div>
+        <div class="msg" id="infoResumo">Carregando...</div>
+      </div>
+
+      <div class="responsive-table">
+        <table class="striped highlight">
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th>Série</th>
+              <th>Unidade</th>
+              <th>Cadastro</th>
+              <th>Curso</th>
+              <th>Instituição</th>
+              <th>Lista</th>
+              <th>Chamada</th>
+              <th>Usuário</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyAprov"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const API       = 'https://apisec.secauxiliar.com.br/aprovados/';
+const LOGIN_URL = '/aprovados/index.html';
+const ANO_ALVO  = 2025; // se precisar mudar depois, é aqui
+
+let APROV_ROWS = [];
+
+/* ===== Logout ===== */
+async function logout(){
+  try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); }
+  catch(_) {}
+  location.replace(LOGIN_URL);
+}
+
+/* ===== Carrega unidade logada (JWT) ===== */
+async function carregarUsuario() {
+  try {
+    const res  = await fetch(API + 'auth_me.php', { credentials:'include' });
+    const data = await res.json();
+    if (data.ok && data.user) {
+      const login = data.user.login ?? '';
+      const nome  = data.user.unidade ?? data.user.nome ?? '';
+      document.getElementById('unitLabel').textContent = `${login} — ${nome}`;
+    } else {
+      document.getElementById('unitLabel').textContent = '— Sessão expirada';
+    }
+  } catch (e) {
+    document.getElementById('unitLabel').textContent = '— Erro de conexão';
+  }
+}
+
+/* ===== Busca aprovações da unidade no ano alvo ===== */
+async function carregarAprovacoes() {
+  const tbody = document.getElementById('tbodyAprov');
+  const info  = document.getElementById('infoResumo');
+  tbody.innerHTML = '';
+  info.textContent = 'Carregando dados...';
+
+  try {
+    const res = await fetch(API + 'aprovacoes_unidade_list.php?ano=' + ANO_ALVO, {
+      credentials:'include'
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      info.textContent = data.error || 'Falha ao carregar aprovações.';
+      return;
+    }
+
+    APROV_ROWS = data.rows || [];
+
+    if (!APROV_ROWS.length) {
+      info.textContent = 'Nenhuma aprovação cadastrada para 2025 nesta unidade.';
+      return;
+    }
+
+    info.textContent = `${APROV_ROWS.length} aprovação(ões) encontradas.`;
+    renderTabela(APROV_ROWS);
+
+  } catch (e) {
+    console.error(e);
+    info.textContent = 'Erro ao carregar aprovações.';
+  }
+}
+
+/* ===== Renderização da tabela (com filtro por nome) ===== */
+function renderTabela(rows) {
+  const tbody = document.getElementById('tbodyAprov');
+  tbody.innerHTML = '';
+
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.aluno ?? ''}</td>
+      <td>${r.serie ?? ''}</td>
+      <td>${r.unidade ?? ''}</td>
+      <td>${r.cadastro ?? ''}</td>
+      <td>${r.curso ?? ''}</td>
+      <td>${r.instituicao ?? ''}</td>
+      <td>${r.lista ?? ''}</td>
+      <td>${r.chamada ?? ''}</td>
+      <td>${r.usuario ?? ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ===== Filtro simples por nome ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  carregarUsuario();
+  carregarAprovacoes();
+
+  document.getElementById('anoSpan').textContent = ANO_ALVO;
+
+  const filtro = document.getElementById('filtroNome');
+  filtro.addEventListener('input', () => {
+    const termo = filtro.value.trim().toLowerCase();
+    if (!termo) {
+      renderTabela(APROV_ROWS);
+      return;
+    }
+    const filtrados = APROV_ROWS.filter(r =>
+      (r.aluno || '').toLowerCase().includes(termo)
+    );
+    renderTabela(filtrados);
+  });
+});
+</script>
+</body>
+</html>
