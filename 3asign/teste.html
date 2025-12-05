@@ -483,6 +483,7 @@
 </div>
 
 <script>
+  let envelopeAtual = null; // guarda o envelope carregado
   const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
 
   function getToken() {
@@ -718,6 +719,40 @@
       const dests= data.destinatarios || [];
       const docs = data.documentos || [];
 
+      // guarda o envelope globalmente para o botão usar depois
+      envelopeAtual = env;
+
+      // --- controle do botão "Gerar PDF final manualmente" ---
+      const btnPdf = document.getElementById('btnGerarPdfFinal');
+      const msgPdf = document.getElementById('msgPdfFinal');
+
+      // ajusta a regra conforme o que você quiser
+      // aqui vou considerar:
+      // - mostrar se envelope estiver "completed" MAS sem final_pdf
+      // - ou se tiver flag de erro (erro_pdf == 1)
+      const status = env.status || '';
+      const temFinal = !!env.final_pdf;
+      const erroPdf = Number(env.erro_pdf || 0);
+
+      let deveMostrar = false;
+      let mensagem = '';
+
+      if (status !== 'draft' && (!temFinal || erroPdf === 1)) {
+        deveMostrar = true;
+        if (erroPdf === 1) {
+          mensagem = 'Houve falha ao gerar o PDF final. Você pode tentar gerar manualmente.';
+        }
+      }
+
+      if (deveMostrar) {
+        btnPdf.style.display = 'inline-block';
+        msgPdf.textContent = mensagem;
+      } else {
+        btnPdf.style.display = 'none';
+        msgPdf.textContent = '';
+      }
+
+
       // header
       document.getElementById('envTitulo').textContent = env.titulo;
       document.getElementById('envCriadoEm').textContent = formatDataBr(env.created_at);
@@ -894,44 +929,10 @@
     });
   })();
 
- let envelopeAtual = null; // guarda o envelope carregado
-
-async function carregarEnvelope(id) {
-  const res = await fetch(API_BASE + '/envelope_get.php?id=' + id, {
-    credentials: 'include'
-  });
-  const data = await res.json();
-
-  if (!data.ok) {
-    alert(data.error || 'Falha ao carregar envelope');
-    return;
-  }
-
-  const env = data.envelope;
-  envelopeAtual = env;
-
-  // ... aqui você já preenche os campos do resumo, docs, destinatários etc ...
-
-  const btnPdf = document.getElementById('btnGerarPdfFinal');
-  const msgPdf = document.getElementById('msgPdfFinal');
-
-  // Regra: só mostra o botão se já está assinado/fechado E não tem pdf_final
-  // ou se marcamos erro de PDF
-  if ((env.status === 'ASSINADO' || env.status === 'CONCLUIDO') &&
-      (!env.pdf_final || env.erro_pdf == 1)) {
-    btnPdf.style.display = 'inline-block';
-    msgPdf.textContent = env.erro_pdf == 1
-      ? 'Houve falha ao gerar o PDF final. Você pode tentar gerar manualmente.'
-      : '';
-  } else {
-    btnPdf.style.display = 'none';
-    msgPdf.textContent = '';
-  }
-}
-
 document.getElementById('btnGerarPdfFinal').addEventListener('click', async () => {
-  if (!envelopeAtual) return;
-  const id = envelopeAtual.id;
+  const env = envelopeAtual;
+  if (!env) return;
+  const id = env.id;
 
   if (!confirm('Gerar o PDF final deste envelope agora?')) return;
 
@@ -942,24 +943,25 @@ document.getElementById('btnGerarPdfFinal').addEventListener('click', async () =
   msg.textContent = 'Gerando PDF final...';
 
   try {
-    const res = await fetch(API_BASE + '/envelope_pdf_retry.php?id=' + id, {
-      credentials: 'include'
+    const res = await fetch(`${API_BASE}/pdf_retry.php?id=${id}`, {
+      headers: {
+        'Authorization': 'Bearer ' + getToken()
+      }
     });
     const data = await res.json();
 
     if (data.ok) {
       msg.textContent = 'PDF final gerado com sucesso.';
-      // se a API devolver o link
       if (data.final_url) {
         msg.innerHTML += ' <a href="'+data.final_url+'" target="_blank">Abrir PDF</a>';
       }
-      btn.disabled = false;
     } else {
       msg.textContent = 'Erro ao gerar PDF: ' + (data.error || 'desconhecido');
-      btn.disabled = false;
     }
   } catch (e) {
+    console.error(e);
     msg.textContent = 'Falha na requisição.';
+  } finally {
     btn.disabled = false;
   }
 });
