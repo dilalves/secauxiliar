@@ -180,22 +180,30 @@ async function logout(){
   location.replace(LOGIN_URL);
 }
 
-/* ===== Mostra código e nome da unidade logada ===== */
-async function carregarUsuario() {
+/* ===== Mostra código e nome da unidade logada ===== */async function carregarUsuario() {
+  const label = document.getElementById('unitLabel');
+  if (!label) return;
+
   try {
-    const res  = await fetch(API + 'auth_me_unidade.php', { credentials:'include' });
+    const res = await fetch(API + 'auth_me_unidade.php', {
+      credentials: 'include'
+    });
     const data = await res.json();
-    if (data.ok && data.unidade) {
-      const login = data.unidade.login ?? '';
-      const nome  = data.unidade.nome  ?? '';
-      document.getElementById('unitLabel').textContent = `${login} — ${nome}`;
+
+    if (data.ok) {
+      const login   = data.login   || '';
+      const unidade = data.unidade || '';
+      label.textContent = `${login} — ${unidade}`;
     } else {
-      document.getElementById('unitLabel').textContent = '— Sessão expirada';
+      label.textContent = '— Sessão expirada';
+      console.warn('auth_me_unidade erro:', data.error);
     }
   } catch (e) {
-    document.getElementById('unitLabel').textContent = '— Erro de conexão';
+    console.error(e);
+    label.textContent = '— Erro de conexão';
   }
 }
+
 
 /* ===== Busca aprovações da unidade no ano 2025 ===== */
 async function carregarAprovacoes() {
