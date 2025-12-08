@@ -245,7 +245,7 @@
     </div>
   </div>
 
-  <!-- ETAPA 2: DADOS DA APROVAÇÃO -->
+    <!-- ETAPA 2: DADOS DA APROVAÇÃO -->
   <div id="card-aprovacao" class="card card-desabilitado" style="margin-top:16px;">
     <div class="card-content">
       <div class="step-title">
@@ -253,57 +253,54 @@
         <span><strong>Dados da aprovação</strong></span>
       </div>
 
-      <p class="subtitle" style="margin-bottom:8px;">
+      <p class="subtitle" style="margin-bottom:12px;">
         Aluno selecionado:
-        <strong id="aluno-selecionado">(nenhum aluno selecionado)</strong>
+        <strong id="aluno-selecionado">(nenhum aluno selecionado)</strong><br>
+        Preencha os dados informados pelo aluno.
       </p>
 
-      <div class="grid2">
-        <div class="input-field" style="margin-top:0;">
-          <select id="campo-curso">
-            <option value="" selected>Selecione...</option>
-            <!-- você pode popular via JS depois com os cursos mais comuns -->
-          </select>
-          <label>Curso (como informado pelo aluno)</label>
-        </div>
-        <div class="input-field" style="margin-top:0;">
-          <input id="campo-instituicao" type="text">
-          <label for="campo-instituicao" class="active">Instituição</label>
-        </div>
+      <div class="responsive-table">
+        <table class="striped">
+          <thead>
+            <tr>
+              <th>Curso</th>
+              <th>Instituição</th>
+              <th style="width:80px;">Cls</th>
+              <th>Observações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <input id="campo-curso" type="text" placeholder="Ex: Medicina">
+              </td>
+              <td>
+                <input id="campo-instituicao" type="text" placeholder="Ex: USP, UNICAMP...">
+              </td>
+              <td>
+                <input id="campo-cls" type="number" value="0" min="0">
+              </td>
+              <td>
+                <input id="campo-obs" type="text" placeholder="Informações adicionais (opcional)">
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      <div class="grid3">
-        <div class="input-field">
-          <input id="campo-colocacao" type="number" min="1">
-          <label for="campo-colocacao" class="active">Classificação</label>
-        </div>
-        <div class="input-field">
-          <input id="campo-lista" type="text" value="2026">
-          <label for="campo-lista" class="active">Lista</label>
-        </div>
-        <div class="input-field">
-          <input id="campo-chamada" type="number" value="1" min="1">
-          <label for="campo-chamada" class="active">Chamada</label>
-        </div>
+      <div style="margin-top:12px; font-size:12px; color:#6b7280;">
+        A listagem, código da unidade e data/hora de registro serão preenchidos automaticamente.
       </div>
 
-      <div class="grid2">
-        <div class="input-field">
-          <input id="campo-cls" type="number" value="0">
-          <label for="campo-cls" class="active">Cls</label>
-        </div>
-        <div class="input-field">
-          <input id="campo-obs" type="text">
-          <label for="campo-obs" class="active">Observações (opcional)</label>
-        </div>
+      <div style="margin-top:16px;">
+        <button type="button" class="btn waves-effect blue darken-2" onclick="salvarAprovacao()">
+          Salvar aprovação
+        </button>
+        <span id="msg-aprovacao" class="msg"></span>
       </div>
-
-      <button type="button" class="btn waves-effect blue darken-2" onclick="salvarAprovacao()">
-        Salvar aprovação
-      </button>
-      <span id="msg-aprovacao" class="msg"></span>
     </div>
   </div>
+
 </main>
 
 <script>
@@ -358,9 +355,10 @@ async function buscarAlunosUnidade() {
   hint.textContent = 'Buscando...';
 
   try {
-    const res = await fetch(API + 'alunos_unidade_list.php?nome=' + encodeURIComponent(termo) + '&ano=' + ANO_ALVO, {
-      credentials:'include'
-    });
+    const res = await fetch(
+      API + 'alunos_unidade_list.php?nome=' + encodeURIComponent(termo) + '&ano=' + ANO_ALVO,
+      { credentials:'include' }
+    );
     const data = await res.json();
 
     if (!data.ok) {
@@ -400,11 +398,16 @@ async function buscarAlunosUnidade() {
   }
 }
 
+/* ===== Quando seleciona um aluno da lista ===== */
 function selecionarAluno(r){
   alunoSelecionado = { id: r.ID, nome: r.NOME, serie: r.SERIE };
   document.getElementById('aluno-selecionado').textContent =
     `${r.NOME} (série ${r.SERIE})`;
-  document.getElementById('card-aprovacao').classList.remove('card-desabilitado');
+  const cardAprov = document.getElementById('card-aprovacao');
+  cardAprov.classList.remove('card-desabilitado');
+
+  // Opcional: rolar até o passo 2 pra ficar mais amigável
+  cardAprov.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* ===== Cadastro rápido de novo aluno em CADALUNO ===== */
@@ -456,21 +459,29 @@ async function salvarAprovacao(){
     return;
   }
 
+  const curso       = document.getElementById('campo-curso').value.trim();
+  const instituicao = document.getElementById('campo-instituicao').value.trim();
+  const cls         = document.getElementById('campo-cls').value.trim();
+  const obs         = document.getElementById('campo-obs').value.trim();
+  const msg         = document.getElementById('msg-aprovacao');
+
+  if (!curso || !instituicao){
+    msg.textContent = 'Informe pelo menos o Curso e a Instituição.';
+    return;
+  }
+
   const payload = {
-    codaluno: alunoSelecionado.id,
-    curso: document.getElementById('campo-curso').value,
-    instituicao: document.getElementById('campo-instituicao').value.trim(),
-    colocacao: document.getElementById('campo-colocacao').value,
-    lista: document.getElementById('campo-lista').value.trim(),
-    chamada: document.getElementById('campo-chamada').value,
-    cls: document.getElementById('campo-cls').value,
-    obs: document.getElementById('campo-obs').value.trim()
+    codaluno:    alunoSelecionado.id,
+    curso:       curso,
+    instituicao: instituicao,
+    cls:         cls === '' ? 0 : Number(cls),
+    obs:         obs
   };
 
-  const msg = document.getElementById('msg-aprovacao');
   msg.textContent = 'Salvando aprovação...';
 
   try{
+    // ajuste o nome do PHP aqui conforme você criar (aprovacao_unidade_insert.php ou aprovacoes_unidade_insert.php)
     const res = await fetch(API + 'aprovacao_unidade_insert.php', {
       method:'POST',
       credentials:'include',
@@ -487,9 +498,11 @@ async function salvarAprovacao(){
     msg.textContent = 'Aprovação enviada para conferência.';
     M.toast({html:'Aprovação registrada com sucesso!'});
 
-    // se quiser, pode limpar os campos aqui:
-    // document.getElementById('campo-instituicao').value = '';
-    // ...
+    // limpa campos (mantém o aluno selecionado, caso queira registrar mais de uma aprovação pra ele)
+    document.getElementById('campo-curso').value = '';
+    document.getElementById('campo-instituicao').value = '';
+    document.getElementById('campo-cls').value = '0';
+    document.getElementById('campo-obs').value = '';
 
   }catch(e){
     console.error('erro salvar aprovacao:', e);
@@ -504,5 +517,8 @@ document.addEventListener('DOMContentLoaded', () => {
   M.FormSelect.init(selects);
 });
 </script>
+
+
+
 </body>
 </html>
