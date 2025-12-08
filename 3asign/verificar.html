@@ -100,7 +100,8 @@
 <script>
 (function(){
   const params = new URLSearchParams(location.search);
-  const k = params.get('k');
+  const k    = params.get('k');
+  const doc  = params.get('doc'); // <- pega o doc da URL, se existir
 
   const card = document.getElementById('card');
   const loading = document.getElementById('loading');
@@ -118,7 +119,13 @@
     return;
   }
 
-  fetch(`https://apisec.secauxiliar.com.br/digisign/verify.php?k=${encodeURIComponent(k)}`)
+  // monta a URL da API, incluindo &doc= se vier
+  let urlApi = `${API_BASE}/verify.php?k=${encodeURIComponent(k)}`;
+  if (doc) {
+    urlApi += `&doc=${encodeURIComponent(doc)}`;
+  }
+
+  fetch(urlApi)
     .then(r => r.json())
     .then(data => {
       if (!data.ok) {
@@ -132,8 +139,8 @@
         return;
       }
 
-      const env = data.envelope;
-      const doc = data.documento;
+      const env  = data.envelope;
+      const docInfo = data.documento;
       const dests = data.destinatarios || [];
 
       const statusClass =
@@ -144,9 +151,12 @@
       const created = env.created_at || '';
       const final   = env.final_at   || '';
 
-
+      // >>> AQUI É O PULO DO GATO <<<
+      // se verify.php mandou um download.url, usamos ele; senão, caímos no final_pdf do envelope
       let urlFinal = null;
-      if (env.final_pdf) {
+      if (data.download && data.download.url) {
+        urlFinal = data.download.url;
+      } else if (env.final_pdf) {
         urlFinal = `${API_BASE}/storage/${env.final_pdf}`;
       }
 
@@ -176,14 +186,14 @@
           <dl>
             <dt>Download do documento:</dt>
             <dd class="doc-buttons">
-              ${urlFinal    ? `<a class="btn" href="${urlFinal}" target="_blank">Assinado</a>` : ''}
+              ${urlFinal ? `<a class="btn" href="${urlFinal}" target="_blank">Assinado</a>` : ''}
             </dd>
           </dl>
 
-          ${(doc && (doc.sha256 || env.final_sha256)) ? `
+          ${(docInfo && (docInfo.sha256 || env.final_sha256)) ? `
             <div class="section-title">Hash do documento (SHA256)</div>
             <dl>
-              ${doc.sha256 ? `<dt>Arquivo original:</dt><dd><code>${doc.sha256}</code></dd>` : ''}
+              ${docInfo.sha256 ? `<dt>Arquivo original:</dt><dd><code>${docInfo.sha256}</code></dd>` : ''}
               ${env.final_sha256 ? `<dt>Arquivo assinado:</dt><dd><code>${env.final_sha256}</code></dd>` : ''}
             </dl>
           ` : ''}
