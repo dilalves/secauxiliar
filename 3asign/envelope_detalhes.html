@@ -757,18 +757,40 @@
       // documentos
       const ulDocs = document.getElementById('docsLista');
       const docsEmpty = document.getElementById('docsEmpty');
+
       if (!docs.length) {
         docsEmpty.style.display = 'block';
       } else {
         docsEmpty.style.display = 'none';
+
         docs.forEach(d => {
           const li = document.createElement('li');
           const nome = d.nome_original || ('Documento #' + d.id);
           const paginas = d.paginas ? ` • ${d.paginas} pág.` : '';
-          li.textContent = nome + paginas;
+          const textoBase = nome + paginas;
+
+          // se já existir PDF final individual, mostra link igual ao e-mail
+          if (d.final_pdf) {
+            const urlDoc = `${API_BASE}/storage/${d.final_pdf}`; 
+            // exemplo: https://apisec.secauxiliar.com.br/digisign/storage/final/<hash>.pdf
+
+            li.innerHTML = `
+              <a href="${urlDoc}" target="_blank" style="color:#0b3b78;text-decoration:none;">
+                ${textoBase}
+              </a>
+              <span style="font-size:.78rem;color:#6b7280;margin-left:4px;">
+                (assinado)
+              </span>
+            `;
+          } else {
+            // antes da assinatura, só o nome mesmo
+            li.textContent = textoBase;
+          }
+
           ulDocs.appendChild(li);
         });
       }
+
 
       // chips destinatários
       const chips = document.getElementById('chipsDest');
