@@ -348,6 +348,41 @@
       color:#15803d;
     }
 
+    .badge-small {
+      display:inline-block;
+      padding:2px 6px;
+      border-radius:999px;
+      font-size:.7rem;
+      background:#e5e7eb; /* cinza padrão */
+      color:#4b5563;
+      margin-left:4px;
+    }
+
+    .badge-small.signed {
+      background:#dcfce7;    /* verde claro */
+      color:#166534;          /* verde escuro */
+      border:1px solid #86efac;
+    }
+
+    .badge-small.pending {
+      background:#fef9c3;    /* amarelo */
+      color:#854d0e;
+      border:1px solid #fde047;
+    }
+
+    .badge-small.declined {
+      background:#fee2e2;    /* vermelho claro */
+      color:#991b1b;
+      border:1px solid #fca5a5;
+    }
+
+    .badge-small.sent {
+      background:#e0f2fe;    /* azul claro */
+      color:#075985;
+      border:1px solid #7dd3fc;
+    }
+
+
   </style>
 </head>
 <body>
@@ -854,8 +889,12 @@
           }
 
           const tdStatus = document.createElement('td');
-          tdStatus.innerHTML = `<span class="badge-small">${mapStatusLabel(d.status)}</span>`;
-
+          tdStatus.innerHTML = `
+            <span class="badge-small ${d.status}">
+              ${mapStatusLabel(d.status)}
+            </span>
+          `;
+          
           const tdLink = document.createElement('td');
 
           // botão COPIAR LINK
