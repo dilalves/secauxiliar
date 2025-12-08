@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Aprove • Cadastrar novos aprovados</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <style>
+    :root{
+      --primary:#0b3b78;
+      --bg:#f7f8fb;
+      --line:#e5e7eb;
+    }
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:var(--bg);
+    }
+    header.topbar{
+      position:fixed;
+      top:0; left:0; right:0;
+      height:64px;
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 24px;
+      box-shadow:0 2px 8px rgba(15,23,42,.35);
+      z-index:10;
+    }
+    header.topbar h5{
+      margin:0;
+      font-size:18px;
+      font-weight:600;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    main{
+      max-width:1180px;
+      margin:88px auto 40px;
+      padding:0 16px;
+    }
+    .page-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:8px;
+    }
+    .page-title h4{
+      margin:0;
+      font-size:24px;
+      font-weight:700;
+      color:#111827;
+    }
+    .subtitle{
+      margin:0 0 16px;
+      color:#6b7280;
+      font-size:14px;
+    }
+    .pill-year{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:#e0edff;
+      color:#1d4ed8;
+      font-size:13px;
+      font-weight:500;
+    }
+    .msg{
+      font-size:13px;
+      color:#6b7280;
+      margin-top:4px;
+    }
+    .step-title{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:6px;
+    }
+    .step-badge{
+      width:24px; height:24px;
+      border-radius:999px;
+      background:#e5f0ff;
+      color:#1d4ed8;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      font-weight:700;
+    }
+    .lista-alunos{
+      margin-top:8px;
+      max-height:260px;
+      overflow:auto;
+      border-radius:8px;
+      border:1px solid #e5e7eb;
+      background:#f9fafb;
+    }
+    .linha-aluno{
+      width:100%;
+      border:0;
+      background:transparent;
+      padding:8px 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      text-align:left;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .linha-aluno + .linha-aluno{
+      border-top:1px solid #e5e7eb;
+    }
+    .linha-aluno:hover{
+      background:#e5f0ff;
+    }
+    .linha-ou{
+      margin:14px 0;
+      text-align:center;
+      font-size:12px;
+      color:#9ca3af;
+      position:relative;
+    }
+    .linha-ou::before,
+    .linha-ou::after{
+      content:"";
+      position:absolute;
+      top:50%;
+      width:40%;
+      height:1px;
+      background:#e5e7eb;
+    }
+    .linha-ou::before{ left:0; }
+    .linha-ou::after{ right:0; }
+
+    .card-desabilitado{
+      opacity:.6;
+      pointer-events:none;
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+    .grid3{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:16px;
+    }
+    @media (max-width:768px){
+      .grid2, .grid3{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <h5>
+    <img src="/aprove/logo-mini.png" alt="Logo" style="height:28px">
+    Aprove — Conferência de Aprovados
+    <span id="unitLabel" style="font-size:14px; font-weight:400; opacity:.9">—</span>
+  </h5>
+  <button class="btn-flat waves-effect white-text" onclick="logout()">Sair</button>
+</header>
+
+<main>
+  <div class="page-title">
+    <div>
+      <h4>Cadastrar novos aprovados</h4>
+      <p class="subtitle">
+        Informe os alunos aprovados de <strong>Cadastro 2025</strong> da sua unidade.<br>
+        Primeiro escolha/cadastre o aluno, depois preencha os dados da aprovação.
+      </p>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+      <span class="pill-year">
+        Cadastro <span id="anoSpan">2025</span>
+      </span>
+      <a href="painel.html" class="btn-flat waves-effect">Voltar para listagem</a>
+    </div>
+  </div>
+
+  <!-- ETAPA 1: ESCOLHER / CADASTRAR ALUNO -->
+  <div class="card">
+    <div class="card-content">
+      <div class="step-title">
+        <span class="step-badge">1</span>
+        <span><strong>Escolha o aluno</strong></span>
+      </div>
+      <p class="subtitle" style="margin-bottom:8px;">
+        Digite o nome do aluno do Cadastro <strong>2025</strong> da sua unidade.
+      </p>
+
+      <div class="input-field" style="margin-top:0;">
+        <input id="busca-nome" type="text" placeholder="Comece a digitar o nome do aluno..." oninput="buscarAlunosUnidade()">
+      </div>
+      <small id="hint-busca" class="msg">Digite pelo menos 3 letras.</small>
+
+      <div id="lista-alunos" class="lista-alunos" style="display:none;"></div>
+
+      <div class="linha-ou"><span>ou</span></div>
+
+      <button type="button" class="btn waves-effect blue lighten-1" onclick="abrirCadastroAluno()">
+        Aluno não encontrado? Cadastrar novo
+      </button>
+
+      <!-- mini-form de novo aluno -->
+      <div id="form-novo-aluno" style="display:none; margin-top:18px;">
+        <h6><strong>Novo aluno do Cadastro 2025</strong></h6>
+
+        <div class="input-field" style="margin-top:0;">
+          <input id="novo-nome" type="text">
+          <label class="active" for="novo-nome">Nome do aluno</label>
+        </div>
+
+        <div class="input-field">
+          <select id="novo-serie">
+            <option value="" selected>Selecione...</option>
+            <option value="0">0</option>
+            <option value="1">1ª série</option>
+            <option value="2">2ª série</option>
+            <option value="3">3ª série</option>
+          </select>
+          <label>Série</label>
+        </div>
+
+        <button type="button" class="btn waves-effect blue darken-2" onclick="salvarNovoAluno()">
+          Salvar e selecionar aluno
+        </button>
+        <span id="msg-novo-aluno" class="msg"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETAPA 2: DADOS DA APROVAÇÃO -->
+  <div id="card-aprovacao" class="card card-desabilitado" style="margin-top:16px;">
+    <div class="card-content">
+      <div class="step-title">
+        <span class="step-badge">2</span>
+        <span><strong>Dados da aprovação</strong></span>
+      </div>
+
+      <p class="subtitle" style="margin-bottom:8px;">
+        Aluno selecionado:
+        <strong id="aluno-selecionado">(nenhum aluno selecionado)</strong>
+      </p>
+
+      <div class="grid2">
+        <div class="input-field" style="margin-top:0;">
+          <select id="campo-curso">
+            <option value="" selected>Selecione...</option>
+            <!-- você pode popular via JS depois com os cursos mais comuns -->
+          </select>
+          <label>Curso (como informado pelo aluno)</label>
+        </div>
+        <div class="input-field" style="margin-top:0;">
+          <input id="campo-instituicao" type="text">
+          <label for="campo-instituicao" class="active">Instituição</label>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="input-field">
+          <input id="campo-colocacao" type="number" min="1">
+          <label for="campo-colocacao" class="active">Classificação</label>
+        </div>
+        <div class="input-field">
+          <input id="campo-lista" type="text" value="2026">
+          <label for="campo-lista" class="active">Lista</label>
+        </div>
+        <div class="input-field">
+          <input id="campo-chamada" type="number" value="1" min="1">
+          <label for="campo-chamada" class="active">Chamada</label>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="input-field">
+          <input id="campo-cls" type="number" value="0">
+          <label for="campo-cls" class="active">Cls</label>
+        </div>
+        <div class="input-field">
+          <input id="campo-obs" type="text">
+          <label for="campo-obs" class="active">Observações (opcional)</label>
+        </div>
+      </div>
+
+      <button type="button" class="btn waves-effect blue darken-2" onclick="salvarAprovacao()">
+        Salvar aprovação
+      </button>
+      <span id="msg-aprovacao" class="msg"></span>
+    </div>
+  </div>
+</main>
+
+<script>
+const API       = 'https://apisec.secauxiliar.com.br/aprovados/';
+const LOGIN_URL = '/aprovados/index.html';
+const ANO_ALVO  = 2025;
+
+let alunoSelecionado = null; // { id, nome, serie }
+
+/* ===== Logout ===== */
+async function logout(){
+  try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); }
+  catch(_) {}
+  location.replace(LOGIN_URL);
+}
+
+/* ===== Mostra código e nome da unidade logada ===== */
+async function carregarUsuario() {
+  const unitLabel = document.getElementById('unitLabel');
+  unitLabel.textContent = '— carregando...';
+
+  try {
+    const res = await fetch(API + 'auth_me_unidade.php', { credentials: 'include' });
+    const data = await res.json();
+
+    if (data.ok) {
+      const login   = data.login   || '';
+      const unidade = data.unidade || '';
+      unitLabel.textContent = `${login} — ${unidade}`;
+    } else {
+      unitLabel.textContent = '— Sessão expirada';
+    }
+  } catch (e) {
+    console.error('auth_me_unidade erro:', e);
+    unitLabel.textContent = '— Erro de conexão';
+  }
+}
+
+/* ===== BUSCA DE ALUNOS (CADASTRO 2025 + UNIDADE) ===== */
+async function buscarAlunosUnidade() {
+  const termo = document.getElementById('busca-nome').value.trim();
+  const lista = document.getElementById('lista-alunos');
+  const hint  = document.getElementById('hint-busca');
+
+  lista.innerHTML = '';
+  if (termo.length < 3) {
+    lista.style.display = 'none';
+    hint.textContent = 'Digite pelo menos 3 letras.';
+    return;
+  }
+
+  hint.textContent = 'Buscando...';
+
+  try {
+    const res = await fetch(API + 'alunos_unidade_list.php?nome=' + encodeURIComponent(termo) + '&ano=' + ANO_ALVO, {
+      credentials:'include'
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      hint.textContent = data.error || 'Erro ao buscar alunos.';
+      lista.style.display = 'none';
+      return;
+    }
+
+    const rows = data.rows || [];
+    if (!rows.length) {
+      hint.textContent = 'Nenhum aluno encontrado para esse nome.';
+      lista.style.display = 'none';
+      return;
+    }
+
+    hint.textContent = '';
+    lista.style.display = 'block';
+
+    rows.forEach(r => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'linha-aluno';
+      btn.innerHTML = `
+        <div>
+          <strong>${r.NOME}</strong><br>
+          <small>Série: ${r.SERIE} • Cadastro ${r.CADASTRO}</small>
+        </div>
+      `;
+      btn.onclick = () => selecionarAluno(r);
+      lista.appendChild(btn);
+    });
+
+  } catch (e) {
+    console.error('erro busca alunos:', e);
+    hint.textContent = 'Erro de conexão ao buscar alunos.';
+    lista.style.display = 'none';
+  }
+}
+
+function selecionarAluno(r){
+  alunoSelecionado = { id: r.ID, nome: r.NOME, serie: r.SERIE };
+  document.getElementById('aluno-selecionado').textContent =
+    `${r.NOME} (série ${r.SERIE})`;
+  document.getElementById('card-aprovacao').classList.remove('card-desabilitado');
+}
+
+/* ===== Cadastro rápido de novo aluno em CADALUNO ===== */
+function abrirCadastroAluno(){
+  document.getElementById('form-novo-aluno').style.display = 'block';
+  const selects = document.querySelectorAll('select');
+  M.FormSelect.init(selects);
+}
+
+async function salvarNovoAluno(){
+  const nome  = document.getElementById('novo-nome').value.trim();
+  const serie = document.getElementById('novo-serie').value;
+  const msg   = document.getElementById('msg-novo-aluno');
+
+  if (!nome || !serie){
+    msg.textContent = 'Informe nome e série.';
+    return;
+  }
+
+  msg.textContent = 'Salvando aluno...';
+
+  try{
+    const res = await fetch(API + 'aluno_insert_minimo.php', {
+      method:'POST',
+      credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ nome, serie, cadastro: ANO_ALVO })
+    });
+    const data = await res.json();
+
+    if (!data.ok){
+      msg.textContent = data.error || 'Erro ao cadastrar aluno.';
+      return;
+    }
+
+    msg.textContent = 'Aluno cadastrado. Você já pode registrar a aprovação.';
+    selecionarAluno({ ID:data.id, NOME:nome, SERIE:serie, CADASTRO:ANO_ALVO });
+
+  }catch(e){
+    console.error('erro salvar aluno:', e);
+    msg.textContent = 'Erro de conexão ao salvar aluno.';
+  }
+}
+
+/* ===== Salvar aprovação da unidade (tabela aprovacoes_unidade) ===== */
+async function salvarAprovacao(){
+  if (!alunoSelecionado){
+    M.toast({html:'Selecione um aluno primeiro.'});
+    return;
+  }
+
+  const payload = {
+    codaluno: alunoSelecionado.id,
+    curso: document.getElementById('campo-curso').value,
+    instituicao: document.getElementById('campo-instituicao').value.trim(),
+    colocacao: document.getElementById('campo-colocacao').value,
+    lista: document.getElementById('campo-lista').value.trim(),
+    chamada: document.getElementById('campo-chamada').value,
+    cls: document.getElementById('campo-cls').value,
+    obs: document.getElementById('campo-obs').value.trim()
+  };
+
+  const msg = document.getElementById('msg-aprovacao');
+  msg.textContent = 'Salvando aprovação...';
+
+  try{
+    const res = await fetch(API + 'aprovacao_unidade_insert.php', {
+      method:'POST',
+      credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (!data.ok){
+      msg.textContent = data.error || 'Erro ao salvar aprovação.';
+      return;
+    }
+
+    msg.textContent = 'Aprovação enviada para conferência.';
+    M.toast({html:'Aprovação registrada com sucesso!'});
+
+    // se quiser, pode limpar os campos aqui:
+    // document.getElementById('campo-instituicao').value = '';
+    // ...
+
+  }catch(e){
+    console.error('erro salvar aprovacao:', e);
+    msg.textContent = 'Erro de conexão ao salvar aprovação.';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('anoSpan').textContent = ANO_ALVO;
+  carregarUsuario();
+  const selects = document.querySelectorAll('select');
+  M.FormSelect.init(selects);
+});
+</script>
+</body>
+</html>
