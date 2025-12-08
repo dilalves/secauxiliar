@@ -448,101 +448,96 @@
 
   // inicializa o canvas
   function initSignaturePad() {
-    if (!sigCanvas) return;
-    sigCtx = sigCanvas.getContext('2d');
-    sigCtx.strokeStyle = '#000';
-    sigCtx.lineWidth = 2;
-    sigCtx.lineCap = 'round';
-    sigCtx.lineJoin = 'round';
+  if (!sigCanvas) return;
+  sigCtx = sigCanvas.getContext('2d');
+  sigCtx.strokeStyle = '#000';
+  sigCtx.lineWidth = 2;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
 
-    // tenta carregar assinatura salva anteriormente
-    try {
-      const savedSig = localStorage.getItem(SIGNATURE_KEY);
-      if (savedSig) {
-        const img = new Image();
-        img.onload = () => {
-          sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-          sigCtx.drawImage(img, 0, 0, sigCanvas.width, sigCanvas.height);
-          assinaturaDataUrl = savedSig;
-          sigStatus.style.display = 'inline';
-          atualizarEstadoBotao();
-        };
-        img.src = savedSig;
-      }
-    } catch (err) {
-      console.warn('Não foi possível ler assinatura salva:', err);
-    }
+  let tinhaAssinaturaSalva = false;
 
-    const getPos = (e) => {
-      const rect = sigCanvas.getBoundingClientRect();
-      if (e.touches && e.touches.length) {
-        return {
-          x: e.touches[0].clientX - rect.left,
-          y: e.touches[0].clientY - rect.top
-        };
-      }
-      return {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
+  // tenta carregar assinatura salva anteriormente
+  try {
+    const savedSig = localStorage.getItem(SIGNATURE_KEY);
+    if (savedSig) {
+      tinhaAssinaturaSalva = true;
+      const img = new Image();
+      img.onload = () => {
+        sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+        sigCtx.drawImage(img, 0, 0, sigCanvas.width, sigCanvas.height);
+        assinaturaDataUrl = savedSig;
+        sigStatus.style.display = 'inline';
+        atualizarEstadoBotao();
       };
-    };
-
-    const startDraw = (e) => {
-      e.preventDefault();
-      desenhando = true;
-      const p = getPos(e);
-      sigCtx.beginPath();
-      sigCtx.moveTo(p.x, p.y);
-    };
-
-    const moveDraw = (e) => {
-      if (!desenhando) return;
-      e.preventDefault();
-      const p = getPos(e);
-      sigCtx.lineTo(p.x, p.y);
-      sigCtx.stroke();
-    };
-
-    const endDraw = (e) => {
-      if (!desenhando) return;
-      e.preventDefault();
-      desenhando = false;
-
-      assinaturaDataUrl = sigCanvas.toDataURL('image/png');
-      sigStatus.style.display = 'inline';
-
-      // salva assinatura no dispositivo
-      try {
-        localStorage.setItem(SIGNATURE_KEY, assinaturaDataUrl);
-      } catch (err) {
-        console.warn('Não foi possível salvar assinatura localmente:', err);
-      }
-
-      atualizarEstadoBotao();
-    };
-
-    sigCanvas.addEventListener('mousedown', startDraw);
-    sigCanvas.addEventListener('mousemove', moveDraw);
-    sigCanvas.addEventListener('mouseup', endDraw);
-    sigCanvas.addEventListener('mouseleave', endDraw);
-
-    sigCanvas.addEventListener('touchstart', startDraw, { passive:false });
-    sigCanvas.addEventListener('touchmove', moveDraw, { passive:false });
-        sigCanvas.addEventListener('touchend', endDraw, { passive:false });
-
-    // ❗ não vamos limpar se já carregamos uma assinatura salva
-    try {
-      const savedSig = localStorage.getItem(SIGNATURE_KEY);
-      if (!savedSig) {
-        limparAssinatura();
-      }
-      // se tiver savedSig, o onload da imagem já vai chamar atualizarEstadoBotao()
-    } catch (err) {
-      console.warn('Não foi possível ler assinatura salva:', err);
-      limparAssinatura();
+      img.src = savedSig;
     }
-}
+  } catch (err) {
+    console.warn('Não foi possível ler assinatura salva:', err);
+  }
 
+  const getPos = (e) => {
+    const rect = sigCanvas.getBoundingClientRect();
+    if (e.touches && e.touches.length) {
+      return {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top
+      };
+    }
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+  };
+
+  const startDraw = (e) => {
+    e.preventDefault();
+    desenhando = true;
+    const p = getPos(e);
+    sigCtx.beginPath();
+    sigCtx.moveTo(p.x, p.y);
+  };
+
+  const moveDraw = (e) => {
+    if (!desenhando) return;
+    e.preventDefault();
+    const p = getPos(e);
+    sigCtx.lineTo(p.x, p.y);
+    sigCtx.stroke();
+  };
+
+  const endDraw = (e) => {
+    if (!desenhando) return;
+    e.preventDefault();
+    desenhando = false;
+
+    assinaturaDataUrl = sigCanvas.toDataURL('image/png');
+    sigStatus.style.display = 'inline';
+
+    try {
+      localStorage.setItem(SIGNATURE_KEY, assinaturaDataUrl);
+    } catch (err) {
+      console.warn('Não foi possível salvar assinatura localmente:', err);
+    }
+
+    atualizarEstadoBotao();
+  };
+
+  sigCanvas.addEventListener('mousedown', startDraw);
+  sigCanvas.addEventListener('mousemove', moveDraw);
+  sigCanvas.addEventListener('mouseup', endDraw);
+  sigCanvas.addEventListener('mouseleave', endDraw);
+
+  sigCanvas.addEventListener('touchstart', startDraw, { passive:false });
+  sigCanvas.addEventListener('touchmove', moveDraw, { passive:false });
+  sigCanvas.addEventListener('touchend', endDraw, { passive:false });
+
+  // se NÃO tinha assinatura salva, começa limpando
+  if (!tinhaAssinaturaSalva) {
+    limparAssinatura();
+  }
+}
 
   if (btnLimparAss) {
     btnLimparAss.addEventListener('click', (e) => {
