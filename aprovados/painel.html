@@ -203,13 +203,14 @@ async function carregarUsuario() {
 }
 
 async function carregarAprovacoes() {
-  const tbody = document.querySelector('#tabela-aprovacoes tbody');
-  const msg   = document.getElementById('msg-lista');
-  if (tbody) tbody.innerHTML = '';
-  if (msg)   msg.textContent = 'Carregando...';
+  const tbody = document.getElementById('tbodyAprov');
+  const msg   = document.getElementById('infoResumo');
+
+  tbody.innerHTML = '';
+  msg.textContent = 'Carregando...';
 
   try {
-    const res = await fetch(API + 'aprovacoes_unidade_list.php?ano=2025', {
+    const res = await fetch(API + 'aprovacoes_unidade_list.php?ano=' + ANO_ALVO, {
       credentials: 'include'
     });
     const data = await res.json();
@@ -219,32 +220,17 @@ async function carregarAprovacoes() {
       return;
     }
 
-    msg.textContent = '';
-    (data.rows || []).forEach(r => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${r.aluno ?? ''}</td>
-        <td>${r.serie ?? ''}</td>
-        <td>${r.unidade ?? ''}</td>
-        <td>${r.cadastro ?? ''}</td>
-        <td>${r.curso ?? ''}</td>
-        <td>${r.instituicao ?? ''}</td>
-        <td>${r.lista ?? ''}</td>
-        <td>${r.chamada ?? ''}</td>
-        <td>${r.usuario ?? ''}</td>
-      `;
-      tbody.appendChild(tr);
-    });
+    APROV_ROWS = data.rows || [];
+    msg.textContent = APROV_ROWS.length
+      ? `${APROV_ROWS.length} aprovações encontradas.`
+      : 'Nenhuma aprovação encontrada.';
+
+    renderTabela(APROV_ROWS);
   } catch (e) {
     console.error('Erro ao carregar lista:', e);
     msg.textContent = 'Erro de conexão ao carregar aprovações.';
   }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  carregarUsuario();
-  carregarAprovacoes();
-});
 
 
 /* ===== Render da tabela ===== */
