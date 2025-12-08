@@ -2,9 +2,13 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Assinar documento • DigiSign</title>
+  <title>Assinar documento • 3aSign</title>
+  <!-- Favicon -->
+  <link rel="icon" href="icone.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="icone.ico" type="image/x-icon">
+
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  
   <style>
     :root {
       --bg: #f3f4f6;
@@ -33,7 +37,7 @@
     }
     .card {
       width: 100%;
-      max-width: 720px;
+      max-width: 900px;
       background: var(--card);
       border-radius: 14px;
       box-shadow: 0 18px 45px rgba(15,23,42,0.18);
@@ -62,6 +66,7 @@
       font-size: 13px;
       margin-bottom: 18px;
     }
+
     .section {
       border-top: 1px solid var(--line);
       padding-top: 14px;
@@ -91,44 +96,45 @@
       max-height: 180px;
       overflow: auto;
       background: #f9fafb;
-      font-size: 13px;
-      color: var(--ink);
     }
     .doc-item {
-      padding: 4px 0;
+      padding: 6px 0;
       border-bottom: 1px dashed #e5e7eb;
+      font-size: 13px;
+      color: var(--ink);
     }
     .doc-item:last-child {
       border-bottom: none;
     }
 
-    /* seção dos PDFs em tela cheia (dentro do card) */
-    .pdf-section {
-      margin-top: 18px;
+    /* área dos PDFs empilhados */
+    #pdf-section {
       border-top: 1px solid var(--line);
-      padding-top: 12px;
+      margin-top: 18px;
+      padding-top: 14px;
     }
-    .pdf-section h2 {
+    #pdf-section h2 {
       margin: 0 0 4px;
       font-size: 14px;
       color: var(--ink);
     }
-    .pdf-section p {
-      margin: 0 0 10px;
+    #pdf-section p {
+      margin: 0 0 12px;
       font-size: 13px;
       color: var(--muted);
     }
-    #pdfContainer {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+    .pdf-card {
+      margin-bottom: 24px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 4px 20px rgba(15,23,42,0.25);
     }
     .pdf-frame {
       width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      height: 900px; /* altura confortável para desktop */
-      background: #000;
+      height: 900px;
+      border: none;
+      display: block;
     }
 
     .actions {
@@ -218,13 +224,13 @@
       display:none;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 720px) {
       .card { padding: 18px 16px 18px; }
       .section {
         grid-template-columns: 1fr;
       }
       .pdf-frame {
-        height: 520px; /* menor altura no celular */
+        height: 600px;
       }
     }
   </style>
@@ -233,7 +239,7 @@
 <div class="wrap">
   <div class="card">
     <div class="top-logo">
-      <b>DigiSign</b> • Curso Objetivo
+      <b>3aSign</b> • 3A Sistemas
     </div>
     <h1 id="titulo-principal">Carregando...</h1>
     <div class="sub" id="subtitulo">
@@ -246,7 +252,7 @@
           <h2>Dados da assinatura</h2>
           <div class="fieldline">Destinatário: <span id="dest-nome">–</span></div>
           <div class="fieldline">E-mail: <span id="dest-email">–</span></div>
-          <div class="fieldline">Título do documento: <span id="env-titulo">–</span></div>
+          <div class="fieldline">Título do envelope: <span id="env-titulo">–</span></div>
           <div class="fieldline">Status atual: <span id="dest-status">–</span></div>
         </div>
         <div>
@@ -257,12 +263,12 @@
         </div>
       </div>
 
-      <!-- PDFs em tela (um embaixo do outro) -->
-      <div class="pdf-section">
+      <!-- PDFs empilhados em tela grande -->
+      <section id="pdf-section">
         <h2>Visualizar documento(s)</h2>
-        <p>Os documentos anexados a este envelope são exibidos abaixo, na ordem enviada. Role a página até o final para ler tudo antes de assinar.</p>
+        <p>Os documentos anexados a este envelope são exibidos abaixo, na ordem enviada. Role até o final para ler tudo antes de assinar.</p>
         <div id="pdfContainer"></div>
-      </div>
+      </section>
 
       <!-- área de assinatura -->
       <div class="actions" id="area-assinatura">
@@ -270,6 +276,10 @@
           <input type="checkbox" id="chk-concordo" />
           <label for="chk-concordo">
             Declaro que li o(s) documento(s) acima e concordo com os termos apresentados.
+            <br>
+            <small id="scroll-info" style="color:var(--muted);font-size:11px;">
+              Role até o final dos documentos para habilitar esta opção.
+            </small>
           </label>
         </div>
 
@@ -280,6 +290,50 @@
           <button type="button" id="btn-limpar-assinatura">Limpar assinatura</button>
           <span id="sig-status">Assinatura registrada ✔</span>
         </div>
+
+        <!-- VERIFICAÇÃO DE IDENTIDADE (selfie / documento) -->
+        <div id="verificacao-identidade"
+             style="display:none; margin:12px 0 10px; padding:10px 12px; border-radius:10px;
+                    border:1px solid var(--line); background:#f9fafb;">
+          <h2 style="margin:0 0 4px; font-size:14px; color:var(--ink);">
+            Verificação de identidade
+          </h2>
+          <p style="margin:0 0 10px; font-size:12px; color:var(--muted);">
+            Para reforçar a identificação, este envelope solicita o envio de selfie e/ou foto de documento
+            antes de concluir a assinatura.
+          </p>
+
+          <div id="bloco-selfie" style="margin-bottom:10px; display:none;">
+            <strong style="font-size:13px;">Selfie do signatário</strong>
+            <p style="margin:2px 0 6px; font-size:12px; color:var(--muted);">
+              Tire uma foto do seu rosto em ambiente claro.
+            </p>
+            <input type="file" id="input-selfie" accept="image/*" capture="user">
+            <button type="button"
+                    id="btn-enviar-selfie"
+                    class="btn-primary"
+                    style="padding:6px 14px; font-size:12px; margin-top:4px;">
+              Enviar selfie
+            </button>
+            <div id="status-selfie" class="msg" style="margin-top:4px;"></div>
+          </div>
+
+          <div id="bloco-doc" style="margin-bottom:0; display:none;">
+            <strong style="font-size:13px;">Foto do documento</strong>
+            <p style="margin:2px 0 6px; font-size:12px; color:var(--muted);">
+              Fotografe a frente de um documento oficial (RG, CNH, RNE, etc.).
+            </p>
+            <input type="file" id="input-doc" accept="image/*" capture="environment">
+            <button type="button"
+                    id="btn-enviar-doc"
+                    class="btn-primary"
+                    style="padding:6px 14px; font-size:12px; margin-top:4px;">
+              Enviar documento
+            </button>
+            <div id="status-doc" class="msg" style="margin-top:4px;"></div>
+          </div>
+        </div>
+
 
         <div class="btn-row">
           <button class="btn-primary" id="btn-assinar" disabled>Assinar documento</button>
@@ -295,7 +349,7 @@
     </div>
 
     <div class="footer">
-      Sistema de assinaturas DigiSign • 3A Sistemas
+      Sistema de assinaturas 3aSign • 3A Sistemas
     </div>
   </div>
 </div>
@@ -303,16 +357,28 @@
 <script>
 (function() {
   const token = new URLSearchParams(window.location.search).get('token');
+  const SIGNATURE_KEY = '3asign_signature'; // assinatura salva no dispositivo
+  const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+
+  // flags de verificação
+  let mustSelfie = false;
+  let mustDoc = false;
+  let hasSelfie = false;
+  let hasDoc = false;
+
   const tituloPrincipal = document.getElementById('titulo-principal');
   const subtitulo = document.getElementById('subtitulo');
   const conteudo = document.getElementById('conteudo');
   const listaDocs = document.getElementById('lista-docs');
   const pdfContainer = document.getElementById('pdfContainer');
+
   const destNome = document.getElementById('dest-nome');
   const destEmail = document.getElementById('dest-email');
   const envTitulo = document.getElementById('env-titulo');
   const destStatus = document.getElementById('dest-status');
+
   const chkConcordo = document.getElementById('chk-concordo');
+  const scrollInfo = document.getElementById('scroll-info');
   const btnAssinar = document.getElementById('btn-assinar');
   const msg = document.getElementById('mensagem');
   const areaAssinatura = document.getElementById('area-assinatura');
@@ -322,10 +388,34 @@
   const sigStatus = document.getElementById('sig-status');
   const btnLimparAss = document.getElementById('btn-limpar-assinatura');
 
+  const cardVerificacao = document.getElementById('verificacao-identidade');
+  const blocoSelfie = document.getElementById('bloco-selfie');
+  const blocoDoc = document.getElementById('bloco-doc');
+  const inputSelfie = document.getElementById('input-selfie');
+  const inputDoc = document.getElementById('input-doc');
+  const btnEnviarSelfie = document.getElementById('btn-enviar-selfie');
+  const btnEnviarDoc = document.getElementById('btn-enviar-doc');
+  const statusSelfie = document.getElementById('status-selfie');
+  const statusDoc = document.getElementById('status-doc');
+
   // ---- assinatura (canvas) ----
   let sigCtx = null;
   let desenhando = false;
   let assinaturaDataUrl = null;
+  let leituraLiberada = false;
+
+  function limparAssinatura() {
+    if (!sigCanvas || !sigCtx) return;
+    sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+    assinaturaDataUrl = null;
+    sigStatus.style.display = 'none';
+    atualizarEstadoBotao();
+    try {
+      localStorage.removeItem(SIGNATURE_KEY);
+    } catch (err) {
+      console.warn('Não foi possível remover assinatura salva:', err);
+    }
+  }
 
   function setMensagem(texto, tipo) {
     msg.textContent = texto || '';
@@ -342,6 +432,20 @@
     }
   }
 
+  function atualizarEstadoBotao() {
+      // requisitos  de identidade
+      const okSelfie = !mustSelfie || hasSelfie;
+      const okDoc    = !mustDoc || hasDoc;
+
+      const pode = chkConcordo.checked &&
+                  leituraLiberada &&
+                  !!assinaturaDataUrl &&
+                  okSelfie &&
+                  okDoc;
+
+      btnAssinar.disabled = !pode;
+    }                             
+
   // inicializa o canvas
   function initSignaturePad() {
     if (!sigCanvas) return;
@@ -350,6 +454,24 @@
     sigCtx.lineWidth = 2;
     sigCtx.lineCap = 'round';
     sigCtx.lineJoin = 'round';
+
+    // tenta carregar assinatura salva anteriormente
+    try {
+      const savedSig = localStorage.getItem(SIGNATURE_KEY);
+      if (savedSig) {
+        const img = new Image();
+        img.onload = () => {
+          sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+          sigCtx.drawImage(img, 0, 0, sigCanvas.width, sigCanvas.height);
+          assinaturaDataUrl = savedSig;
+          sigStatus.style.display = 'inline';
+          atualizarEstadoBotao();
+        };
+        img.src = savedSig;
+      }
+    } catch (err) {
+      console.warn('Não foi possível ler assinatura salva:', err);
+    }
 
     const getPos = (e) => {
       const rect = sigCanvas.getBoundingClientRect();
@@ -385,12 +507,18 @@
       if (!desenhando) return;
       e.preventDefault();
       desenhando = false;
+
       assinaturaDataUrl = sigCanvas.toDataURL('image/png');
       sigStatus.style.display = 'inline';
-      // só habilita o botão se o checkbox estiver marcado
-      if (chkConcordo.checked) {
-        btnAssinar.disabled = false;
+
+      // salva assinatura no dispositivo
+      try {
+        localStorage.setItem(SIGNATURE_KEY, assinaturaDataUrl);
+      } catch (err) {
+        console.warn('Não foi possível salvar assinatura localmente:', err);
       }
+
+      atualizarEstadoBotao();
     };
 
     sigCanvas.addEventListener('mousedown', startDraw);
@@ -400,15 +528,169 @@
 
     sigCanvas.addEventListener('touchstart', startDraw, { passive:false });
     sigCanvas.addEventListener('touchmove', moveDraw, { passive:false });
-    sigCanvas.addEventListener('touchend', endDraw, { passive:false });
+        sigCanvas.addEventListener('touchend', endDraw, { passive:false });
 
-    btnLimparAss.addEventListener('click', () => {
-      sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-      assinaturaDataUrl = null;
-      sigStatus.style.display = 'none';
-      btnAssinar.disabled = true;
+    // ❗ não vamos limpar se já carregamos uma assinatura salva
+    try {
+      const savedSig = localStorage.getItem(SIGNATURE_KEY);
+      if (!savedSig) {
+        limparAssinatura();
+      }
+      // se tiver savedSig, o onload da imagem já vai chamar atualizarEstadoBotao()
+    } catch (err) {
+      console.warn('Não foi possível ler assinatura salva:', err);
+      limparAssinatura();
+    }
+}
+
+
+  if (btnLimparAss) {
+    btnLimparAss.addEventListener('click', (e) => {
+      e.preventDefault();
+      limparAssinatura();
     });
   }
+
+  // libera o checkbox quando o usuário chegar ao final da página
+  function verificarScrollLeitura() {
+    if (leituraLiberada) return;
+    const scrolled = window.innerHeight + window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - 40;
+    if (scrolled >= docHeight) {
+      leituraLiberada = true;
+      chkConcordo.disabled = false;
+      atualizarEstadoBotao();
+      if (scrollInfo) {
+        scrollInfo.textContent = 'Você já rolou todos os documentos. Agora marque a opção acima para habilitar a assinatura.';
+      }
+    }
+  }
+
+    function configurarVerificacao() {
+    if (!cardVerificacao) return;
+
+    if (mustSelfie || mustDoc) {
+      cardVerificacao.style.display = 'block';
+    } else {
+      cardVerificacao.style.display = 'none';
+      return;
+    }
+
+    // selfie
+    if (mustSelfie) {
+      blocoSelfie.style.display = 'block';
+      if (hasSelfie) {
+        statusSelfie.textContent = 'Selfie já enviada.';
+        statusSelfie.className = 'msg sucesso';
+      } else {
+        statusSelfie.textContent = 'Nenhuma selfie enviada ainda.';
+        statusSelfie.className = 'msg error';
+      }
+    } else {
+      blocoSelfie.style.display = 'none';
+    }
+
+    // documento
+    if (mustDoc) {
+      blocoDoc.style.display = 'block';
+      if (hasDoc) {
+        statusDoc.textContent = 'Documento já enviado.';
+        statusDoc.className = 'msg sucesso';
+      } else {
+        statusDoc.textContent = 'Nenhuma foto de documento enviada ainda.';
+        statusDoc.className = 'msg error';
+      }
+    } else {
+      blocoDoc.style.display = 'none';
+    }
+
+    atualizarEstadoBotao();
+  }
+
+  // --- upload da selfie ---
+  if (btnEnviarSelfie) {
+    btnEnviarSelfie.addEventListener('click', async () => {
+      if (!inputSelfie.files || inputSelfie.files.length === 0) {
+        alert('Escolha ou tire uma foto para enviar.');
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append('token', token);
+      fd.append('arquivo', inputSelfie.files[0]);
+
+      statusSelfie.textContent = 'Enviando selfie...';
+      statusSelfie.className = 'msg';
+
+      try {
+        const resp = await fetch(API_BASE + '/sign_upload_selfie.php', {
+          method: 'POST',
+          body: fd
+        });
+        const data = await resp.json();
+
+        if (!resp.ok || !data.ok) {
+          statusSelfie.textContent = data.error || 'Erro ao enviar selfie.';
+          statusSelfie.className = 'msg error';
+          return;
+        }
+
+        hasSelfie = true;
+        statusSelfie.textContent = 'Selfie enviada com sucesso.';
+        statusSelfie.className = 'msg sucesso';
+        atualizarEstadoBotao();
+
+      } catch (e) {
+        console.error(e);
+        statusSelfie.textContent = 'Falha na comunicação ao enviar selfie.';
+        statusSelfie.className = 'msg error';
+      }
+    });
+  }
+
+  // --- upload do documento ---
+  if (btnEnviarDoc) {
+    btnEnviarDoc.addEventListener('click', async () => {
+      if (!inputDoc.files || inputDoc.files.length === 0) {
+        alert('Escolha ou tire a foto do documento para enviar.');
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append('token', token);
+      fd.append('arquivo', inputDoc.files[0]);
+
+      statusDoc.textContent = 'Enviando documento...';
+      statusDoc.className = 'msg';
+
+      try {
+        const resp = await fetch(API_BASE + '/sign_upload_doc.php', {
+          method: 'POST',
+          body: fd
+        });
+        const data = await resp.json();
+
+        if (!resp.ok || !data.ok) {
+          statusDoc.textContent = data.error || 'Erro ao enviar documento.';
+          statusDoc.className = 'msg error';
+          return;
+        }
+
+        hasDoc = true;
+        statusDoc.textContent = 'Documento enviado com sucesso.';
+        statusDoc.className = 'msg sucesso';
+        atualizarEstadoBotao();
+
+      } catch (e) {
+        console.error(e);
+        statusDoc.textContent = 'Falha na comunicação ao enviar documento.';
+        statusDoc.className = 'msg error';
+      }
+    });
+  }
+
+
+
 
   if (!token) {
     tituloPrincipal.textContent = 'Link inválido';
@@ -416,18 +698,19 @@
     return;
   }
 
-  // marcar checkbox: mostra/esconde quadro de assinatura
+  // marcar checkbox: mostra/esconde quadro de assinatura 
   chkConcordo.addEventListener('change', () => {
     if (chkConcordo.checked) {
       signatureWrapper.style.display = 'block';
-      // só libera botão se já tiver rabisco
-      btnAssinar.disabled = !assinaturaDataUrl;
     } else {
       signatureWrapper.style.display = 'none';
-      btnAssinar.disabled = true;
-      setMensagem('', '');
+      limparAssinatura();
     }
+    setMensagem('', '');
+    // ✅ reavalia o botão sempre que marcar/desmarcar
+    atualizarEstadoBotao();
   });
+
 
   // carregar info do token
   fetch('https://apisec.secauxiliar.com.br/digisign/sign_info.php', {
@@ -454,29 +737,41 @@
     destEmail.textContent = d.email;
     envTitulo.textContent = e.titulo;
     destStatus.textContent = statusLabel(d.status);
+     // flags de verificação (vêm do sign_info.php)
+    mustSelfie = !!e.require_selfie;
+    mustDoc    = !!e.require_doc_photo;
+    hasSelfie  = !!d.selfie_uploaded;
+    hasDoc     = !!d.doc_uploaded;
+
+    configurarVerificacao();
 
     const arquivos = data.arquivos || [];
-    // Lista textual dos documentos
+
+    // lista simples com os nomes
     if (arquivos.length) {
       listaDocs.innerHTML = '';
       arquivos.forEach((arq, idx) => {
         const div = document.createElement('div');
         div.className = 'doc-item';
-        div.textContent = `${idx + 1}. ${arq.nome}`;
+        div.textContent = (idx + 1) + '. ' + arq.nome;
         listaDocs.appendChild(div);
-      });
-
-      // Renderiza todos os PDFs em sequência
-      pdfContainer.innerHTML = '';
-      arquivos.forEach((arq, idx) => {
-        const frame = document.createElement('iframe');
-        frame.className = 'pdf-frame';
-        frame.src = arq.url + '#view=FitH';
-        frame.title = 'Documento ' + (idx + 1);
-        pdfContainer.appendChild(frame);
       });
     } else {
       listaDocs.innerHTML = '<div style="font-size:13px;color:#6b7280;">Nenhum arquivo encontrado.</div>';
+    }
+
+    // monta os PDFs empilhados
+    if (arquivos.length) {
+      pdfContainer.innerHTML = '';
+      arquivos.forEach((arq) => {
+        const card = document.createElement('div');
+        card.className = 'pdf-card';
+        const src = arq.url + '#toolbar=0&view=FitH';
+        card.innerHTML = '<iframe class="pdf-frame" src="' + src + '" title="Documento PDF"></iframe>';
+        pdfContainer.appendChild(card);
+      });
+    } else {
+      pdfContainer.innerHTML = '<p style="font-size:13px;color:#6b7280;">Nenhum PDF disponível para visualização.</p>';
     }
 
     // se já assinado, não mostra área de assinatura
@@ -484,7 +779,11 @@
       areaAssinatura.style.display = 'none';
       areaJaAssinado.style.display = 'block';
     } else {
+      chkConcordo.disabled = true;
+      leituraLiberada = false;
+      window.addEventListener('scroll', verificarScrollLeitura);
       initSignaturePad();
+      atualizarEstadoBotao();
     }
   })
   .catch(err => {
@@ -493,7 +792,7 @@
     subtitulo.textContent = 'Tente novamente em alguns instantes.';
   });
 
-  // clicar em "Assinar documento"
+    // clicar em "Assinar documento"
   btnAssinar.addEventListener('click', () => {
     if (btnAssinar.disabled) return;
 
@@ -505,6 +804,14 @@
       setMensagem('Por favor, faça sua assinatura no quadro antes de confirmar.', 'error');
       return;
     }
+    if (mustSelfie && !hasSelfie) {
+      setMensagem('Envio de selfie é obrigatório para concluir a assinatura.', 'error');
+      return;
+    }
+    if (mustDoc && !hasDoc) {
+      setMensagem('Envio da foto do documento é obrigatório para concluir a assinatura.', 'error');
+      return;
+    }
 
     setMensagem('Registrando sua assinatura...', '');
     btnAssinar.disabled = true;
@@ -514,7 +821,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: token,
-        assinatura: assinaturaDataUrl   // imagem da assinatura (PNG base64)
+        signature: assinaturaDataUrl   // imagem da assinatura (PNG base64)
       })
     })
     .then(r => r.json())
@@ -534,8 +841,9 @@
       setMensagem('Erro ao registrar assinatura. Tente novamente.', 'error');
       btnAssinar.disabled = false;
     });
-  });
+  }); 
 })();
+
 </script>
 </body>
 </html>
