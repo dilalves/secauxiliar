@@ -494,7 +494,6 @@ async function salvarAprovacao(){
   msg.textContent = 'Salvando aprovação...';
 
   try{
-    // ajuste o nome do PHP aqui conforme você criar (aprovacao_unidade_insert.php ou aprovacoes_unidade_insert.php)
     const res = await fetch(API + 'aprovacao_unidade_insert.php', {
       method:'POST',
       credentials:'include',
@@ -504,15 +503,17 @@ async function salvarAprovacao(){
     const data = await res.json();
 
     if (!data.ok){
-      // erro específico de duplicidade vindo do PHP
-      if (data.error === 'duplicidade_aprovacao') {
+      console.warn('Erro ao salvar aprovação:', data);
+      const err = (data.error || '').toString();
+
+      if (err === 'duplicidade_aprovacao' || err.includes('duplicidade')) {
         msg.textContent = 'Já existe uma aprovação cadastrada com esses dados para este aluno.';
         M.toast({
           html: 'Já existe uma aprovação cadastrada com esses dados para este aluno.',
           classes: 'red darken-2'
         });
       } else {
-        msg.textContent = data.error || 'Erro ao salvar aprovação.';
+        msg.textContent = err || 'Erro ao salvar aprovação.';
         M.toast({
           html: 'Erro ao salvar aprovação.',
           classes: 'red darken-2'
@@ -521,11 +522,9 @@ async function salvarAprovacao(){
       return;
     }
 
-
     msg.textContent = 'Aprovação enviada para conferência.';
     M.toast({html:'Aprovação registrada com sucesso!'});
 
-    // limpa campos (mantém o aluno selecionado, caso queira registrar mais de uma aprovação pra ele)
     document.getElementById('campo-curso').value = '';
     document.getElementById('campo-instituicao').value = '';
     document.getElementById('campo-cls').value = '0';
@@ -534,8 +533,13 @@ async function salvarAprovacao(){
   }catch(e){
     console.error('erro salvar aprovacao:', e);
     msg.textContent = 'Erro de conexão ao salvar aprovação.';
+    M.toast({
+      html: 'Erro de conexão ao salvar aprovação.',
+      classes: 'red darken-2'
+    });
   }
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('anoSpan').textContent = ANO_ALVO;
