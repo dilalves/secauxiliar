@@ -194,15 +194,18 @@
               <th>Unidade</th>
               <th>Aluno</th>
               <th>Série</th>
+              <th>VEST</th>
+              <th>Cód. curso</th>
               <th>Curso (texto)</th>
               <th>Instituição (texto)</th>
               <th>Cls</th>
               <th>Lista</th>
               <th>Status</th>
               <th>Data/hora</th>
+              <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="tbodyPendentes"></tbody>
+          <tbody id="tbody-aprov"></tbody>
         </table>
       </div>
     </div>
@@ -218,34 +221,35 @@ function logout(){
     .finally(() => location.replace(LOGIN_URL));
 }
 
-// converte 'P', 'A', 'R' em texto + classe para o chip
+// badge de status (usa col-status-badge para depois o importarAprovacao atualizar)
 function renderStatusChip(st){
   if (!st) return '';
-  let txt = '';
-  let cls = '';
+  let caption = '';
+  let colorClass = '';
+
   switch (st) {
     case 'P':
-      txt = 'Pendente';
-      cls = 'chip-status st-pendente';
+      caption    = 'Pendente';
+      colorClass = 'amber darken-2';
       break;
     case 'A':
-      txt = 'Conferido';
-      cls = 'chip-status st-conferido';
+      caption    = 'Conferido';
+      colorClass = 'green';
       break;
     case 'R':
-      txt = 'Recusado';
-      cls = 'chip-status st-recusado';
+      caption    = 'Recusado';
+      colorClass = 'red';
       break;
     default:
-      txt = st;
-      cls = 'chip-status';
+      caption    = st;
+      colorClass = 'grey';
   }
-  return `<span class="${cls}">${txt}</span>`;
+
+  return `<span class="new badge ${colorClass} col-status-badge" data-badge-caption="${caption}"></span>`;
 }
 
 function formatarData(dt){
   if (!dt) return '';
-  // dt vem como 'YYYY-MM-DD HH:MM:SS', podemos só devolver mesmo
   return dt.replace('T', ' ');
 }
 
@@ -253,7 +257,7 @@ async function carregarAprovacoesUnidade(){
   const anoInput   = document.getElementById('filtroAno');
   const statusSel  = document.getElementById('filtroStatus');
   const undInput   = document.getElementById('filtroUnidade');
-  const tbody      = document.getElementById('tbodyPendentes');
+  const tbody      = document.getElementById('tbody-aprov');
   const msg        = document.getElementById('infoResumo');
 
   const ano        = parseInt(anoInput.value || '2025', 10);
@@ -287,32 +291,68 @@ async function carregarAprovacoesUnidade(){
       ? `${rows.length} aprovações encontradas.`
       : 'Nenhuma aprovação encontrada para os filtros selecionados.';
 
-    rows.forEach(r => {
-      const tr = document.createElement('tr');
+    if (!rows.length){
+      tbody.innerHTML = '';
+      return;
+    }
 
+    tbody.innerHTML = rows.map(r => {
       const unidade = `${r.codunidade} — ${r.unidade ?? ''}`;
       const aluno   = r.aluno ?? '';
       const serie   = r.serie ?? '';
-      const curso   = r.curso_txt ?? '';
-      const inst    = r.instituicao_txt ?? '';
       const cls     = r.cls ?? '';
       const lista   = r.lista ?? '';
       const status  = r.status ?? '';
       const dataReg = r.dt_registro ?? '';
+      const vest    = r.vest_und ?? '';
+      const codcur  = r.codcurso_und ?? '';
+      const curso   = r.curso_txt ?? '';
+      const inst    = r.instituicao_txt ?? '';
 
-      tr.innerHTML = `
-        <td>${unidade}</td>
-        <td>${aluno}</td>
-        <td>${serie}</td>
-        <td>${curso}</td>
-        <td>${inst}</td>
-        <td>${cls}</td>
-        <td>${lista}</td>
-        <td>${renderStatusChip(status)}</td>
-        <td>${formatarData(dataReg)}</td>
+      return `
+        <tr data-id="${r.id}">
+          <td>${unidade}</td>
+          <td>${aluno}</td>
+          <td>${serie}</td>
+
+          <td>
+            <input type="number"
+                   class="browser-default campo-vest"
+                   data-vest-id="${r.id}"
+                   value="${vest}"
+                   style="width:80px;">
+          </td>
+
+          <td>
+            <input type="text"
+                   class="browser-default campo-codcurso"
+                   data-codcurso-id="${r.id}"
+                   value="${codcur}"
+                   style="width:90px;">
+          </td>
+
+          <td class="col-curso-txt">${curso}</td>
+          <td class="col-inst-txt">${inst}</td>
+
+          <td>${cls}</td>
+          <td>${lista}</td>
+
+          <td class="col-status">
+            ${renderStatusChip(status)}
+          </td>
+
+          <td>${formatarData(dataReg)}</td>
+
+          <td>
+            <button type="button"
+                    class="btn-small blue darken-2"
+                    onclick="importarAprovacao(${r.id})">
+              Importar
+            </button>
+          </td>
+        </tr>
       `;
-      tbody.appendChild(tr);
-    });
+    }).join('');
 
   } catch (e) {
     console.error('Erro ao carregar aprovações_unidade:', e);
@@ -321,22 +361,90 @@ async function carregarAprovacoesUnidade(){
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // inicializa selects Materialize
   const selects = document.querySelectorAll('select');
   M.FormSelect.init(selects);
 
-  const anoSpan = document.getElementById('anoSpan');
+  const anoSpan  = document.getElementById('anoSpan');
   const anoInput = document.getElementById('filtroAno');
   anoSpan.textContent = anoInput.value;
 
-  // sempre que mudar o ano no filtro, atualiza o pill
   anoInput.addEventListener('change', () => {
     anoSpan.textContent = anoInput.value;
   });
 
   carregarAprovacoesUnidade();
 });
+
+async function importarAprovacao(id) {
+  const vestInput  = document.querySelector(`input[data-vest-id="${id}"]`);
+  const cursoInput = document.querySelector(`input[data-codcurso-id="${id}"]`);
+
+  if (!vestInput || !cursoInput) return;
+
+  const vest     = vestInput.value.trim();
+  const codcurso = cursoInput.value.trim();
+
+  if (!vest || !codcurso) {
+    M.toast({
+      html: 'Informe o VEST e o código do curso antes de importar.',
+      classes: 'red darken-2'
+    });
+    return;
+  }
+
+  try {
+    const res = await fetch(API + 'aprovacoes_unidade_import.php', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, vest, codcurso })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      let msg = data.error || 'Erro ao importar aprovação.';
+
+      if (data.error === 'curso_nao_encontrado') {
+        msg = 'Combinação VEST + código de curso não encontrada no cadastro de cursos do vestibular.';
+      } else if (data.error === 'duplicidade_aprovacao') {
+        msg = 'Já existe uma aprovação oficial para este aluno com esse curso/lista.';
+      } else if (data.error === 'ja_importado') {
+        msg = 'Esta aprovação já foi importada anteriormente.';
+      }
+
+      M.toast({ html: msg, classes: 'red darken-2' });
+      return;
+    }
+
+    const linha = document.querySelector(`tr[data-id="${id}"]`);
+    if (linha) {
+      const tdCurso  = linha.querySelector('.col-curso-txt');
+      const tdInst   = linha.querySelector('.col-inst-txt');
+      const tdStatus = linha.querySelector('.col-status');
+
+      if (tdCurso)  tdCurso.textContent = data.curso || '';
+      if (tdInst)   tdInst.textContent  = data.instituicao || '';
+      if (tdStatus) tdStatus.innerHTML  =
+        '<span class="new badge green col-status-badge" data-badge-caption="Conferido"></span>';
+    }
+
+    M.toast({
+      html: 'Aprovação importada para o cadastro oficial.',
+      classes: 'green darken-2'
+    });
+
+  } catch (e) {
+    console.error('erro importar aprovacao:', e);
+    M.toast({
+      html: 'Erro de conexão ao importar aprovação.',
+      classes: 'red darken-2'
+    });
+  }
+}
 </script>
+
+
 
 </body>
 </html>
