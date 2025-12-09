@@ -352,14 +352,21 @@ async function carregarUsuario() {
   }
 }
 
-/* ===== BUSCA DE ALUNOS (CADASTRO 2025 + UNIDADE) ===== */
-async function buscarAlunosUnidade() {
-  const termo = document.getElementById('busca-nome').value.trim();
-  const lista = document.getElementById('lista-alunos');
-  const hint  = document.getElementById('hint-busca');
 
-  lista.innerHTML = '';
+/* ===== BUSCA DE ALUNOS (CADASTRO 2025 + UNIDADE) ===== */
+let ULTIMA_BUSCA = '';  // controla a busca mais recente
+
+async function buscarAlunosUnidade() {
+  const input   = document.getElementById('busca-nome');
+  const termo   = input.value.trim();
+  const lista   = document.getElementById('lista-alunos');
+  const hint    = document.getElementById('hint-busca');
+
+  // marca qual foi o último termo digitado
+  ULTIMA_BUSCA = termo;
+
   if (termo.length < 3) {
+    lista.innerHTML = '';
     lista.style.display = 'none';
     hint.textContent = 'Digite pelo menos 3 letras.';
     return;
@@ -367,15 +374,26 @@ async function buscarAlunosUnidade() {
 
   hint.textContent = 'Buscando...';
 
+  // guarda o termo usado NESTA requisição
+  const termoDestaRequisicao = termo;
+
   try {
     const res = await fetch(
-      API + 'alunos_unidade_list.php?nome=' + encodeURIComponent(termo) + '&ano=' + ANO_ALVO,
-      { credentials:'include' }
+      API + 'alunos_unidade_list.php?nome=' + encodeURIComponent(termoDestaRequisicao) +
+      '&ano=' + ANO_ALVO,
+      { credentials: 'include' }
     );
     const data = await res.json();
 
+    // se enquanto essa requisição rodava o usuário digitou outra coisa,
+    // ignoramos esta resposta (é “velha”)
+    if (ULTIMA_BUSCA !== termoDestaRequisicao) {
+      return;
+    }
+
     if (!data.ok) {
       hint.textContent = data.error || 'Erro ao buscar alunos.';
+      lista.innerHTML = '';
       lista.style.display = 'none';
       return;
     }
@@ -383,12 +401,14 @@ async function buscarAlunosUnidade() {
     const rows = data.rows || [];
     if (!rows.length) {
       hint.textContent = 'Nenhum aluno encontrado para esse nome.';
+      lista.innerHTML = '';
       lista.style.display = 'none';
       return;
     }
 
     hint.textContent = '';
     lista.style.display = 'block';
+    lista.innerHTML = ''; // limpa ANTES de montar a lista desta resposta
 
     rows.forEach(r => {
       const btn = document.createElement('button');
@@ -404,13 +424,18 @@ async function buscarAlunosUnidade() {
       lista.appendChild(btn);
     });
 
-
   } catch (e) {
     console.error('erro busca alunos:', e);
-    hint.textContent = 'Erro de conexão ao buscar alunos.';
-    lista.style.display = 'none';
+
+    // só mostra erro se ainda for a busca atual
+    if (ULTIMA_BUSCA === termoDestaRequisicao) {
+      hint.textContent = 'Erro de conexão ao buscar alunos.';
+      lista.innerHTML = '';
+      lista.style.display = 'none';
+    }
   }
 }
+
 
 /* ===== Quando seleciona um aluno da lista ===== */
 function selecionarAluno(r){
