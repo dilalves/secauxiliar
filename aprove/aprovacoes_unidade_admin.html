@@ -208,6 +208,33 @@
           <tbody id="tbody-aprov"></tbody>
         </table>
       </div>
+
+      <!-- NOVO: painel com cursos do vestibular digitado -->
+      <div id="painelCursos" class="card-panel" style="margin-top:16px; display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-weight:600;">
+            Cursos do vestibular <span id="vestAtualSpan"></span>
+          </span>
+          <span class="msg">
+            Clique em um curso para preencher o código na linha focada.
+          </span>
+        </div>
+        <div class="responsive-table" style="max-height:260px;overflow:auto;">
+          <table class="striped">
+            <thead>
+              <tr>
+                <th>Cód. curso</th>
+                <th>Curso</th>
+                <th>Instituição</th>
+                <th>Período</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-cursos-vest"></tbody>
+          </table>
+        </div>
+      </div>
+
+
     </div>
   </div>
 </main>
@@ -216,42 +243,116 @@
 const API       = 'https://apisec.secauxiliar.com.br/aprove/';
 const LOGIN_URL = '/aprovados/index.html';
 
+let linhaFocadaId = null;           // id da linha que estou editando (aprovações_unidade.id)
+const vestCursosCache = {};         // cache dos cursos por VEST
+
 function logout(){
   fetch(API + 'auth_logout.php', { credentials:'include' })
     .finally(() => location.replace(LOGIN_URL));
 }
 
-// badge de status (usa col-status-badge para depois o importarAprovacao atualizar)
+// converte 'P', 'A', 'R' em texto + classe para o chip
 function renderStatusChip(st){
   if (!st) return '';
-  let caption = '';
-  let colorClass = '';
-
+  let txt = '';
+  let cls = '';
   switch (st) {
     case 'P':
-      caption    = 'Pendente';
-      colorClass = 'amber darken-2';
+      txt = 'Pendente';
+      cls = 'chip-status st-pendente';
       break;
     case 'A':
-      caption    = 'Conferido';
-      colorClass = 'green';
+      txt = 'Conferido';
+      cls = 'chip-status st-conferido';
       break;
     case 'R':
-      caption    = 'Recusado';
-      colorClass = 'red';
+      txt = 'Recusado';
+      cls = 'chip-status st-recusado';
       break;
     default:
-      caption    = st;
-      colorClass = 'grey';
+      txt = st;
+      cls = 'chip-status';
   }
-
-  return `<span class="new badge ${colorClass} col-status-badge" data-badge-caption="${caption}"></span>`;
+  return `<span class="${cls}">${txt}</span>`;
 }
 
 function formatarData(dt){
   if (!dt) return '';
   return dt.replace('T', ' ');
 }
+
+/* ========= Cursos do vestibular (usa vestibular_cursos_list.php) ========= */
+
+async function getCursosVest(vest) {
+  vest = String(vest).trim();
+  if (!vest) throw new Error('VEST não informado.');
+
+  if (vestCursosCache[vest]) return vestCursosCache[vest];
+
+  const res  = await fetch(
+    API + 'vestibular_cursos_list.php?vestibular_id=' + encodeURIComponent(vest),
+    { credentials:'include' }
+  );
+  const data = await res.json();
+
+  if (!data.ok) {
+    throw new Error(data.error || 'Erro ao buscar cursos do vestibular.');
+  }
+
+  vestCursosCache[vest] = data.rows || [];
+  return vestCursosCache[vest];
+}
+
+async function mostrarCursosVest(vest) {
+  const painel   = document.getElementById('painelCursos');
+  const tbody    = document.getElementById('tbody-cursos-vest');
+  const spanVest = document.getElementById('vestAtualSpan');
+
+  tbody.innerHTML = '';
+  spanVest.textContent = vest;
+
+  try {
+    const cursos = await getCursosVest(vest);
+
+    if (!cursos.length) {
+      tbody.innerHTML = '<tr><td colspan="4">Nenhum curso cadastrado para este vestibular.</td></tr>';
+    } else {
+      cursos.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.curso_id}</td>
+          <td>${c.curso}</td>
+          <td>${c.sigla_inst || ''}</td>
+          <td>${c.periodo || ''}</td>
+        `;
+        tr.style.cursor = 'pointer';
+
+        // ao clicar no curso, joga o código na linha focada
+        tr.onclick = () => {
+          if (!linhaFocadaId) return;
+          const inputCod = document.querySelector(
+            'input[data-codcurso-id="' + linhaFocadaId + '"]'
+          );
+          if (inputCod) {
+            inputCod.value = c.curso_id;
+            inputCod.focus();
+          }
+        };
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    painel.style.display = 'block';
+  } catch (e) {
+    console.error('erro ao carregar cursos do vestibular:', e);
+    tbody.innerHTML = '<tr><td colspan="4">Erro ao carregar cursos.</td></tr>';
+    painel.style.display = 'block';
+    M.toast({ html:'Erro ao carregar cursos do vestibular.', classes:'red darken-2' });
+  }
+}
+
+/* ==================== Lista de aprovações_unidade ==================== */
 
 async function carregarAprovacoesUnidade(){
   const anoInput   = document.getElementById('filtroAno');
@@ -291,68 +392,76 @@ async function carregarAprovacoesUnidade(){
       ? `${rows.length} aprovações encontradas.`
       : 'Nenhuma aprovação encontrada para os filtros selecionados.';
 
-    if (!rows.length){
-      tbody.innerHTML = '';
-      return;
-    }
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.setAttribute('data-id', r.id);
 
-    tbody.innerHTML = rows.map(r => {
-      const unidade = `${r.codunidade} — ${r.unidade ?? ''}`;
-      const aluno   = r.aluno ?? '';
-      const serie   = r.serie ?? '';
-      const cls     = r.cls ?? '';
-      const lista   = r.lista ?? '';
-      const status  = r.status ?? '';
-      const dataReg = r.dt_registro ?? '';
-      const vest    = r.vest_und ?? '';
-      const codcur  = r.codcurso_und ?? '';
-      const curso   = r.curso_txt ?? '';
-      const inst    = r.instituicao_txt ?? '';
+      const unidade     = `${r.codunidade} — ${r.unidade ?? ''}`;
+      const aluno       = r.aluno ?? '';
+      const serie       = r.serie ?? '';
+      const cursoTxt    = r.curso_txt ?? '';
+      const instTxt     = r.instituicao_txt ?? '';
+      const cls         = r.cls ?? '';
+      const lista       = r.lista ?? '';
+      const statusRow   = r.status ?? '';
+      const dataReg     = r.dt_registro ?? '';
+      const vestUnd     = r.vest_und ?? '';
+      const codcursoUnd = r.codcurso_und ?? '';
 
-      return `
-        <tr data-id="${r.id}">
-          <td>${unidade}</td>
-          <td>${aluno}</td>
-          <td>${serie}</td>
+      tr.innerHTML = `
+        <td>${unidade}</td>
+        <td>${aluno}</td>
+        <td>${serie}</td>
 
-          <td>
-            <input type="number"
-                   class="browser-default campo-vest"
-                   data-vest-id="${r.id}"
-                   value="${vest}"
-                   style="width:80px;">
-          </td>
+        <td>
+          <input type="number" 
+                 class="input-vest" 
+                 data-vest-id="${r.id}" 
+                 value="${vestUnd}" 
+                 style="max-width:80px;">
+        </td>
 
-          <td>
-            <input type="text"
-                   class="browser-default campo-codcurso"
-                   data-codcurso-id="${r.id}"
-                   value="${codcur}"
-                   style="width:90px;">
-          </td>
+        <td>
+          <input type="number" 
+                 class="input-codcurso" 
+                 data-codcurso-id="${r.id}" 
+                 value="${codcursoUnd}" 
+                 style="max-width:80px;">
+        </td>
 
-          <td class="col-curso-txt">${curso}</td>
-          <td class="col-inst-txt">${inst}</td>
-
-          <td>${cls}</td>
-          <td>${lista}</td>
-
-          <td class="col-status">
-            ${renderStatusChip(status)}
-          </td>
-
-          <td>${formatarData(dataReg)}</td>
-
-          <td>
-            <button type="button"
-                    class="btn-small blue darken-2"
-                    onclick="importarAprovacao(${r.id})">
-              Importar
-            </button>
-          </td>
-        </tr>
+        <td class="col-curso-txt">${cursoTxt}</td>
+        <td class="col-inst-txt">${instTxt}</td>
+        <td>${cls}</td>
+        <td>${lista}</td>
+        <td class="col-status">${renderStatusChip(statusRow)}</td>
+        <td>${formatarData(dataReg)}</td>
+        <td>
+          <button class="btn-small blue" onclick="importarAprovacao(${r.id})">
+            Importar
+          </button>
+        </td>
       `;
-    }).join('');
+      tbody.appendChild(tr);
+    });
+
+    // listeners para saber qual linha está focada e carregar cursos do VEST
+    document.querySelectorAll('.input-vest').forEach(inp => {
+      inp.addEventListener('focus', () => {
+        linhaFocadaId = inp.dataset.vestId;
+      });
+      inp.addEventListener('change', () => {
+        const vest = inp.value.trim();
+        if (vest) {
+          mostrarCursosVest(vest);
+        }
+      });
+    });
+
+    document.querySelectorAll('.input-codcurso').forEach(inp => {
+      inp.addEventListener('focus', () => {
+        linhaFocadaId = inp.dataset.codcursoId;
+      });
+    });
 
   } catch (e) {
     console.error('Erro ao carregar aprovações_unidade:', e);
@@ -360,20 +469,7 @@ async function carregarAprovacoesUnidade(){
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const selects = document.querySelectorAll('select');
-  M.FormSelect.init(selects);
-
-  const anoSpan  = document.getElementById('anoSpan');
-  const anoInput = document.getElementById('filtroAno');
-  anoSpan.textContent = anoInput.value;
-
-  anoInput.addEventListener('change', () => {
-    anoSpan.textContent = anoInput.value;
-  });
-
-  carregarAprovacoesUnidade();
-});
+/* ==================== Importar uma aprovação ==================== */
 
 async function importarAprovacao(id) {
   const vestInput  = document.querySelector(`input[data-vest-id="${id}"]`);
@@ -392,6 +488,29 @@ async function importarAprovacao(id) {
     return;
   }
 
+  // valida VEST + curso usando vestibular_cursos_list.php
+  let cursoVest = null;
+  try {
+    const cursos = await getCursosVest(vest);
+    cursoVest = cursos.find(c => String(c.curso_id) === codcurso);
+  } catch (e) {
+    console.error('erro ao validar VEST/curso:', e);
+    M.toast({
+      html: 'Erro ao validar VEST + código do curso.',
+      classes: 'red darken-2'
+    });
+    return;
+  }
+
+  if (!cursoVest) {
+    M.toast({
+      html: 'Combinação VEST + código de curso não encontrada neste vestibular.',
+      classes: 'red darken-2'
+    });
+    return;
+  }
+
+  // se passou na validação, chama o PHP de importação
   try {
     const res = await fetch(API + 'aprovacoes_unidade_import.php', {
       method: 'POST',
@@ -417,16 +536,16 @@ async function importarAprovacao(id) {
       return;
     }
 
-    const linha = document.querySelector(`tr[data-id="${id}"]`);
+    // Atualiza a linha na tabela com curso/instituição oficiais e status verde
+    const linha   = document.querySelector(`tr[data-id="${id}"]`);
     if (linha) {
       const tdCurso  = linha.querySelector('.col-curso-txt');
       const tdInst   = linha.querySelector('.col-inst-txt');
       const tdStatus = linha.querySelector('.col-status');
 
-      if (tdCurso)  tdCurso.textContent = data.curso || '';
-      if (tdInst)   tdInst.textContent  = data.instituicao || '';
-      if (tdStatus) tdStatus.innerHTML  =
-        '<span class="new badge green col-status-badge" data-badge-caption="Conferido"></span>';
+      if (tdCurso)  tdCurso.textContent  = data.curso || tdCurso.textContent;
+      if (tdInst)   tdInst.textContent   = data.instituicao || tdInst.textContent;
+      if (tdStatus) tdStatus.innerHTML   = renderStatusChip('A');
     }
 
     M.toast({
@@ -442,8 +561,24 @@ async function importarAprovacao(id) {
     });
   }
 }
-</script>
 
+/* ==================== Init ==================== */
+
+document.addEventListener('DOMContentLoaded', () => {
+  const selects = document.querySelectorAll('select');
+  M.FormSelect.init(selects);
+
+  const anoSpan  = document.getElementById('anoSpan');
+  const anoInput = document.getElementById('filtroAno');
+  anoSpan.textContent = anoInput.value;
+
+  anoInput.addEventListener('change', () => {
+    anoSpan.textContent = anoInput.value;
+  });
+
+  carregarAprovacoesUnidade();
+});
+</script>
 
 
 </body>
