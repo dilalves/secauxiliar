@@ -504,9 +504,23 @@ async function salvarAprovacao(){
     const data = await res.json();
 
     if (!data.ok){
-      msg.textContent = data.error || 'Erro ao salvar aprovação.';
+      // erro específico de duplicidade vindo do PHP
+      if (data.error === 'duplicidade_aprovacao') {
+        msg.textContent = 'Já existe uma aprovação cadastrada com esses dados para este aluno.';
+        M.toast({
+          html: 'Já existe uma aprovação cadastrada com esses dados para este aluno.',
+          classes: 'red darken-2'
+        });
+      } else {
+        msg.textContent = data.error || 'Erro ao salvar aprovação.';
+        M.toast({
+          html: 'Erro ao salvar aprovação.',
+          classes: 'red darken-2'
+        });
+      }
       return;
     }
+
 
     msg.textContent = 'Aprovação enviada para conferência.';
     M.toast({html:'Aprovação registrada com sucesso!'});
@@ -530,8 +544,6 @@ document.addEventListener('DOMContentLoaded', () => {
   M.FormSelect.init(selects);
 });
 </script>
-
-
 
 </body>
 </html>
