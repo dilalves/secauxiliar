@@ -314,6 +314,41 @@
     </div>
   </div>
 
+  <!-- ETAPA 3: LISTA DO QUE JÁ FOI CADASTRADO PELA UNIDADE -->
+  <div id="card-minhas-aprovacoes" class="card" style="margin-top:16px;">
+    <div class="card-content">
+      <div class="step-title">
+        <span class="step-badge">3</span>
+        <span><strong>Aprovações já enviadas pela sua unidade</strong></span>
+      </div>
+
+      <p class="subtitle" style="margin-bottom:8px;">
+        Abaixo estão as aprovações cadastradas nesta tela para o Cadastro
+        <strong>2025</strong>.
+      </p>
+
+      <div class="responsive-table">
+        <table class="striped highlight">
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th>Série</th>
+              <th>Curso</th>
+              <th>Instituição</th>
+              <th>Cls</th>
+              <th>Status</th>
+              <th>Data/hora</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyMinhasAprov"></tbody>
+        </table>
+      </div>
+
+      <span id="msg-minhas-aprov" class="msg"></span>
+    </div>
+  </div>
+
+
 </main>
 
 <script>
@@ -556,6 +591,9 @@ async function salvarAprovacao(){
     document.getElementById('campo-cls').value = '0';
     document.getElementById('campo-obs').value = '';
 
+    // atualiza a listagem do passo 3
+    carregarMinhasAprovacoes();
+
   }catch(e){
     console.error('erro salvar aprovacao:', e);
     msg.textContent = 'Erro de conexão ao salvar aprovação.';
@@ -566,13 +604,83 @@ async function salvarAprovacao(){
   }
 }
 
-
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('anoSpan').textContent = ANO_ALVO;
   carregarUsuario();
   const selects = document.querySelectorAll('select');
   M.FormSelect.init(selects);
+  carregarMinhasAprovacoes();
 });
+
+
+
+async function carregarMinhasAprovacoes(){
+  const tbody = document.getElementById('tbodyMinhasAprov');
+  const msg   = document.getElementById('msg-minhas-aprov');
+  if (!tbody || !msg) return;
+
+  tbody.innerHTML = '';
+  msg.textContent = 'Carregando aprovações...';
+
+  try {
+    const res = await fetch(API + 'aprovacoes_unidade_list_meus.php?ano=' + ANO_ALVO, {
+      credentials: 'include'
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      msg.textContent = data.error || 'Erro ao carregar aprovações.';
+      return;
+    }
+
+    const rows = data.rows || [];
+    if (!rows.length) {
+      msg.textContent = 'Nenhuma aprovação cadastrada por esta unidade ainda.';
+      return;
+    }
+
+    msg.textContent = rows.length + ' aprovações cadastradas pela sua unidade.';
+
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+
+      const status = (r.status || 'P').toString();
+      let statusLabel = 'Pendente';
+      let chipClass   = 'grey lighten-3';
+
+      if (status === 'A') {
+        statusLabel = 'Aprovada';
+        chipClass   = 'green lighten-4';
+      } else if (status === 'R') {
+        statusLabel = 'Recusada';
+        chipClass   = 'red lighten-4';
+      }
+
+      const dt = r.dt_registro ? r.dt_registro.substring(0,16) : '';
+
+      tr.innerHTML = `
+        <td>${r.aluno || ''}</td>
+        <td>${r.serie || ''}</td>
+        <td>${r.curso || ''}</td>
+        <td>${r.instituicao || ''}</td>
+        <td>${r.cls ?? ''}</td>
+        <td>
+          <span class="chip ${chipClass}" style="height:24px; line-height:24px;">
+            ${statusLabel}
+          </span>
+        </td>
+        <td>${dt}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (e) {
+    console.error('erro carregarMinhasAprovacoes:', e);
+    msg.textContent = 'Erro de conexão ao carregar aprovações.';
+  }
+}
+
+
 </script>
 
 </body>
