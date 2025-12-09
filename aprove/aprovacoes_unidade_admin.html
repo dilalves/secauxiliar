@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Aprove • Aprovações das Unidades</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <style>
+    :root{
+      --primary:#0b3b78;
+      --bg:#f7f8fb;
+      --line:#e5e7eb;
+    }
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--bg);
+    }
+    header.topbar{
+      position:fixed;
+      top:0; left:0; right:0;
+      height:64px;
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 24px;
+      box-shadow:0 2px 8px rgba(15,23,42,.35);
+      z-index:10;
+    }
+    header.topbar h5{
+      margin:0;
+      font-size:18px;
+      font-weight:600;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    main{
+      max-width:1180px;
+      margin:88px auto 40px;
+      padding:0 16px;
+    }
+    .page-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:8px;
+    }
+    .page-title h4{
+      margin:0;
+      font-size:24px;
+      font-weight:700;
+      color:#111827;
+    }
+    .subtitle{
+      margin:0 0 16px;
+      color:#6b7280;
+      font-size:14px;
+    }
+    .pill-year{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:#e0edff;
+      color:#1d4ed8;
+      font-size:13px;
+      font-weight:500;
+    }
+    .filters-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:flex-end;
+      margin-bottom:12px;
+    }
+    .filters-row .input-field{
+      margin-top:0;
+    }
+    .msg{
+      font-size:13px;
+      color:#6b7280;
+      margin-top:4px;
+    }
+    table.striped > tbody > tr:nth-child(odd){
+      background:#f9fafb;
+    }
+    table th{
+      font-size:12px;
+      color:#6b7280;
+      white-space:nowrap;
+    }
+    table td{
+      font-size:13px;
+      padding:6px 10px;
+      border-bottom:1px solid #eef2f7;
+    }
+    .chip-status{
+      border-radius:999px;
+      padding:2px 10px;
+      font-size:11px;
+      font-weight:500;
+      display:inline-block;
+    }
+    .st-pendente{
+      background:#fef3c7;
+      color:#92400e;
+    }
+    .st-conferido{
+      background:#dcfce7;
+      color:#166534;
+    }
+    .st-recusado{
+      background:#fee2e2;
+      color:#991b1b;
+    }
+    @media (max-width:768px){
+      .page-title{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <h5>
+    <img src="/aprove/logo-mini.png" alt="Logo" style="height:28px">
+    Aprove — Aprovações enviadas pelas unidades
+  </h5>
+  <button class="btn-flat waves-effect white-text" onclick="logout()">Sair</button>
+</header>
+
+<main>
+  <div class="page-title">
+    <div>
+      <h4>Aprovações das unidades</h4>
+      <p class="subtitle">
+        Visualize as aprovações cadastradas pelas unidades na tabela de estágio
+        (<code>aprovacoes_unidade</code>).
+      </p>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+      <span class="pill-year">
+        Cadastro <span id="anoSpan">2025</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-content">
+      <div class="filters-row">
+        <div class="input-field">
+          <input id="filtroAno" type="number" value="2025" min="2000" max="2100">
+          <label class="active" for="filtroAno">Cadastro</label>
+        </div>
+
+        <div class="input-field">
+          <select id="filtroStatus">
+            <option value="P" selected>Pendentes</option>
+            <option value="A">Conferidas</option>
+            <option value="R">Recusadas</option>
+            <option value="ALL">Todas</option>
+          </select>
+          <label>Status</label>
+        </div>
+
+        <div class="input-field">
+          <input id="filtroUnidade" type="number" min="0">
+          <label for="filtroUnidade">Código da unidade (opcional)</label>
+        </div>
+
+        <button class="btn waves-effect blue darken-2" onclick="carregarAprovacoesUnidade()">
+          Atualizar
+        </button>
+      </div>
+
+      <div id="infoResumo" class="msg">Carregando...</div>
+
+      <div class="responsive-table" style="margin-top:8px;">
+        <table class="striped highlight">
+          <thead>
+            <tr>
+              <th>Unidade</th>
+              <th>Aluno</th>
+              <th>Série</th>
+              <th>Curso (texto)</th>
+              <th>Instituição (texto)</th>
+              <th>Cls</th>
+              <th>Lista</th>
+              <th>Status</th>
+              <th>Data/hora</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyPendentes"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const API       = 'https://apisec.secauxiliar.com.br/aprove/';
+const LOGIN_URL = '/aprovados/index.html';
+
+function logout(){
+  fetch(API + 'auth_logout.php', { credentials:'include' })
+    .finally(() => location.replace(LOGIN_URL));
+}
+
+// converte 'P', 'A', 'R' em texto + classe para o chip
+function renderStatusChip(st){
+  if (!st) return '';
+  let txt = '';
+  let cls = '';
+  switch (st) {
+    case 'P':
+      txt = 'Pendente';
+      cls = 'chip-status st-pendente';
+      break;
+    case 'A':
+      txt = 'Conferido';
+      cls = 'chip-status st-conferido';
+      break;
+    case 'R':
+      txt = 'Recusado';
+      cls = 'chip-status st-recusado';
+      break;
+    default:
+      txt = st;
+      cls = 'chip-status';
+  }
+  return `<span class="${cls}">${txt}</span>`;
+}
+
+function formatarData(dt){
+  if (!dt) return '';
+  // dt vem como 'YYYY-MM-DD HH:MM:SS', podemos só devolver mesmo
+  return dt.replace('T', ' ');
+}
+
+async function carregarAprovacoesUnidade(){
+  const anoInput   = document.getElementById('filtroAno');
+  const statusSel  = document.getElementById('filtroStatus');
+  const undInput   = document.getElementById('filtroUnidade');
+  const tbody      = document.getElementById('tbodyPendentes');
+  const msg        = document.getElementById('infoResumo');
+
+  const ano        = parseInt(anoInput.value || '2025', 10);
+  const status     = statusSel.value || 'P';
+  const codunidade = undInput.value ? parseInt(undInput.value, 10) : 0;
+
+  tbody.innerHTML = '';
+  msg.textContent = 'Carregando...';
+
+  const params = new URLSearchParams({
+    ano: String(ano),
+    status: status,
+  });
+  if (codunidade > 0) {
+    params.append('codunidade', String(codunidade));
+  }
+
+  try {
+    const res  = await fetch(API + 'aprovacoes_unidade_admin_list.php?' + params.toString(), {
+      credentials: 'include'
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      msg.textContent = data.error || 'Erro ao carregar aprovações.';
+      return;
+    }
+
+    const rows = data.rows || [];
+    msg.textContent = rows.length
+      ? `${rows.length} aprovações encontradas.`
+      : 'Nenhuma aprovação encontrada para os filtros selecionados.';
+
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+
+      const unidade = `${r.codunidade} — ${r.unidade ?? ''}`;
+      const aluno   = r.aluno ?? '';
+      const serie   = r.serie ?? '';
+      const curso   = r.curso_txt ?? '';
+      const inst    = r.instituicao_txt ?? '';
+      const cls     = r.cls ?? '';
+      const lista   = r.lista ?? '';
+      const status  = r.status ?? '';
+      const dataReg = r.dt_registro ?? '';
+
+      tr.innerHTML = `
+        <td>${unidade}</td>
+        <td>${aluno}</td>
+        <td>${serie}</td>
+        <td>${curso}</td>
+        <td>${inst}</td>
+        <td>${cls}</td>
+        <td>${lista}</td>
+        <td>${renderStatusChip(status)}</td>
+        <td>${formatarData(dataReg)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (e) {
+    console.error('Erro ao carregar aprovações_unidade:', e);
+    msg.textContent = 'Erro de conexão ao carregar aprovações.';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // inicializa selects Materialize
+  const selects = document.querySelectorAll('select');
+  M.FormSelect.init(selects);
+
+  const anoSpan = document.getElementById('anoSpan');
+  const anoInput = document.getElementById('filtroAno');
+  anoSpan.textContent = anoInput.value;
+
+  // sempre que mudar o ano no filtro, atualiza o pill
+  anoInput.addEventListener('change', () => {
+    anoSpan.textContent = anoInput.value;
+  });
+
+  carregarAprovacoesUnidade();
+});
+</script>
+
+</body>
+</html>
