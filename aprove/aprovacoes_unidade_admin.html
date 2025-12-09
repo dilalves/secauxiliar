@@ -481,29 +481,6 @@ async function importarAprovacao(id) {
     return;
   }
 
-  // valida VEST + curso usando vestibular_cursos_list.php
-  let cursoVest = null;
-  try {
-    const cursos = await getCursosVest(vest);
-    cursoVest = cursos.find(c => String(c.curso_id) === codcurso);
-  } catch (e) {
-    console.error('erro ao validar VEST/curso:', e);
-    M.toast({
-      html: 'Erro ao validar VEST + código do curso.',
-      classes: 'red darken-2'
-    });
-    return;
-  }
-
-  if (!cursoVest) {
-    M.toast({
-      html: 'Combinação VEST + código de curso não encontrada neste vestibular.',
-      classes: 'red darken-2'
-    });
-    return;
-  }
-
-  // se passou na validação, chama o PHP de importação
   try {
     const res = await fetch(API + 'aprovacoes_unidade_import.php', {
       method: 'POST',
@@ -531,15 +508,13 @@ async function importarAprovacao(id) {
 
     // Atualiza a linha na tabela com curso/instituição oficiais e status verde
     const linha   = document.querySelector(`tr[data-id="${id}"]`);
-    if (linha) {
-      const tdCurso  = linha.querySelector('.col-curso-txt');
-      const tdInst   = linha.querySelector('.col-inst-txt');
-      const tdStatus = linha.querySelector('.col-status');
+    const tdCurso = linha?.querySelector('.col-curso-txt');
+    const tdInst  = linha?.querySelector('.col-inst-txt');
+    const tdStat  = linha?.querySelector('.col-status');
 
-      if (tdCurso)  tdCurso.textContent  = data.curso || tdCurso.textContent;
-      if (tdInst)   tdInst.textContent   = data.instituicao || tdInst.textContent;
-      if (tdStatus) tdStatus.innerHTML   = renderStatusChip('A');
-    }
+    if (tdCurso) tdCurso.textContent = data.curso || '';
+    if (tdInst)  tdInst.textContent  = data.instituicao || '';
+    if (tdStat)  tdStat.innerHTML    = '<span class="chip-status st-conferido">Conferido</span>';
 
     M.toast({
       html: 'Aprovação importada para o cadastro oficial.',
@@ -554,6 +529,7 @@ async function importarAprovacao(id) {
     });
   }
 }
+
 
 /* ==================== Init ==================== */
 
