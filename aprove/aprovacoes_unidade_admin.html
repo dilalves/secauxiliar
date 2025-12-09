@@ -194,11 +194,11 @@
               <th>Unidade</th>
               <th>Aluno</th>
               <th>Série</th>
-              <th>VEST</th>
-              <th>Cód. curso</th>
               <th>Curso (texto)</th>
               <th>Instituição (texto)</th>
               <th>Cls</th>
+              <th>Cód. Lista</th>
+              <th>Cód. Curso</th>              
               <th>Ações</th>
             </tr>
           </thead>
@@ -357,7 +357,6 @@ async function carregarAprovacoesUnidade(){
   const undInput   = document.getElementById('filtroUnidade');
   const tbody      = document.getElementById('tbody-aprov');
   const msg        = document.getElementById('infoResumo');
-
   const ano        = parseInt(anoInput.value || '2025', 10);
   const status     = statusSel.value || 'P';
   const codunidade = undInput.value ? parseInt(undInput.value, 10) : 0;
@@ -409,6 +408,9 @@ async function carregarAprovacoesUnidade(){
         <td>${unidade}</td>
         <td>${aluno}</td>
         <td>${serie}</td>
+        <td class="col-curso-txt">${cursoTxt}</td>
+        <td class="col-inst-txt">${instTxt}</td>
+        <td>${cls}</td>
 
         <td>
           <input type="number" 
@@ -425,10 +427,7 @@ async function carregarAprovacoesUnidade(){
                  value="${codcursoUnd}" 
                  style="max-width:80px;">
         </td>
-
-        <td class="col-curso-txt">${cursoTxt}</td>
-        <td class="col-inst-txt">${instTxt}</td>
-        <td>${cls}</td>
+        
         <td>
           <button class="btn-small blue" onclick="importarAprovacao(${r.id})">
             Importar
