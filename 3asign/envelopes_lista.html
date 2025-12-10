@@ -536,8 +536,23 @@
     mostrarMensagem('Carregando envelopes...', 'info');
 
     const token = getToken();
+
+    // pega o que está digitado na busca
+    termoBusca = busca.value.trim();
+
+    // monta os parâmetros da URL
+    const params = new URLSearchParams();
+    if (filtroStatus) {
+      params.set('status', filtroStatus); // draft/sent/completed/voided
+    }
+    if (termoBusca !== '') {
+      params.set('q', termoBusca);       // <-- AQUI VAI PRO BACKEND
+    }
+
+    const url = API_BASE + '/envelope_list.php' + 
+                (params.toString() ? ('?' + params.toString()) : '');
+
     try {
-      const url = API_BASE + '/envelope_list.php' + (filtroStatus ? ('?status='+encodeURIComponent(filtroStatus)) : '');
       const resp = await fetch(url, {
         headers: { 'Authorization': 'Bearer ' + token }
       });
@@ -549,7 +564,8 @@
       }
 
       envelopes = data.envelopes || [];
-      envelopes = envelopes.map(e => ({ ...e, destinatarios_txt: '' }));
+      // não precisamos mais de destinatarios_txt aqui
+      // envelopes = envelopes.map(e => ({ ...e, destinatarios_txt: '' }));
 
       limparMensagem();
       renderizarLista();
@@ -560,10 +576,9 @@
     }
   }
 
-  // busca
   busca.addEventListener('input', () => {
     termoBusca = busca.value.trim();
-    renderizarLista();
+    carregarEnvelopes();   // agora busca direto no backend
   });
 
   // filtros por status
