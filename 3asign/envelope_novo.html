@@ -93,7 +93,7 @@
     }
 
     main{
-      max-width:980px;
+      max-width:1100px;
       margin:16px auto 32px;
       padding:0 12px;
     }
@@ -106,9 +106,10 @@
     }
 
     .grid{
-      display:grid;
-      grid-template-columns: minmax(0,1.5fr) minmax(0,1.5fr);
-      gap:16px;
+    display:grid;
+    /* antes: minmax(0,1.5fr) minmax(0,1.5fr); */
+    grid-template-columns: minmax(0,1.2fr) minmax(0,1.8fr);
+    gap:16px;
     }
 
     .card{
@@ -209,6 +210,95 @@
     .msg.ok{background:#dcfce7;color:#166534;}
     .msg.err{background:#fee2e2;color:#b91c1c;}
 
+    /* chips de destinatários frequentes */
+    .freq-box{
+      margin-top:14px;
+      border-top:1px solid #e5e7eb;
+      padding-top:10px;
+    }
+    .freq-title{
+      font-size:.85rem;
+      font-weight:600;
+      margin-bottom:4px;
+    }
+    .freq-help{
+      font-size:.78rem;
+      color:#6b7280;
+      margin-bottom:6px;
+    }
+    .freq-chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .chip-freq{
+      border-radius:999px;
+      border:1px solid #d1d5db;
+      background:#f9fafb;
+      padding:4px 10px;
+      font-size:.8rem;
+      cursor:pointer;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .chip-freq strong{
+      font-size:.8rem;
+      line-height:1.1;
+    }
+    .chip-freq span{
+      font-size:.72rem;
+      color:#6b7280;
+    }
+    .chip-freq:hover{
+      background:#e5e7eb;
+    }
+
+    .save-label{
+      font-size:.75rem;
+      color:#4b5563;
+      display:flex;
+      align-items:center;
+      gap:4px;
+    }
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.45);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:999;
+    }
+    .modal{
+      background:#fff;
+      border-radius:12px;
+      padding:16px 18px;
+      max-width:520px;
+      width:100%;
+      max-height:80vh;
+      overflow:auto;
+      box-shadow:0 20px 45px rgba(15,23,42,.4);
+    }
+    .table-contatos{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.85rem;
+      margin-top:8px;
+    }
+    .table-contatos th,
+    .table-contatos td{
+      padding:4px 6px;
+      border-bottom:1px solid #e5e7eb;
+    }
+
+   .chip-freq.selected{
+      background:#dcfce7;
+      border-color:#22c55e;
+      box-shadow:0 0 0 1px rgba(34,197,94,.4);
+    } 
+
     @media (max-width:800px){
       .grid{grid-template-columns:1fr;}
     }
@@ -296,15 +386,32 @@
             <th style="width:55px;">Ordem</th>
             <th>Nome</th>
             <th>E-mail</th>
+            <th style="width:90px;">Salvar?</th>
             <th class="actions"></th>
           </tr>
         </thead>
         <tbody id="destBody">
-          <!-- linhas dinâmicas -->
         </tbody>
       </table>
 
+      <!-- botão de adicionar (apenas UM) -->
       <button type="button" class="btn small secondary" id="btnAddDest">+ Adicionar destinatário</button>
+      <div class="freq-box">
+        <div class="freq-title">Destinatários frequentes</div>
+        <div class="freq-help">
+          Clique em um contato para adicioná-lo à lista acima.
+        </div>
+
+        <!-- aqui só os chips -->
+        <div id="freqChips" class="freq-chips"></div>
+
+        <!-- aqui o botão, fora do freqChips -->
+        <div style="margin-top:8px; text-align:right;">
+          <button type="button" class="btn small secondary" id="btnGerenciarContatos">
+            Gerenciar contatos
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -314,6 +421,34 @@
   </div>
 
   <div class="msg" id="mensagem"></div>
+
+<div id="modalContatos" class="modal-backdrop" style="display:none;">
+  <div class="modal">
+    <h2>Contatos frequentes</h2>
+    <p style="font-size:.8rem;color:#6b7280;">
+      Edite ou exclua os contatos já salvos.
+    </p>
+
+    <table class="table-contatos">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th style="width:90px;">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="contatosBody">
+        <!-- preenchido via JS -->
+      </tbody>
+    </table>
+
+    <div style="margin-top:10px; text-align:right;">
+      <button type="button" class="btn small secondary" id="btnFecharModal">Fechar</button>
+    </div>
+  </div>
+</div>
+
+
 </main>
 
 <script>
@@ -347,25 +482,98 @@
   const destBody = document.getElementById('destBody');
   const btnAddDest = document.getElementById('btnAddDest');
 
-  function addDestinatarioRow(nome = '', email = '', ordem = '') {
-    const tr = document.createElement('tr');
+function addDestinatarioRow(nome = '', email = '', ordem = '') {
+  const tr = document.createElement('tr');
 
-    tr.innerHTML = `
-      <td><input type="number" class="dest-ordem" min="1" value="${ordem || ''}" placeholder="1"></td>
-      <td><input type="text" class="dest-nome" value="${nome}"></td>
-      <td><input type="email" class="dest-email" value="${email}"></td>
-      <td class="actions">
-        <button type="button" class="btn small secondary btn-del">x</button>
-      </td>
+  tr.innerHTML = `
+    <td><input type="number" class="dest-ordem" min="1" value="${ordem || ''}" placeholder="1"></td>
+    <td><input type="text" class="dest-nome" value="${nome}"></td>
+    <td><input type="email" class="dest-email" value="${email}"></td>
+    <td>
+      <label class="save-label">
+        <input type="checkbox" class="dest-save">
+        <span class="save-text">guardar</span>
+      </label>
+    </td>
+    <td class="actions">
+      <button type="button" class="btn small secondary btn-del">x</button>
+    </td>
+  `;
+
+  tr.querySelector('.btn-del').addEventListener('click', () => {
+    destBody.removeChild(tr);
+  });
+
+  destBody.appendChild(tr);
+  return tr;
+}
+
+
+
+async function carregarDestinatariosFrequentes(){
+  const token = getToken();
+  const box = document.getElementById('freqChips');
+  if (!box) return;
+
+  box.innerHTML = '<span style="font-size:.78rem;color:#6b7280;">Carregando...</span>';
+
+  try {
+    const res = await fetch(API_BASE + '/dest_frequent_list.php', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+
+    if (!data.ok || !data.rows || !data.rows.length) {
+      box.innerHTML = '<span style="font-size:.78rem;color:#9ca3af;">Nenhum destinatário frequente cadastrado ainda.</span>';
+      return;
+    }
+
+    box.innerHTML = '';
+    data.rows.forEach(r => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chip-freq';
+    btn.dataset.id = r.id;
+    btn.innerHTML = `
+      <strong>${r.nome}</strong>
+      <span>${r.email}</span>
     `;
 
-    tr.querySelector('.btn-del').addEventListener('click', () => {
-      destBody.removeChild(tr);
+    btn.addEventListener('click', () => {
+      // 1) aplica o verdinho no chip selecionado
+      document.querySelectorAll('.chip-freq.selected')
+        .forEach(ch => ch.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      // 2) procura primeira linha totalmente vazia
+      let alvo = Array.from(destBody.querySelectorAll('tr')).find(tr => {
+        const n = tr.querySelector('.dest-nome')?.value.trim() || '';
+        const e = tr.querySelector('.dest-email')?.value.trim() || '';
+        return n === '' && e === '';
+      });
+
+      // 3) se não tiver, cria nova
+      if (!alvo) {
+        const qtd = destBody.querySelectorAll('tr').length;
+        alvo = addDestinatarioRow('', '', qtd + 1);
+      }
+
+      // 4) preenche a linha
+      alvo.querySelector('.dest-nome').value  = r.nome;
+      alvo.querySelector('.dest-email').value = r.email;
     });
 
-    destBody.appendChild(tr);
-  }
+    box.appendChild(btn);
+  });
 
+
+  } catch (e) {
+    console.error(e);
+    box.innerHTML = '<span style="font-size:.78rem;color:#b91c1c;">Erro ao carregar destinatários frequentes.</span>';
+  }
+}
+
+        
   // começa com uma linha
   addDestinatarioRow('', '', 1);
 
@@ -373,6 +581,9 @@
     const qtd = destBody.querySelectorAll('tr').length;
     addDestinatarioRow('', '', qtd + 1);
   });
+
+  // carrega contatos frequentes na abertura
+  carregarDestinatariosFrequentes();
 
   // --- envio do formulário ---
   const btnCriar = document.getElementById('btnCriar');
@@ -401,10 +612,13 @@
 
     // monta lista de destinatários
     const dests = [];
+    const favs  = []; // apenas "novos" contatos a salvar
+
     destBody.querySelectorAll('tr').forEach(tr => {
-      const ordem = tr.querySelector('.dest-ordem').value.trim();
-      const nome  = tr.querySelector('.dest-nome').value.trim();
-      const email = tr.querySelector('.dest-email').value.trim();
+      const ordem  = tr.querySelector('.dest-ordem').value.trim();
+      const nome   = tr.querySelector('.dest-nome').value.trim();
+      const email  = tr.querySelector('.dest-email').value.trim();
+      const salvar = tr.querySelector('.dest-save')?.checked;
 
       if (nome && email) {
         dests.push({
@@ -412,8 +626,13 @@
           nome,
           email
         });
+
+        if (salvar) {
+          favs.push({ nome, email }); // sempre como "novo"
+        }
       }
     });
+
 
     if (dests.length === 0) {
       msg.className = 'msg err';
@@ -459,7 +678,21 @@
         msg.textContent = 'Envelope criado com sucesso (ID ' + data.envelope_id + ').';
         msg.style.display = 'block';
 
-        // aqui depois podemos redirecionar para uma tela de resumo do envelope
+        // salva contatos frequentes escolhidos (não trava o fluxo se der erro)
+        if (favs.length) {
+          const token2 = getToken();
+          favs.forEach(c => {
+            fetch(API_BASE + '/dest_frequent_save.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token2
+              },
+              body: JSON.stringify(c)
+            }).catch(() => {});
+          });
+        }
+
         setTimeout(() => {
           window.location.href = 'envelopes_lista.html';
         }, 1500);
@@ -475,6 +708,113 @@
       btnCriar.textContent = 'Criar envelope';
     }
   });
+
+const modalContatos = document.getElementById('modalContatos');
+const contatosBody  = document.getElementById('contatosBody');
+
+document.getElementById('btnGerenciarContatos')
+  .addEventListener('click', () => {
+    carregarContatosModal();
+    modalContatos.style.display = 'flex';
+  });
+
+document.getElementById('btnFecharModal')
+  .addEventListener('click', () => {
+    modalContatos.style.display = 'none';
+  });
+
+async function carregarContatosModal() {
+  contatosBody.innerHTML = '<tr><td colspan="3">Carregando...</td></tr>';
+  const token = getToken();
+
+  try {
+    const res = await fetch(API_BASE + '/dest_frequent_list.php', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!data.ok || !data.rows) {
+      contatosBody.innerHTML = '<tr><td colspan="3">Nenhum contato cadastrado.</td></tr>';
+      return;
+    }
+
+    contatosBody.innerHTML = '';
+    data.rows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" class="c-nome" value="${r.nome}"></td>
+        <td><input type="email" class="c-email" value="${r.email}"></td>
+        <td>
+          <button type="button" class="btn small" data-id="${r.id}">Salvar</button>
+          <button type="button" class="btn small secondary btn-del" data-id="${r.id}">X</button>
+        </td>
+      `;
+      contatosBody.appendChild(tr);
+    });
+
+    // listeners de salvar / excluir
+    contatosBody.querySelectorAll('button.btn.small').forEach(btn => {
+      if (!btn.classList.contains('btn-del')) {
+        btn.addEventListener('click', () => salvarContato(btn.dataset.id, btn.closest('tr')));
+      }
+    });
+    contatosBody.querySelectorAll('button.btn-del').forEach(btn => {
+      btn.addEventListener('click', () => excluirContato(btn.dataset.id));
+    });
+
+  } catch (e) {
+    console.error(e);
+    contatosBody.innerHTML = '<tr><td colspan="3">Erro ao carregar contatos.</td></tr>';
+  }
+}
+
+async function salvarContato(id, tr) {
+  const nome  = tr.querySelector('.c-nome').value.trim();
+  const email = tr.querySelector('.c-email').value.trim();
+  if (!nome || !email) return;
+
+  const token = getToken();
+  try {
+    await fetch(API_BASE + '/dest_frequent_save.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ id: parseInt(id,10), nome, email })
+    });
+
+    // recarrega chips e lista do modal
+    carregarDestinatariosFrequentes();
+    carregarContatosModal();
+
+  } catch (e) {
+    console.error(e);
+    alert('Erro ao salvar contato.');
+  }
+}
+
+async function excluirContato(id) {
+  if (!confirm('Excluir este contato?')) return;
+  const token = getToken();
+  try {
+    await fetch(API_BASE + '/dest_frequent_delete.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ id: parseInt(id,10) })
+    });
+
+    carregarDestinatariosFrequentes();
+    carregarContatosModal();
+  } catch (e) {
+    console.error(e);
+    alert('Erro ao excluir contato.');
+  }
+}
+
+
 </script>
 </body>
 </html>
