@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Novo Envelope • 3aSign</title>
+  <!-- Favicon -->
+  <link rel="icon" href="icone.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="icone.ico" type="image/x-icon">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root{
+      --bg:#f3f4f6;
+      --nav:#0b3b78;
+      --nav-light:#1d4ed8;
+      --card:#ffffff;
+      --muted:#6b7280;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:#0f172a;
+    }
+    .topbar{
+      height:56px;
+      background:var(--nav);
+      color:#e5e7eb;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 16px;
+      box-shadow:0 2px 8px rgba(15,23,42,.45);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:600;
+      letter-spacing:.02em;
+    }
+    .brand .logo-dot{
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      background:#facc15;
+      box-shadow:0 0 0 3px rgba(250,204,21,.4);
+    }
+    .brand span.sub{
+      display:block;
+      font-size:.7rem;
+      opacity:.8;
+    }
+    .top-nav{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-size:.9rem;
+    }
+    .top-nav a{
+      color:#e5e7eb;
+      text-decoration:none;
+      padding:6px 10px;
+      border-radius:999px;
+    }
+    .top-nav a:hover{
+      background:rgba(15,23,42,.35);
+    }
+    .top-user{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:.8rem;
+    }
+    .chip-role{
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(209,213,219,.7);
+      font-size:.7rem;
+    }
+    .top-user button{
+      background:transparent;
+      border:1px solid rgba(248,250,252,.3);
+      border-radius:999px;
+      padding:4px 8px;
+      color:#fee2e2;
+      cursor:pointer;
+      font-size:.75rem;
+    }
+    .top-user button:hover{
+      background:rgba(248,250,252,.12);
+    }
+
+    main{
+      max-width:980px;
+      margin:16px auto 32px;
+      padding:0 12px;
+    }
+
+    h1{margin:16px 0 4px;}
+    .section-sub{
+      color:var(--muted);
+      font-size:.9rem;
+      margin-bottom:16px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: minmax(0,1.5fr) minmax(0,1.5fr);
+      gap:16px;
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:12px;
+      padding:16px 18px;
+      box-shadow:0 1px 4px rgba(15,23,42,.1);
+    }
+    .card h2{
+      margin:0 0 8px;
+      font-size:1rem;
+    }
+    .card p{
+      margin:0 0 10px;
+      font-size:.85rem;
+      color:var(--muted);
+    }
+
+    label{
+      display:block;
+      font-size:.8rem;
+      margin-bottom:4px;
+      color:#374151;
+    }
+    input[type="text"], input[type="email"], input[type="number"]{
+      width:100%;
+      padding:8px 10px;
+      border-radius:8px;
+      border:1px solid #cbd5e1;
+      font-size:.9rem;
+      margin-bottom:8px;
+    }
+    input[type="file"]{
+      width:100%;
+      font-size:.85rem;
+      margin-bottom:8px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.85rem;
+    }
+    th,td{
+      padding:4px 6px;
+      border-bottom:1px solid #e5e7eb;
+    }
+    th{
+      text-align:left;
+      font-weight:600;
+      color:#4b5563;
+    }
+    td.actions{
+      width:40px;
+      text-align:center;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      padding:8px 14px;
+      border-radius:999px;
+      border:none;
+      background:var(--nav-light);
+      color:#fff;
+      font-size:.85rem;
+      text-decoration:none;
+      cursor:pointer;
+    }
+    .btn.secondary{
+      background:#e5e7eb;
+      color:#111827;
+    }
+    .btn.small{
+      padding:4px 8px;
+      font-size:.8rem;
+    }
+    .btn:hover{
+      filter:brightness(1.05);
+    }
+
+    .footer-actions{
+      margin-top:16px;
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+    }
+
+    .msg{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:8px;
+      font-size:.85rem;
+      display:none;
+    }
+    .msg.ok{background:#dcfce7;color:#166534;}
+    .msg.err{background:#fee2e2;color:#b91c1c;}
+
+    /* chips de destinatários frequentes */
+    .freq-box{
+      margin-top:14px;
+      border-top:1px solid #e5e7eb;
+      padding-top:10px;
+    }
+    .freq-title{
+      font-size:.85rem;
+      font-weight:600;
+      margin-bottom:4px;
+    }
+    .freq-help{
+      font-size:.78rem;
+      color:#6b7280;
+      margin-bottom:6px;
+    }
+    .freq-chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .chip-freq{
+      border-radius:999px;
+      border:1px solid #d1d5db;
+      background:#f9fafb;
+      padding:4px 10px;
+      font-size:.8rem;
+      cursor:pointer;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .chip-freq strong{
+      font-size:.8rem;
+      line-height:1.1;
+    }
+    .chip-freq span{
+      font-size:.72rem;
+      color:#6b7280;
+    }
+    .chip-freq:hover{
+      background:#e5e7eb;
+    }
+
+    .save-label{
+      font-size:.75rem;
+      color:#4b5563;
+      display:flex;
+      align-items:center;
+      gap:4px;
+    }
+
+    @media (max-width:800px){
+      .grid{grid-template-columns:1fr;}
+    }
+    @media (max-width:600px){
+      .top-nav{display:none;}
+    }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo-dot"></div>
+    <div>
+      3aSign
+      <span class="sub">Painel de Assinaturas</span>
+    </div>
+  </div>
+
+  <nav class="top-nav">
+    <a href="admin.html">Início</a>
+    <a href="envelope_novo.html">Novo Envelope</a>
+    <a href="envelopes_lista.html">Meus Envelopes</a>
+  </nav>
+
+  <div class="top-user">
+    <span id="userNome">Usuário</span>
+    <span id="userRole" class="chip-role">atendimento</span>
+    <button id="btnSair">Sair</button>
+  </div>
+</header>
+
+<main>
+  <h1>Novo Envelope</h1>
+  <div class="section-sub">
+    Preencha os dados do envelope, anexe um ou mais PDFs e informe quem deverá assinar.
+  </div>
+
+  <div class="grid">
+    <!-- COLUNA ESQUERDA: Dados + PDFs -->
+    <div class="card">
+      <h2>Dados do envelope</h2>
+      <p>Nome que aparecerá na sua lista de documentos.</p>
+
+      <label for="titulo">Título do documento</label>
+      <input type="text" id="titulo" placeholder="Ex: Contrato de matrícula ENEM • João da Silva">
+
+      <label for="pdfs">Arquivos PDF</label>
+      <input type="file" id="pdfs" accept="application/pdf" multiple>
+
+      <p style="font-size:.8rem;color:#6b7280;margin-top:4px;">
+        Você pode anexar mais de um PDF (ex.: contrato + autorização de imagem). Cada arquivo deve ser de no máximo 10MB.
+      </p>
+
+      <hr style="margin:12px 0; border:none; border-top:1px solid #e5e7eb;">
+
+      <label style="font-weight:600; font-size:.85rem; margin-bottom:6px;">
+        Opções de verificação do signatário
+      </label>
+
+      <div style="font-size:.8rem; color:#4b5563; margin-bottom:6px;">
+        Você pode solicitar selfie e foto de documento para reforçar a identificação do signatário.
+      </div>
+
+      <div style="font-size:.8rem; color:#111827; display:flex; flex-direction:column; gap:4px;">
+        <label style="display:flex; align-items:center; gap:6px;">
+          <input type="checkbox" id="chkSelfie">
+          Exigir selfie do signatário
+        </label>
+        <label style="display:flex; align-items:center; gap:6px;">
+          <input type="checkbox" id="chkDoc">
+          Exigir foto de documento (frente)
+        </label>
+      </div>
+
+    </div>
+
+    <!-- COLUNA DIREITA: Destinatários -->
+    <div class="card">
+      <h2>Destinatários</h2>
+      <p>Quem irá receber o link para assinar este envelope.</p>
+
+      <table id="tblDest">
+        <thead>
+          <tr>
+            <th style="width:55px;">Ordem</th>
+            <th>Nome</th>
+            <th>E-mail</th>
+            <th style="width:90px;">Salvar?</th>
+            <th class="actions"></th>
+          </tr>
+        </thead>
+        <tbody id="destBody">
+        </tbody>
+      </table>
+
+      <!-- botão de adicionar (apenas UM) -->
+      <button type="button" class="btn small secondary" id="btnAddDest">+ Adicionar destinatário</button>
+
+      <div class="freq-box">
+        <div class="freq-title">Destinatários frequentes</div>
+        <div class="freq-help">
+          Clique em um contato para adicioná-lo à lista acima.
+        </div>
+        <div id="freqChips" class="freq-chips">
+          <!-- preenchido via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-actions">
+    <a href="admin.html" class="btn secondary">Cancelar</a>
+    <button type="button" class="btn" id="btnCriar">Criar envelope</button>
+  </div>
+
+  <div class="msg" id="mensagem"></div>
+</main>
+
+<script>
+  const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+
+  // --- autenticação simples (igual admin) ---
+  function getUser() {
+    try { return JSON.parse(localStorage.getItem('zs_user') || 'null'); }
+    catch { return null; }
+  }
+  function getToken() {
+    return localStorage.getItem('zs_token');
+  }
+  (function initHeader(){
+    const user = getUser();
+    const token = getToken();
+    if (!user || !token) {
+      window.location.href = 'index.html';
+      return;
+    }
+    document.getElementById('userNome').textContent = user.nome;
+    document.getElementById('userRole').textContent = user.role || 'atendimento';
+    document.getElementById('btnSair').addEventListener('click', () => {
+      localStorage.removeItem('zs_token');
+      localStorage.removeItem('zs_user');
+      window.location.href = 'index.html';
+    });
+  })();
+
+  // --- controle de destinatários dinâmicos ---
+  const destBody = document.getElementById('destBody');
+  const btnAddDest = document.getElementById('btnAddDest');
+
+  function addDestinatarioRow(nome = '', email = '', ordem = '') {
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td><input type="number" class="dest-ordem" min="1" value="${ordem || ''}" placeholder="1"></td>
+      <td><input type="text" class="dest-nome" value="${nome}"></td>
+      <td><input type="email" class="dest-email" value="${email}"></td>
+      <td>
+        <label class="save-label">
+          <input type="checkbox" class="dest-save">
+          guardar
+        </label>
+      </td>
+      <td class="actions">
+        <button type="button" class="btn small secondary btn-del">x</button>
+      </td>
+    `;
+
+    tr.querySelector('.btn-del').addEventListener('click', () => {
+      destBody.removeChild(tr);
+    });
+
+    destBody.appendChild(tr);
+  }
+
+  async function carregarDestinatariosFrequentes(){
+    const token = getToken();
+    const box = document.getElementById('freqChips');
+    if (!box) return;
+
+    box.innerHTML = '<span style="font-size:.78rem;color:#6b7280;">Carregando...</span>';
+
+    try {
+      const res = await fetch(API_BASE + '/dest_frequent_list.php', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+
+      if (!data.ok || !data.rows || !data.rows.length) {
+        box.innerHTML = '<span style="font-size:.78rem;color:#9ca3af;">Nenhum destinatário frequente cadastrado ainda.</span>';
+        return;
+      }
+
+      box.innerHTML = '';
+      data.rows.forEach(r => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'chip-freq';
+        btn.innerHTML = `
+          <strong>${r.nome}</strong>
+          <span>${r.email}</span>
+        `;
+        btn.addEventListener('click', () => {
+          const qtd = destBody.querySelectorAll('tr').length;
+          addDestinatarioRow(r.nome, r.email, qtd + 1);
+        });
+        box.appendChild(btn);
+      });
+
+    } catch (e) {
+      console.error(e);
+      box.innerHTML = '<span style="font-size:.78rem;color:#b91c1c;">Erro ao carregar destinatários frequentes.</span>';
+    }
+  }
+        
+  // começa com uma linha
+  addDestinatarioRow('', '', 1);
+
+  btnAddDest.addEventListener('click', () => {
+    const qtd = destBody.querySelectorAll('tr').length;
+    addDestinatarioRow('', '', qtd + 1);
+  });
+
+  // carrega contatos frequentes na abertura
+  carregarDestinatariosFrequentes();
+
+  // --- envio do formulário ---
+  const btnCriar = document.getElementById('btnCriar');
+  const msg = document.getElementById('mensagem');
+
+  btnCriar.addEventListener('click', async () => {
+    msg.style.display = 'none';
+    msg.textContent = '';
+
+    const titulo = document.getElementById('titulo').value.trim();
+    const inputPdfs = document.getElementById('pdfs');
+    const arquivos = Array.from(inputPdfs.files || []);
+
+    if (!titulo) {
+      msg.className = 'msg err';
+      msg.textContent = 'Informe o título do envelope.';
+      msg.style.display = 'block';
+      return;
+    }
+    if (arquivos.length === 0) {
+      msg.className = 'msg err';
+      msg.textContent = 'Envie pelo menos um arquivo PDF.';
+      msg.style.display = 'block';
+      return;
+    }
+
+    // monta lista de destinatários
+    const dests = [];
+    const favs  = []; // para salvar como frequentes
+
+    destBody.querySelectorAll('tr').forEach(tr => {
+      const ordem = tr.querySelector('.dest-ordem').value.trim();
+      const nome  = tr.querySelector('.dest-nome').value.trim();
+      const email = tr.querySelector('.dest-email').value.trim();
+      const salvar = tr.querySelector('.dest-save')?.checked;
+
+      if (nome && email) {
+        dests.push({
+          ordem: ordem ? parseInt(ordem, 10) : 1,
+          nome,
+          email
+        });
+
+        if (salvar) {
+          favs.push({ nome, email });
+        }
+      }
+    });
+
+    if (dests.length === 0) {
+      msg.className = 'msg err';
+      msg.textContent = 'Informe pelo menos um destinatário com nome e e-mail.';
+      msg.style.display = 'block';
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('titulo', titulo);
+    arquivos.forEach(f => fd.append('pdfs[]', f));
+    fd.append('destinatarios_json', JSON.stringify(dests));
+
+    // novas flags
+    const requireSelfie = document.getElementById('chkSelfie').checked ? '1' : '0';
+    const requireDoc    = document.getElementById('chkDoc').checked ? '1' : '0';
+
+    fd.append('require_selfie', requireSelfie);
+    fd.append('require_doc_photo', requireDoc);
+
+    const token = getToken();
+
+    try {
+      btnCriar.disabled = true;
+      btnCriar.textContent = 'Criando...';
+
+      const resp = await fetch(API_BASE + '/envelope_create.php', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        },
+        body: fd
+      });
+
+      const data = await resp.json().catch(() => ({}));
+
+      if (!resp.ok || !data.ok) {
+        msg.className = 'msg err';
+        msg.textContent = data.error || 'Erro ao criar envelope.';
+        msg.style.display = 'block';
+      } else {
+        msg.className = 'msg ok';
+        msg.textContent = 'Envelope criado com sucesso (ID ' + data.envelope_id + ').';
+        msg.style.display = 'block';
+
+        // salva contatos frequentes escolhidos (não trava o fluxo se der erro)
+        if (favs.length) {
+          const token2 = getToken();
+          favs.forEach(c => {
+            fetch(API_BASE + '/dest_frequent_save.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token2
+              },
+              body: JSON.stringify(c)
+            }).catch(() => {});
+          });
+        }
+
+        setTimeout(() => {
+          window.location.href = 'envelopes_lista.html';
+        }, 1500);
+      }
+
+    } catch (e) {
+      console.error(e);
+      msg.className = 'msg err';
+      msg.textContent = 'Falha ao conectar ao servidor.';
+      msg.style.display = 'block';
+    } finally {
+      btnCriar.disabled = false;
+      btnCriar.textContent = 'Criar envelope';
+    }
+  });
+</script>
+</body>
+</html>
