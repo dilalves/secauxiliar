@@ -412,26 +412,30 @@
   const btnAddDest = document.getElementById('btnAddDest');
 
   function addDestinatarioRow(nome = '', email = '', ordem = '') {
-    const tr = document.createElement('tr');
+  const tr = document.createElement('tr');
 
-    tr.innerHTML = `
-      <td><input type="number" class="dest-ordem" min="1" value="${ordem || ''}" placeholder="1"></td>
-      <td><input type="text" class="dest-nome" value="${nome}"></td>
-      <td><input type="email" class="dest-email" value="${email}"></td>
-      <td>
-        <label class="save-label">
-          <input type="checkbox" class="dest-save">
-          guardar
-        </label>
-      </td>
-    `;
+  tr.innerHTML = `
+    <td><input type="number" class="dest-ordem" min="1" value="${ordem || ''}" placeholder="1"></td>
+    <td><input type="text" class="dest-nome" value="${nome}"></td>
+    <td><input type="email" class="dest-email" value="${email}"></td>
+    <td>
+      <label class="save-label">
+        <input type="checkbox" class="dest-save">
+        guardar
+      </label>
+    </td>
+    <td class="actions">
+      <button type="button" class="btn small secondary btn-del">x</button>
+    </td>
+  `;
 
-    tr.querySelector('.btn-del').addEventListener('click', () => {
-      destBody.removeChild(tr);
-    });
+  tr.querySelector('.btn-del').addEventListener('click', () => {
+    destBody.removeChild(tr);
+  });
 
-    destBody.appendChild(tr);
-  }
+  destBody.appendChild(tr);
+}
+
 
   async function carregarDestinatariosFrequentes(){
     const token = getToken();
