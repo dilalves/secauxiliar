@@ -357,22 +357,22 @@
     <div class="summary-card">
       <div class="summary-label">Rascunhos</div>
       <div class="summary-value" id="sumDrafts">0</div>
-      <div class="summary-pill status-draft">draft</div>
+      <div class="summary-pill status-draft">rascunhos</div>
     </div>
     <div class="summary-card">
       <div class="summary-label">Enviados</div>
       <div class="summary-value" id="sumSent">0</div>
-      <div class="summary-pill status-sent">sent</div>
+      <div class="summary-pill status-sent">enviados</div>
     </div>
     <div class="summary-card">
       <div class="summary-label">Concluídos</div>
       <div class="summary-value" id="sumCompleted">0</div>
-      <div class="summary-pill status-completed">completed</div>
+      <div class="summary-pill status-completed">concluídos</div>
     </div>
     <div class="summary-card">
       <div class="summary-label">Anulados</div>
       <div class="summary-value" id="sumVoided">0</div>
-      <div class="summary-pill status-voided">voided</div>
+      <div class="summary-pill status-voided">cancelados</div>
     </div>
   </div>
 
@@ -460,13 +460,29 @@
     return { token, user };
   }
 
+
   function statusPill(status){
     const s = (status || '').toLowerCase();
+
+    // classes de cor (mantém as que você já tem no CSS)
     let cls = 'status-pill status-draft';
-    let label = s;
-    if (s === 'sent'){ cls = 'status-pill status-sent'; }
-    else if (s === 'completed'){ cls = 'status-pill status-completed'; }
-    else if (s === 'voided'){ cls = 'status-pill status-voided'; }
+    if (s === 'sent'){ 
+      cls = 'status-pill status-sent'; 
+    } else if (s === 'completed'){ 
+      cls = 'status-pill status-completed'; 
+    } else if (s === 'voided'){ 
+      cls = 'status-pill status-voided'; 
+    }
+
+    // rótulo em português
+    const labelMap = {
+      draft:      'RASCUHO',
+      sent:       'ENVIADO',
+      completed:  'CONCLUÍDO',
+      voided:     'ANULADO'
+    };
+    const label = labelMap[s] || (status || '');
+
     return `<span class="${cls}">${label}</span>`;
   }
 
@@ -508,7 +524,7 @@
       const to = `${y}-${m}-${String(dt.getDate()).padStart(2,'0')}`;
       qs = `?from=${from}&to=${to}`;
     }
-    
+
     if (currentUser && currentUser.id) {
         qs += (qs ? '&' : '?') + 'uid=' + encodeURIComponent(currentUser.id);
     }
