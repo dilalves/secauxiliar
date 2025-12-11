@@ -411,8 +411,9 @@
   const destBody = document.getElementById('destBody');
   const btnAddDest = document.getElementById('btnAddDest');
 
-  function addDestinatarioRow(nome = '', email = '', ordem = '') {
+function addDestinatarioRow(nome = '', email = '', ordem = '', fromFreq = false) {
   const tr = document.createElement('tr');
+  const labelText = fromFreq ? 'atualizar' : 'guardar';
 
   tr.innerHTML = `
     <td><input type="number" class="dest-ordem" min="1" value="${ordem || ''}" placeholder="1"></td>
@@ -421,7 +422,7 @@
     <td>
       <label class="save-label">
         <input type="checkbox" class="dest-save">
-        guardar
+        <span class="dest-save-text">${labelText}</span>
       </label>
     </td>
     <td class="actions">
@@ -435,6 +436,7 @@
 
   destBody.appendChild(tr);
 }
+
 
 
   async function carregarDestinatariosFrequentes(){
@@ -464,12 +466,39 @@
           <strong>${r.nome}</strong>
           <span>${r.email}</span>
         `;
+
         btn.addEventListener('click', () => {
-          const qtd = destBody.querySelectorAll('tr').length;
-          addDestinatarioRow(r.nome, r.email, qtd + 1);
+          const linhas = destBody.querySelectorAll('tr');
+
+          // Caso clássico: só existe a linha 1 e ela está vazia -> preenche nela
+          if (linhas.length === 1) {
+            const tr0 = linhas[0];
+            const nomeIn  = tr0.querySelector('.dest-nome');
+            const emailIn = tr0.querySelector('.dest-email');
+
+            if (
+              nomeIn && emailIn &&
+              nomeIn.value.trim() === '' &&
+              emailIn.value.trim() === ''
+            ) {
+              nomeIn.value  = r.nome;
+              emailIn.value = r.email;
+
+              const spanText = tr0.querySelector('.dest-save-text');
+              if (spanText) spanText.textContent = 'atualizar';
+
+              return; // não cria nova linha
+            }
+          }
+
+          // Caso contrário: adiciona uma nova linha com esse contato
+          const qtd = linhas.length;
+          addDestinatarioRow(r.nome, r.email, qtd + 1, true);
         });
+
         box.appendChild(btn);
       });
+
 
     } catch (e) {
       console.error(e);
