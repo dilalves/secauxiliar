@@ -492,6 +492,7 @@
     lbl.textContent = `Período: ${from} até ${to}`;
   }
 
+  let currentUser = null;
   async function carregarRelatorio(){
     const { token } = ensureAuth();
     const lblStatus = document.getElementById('lblStatusReq');
@@ -506,6 +507,10 @@
       const dt = new Date(Number(y), Number(m), 0); // dia 0 = último dia do mês
       const to = `${y}-${m}-${String(dt.getDate()).padStart(2,'0')}`;
       qs = `?from=${from}&to=${to}`;
+    }
+    
+    if (currentUser && currentUser.id) {
+        qs += (qs ? '&' : '?') + 'uid=' + encodeURIComponent(currentUser.id);
     }
 
     // placeholders
@@ -613,6 +618,7 @@
 
   (function init(){
     const { user } = ensureAuth();
+    currentUser = user;
 
     document.getElementById('userNome').textContent = user.nome;
     document.getElementById('userRole').textContent = user.role || 'usuário';
