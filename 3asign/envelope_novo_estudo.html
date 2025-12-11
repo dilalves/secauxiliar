@@ -293,6 +293,11 @@
       border-bottom:1px solid #e5e7eb;
     }
 
+   .chip-freq.selected{
+      background:#dcfce7;
+      border-color:#22c55e;
+      box-shadow:0 0 0 1px rgba(34,197,94,.4);
+    } 
 
     @media (max-width:800px){
       .grid{grid-template-columns:1fr;}
@@ -525,36 +530,42 @@ async function carregarDestinatariosFrequentes(){
 
     box.innerHTML = '';
     data.rows.forEach(r => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'chip-freq';
-      btn.dataset.id = r.id; // <-- guarda o ID do contato
-      btn.innerHTML = `
-        <strong>${r.nome}</strong>
-        <span>${r.email}</span>
-      `;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chip-freq';
+    btn.dataset.id = r.id;
+    btn.innerHTML = `
+      <strong>${r.nome}</strong>
+      <span>${r.email}</span>
+    `;
 
-      btn.addEventListener('click', () => {
-        // procura primeira linha totalmente vazia
-        let alvo = Array.from(destBody.querySelectorAll('tr')).find(tr => {
-          const n = tr.querySelector('.dest-nome')?.value.trim() || '';
-          const e = tr.querySelector('.dest-email')?.value.trim() || '';
-          return n === '' && e === '';
-        });
+    btn.addEventListener('click', () => {
+      // 1) aplica o verdinho no chip selecionado
+      document.querySelectorAll('.chip-freq.selected')
+        .forEach(ch => ch.classList.remove('selected'));
+      btn.classList.add('selected');
 
-        // se não tiver, cria nova
-        if (!alvo) {
-          const qtd = destBody.querySelectorAll('tr').length;
-          alvo = addDestinatarioRow('', '', qtd + 1);
-        }
-
-        alvo.querySelector('.dest-nome').value = r.nome;
-        alvo.querySelector('.dest-email').value = r.email;
+      // 2) procura primeira linha totalmente vazia
+      let alvo = Array.from(destBody.querySelectorAll('tr')).find(tr => {
+        const n = tr.querySelector('.dest-nome')?.value.trim() || '';
+        const e = tr.querySelector('.dest-email')?.value.trim() || '';
+        return n === '' && e === '';
       });
 
+      // 3) se não tiver, cria nova
+      if (!alvo) {
+        const qtd = destBody.querySelectorAll('tr').length;
+        alvo = addDestinatarioRow('', '', qtd + 1);
+      }
 
-      box.appendChild(btn);
+      // 4) preenche a linha
+      alvo.querySelector('.dest-nome').value  = r.nome;
+      alvo.querySelector('.dest-email').value = r.email;
     });
+
+    box.appendChild(btn);
+  });
+
 
   } catch (e) {
     console.error(e);
