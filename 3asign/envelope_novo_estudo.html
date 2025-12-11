@@ -481,16 +481,20 @@ async function carregarDestinatariosFrequentes(){
           alvo = addDestinatarioRow('', '', qtd + 1);
         }
 
-        // 3) preenche a linha com nome/email do contato
+                // 3) preenche a linha com nome/email do contato
         alvo.querySelector('.dest-nome').value = r.nome;
         alvo.querySelector('.dest-email').value = r.email;
 
         // 4) marca que esta linha está ligada a um contato frequente
         alvo.dataset.freqId = String(r.id);
 
-        // 5) ajusta texto do label para "atualizar"
+        // 5) ajusta texto do label para "atualizar" e já marca o checkbox
         const lbl = alvo.querySelector('.save-text');
         if (lbl) lbl.textContent = 'atualizar';
+
+        const chk = alvo.querySelector('.dest-save');
+        if (chk) chk.checked = true;
+
       });
 
       box.appendChild(btn);
