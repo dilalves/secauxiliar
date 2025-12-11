@@ -560,15 +560,9 @@ async function carregarDestinatariosFrequentes(){
         nome,
         email
       });
-
       if (salvar) {
-        if (freqId > 0) {
-          // atualizar contato existente
-          favs.push({ id: freqId, nome, email });
-        } else {
-          // novo contato
-          favs.push({ nome, email });
-        }
+        // agora o back usa (user_id, nome) como chave única
+        favs.push({ nome, email });
       }
     }
   });
