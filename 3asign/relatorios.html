@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatórios • 3aSign</title>
+  <!-- Favicon -->
+  <link rel="icon" href="icone.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="icone.ico" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root{
+      --bg:#f3f4f6;
+      --nav:#0b3b78;
+      --nav-light:#1d4ed8;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --danger:#b91c1c;
+      --success:#15803d;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:#0f172a;
+    }
+    .topbar{
+      height:56px;
+      background:var(--nav);
+      color:#e5e7eb;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 16px;
+      box-shadow:0 2px 8px rgba(15,23,42,.45);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:600;
+      letter-spacing:.02em;
+    }
+    .brand .logo-dot{
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      background:#facc15;
+      box-shadow:0 0 0 3px rgba(250,204,21,.4);
+    }
+    .brand span.sub{
+      display:block;
+      font-size:.7rem;
+      opacity:.8;
+    }
+    .top-nav{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-size:.9rem;
+    }
+    .top-nav a{
+      color:#e5e7eb;
+      text-decoration:none;
+      padding:6px 10px;
+      border-radius:999px;
+    }
+    .top-nav a:hover{
+      background:rgba(15,23,42,.35);
+    }
+    .top-nav a.active{
+      background:rgba(248,250,252,.18);
+      font-weight:600;
+    }
+    .top-user{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:.8rem;
+    }
+    .chip-role{
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(209,213,219,.7);
+      font-size:.7rem;
+    }
+    .top-user button{
+      background:transparent;
+      border:1px solid rgba(248,250,252,.3);
+      border-radius:999px;
+      padding:4px 8px;
+      color:#fee2e2;
+      cursor:pointer;
+      font-size:.75rem;
+    }
+    .top-user button:hover{
+      background:rgba(248,250,252,.12);
+    }
+    main{
+      max-width:1120px;
+      margin:16px auto 24px;
+      padding:0 12px;
+    }
+    h1{
+      margin:8px 0 4px;
+      font-size:1.35rem;
+    }
+    .section-title{
+      margin-top:0;
+      font-size:.95rem;
+      color:var(--muted);
+    }
+
+    .toolbar{
+      margin-top:12px;
+      margin-bottom:12px;
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:12px;
+      font-size:.85rem;
+      color:var(--muted);
+    }
+    .toolbar label{
+      font-size:.8rem;
+      margin-right:4px;
+    }
+    .toolbar input[type="month"]{
+      padding:6px 8px;
+      border-radius:8px;
+      border:1px solid #d1d5db;
+      font-size:.85rem;
+      background:#fff;
+    }
+    .toolbar .badge-info{
+      padding:4px 8px;
+      border-radius:999px;
+      background:#e5e7eb;
+      color:#374151;
+      font-size:.75rem;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .summary-card{
+      background:var(--card);
+      border-radius:12px;
+      padding:10px 12px;
+      box-shadow:0 1px 4px rgba(15,23,42,.08);
+    }
+    .summary-label{
+      font-size:.8rem;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+    .summary-value{
+      font-size:1.2rem;
+      font-weight:600;
+    }
+    .summary-pill{
+      display:inline-block;
+      margin-top:4px;
+      font-size:.7rem;
+      padding:2px 6px;
+      border-radius:999px;
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+
+    .progress-wrap{
+      margin-top:6px;
+    }
+    .progress-bar{
+      width:100%;
+      height:7px;
+      border-radius:999px;
+      background:#e5e7eb;
+      overflow:hidden;
+    }
+    .progress-bar span{
+      display:block;
+      height:100%;
+      background:#16a34a;
+      width:0;
+      transition:width .3s ease;
+    }
+    .progress-text{
+      margin-top:2px;
+      font-size:.75rem;
+      color:var(--muted);
+    }
+
+    .layout-main{
+      display:grid;
+      grid-template-columns:2fr minmax(220px,0.9fr);
+      gap:16px;
+      margin-top:12px;
+    }
+    @media (max-width:900px){
+      .layout-main{
+        grid-template-columns:1fr;
+      }
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:12px;
+      padding:14px 16px;
+      box-shadow:0 1px 4px rgba(15,23,42,.1);
+    }
+    .card-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    .card-title{
+      font-size:.95rem;
+      font-weight:600;
+    }
+    .card-sub{
+      font-size:.8rem;
+      color:var(--muted);
+    }
+
+    .status-pill{
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:999px;
+      font-size:.7rem;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+    }
+    .status-draft{background:#e5e7eb;color:#374151;}
+    .status-sent{background:#fef3c7;color:#92400e;}
+    .status-completed{background:#dcfce7;color:#166534;}
+    .status-voided{background:#fee2e2;color:#b91c1c;}
+
+    .table-wrap{
+      width:100%;
+      overflow-x:auto;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.8rem;
+    }
+    thead{
+      background:#f9fafb;
+    }
+    th,td{
+      padding:6px 8px;
+      text-align:left;
+      border-bottom:1px solid #e5e7eb;
+      white-space:nowrap;
+    }
+    th{
+      font-weight:600;
+      color:#4b5563;
+      font-size:.78rem;
+    }
+    td.titulo{
+      max-width:260px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .muted{
+      color:var(--muted);
+    }
+
+    .list{
+      list-style:none;
+      padding-left:0;
+      margin:6px 0 0;
+      font-size:.8rem;
+    }
+    .list li{
+      padding:6px 0;
+      border-bottom:1px solid #e5e7eb;
+    }
+    .list li:last-child{
+      border-bottom:none;
+    }
+    .list strong{
+      display:block;
+      font-size:.82rem;
+    }
+    .list span{
+      display:block;
+      font-size:.75rem;
+      color:var(--muted);
+    }
+
+    .empty-msg{
+      font-size:.8rem;
+      color:var(--muted);
+      margin-top:6px;
+    }
+
+    .error-msg{
+      margin-top:8px;
+      font-size:.8rem;
+      color:var(--danger);
+    }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo-dot"></div>
+    <div>
+      3aSign
+      <span class="sub">Painel de Assinaturas</span>
+    </div>
+  </div>
+
+  <nav class="top-nav">
+    <a href="admin.html">Início</a>
+    <a href="envelope_novo.html">Novo Envelope</a>
+    <a href="envelopes_lista.html">Meus Envelopes</a>
+    <a href="relatorios.html" class="active">Relatórios</a>
+  </nav>
+
+  <div class="top-user">
+    <span id="userNome">Usuário</span>
+    <span id="userRole" class="chip-role">role</span>
+    <button id="btnSair">Sair</button>
+  </div>
+</header>
+
+<main>
+  <h1>Relatórios de uso</h1>
+  <p class="section-title">Resumo de envelopes enviados, concluídos e destinatários por período.</p>
+
+  <div class="toolbar">
+    <div>
+      <label for="filtroMes">Período:</label>
+      <input type="month" id="filtroMes">
+    </div>
+    <span id="lblPeriodo" class="badge-info">Carregando...</span>
+    <span id="lblStatusReq" class="error-msg" style="display:none;"></span>
+  </div>
+
+  <!-- Cards de resumo -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-label">Total de envelopes</div>
+      <div class="summary-value" id="sumTotalEnv">0</div>
+      <div class="summary-pill">no período</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Rascunhos</div>
+      <div class="summary-value" id="sumDrafts">0</div>
+      <div class="summary-pill status-draft">draft</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Enviados</div>
+      <div class="summary-value" id="sumSent">0</div>
+      <div class="summary-pill status-sent">sent</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Concluídos</div>
+      <div class="summary-value" id="sumCompleted">0</div>
+      <div class="summary-pill status-completed">completed</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Anulados</div>
+      <div class="summary-value" id="sumVoided">0</div>
+      <div class="summary-pill status-voided">voided</div>
+    </div>
+  </div>
+
+  <div class="summary-card" style="margin-bottom:12px;">
+    <div class="summary-label">Destinatários</div>
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <span id="barDest"></span>
+      </div>
+      <div class="progress-text" id="txtDest">0 de 0 destinatários assinaram no período.</div>
+    </div>
+  </div>
+
+  <div class="layout-main">
+    <!-- coluna esquerda: tabela de envelopes -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Envelopes do período</div>
+          <div class="card-sub">Últimos envelopes criados no período selecionado.</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Status</th>
+              <th>Criado em</th>
+              <th>Finalizado em</th>
+              <th>Destinatários</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyEnvelopes">
+            <tr><td colspan="5" class="empty-msg">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- coluna direita: ranking + tempo médio -->
+    <aside class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Top destinatários</div>
+          <div class="card-sub">E-mails que mais receberam envelopes no período.</div>
+        </div>
+      </div>
+      <ul class="list" id="listaDestinatarios">
+        <li class="empty-msg">Carregando...</li>
+      </ul>
+
+      <hr style="margin:12px 0;border:none;border-top:1px solid #e5e7eb;">
+
+      <div class="card-header" style="margin-bottom:4px;">
+        <div class="card-title">Tempo de assinatura</div>
+      </div>
+      <div id="boxTempo" class="card-sub">
+        Calculando...
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+  const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+
+  function getToken() {
+    return localStorage.getItem('zs_token');
+  }
+
+  function getUser() {
+    const raw = localStorage.getItem('zs_user');
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch { return null; }
+  }
+
+  function ensureAuth() {
+    const token = getToken();
+    const user = getUser();
+    if (!token || !user) {
+      window.location.href = 'index.html';
+    }
+    return { token, user };
+  }
+
+  function statusPill(status){
+    const s = (status || '').toLowerCase();
+    let cls = 'status-pill status-draft';
+    let label = s;
+    if (s === 'sent'){ cls = 'status-pill status-sent'; }
+    else if (s === 'completed'){ cls = 'status-pill status-completed'; }
+    else if (s === 'voided'){ cls = 'status-pill status-voided'; }
+    return `<span class="${cls}">${label}</span>`;
+  }
+
+  function secondsToText(sec){
+    if (sec == null) return 'Sem dados suficientes no período.';
+    sec = Number(sec);
+    if (!isFinite(sec) || sec <= 0) return 'Sem dados suficientes no período.';
+    const dias = Math.floor(sec / 86400);
+    sec -= dias*86400;
+    const horas = Math.floor(sec / 3600);
+    sec -= horas*3600;
+    const minutos = Math.floor(sec / 60);
+
+    const partes = [];
+    if (dias) partes.push(dias + 'd');
+    if (horas) partes.push(horas + 'h');
+    if (minutos || partes.length === 0) partes.push(minutos + 'min');
+    return partes.join(' ');
+  }
+
+  function setPeriodoLabel(from, to){
+    const lbl = document.getElementById('lblPeriodo');
+    lbl.textContent = `Período: ${from} até ${to}`;
+  }
+
+  async function carregarRelatorio(){
+    const { token } = ensureAuth();
+    const lblStatus = document.getElementById('lblStatusReq');
+    lblStatus.style.display = 'none';
+    lblStatus.textContent = '';
+
+    const mesInput = document.getElementById('filtroMes').value; // yyyy-MM
+    let qs = '';
+    if (mesInput){
+      const [y, m] = mesInput.split('-');
+      const from = `${y}-${m}-01`;
+      const dt = new Date(Number(y), Number(m), 0); // dia 0 = último dia do mês
+      const to = `${y}-${m}-${String(dt.getDate()).padStart(2,'0')}`;
+      qs = `?from=${from}&to=${to}`;
+    }
+
+    // placeholders
+    document.getElementById('tbodyEnvelopes').innerHTML =
+      '<tr><td colspan="5" class="empty-msg">Carregando...</td></tr>';
+    document.getElementById('listaDestinatarios').innerHTML =
+      '<li class="empty-msg">Carregando...</li>';
+    document.getElementById('boxTempo').textContent = 'Calculando...';
+
+    try{
+      const res = await fetch(API_BASE + '/reports_get.php' + qs, {
+        headers:{
+          'Authorization':'Bearer ' + token
+        }
+      });
+
+      const data = await res.json();
+
+      if (!data.ok){
+        lblStatus.textContent = data.error || 'Erro ao carregar relatório.';
+        lblStatus.style.display = 'block';
+        return;
+      }
+
+      // período
+      if (data.period){
+        setPeriodoLabel(data.period.from, data.period.to);
+      }
+
+      // resumo envelopes
+      const env = data.summary?.envelopes || {};
+      document.getElementById('sumTotalEnv').textContent = env.total_envelopes ?? 0;
+      document.getElementById('sumDrafts').textContent    = env.drafts ?? 0;
+      document.getElementById('sumSent').textContent      = env.sent ?? 0;
+      document.getElementById('sumCompleted').textContent = env.completed ?? 0;
+      document.getElementById('sumVoided').textContent    = env.voided ?? 0;
+
+      // destinatários
+      const dest = data.summary?.destinatarios || {};
+      const totalDest = dest.total_destinatarios ?? 0;
+      const assinados = dest.assinados ?? 0;
+      const pct = totalDest > 0 ? Math.round((assinados / totalDest) * 100) : 0;
+      document.getElementById('barDest').style.width = pct + '%';
+      document.getElementById('txtDest').textContent =
+        `${assinados} de ${totalDest} destinatários assinaram no período (${pct}%).`;
+
+      // envelopes
+      const tbody = document.getElementById('tbodyEnvelopes');
+      const listaEnv = data.envelopes || [];
+      if (!listaEnv.length){
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">Nenhum envelope encontrado no período.</td></tr>';
+      } else {
+        tbody.innerHTML = '';
+        listaEnv.forEach(e => {
+          const tr = document.createElement('tr');
+          const destText = `${e.destinatarios_assinados}/${e.total_destinatarios}`;
+          tr.innerHTML = `
+            <td class="titulo">
+              <div>${e.titulo || '(sem título)'}</div>
+              <div class="muted" style="font-size:.7rem;">Código: ${e.verify_code || '-'}</div>
+            </td>
+            <td>${statusPill(e.status)}</td>
+            <td>${e.created_at || '-'}</td>
+            <td>${e.final_at || '-'}</td>
+            <td>${destText}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // ranking de destinatários
+      const ul = document.getElementById('listaDestinatarios');
+      const top = data.top_destinatarios || [];
+      if (!top.length){
+        ul.innerHTML = '<li class="empty-msg">Nenhum destinatário recorrente neste período.</li>';
+      } else {
+        ul.innerHTML = '';
+        top.forEach(d => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <strong>${d.name || '(sem nome)'}</strong>
+            <span>${d.email || '-'} — ${d.qtd} envelope(s)</span>
+          `;
+          ul.appendChild(li);
+        });
+      }
+
+      // tempo médio
+      const t = data.summary?.tempo_assinatura || {};
+      const boxTempo = document.getElementById('boxTempo');
+      if (t.avg_seconds == null){
+        boxTempo.textContent = 'Ainda não há envelopes concluídos neste período.';
+      } else {
+        boxTempo.innerHTML =
+          `<div>Tempo médio: <strong>${secondsToText(t.avg_seconds)}</strong></div>` +
+          `<div class="muted" style="margin-top:2px;">Mais rápido: ${secondsToText(t.min_seconds)} · Mais demorado: ${secondsToText(t.max_seconds)}</div>`;
+      }
+
+    } catch (err){
+      console.error(err);
+      lblStatus.textContent = 'Erro de comunicação com o servidor.';
+      lblStatus.style.display = 'block';
+    }
+  }
+
+  (function init(){
+    const { user } = ensureAuth();
+
+    document.getElementById('userNome').textContent = user.nome;
+    document.getElementById('userRole').textContent = user.role || 'usuário';
+
+    document.getElementById('btnSair').addEventListener('click', () => {
+      localStorage.removeItem('zs_token');
+      localStorage.removeItem('zs_user');
+      window.location.href = 'index.html';
+    });
+
+    // mês atual no input
+    const hoje = new Date();
+    const yyyy = hoje.getFullYear();
+    const mm = String(hoje.getMonth() + 1).padStart(2, '0');
+    document.getElementById('filtroMes').value = `${yyyy}-${mm}`;
+
+    document.getElementById('filtroMes').addEventListener('change', carregarRelatorio);
+
+    carregarRelatorio();
+  })();
+</script>
+</body>
+</html>
