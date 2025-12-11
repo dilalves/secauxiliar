@@ -411,9 +411,8 @@
   const destBody = document.getElementById('destBody');
   const btnAddDest = document.getElementById('btnAddDest');
 
-function addDestinatarioRow(nome = '', email = '', ordem = '', fromFreq = false) {
+function addDestinatarioRow(nome = '', email = '', ordem = '') {
   const tr = document.createElement('tr');
-  const labelText = fromFreq ? 'atualizar' : 'guardar';
 
   tr.innerHTML = `
     <td><input type="number" class="dest-ordem" min="1" value="${ordem || ''}" placeholder="1"></td>
@@ -422,7 +421,7 @@ function addDestinatarioRow(nome = '', email = '', ordem = '', fromFreq = false)
     <td>
       <label class="save-label">
         <input type="checkbox" class="dest-save">
-        <span class="dest-save-text">${labelText}</span>
+        <span class="save-text">guardar</span>
       </label>
     </td>
     <td class="actions">
@@ -435,76 +434,74 @@ function addDestinatarioRow(nome = '', email = '', ordem = '', fromFreq = false)
   });
 
   destBody.appendChild(tr);
+  return tr; // <- importante pra gente conseguir usar depois
 }
 
 
+async function carregarDestinatariosFrequentes(){
+  const token = getToken();
+  const box = document.getElementById('freqChips');
+  if (!box) return;
 
-  async function carregarDestinatariosFrequentes(){
-    const token = getToken();
-    const box = document.getElementById('freqChips');
-    if (!box) return;
+  box.innerHTML = '<span style="font-size:.78rem;color:#6b7280;">Carregando...</span>';
 
-    box.innerHTML = '<span style="font-size:.78rem;color:#6b7280;">Carregando...</span>';
+  try {
+    const res = await fetch(API_BASE + '/dest_frequent_list.php', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
 
-    try {
-      const res = await fetch(API_BASE + '/dest_frequent_list.php', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      const data = await res.json();
+    if (!data.ok || !data.rows || !data.rows.length) {
+      box.innerHTML = '<span style="font-size:.78rem;color:#9ca3af;">Nenhum destinatário frequente cadastrado ainda.</span>';
+      return;
+    }
 
-      if (!data.ok || !data.rows || !data.rows.length) {
-        box.innerHTML = '<span style="font-size:.78rem;color:#9ca3af;">Nenhum destinatário frequente cadastrado ainda.</span>';
-        return;
-      }
+    box.innerHTML = '';
+    data.rows.forEach(r => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chip-freq';
+      btn.dataset.id = r.id; // <-- guarda o ID do contato
+      btn.innerHTML = `
+        <strong>${r.nome}</strong>
+        <span>${r.email}</span>
+      `;
 
-      box.innerHTML = '';
-      data.rows.forEach(r => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'chip-freq';
-        btn.innerHTML = `
-          <strong>${r.nome}</strong>
-          <span>${r.email}</span>
-        `;
-
-        btn.addEventListener('click', () => {
-          const linhas = destBody.querySelectorAll('tr');
-
-          // Caso clássico: só existe a linha 1 e ela está vazia -> preenche nela
-          if (linhas.length === 1) {
-            const tr0 = linhas[0];
-            const nomeIn  = tr0.querySelector('.dest-nome');
-            const emailIn = tr0.querySelector('.dest-email');
-
-            if (
-              nomeIn && emailIn &&
-              nomeIn.value.trim() === '' &&
-              emailIn.value.trim() === ''
-            ) {
-              nomeIn.value  = r.nome;
-              emailIn.value = r.email;
-
-              const spanText = tr0.querySelector('.dest-save-text');
-              if (spanText) spanText.textContent = 'atualizar';
-
-              return; // não cria nova linha
-            }
-          }
-
-          // Caso contrário: adiciona uma nova linha com esse contato
-          const qtd = linhas.length;
-          addDestinatarioRow(r.nome, r.email, qtd + 1, true);
+      btn.addEventListener('click', () => {
+        // 1) procura a primeira linha totalmente vazia (nome e email)
+        let alvo = Array.from(destBody.querySelectorAll('tr')).find(tr => {
+          const n = tr.querySelector('.dest-nome')?.value.trim() || '';
+          const e = tr.querySelector('.dest-email')?.value.trim() || '';
+          return n === '' && e === '';
         });
 
-        box.appendChild(btn);
+        // 2) se não tiver linha vazia, cria uma nova no final
+        if (!alvo) {
+          const qtd = destBody.querySelectorAll('tr').length;
+          alvo = addDestinatarioRow('', '', qtd + 1);
+        }
+
+        // 3) preenche a linha com nome/email do contato
+        alvo.querySelector('.dest-nome').value = r.nome;
+        alvo.querySelector('.dest-email').value = r.email;
+
+        // 4) marca que esta linha está ligada a um contato frequente
+        alvo.dataset.freqId = String(r.id);
+
+        // 5) ajusta texto do label para "atualizar"
+        const lbl = alvo.querySelector('.save-text');
+        if (lbl) lbl.textContent = 'atualizar';
       });
 
+      box.appendChild(btn);
+    });
 
-    } catch (e) {
-      console.error(e);
-      box.innerHTML = '<span style="font-size:.78rem;color:#b91c1c;">Erro ao carregar destinatários frequentes.</span>';
-    }
+  } catch (e) {
+    console.error(e);
+    box.innerHTML = '<span style="font-size:.78rem;color:#b91c1c;">Erro ao carregar destinatários frequentes.</span>';
   }
+}
+
         
   // começa com uma linha
   addDestinatarioRow('', '', 1);
@@ -543,27 +540,34 @@ function addDestinatarioRow(nome = '', email = '', ordem = '', fromFreq = false)
     }
 
     // monta lista de destinatários
-    const dests = [];
-    const favs  = []; // para salvar como frequentes
+  const dests = [];  
+  const favs  = []; // para salvar/atualizar como frequentes
 
-    destBody.querySelectorAll('tr').forEach(tr => {
-      const ordem = tr.querySelector('.dest-ordem').value.trim();
-      const nome  = tr.querySelector('.dest-nome').value.trim();
-      const email = tr.querySelector('.dest-email').value.trim();
-      const salvar = tr.querySelector('.dest-save')?.checked;
+  destBody.querySelectorAll('tr').forEach(tr => {
+    const ordem  = tr.querySelector('.dest-ordem').value.trim();
+    const nome   = tr.querySelector('.dest-nome').value.trim();
+    const email  = tr.querySelector('.dest-email').value.trim();
+    const salvar = tr.querySelector('.dest-save')?.checked;
+    const freqId = parseInt(tr.dataset.freqId || '0', 10) || 0;
 
-      if (nome && email) {
-        dests.push({
-          ordem: ordem ? parseInt(ordem, 10) : 1,
-          nome,
-          email
-        });
+    if (nome && email) {
+      dests.push({
+        ordem: ordem ? parseInt(ordem, 10) : 1,
+        nome,
+        email
+      });
 
-        if (salvar) {
+      if (salvar) {
+        if (freqId > 0) {
+          // atualizar contato existente
+          favs.push({ id: freqId, nome, email });
+        } else {
+          // novo contato
           favs.push({ nome, email });
         }
       }
-    });
+    }
+  });
 
     if (dests.length === 0) {
       msg.className = 'msg err';
