@@ -577,14 +577,23 @@
   }
 
   function mapStatusLabel(st) {
-    switch(st){
-      case 'draft': return 'Rascunho';
-      case 'sent': return 'Enviado';
+    switch (st) {
+      // status do envelope
+      case 'draft':     return 'Rascunho';
+      case 'sent':      return 'Enviado';
       case 'completed': return 'Concluído';
-      case 'voided': return 'Cancelado';
-      default: return st;
+      case 'voided':    return 'Cancelado';
+
+      // status do destinatário
+      case 'pending':   return 'Pendente';
+      case 'signed':    return 'Assinado';
+      case 'declined':  return 'Recusado';
+
+      default:
+        return st;
     }
   }
+
 
   function copiarTexto(texto) {
     navigator.clipboard.writeText(texto).then(() => {
