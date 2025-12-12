@@ -1,217 +1,631 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3aSign • Assinatura Digital Simples e Rápida</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3aSign • Transforme assinaturas em novos clientes</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            color: #1f2937;
-            background: #ffffff;
-            line-height: 1.6;
-        }
+  <style>
+    :root {
+      --primary: #1d4ed8;
+      --primary-dark: #0b3b78;
+      --bg-soft: #f3f4f6;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --radius: 12px;
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.16);
+    }
 
-        header {
-            background: linear-gradient(135deg, #0b3b78, #1d4ed8);
-            color: white;
-            padding: 60px 20px;
-            text-align: center;
-        }
+    * { box-sizing: border-box; }
 
-        header h1 {
-            font-size: 36px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text-main);
+      background: #ffffff;
+      line-height: 1.6;
+    }
 
-        header p {
-            font-size: 18px;
-            opacity: .9;
-        }
+    header {
+      background: radial-gradient(circle at top left, #2563eb, #0b3b78 55%, #020617);
+      color: white;
+      padding: 60px 20px 80px;
+    }
 
-        .section {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 60px 20px;
-        }
+    .hero {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 40px;
+      align-items: center;
+    }
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 40px;
-            align-items: center;
-        }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; text-align: center; }
+      .hero-visual { order: -1; }
+    }
 
-        .btn-primary {
-            display: inline-block;
-            padding: 14px 26px;
-            background: #0b3b78;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            margin-top: 20px;
-        }
+    header h1 {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
 
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
-        }
+    header p.lead {
+      font-size: 18px;
+      opacity: .9;
+      margin-bottom: 24px;
+    }
 
-        .card {
-            background: #f9fafb;
-            padding: 25px;
-            border-radius: 10px;
-            border: 1px solid #e5e7eb;
-        }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 999px;
+      padding: 6px 13px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
 
-        h2 {
-            font-size: 30px;
-            margin-bottom: 10px;
-        }
+    .hero-tag span {
+      display: inline-flex;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
 
-        h3 {
-            margin-top: 0;
-        }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
 
-        .faq-item {
-            margin-bottom: 20px;
-        }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      background: white;
+      color: var(--primary-dark);
+      text-decoration: none;
+      border-radius: 999px;
+      font-weight: 600;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.35);
+      border: none;
+      cursor: pointer;
+    }
 
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            background: #f3f4f6;
-            font-size: 14px;
-            color: #6b7280;
-        }
+    .btn-primary span {
+      display: inline-block;
+      margin-left: 6px;
+    }
 
-        img {
-            width: 100%;
-            border-radius: 8px;
-        }
-    </style>
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #e5e7eb;
+      opacity: .9;
+    }
+
+    .hero-card {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(18px);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      max-width: 320px;
+      box-shadow: var(--shadow-soft);
+      font-size: 13px;
+    }
+
+    .hero-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .hero-visual img {
+      width: 100%;
+      border-radius: 22px;
+      box-shadow: 0 30px 60px rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .section {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 64px 20px;
+    }
+
+    .section-header {
+      max-width: 640px;
+      margin-bottom: 32px;
+    }
+
+    .section-kicker {
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin: 0 0 8px;
+    }
+
+    .section-sub {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 32px;
+      align-items: flex-start;
+    }
+
+    .steps {
+      counter-reset: step;
+      display: grid;
+      gap: 18px;
+    }
+
+    .step {
+      background: #f9fafb;
+      border-radius: 14px;
+      padding: 16px 16px 16px 52px;
+      position: relative;
+      border: 1px solid #e5e7eb;
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 16px;
+      top: 18px;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: var(--primary);
+      color: white;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+
+    .step h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+    }
+
+    .step p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 22px;
+      margin-top: 24px;
+    }
+
+    .card {
+      background: white;
+      padding: 18px 18px 20px;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 0.04);
+    }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .card h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .section-alt {
+      background: var(--bg-soft);
+    }
+
+    .list-check {
+      list-style: none;
+      padding-left: 0;
+      margin: 16px 0 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .list-check li {
+      margin-bottom: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .list-check span {
+      color: #22c55e;
+      font-weight: 700;
+      font-size: 14px;
+      margin-top: 2px;
+    }
+
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .testimonial-card {
+      background: white;
+      border-radius: 16px;
+      padding: 18px 18px 16px;
+      border: 1px solid #e5e7eb;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .testimonial-meta {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 13px;
+      color: #4b5563;
+    }
+
+    .cta-final {
+      text-align: center;
+      padding: 72px 20px 80px;
+      background: radial-gradient(circle at top, #1d4ed8, #020617 65%);
+      color: white;
+    }
+
+    .cta-final h2 {
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .cta-final p {
+      margin: 0 0 22px;
+      font-size: 15px;
+      color: #e5e7eb;
+    }
+
+    .cta-buttons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #020617;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+  </style>
 </head>
-
 <body>
 
-    <!-- HERO -->
-    <header>
-        <h1>Assinatura Digital Fácil, Rápida e Segura</h1>
-        <p>Com o 3aSign você envia, assina e gerencia documentos em minutos — sem papel, sem burocracia.</p>
-        <a href="#" class="btn-primary">Criar conta gratuitamente</a>
-    </header>
-
-    <!-- COMO FUNCIONA -->
-    <section class="section">
-        <h2>Como funciona o 3aSign</h2>
-
-        <div class="grid-2">
-            <div>
-                <h3>1. Envie seu documento</h3>
-                <p>Faça upload de arquivos PDF ou imagens. O sistema prepara automaticamente o documento para assinatura.</p>
-
-                <h3>2. Cadastre os signatários</h3>
-                <p>Informe nome, e-mail e telefone. Cada pessoa recebe um link único e seguro para assinar.</p>
-
-                <h3>3. Assinatura rápida</h3>
-                <p>A assinatura é feita na tela, usando celular, tablet ou computador — sem precisar instalar nada.</p>
-
-                <h3>4. Documento final consolidado</h3>
-                <p>Após todas as assinaturas, o sistema gera um PDF final protegido, com registro de data, IP, dispositivo e QRCode de verificação.</p>
-
-                <a href="#" class="btn-primary">Começar agora</a>
-            </div>
-
-            <div>
-                <img src="img/assinatura-digital-hero.jpg" alt="Imagem ilustrativa de assinatura digital">
-            </div>
+  <!-- HERO -->
+  <header>
+    <div class="hero">
+      <div>
+        <div class="hero-tag">
+          <span></span>
+          Assinado com 3aSign
         </div>
-    </section>
+        <h1>Transforme a próxima assinatura em um novo cliente para o seu negócio</h1>
+        <p class="lead">
+          Além de assinar contratos em segundos, o 3aSign permite que você envie documentos para seus clientes 
+          com trilha de auditoria completa e ainda converta quem assina em novos negócios recorrentes.
+        </p>
+        <div class="hero-actions">
+          <a href="#criar-conta" class="btn-primary">
+            Criar conta gratuita <span>→</span>
+          </a>
+          <a href="https://wa.me/seu-numero" class="btn-ghost">
+            Falar com especialista
+          </a>
+        </div>
+        <div class="hero-meta">
+          <div class="hero-card">
+            <strong>Para quem é o 3aSign?</strong>
+            <div>Escritórios, consultorias, imobiliárias, escolas, clínicas, prestadores de serviço e qualquer negócio que dependa de contratos assinados todos os dias.</div>
+          </div>
+        </div>
+      </div>
 
-    <!-- VANTAGENS -->
-    <section class="section">
-        <h2>Por que usar o 3aSign?</h2>
+      <div class="hero-visual">
+        <!-- Substitua pela sua imagem mockup de dashboard -->
+        <img src="img/hero-dashboard-3asign.jpg" alt="Painel moderno da plataforma 3aSign com documentos sendo assinados">
+      </div>
+    </div>
+  </header>
 
+  <!-- COMO FUNCIONA -->
+  <section class="section" id="como-funciona">
+    <div class="section-header">
+      <div class="section-kicker">Fluxo em 4 passos</div>
+      <h2>Envie, assine e feche negócios em minutos</h2>
+      <p class="section-sub">
+        O 3aSign cuida da parte chata do processo de assinatura para você focar no que importa: vender mais e atender melhor seus clientes.
+      </p>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="steps">
+          <div class="step">
+            <h3>Envie o documento em PDF</h3>
+            <p>Faça upload do contrato, proposta ou orçamento. Em poucos cliques você já posiciona os campos de assinatura.</p>
+          </div>
+          <div class="step">
+            <h3>Adicione quem precisa assinar</h3>
+            <p>Informe nome, e-mail e telefone. Cada pessoa recebe um link único, seguro e rastreado para assinar.</p>
+          </div>
+          <div class="step">
+            <h3>Seu cliente assina de qualquer dispositivo</h3>
+            <p>A assinatura é feita direto no navegador, pelo celular, tablet ou computador — sem app, sem cadastro e sem atrito.</p>
+          </div>
+          <div class="step">
+            <h3>Documento final com relatório de auditoria</h3>
+            <p>Assim que todos assinam, o 3aSign gera um PDF consolidado com registro de IP, data/hora, dispositivo, hash e QRCode de verificação.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <img src="img/flow-signature-3asign.jpg" alt="Fluxo visual do envio de documento e assinatura digital no 3aSign">
+      </div>
+    </div>
+  </section>
+
+  <!-- TRANSFORME QUEM ASSINA EM CLIENTE -->
+  <section class="section section-alt" id="criar-conta">
+    <div class="section-header">
+      <div class="section-kicker">Para quem acabou de assinar</div>
+      <h2>Use a mesma experiência que você teve para vender seus próprios contratos</h2>
+      <p class="section-sub">
+        Se você gostou de assinar este documento com 3aSign, pode oferecer a mesma rapidez e segurança para os contratos do seu negócio em poucos minutos.
+      </p>
+    </div>
+
+    <div class="grid-2">
+      <div>
         <div class="features">
-
-            <div class="card">
-                <h3>💨 Rápido e Prático</h3>
-                <p>Assine documentos em segundos, sem impressões, escaneamento ou deslocamentos.</p>
-            </div>
-
-            <div class="card">
-                <h3>🔒 Seguro e Autenticado</h3>
-                <p>Registro de IP, data, hora, dispositivo, hash criptográfico e QRCode garantem autenticidade.</p>
-            </div>
-
-            <div class="card">
-                <h3>📱 Funciona em qualquer dispositivo</h3>
-                <p>Assinatura via celular, tablet ou computador — sem instalar aplicativo.</p>
-            </div>
-
-            <div class="card">
-                <h3>📄 PDF final protegido</h3>
-                <p>Documento unificado com auditoria completa e lacre digital.</p>
-            </div>
-
-            <div class="card">
-                <h3>🌱 Sustentável</h3>
-                <p>Reduza custos com papel e colabore com práticas ambientais.</p>
-            </div>
-
-            <div class="card">
-                <h3>⚖ Validade Jurídica</h3>
-                <p>Atende aos requisitos da MP 2.200-2 e do Marco Civil da Internet.</p>
-            </div>
-
+          <div class="card">
+            <div class="card-icon">⚡</div>
+            <h3>Primeiro mês com foco em resultado</h3>
+            <p>Envie propostas, orçamentos e contratos de prestação de serviços com poucos cliques e acompanhe quem abriu, visualizou e assinou.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">📈</div>
+            <h3>Menos fricção, mais contratos fechados</h3>
+            <p>Quanto menos etapas para assinar, maior a taxa de fechamento. Reduza o “vou imprimir e assinar depois” para quase zero.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🤝</div>
+            <h3>Experiência profissional para seus clientes</h3>
+            <p>Envie documentos com a identidade visual do seu negócio, com um fluxo moderno e confiável, sem depender de papel.</p>
+          </div>
         </div>
-    </section>
 
-    <!-- SEGURANÇA -->
-    <section class="section">
-        <h2>Segurança e Validade Jurídica</h2>
-
-        <div class="grid-2">
-            <div>
-                <p>
-                    O 3aSign utiliza padrões modernos de autenticação e registro para garantir que cada assinatura seja legítima,
-                    verificável e legalmente válida.
-                </p>
-
-                <ul>
-                    <li>Identificação do signatário (IP, user-agent, data/hora)</li>
-                    <li>Hash de integridade do documento</li>
-                    <li>QRCode para verificação pública</li>
-                    <li>Registro antifraude</li>
-                    <li>PDF final com trilha de auditoria</li>
-                </ul>
-            </div>
-
-            <div>
-                <img src="img/security.jpg" alt="Segurança digital">
-            </div>
+        <div style="margin-top:20px;">
+          <div class="badge">
+            <span class="badge-dot"></span> Criação de conta em menos de 1 minuto
+          </div>
         </div>
-    </section>
+      </div>
 
-    <!-- CTA FINAL -->
-    <section class="section" style="text-align:center;">
-        <h2>Pronto para começar?</h2>
-        <p>Você pode enviar seu primeiro documento agora mesmo.</p>
-        <a href="#" class="btn-primary">Criar conta gratuita</a>
-    </section>
+      <div>
+        <h3>Crie sua conta gratuita agora</h3>
+        <p style="color:#6b7280;font-size:14px;">
+          Teste o 3aSign hoje mesmo. Sem necessidade de cartão de crédito para começar.
+        </p>
+        <!-- Aqui você pode trocar pelo seu formulário real -->
+        <div class="card" style="margin-top:10px;">
+          <p style="font-size:13px;margin:0 0 10px;color:#4b5563;">Preencha para começar a enviar seus próprios contratos:</p>
+          <p style="font-size:13px;margin:0;color:#6b7280;">[Área para formulário de cadastro / botão que leva para a tela de registro]</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <!-- RODAPÉ -->
-    <footer>
-        © 2025 3aSign — Plataforma de Assinatura Digital  
-        <br> Simples • Rápida • Segura
-    </footer>
+  <!-- VANTAGENS -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-kicker">Por que usar o 3aSign</div>
+      <h2>Menos burocracia, mais negócios fechados</h2>
+      <p class="section-sub">
+        Não é só sobre assinar digitalmente — é sobre ter previsibilidade no fluxo de contratos, reduzir retrabalho e ganhar tempo operacional.
+      </p>
+    </div>
+
+    <div class="features">
+      <div class="card">
+        <div class="card-icon">🚀</div>
+        <h3>Rápido e prático</h3>
+        <p>Elimine impressão, reconhecimento de firma e deslocamentos. Seus documentos chegam e voltam assinados em minutos.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <h3>Seguro e auditável</h3>
+        <p>Registro de IP, data, hora, dispositivo, hash criptográfico e QRCode garantem autenticidade e rastreabilidade.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h3>Funciona em qualquer dispositivo</h3>
+        <p>Seu cliente assina direto do celular, sem instalar nada, com uma interface limpa e intuitiva.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📄</div>
+        <h3>PDF final protegido</h3>
+        <p>Documento unificado com trilha de auditoria completa e lacre digital para consulta futura.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🌱</div>
+        <h3>Redução de custos</h3>
+        <p>Menos papel, menos correios, menos deslocamento. Mais tempo da sua equipe focado no que importa.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">⚖</div>
+        <h3>Validade jurídica</h3>
+        <p>Atende aos requisitos legais brasileiros de assinaturas eletrônicas, seguindo boas práticas de registro e auditoria.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEGURANÇA -->
+  <section class="section section-alt">
+    <div class="section-header">
+      <div class="section-kicker">Segurança e conformidade</div>
+      <h2>Cada assinatura deixa um rastro que protege você e o seu cliente</h2>
+      <p class="section-sub">
+        O 3aSign registra os principais dados técnicos de cada interação, o que ajuda a comprovar a integridade do documento em eventuais questionamentos.
+      </p>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <ul class="list-check">
+          <li><span>✔</span> Identificação do signatário (IP, user-agent, data e hora de cada ação).</li>
+          <li><span>✔</span> Hash de integridade do documento final assinado.</li>
+          <li><span>✔</span> QRCode para verificação pública e rápida do documento.</li>
+          <li><span>✔</span> Registro antifraude com trilha completa de eventos.</li>
+          <li><span>✔</span> PDF com histórico de quem assinou, quando e de qual dispositivo.</li>
+        </ul>
+      </div>
+
+      <div>
+        <img src="img/security-3asign.jpg" alt="Representação de segurança digital, cadeado e camada de proteção de dados">
+      </div>
+    </div>
+  </section>
+
+  <!-- PROVAS SOCIAIS -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-kicker">Prova em uso real</div>
+      <h2>Negócios como o seu já estão assinando tudo online</h2>
+      <p class="section-sub">
+        Pequenas e médias empresas de serviços, saúde, educação e imobiliário já automatizaram contratos com o 3aSign.
+      </p>
+    </div>
+
+    <div class="testimonials">
+      <div class="testimonial-card">
+        “Hoje fecho contratos em horas, não em dias. Meus clientes assinam do celular, e a equipe não perde mais tempo cobrando papel.”
+        <div class="testimonial-meta">
+          <strong>Nome do Cliente</strong>
+          <span>Consultoria empresarial</span>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        “Reduzi drasticamente o atraso em matrículas e renovações. Tudo acontece online, com segurança e registro completo.”
+        <div class="testimonial-meta">
+          <strong>Nome do Cliente</strong>
+          <span>Escola / Curso</span>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        “Cada contrato assinado é arquivado com auditoria. É muito mais simples responder qualquer dúvida jurídica depois.”
+        <div class="testimonial-meta">
+          <strong>Nome do Cliente</strong>
+          <span>Imobiliária / Escritório</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="cta-final">
+    <h2>Pronto para assinar o próximo contrato com mais velocidade?</h2>
+    <p>Crie sua conta gratuita agora e envie seu primeiro documento em poucos minutos.</p>
+    <div class="cta-buttons">
+      <a href="URL_DE_CADASTRO" class="btn-primary">
+        Criar conta gratuita <span>→</span>
+      </a>
+      <a href="https://wa.me/seu-numero" class="btn-ghost">
+        Agendar demonstração rápida
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 3aSign — Plataforma de Assinatura Digital • Simples • Rápida • Segura
+  </footer>
 
 </body>
 </html>
