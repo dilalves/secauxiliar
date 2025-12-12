@@ -332,65 +332,72 @@
     }
   });
 
-    // Trocar senha
-    document.getElementById('btnTrocarSenha').addEventListener('click', async () => {
-    const msg = document.getElementById('msgSenha');
-    msg.style.display = 'none';
+// Trocar senha
+document.getElementById('btnTrocarSenha').addEventListener('click', async () => {
+  const msg = document.getElementById('msgSenha');
+  msg.style.display = 'none';
 
-    const senhaAtual = document.getElementById('senhaAtual').value;
-    const novaSenha  = document.getElementById('novaSenha').value;
-    const novaSenha2 = document.getElementById('novaSenha2').value;
+  const senhaAtual = document.getElementById('senhaAtual').value;
+  const novaSenha  = document.getElementById('novaSenha').value;
+  const novaSenha2 = document.getElementById('novaSenha2').value;
 
-    if (!senhaAtual || !novaSenha || !novaSenha2) {
-        msg.className = 'msg err';
-        msg.textContent = 'Preencha todos os campos de senha.';
-        msg.style.display = 'block';
-        return;
-    }
-    if (novaSenha !== novaSenha2) {
-        msg.className = 'msg err';
-        msg.textContent = 'A confirmação da nova senha não confere.';
-        msg.style.display = 'block';
-        return;
-    }
+  if (!senhaAtual || !novaSenha || !novaSenha2) {
+    msg.className = 'msg err';
+    msg.textContent = 'Preencha todos os campos de senha.';
+    msg.style.display = 'block';
+    return;
+  }
+  if (novaSenha !== novaSenha2) {
+    msg.className = 'msg err';
+    msg.textContent = 'A confirmação da nova senha não confere.';
+    msg.style.display = 'block';
+    return;
+  }
 
-    try {
-        const res = await fetch(API_BASE + '/user_change_password.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + getToken()
-        },
-        body: JSON.stringify({
-            senha_atual: senhaAtual,
-            nova_senha: novaSenha
-        })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok || !data.ok) {
-        msg.className = 'msg err';
-        msg.textContent = data.error || 'Erro ao trocar senha.';
-        msg.style.display = 'block';
-        return;
-        }
-
-        msg.className = 'msg ok';
-        msg.textContent = 'Senha alterada com sucesso.';
-        msg.style.display = 'block';
-
-        document.getElementById('senhaAtual').value = '';
-        document.getElementById('novaSenha').value  = '';
-        document.getElementById('novaSenha2').value = '';
-
-    } catch (e) {
-        console.error(e);
-        msg.className = 'msg err';
-        msg.textContent = 'Falha ao conectar ao servidor.';
-        msg.style.display = 'block';
-    }
+  try {
+    const res = await fetch(API_BASE + '/user_change_password.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({
+        senha_atual: senhaAtual,
+        nova_senha: novaSenha
+      })
     });
+
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (e) {
+      // se vier resposta vazia/HTML
+      data = { ok: false, error: 'server_error' };
+    }
+
+    if (!res.ok || !data.ok) {
+      msg.className = 'msg err';
+      msg.textContent = data.error || 'Erro ao trocar senha.';
+      msg.style.display = 'block';
+      return;
+    }
+
+    msg.className = 'msg ok';
+    msg.textContent = 'Senha alterada com sucesso.';
+    msg.style.display = 'block';
+
+    // limpa campos
+    document.getElementById('senhaAtual').value = '';
+    document.getElementById('novaSenha').value  = '';
+    document.getElementById('novaSenha2').value = '';
+
+  } catch (e) {
+    console.error(e);
+    msg.className = 'msg err';
+    msg.textContent = 'Falha ao conectar ao servidor.';
+    msg.style.display = 'block';
+  }
+});
 
 </script>
 </body>
