@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Configurações da conta • 3aSign</title>
+  <link rel="icon" href="icone.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="icone.ico" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root{
+      --bg:#f3f4f6;
+      --nav:#0b3b78;
+      --nav-light:#1d4ed8;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --danger:#b91c1c;
+      --success:#15803d;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:#0f172a;
+    }
+    .topbar{
+      height:56px;
+      background:var(--nav);
+      color:#e5e7eb;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 16px;
+      box-shadow:0 2px 8px rgba(15,23,42,.45);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:600;
+      letter-spacing:.02em;
+    }
+    .brand .logo-dot{
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      background:#facc15;
+      box-shadow:0 0 0 3px rgba(250,204,21,.4);
+    }
+    .brand span.sub{
+      display:block;
+      font-size:.7rem;
+      opacity:.8;
+    }
+    .top-nav{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-size:.9rem;
+    }
+    .top-nav a{
+      color:#e5e7eb;
+      text-decoration:none;
+      padding:6px 10px;
+      border-radius:999px;
+    }
+    .top-nav a:hover{
+      background:rgba(15,23,42,.35);
+    }
+    .top-user{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:.8rem;
+    }
+    .chip-role{
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(209,213,219,.7);
+      font-size:.7rem;
+    }
+    .top-user button{
+      background:transparent;
+      border:1px solid rgba(248,250,252,.3);
+      border-radius:999px;
+      padding:4px 8px;
+      color:#fee2e2;
+      cursor:pointer;
+      font-size:.75rem;
+    }
+    .top-user button:hover{
+      background:rgba(248,250,252,.12);
+    }
+
+    main{
+      max-width:900px;
+      margin:16px auto 32px;
+      padding:0 12px;
+    }
+    h1{margin:16px 0 4px;}
+    .section-sub{
+      color:var(--muted);
+      font-size:.9rem;
+      margin-bottom:16px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: minmax(0,1.1fr) minmax(0,1.1fr);
+      gap:16px;
+    }
+    .card{
+      background:var(--card);
+      border-radius:12px;
+      padding:16px 18px;
+      box-shadow:0 1px 4px rgba(15,23,42,.1);
+    }
+    .card h2{
+      margin:0 0 8px;
+      font-size:1rem;
+    }
+    .card p{
+      margin:0 0 10px;
+      font-size:.85rem;
+      color:var(--muted);
+    }
+    label{
+      display:block;
+      font-size:.8rem;
+      margin-bottom:4px;
+      color:#374151;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"]{
+      width:100%;
+      padding:8px 10px;
+      border-radius:8px;
+      border:1px solid #cbd5e1;
+      font-size:.9rem;
+      margin-bottom:8px;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      padding:8px 14px;
+      border-radius:999px;
+      border:none;
+      background:var(--nav-light);
+      color:#fff;
+      font-size:.85rem;
+      text-decoration:none;
+      cursor:pointer;
+    }
+    .btn.secondary{
+      background:#e5e7eb;
+      color:#111827;
+    }
+    .btn.small{
+      padding:4px 8px;
+      font-size:.8rem;
+    }
+    .btn:hover{filter:brightness(1.05);}
+    .msg{
+      margin-top:8px;
+      padding:8px 10px;
+      border-radius:8px;
+      font-size:.8rem;
+      display:none;
+    }
+    .msg.ok{background:#dcfce7;color:var(--success);}
+    .msg.err{background:#fee2e2;color:var(--danger);}
+    @media(max-width:800px){
+      .grid{grid-template-columns:1fr;}
+    }
+    @media(max-width:600px){
+      .top-nav{display:none;}
+    }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo-dot"></div>
+    <div>
+      3aSign
+      <span class="sub">Painel de Assinaturas</span>
+    </div>
+  </div>
+
+  <nav class="top-nav">
+    <a href="admin.html">Início</a>
+    <a href="envelope_novo.html">Novo Envelope</a>
+    <a href="envelopes_lista.html">Meus Envelopes</a>
+    <a href="relatorios.html">Relatórios</a>
+    <a href="config.html">Configurações</a>
+  </nav>
+
+  <div class="top-user">
+    <span id="userNome">Usuário</span>
+    <span id="userRole" class="chip-role">atendimento</span>
+    <button id="btnSair">Sair</button>
+  </div>
+</header>
+
+<main>
+  <h1>Configurações da conta</h1>
+  <div class="section-sub">
+    Atualize seus dados de acesso e personalize sua conta.
+  </div>
+
+  <div class="grid">
+    <!-- Dados básicos -->
+    <div class="card">
+      <h2>Seus dados</h2>
+      <p>Estas informações aparecem no painel e podem ser usadas em relatórios e e-mails.</p>
+
+      <label for="nome">Nome</label>
+      <input type="text" id="nome">
+
+      <label for="email">E-mail de login</label>
+      <input type="email" id="email" disabled>
+
+      <label for="role">Tipo de acesso</label>
+      <input type="text" id="role" disabled>
+
+      <button type="button" class="btn small" id="btnSalvarPerfil">Salvar dados</button>
+      <div class="msg" id="msgPerfil"></div>
+    </div>
+
+    <!-- Alterar senha -->
+    <div class="card">
+      <h2>Alterar senha</h2>
+      <p>Informe sua senha atual e defina uma nova senha.</p>
+
+      <label for="senhaAtual">Senha atual</label>
+      <input type="password" id="senhaAtual">
+
+      <label for="novaSenha">Nova senha</label>
+      <input type="password" id="novaSenha">
+
+      <label for="novaSenha2">Confirmar nova senha</label>
+      <input type="password" id="novaSenha2">
+
+      <button type="button" class="btn small" id="btnTrocarSenha">Trocar senha</button>
+      <div class="msg" id="msgSenha"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+
+  function getUser() {
+    try { return JSON.parse(localStorage.getItem('zs_user') || 'null'); }
+    catch { return null; }
+  }
+  function getToken() {
+    return localStorage.getItem('zs_token');
+  }
+
+  // Header / sessão
+  (function initHeader(){
+    const user = getUser();
+    const token = getToken();
+    if (!user || !token) {
+      window.location.href = 'index.html';
+      return;
+    }
+    document.getElementById('userNome').textContent = user.nome;
+    document.getElementById('userRole').textContent = user.role || 'atendimento';
+
+    // Preenche campos do perfil
+    document.getElementById('nome').value  = user.nome || '';
+    document.getElementById('email').value = user.email || '';
+    document.getElementById('role').value  = user.role  || '';
+
+    document.getElementById('btnSair').addEventListener('click', () => {
+      localStorage.removeItem('zs_token');
+      localStorage.removeItem('zs_user');
+      window.location.href = 'index.html';
+    });
+  })();
+
+  // Salvar perfil (nome)
+  document.getElementById('btnSalvarPerfil').addEventListener('click', async () => {
+    const msg = document.getElementById('msgPerfil');
+    msg.style.display = 'none';
+
+    const nome = document.getElementById('nome').value.trim();
+    if (!nome) {
+      msg.className = 'msg err';
+      msg.textContent = 'Informe o nome.';
+      msg.style.display = 'block';
+      return;
+    }
+
+    try {
+      const res = await fetch(API_BASE + '/user_update_profile.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({ nome })
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        msg.className = 'msg err';
+        msg.textContent = data.error || 'Erro ao salvar dados.';
+        msg.style.display = 'block';
+        return;
+      }
+
+      // atualiza localStorage para refletir o novo nome no topo
+      const user = getUser() || {};
+      user.nome = nome;
+      localStorage.setItem('zs_user', JSON.stringify(user));
+      document.getElementById('userNome').textContent = nome;
+
+      msg.className = 'msg ok';
+      msg.textContent = 'Dados atualizados com sucesso.';
+      msg.style.display = 'block';
+
+    } catch (e) {
+      console.error(e);
+      msg.className = 'msg err';
+      msg.textContent = 'Falha ao conectar ao servidor.';
+      msg.style.display = 'block';
+    }
+  });
+
+  // Trocar senha
+  document.getElementById('btnTrocarSenha').addEventListener('click', async () => {
+    const msg = document.getElementById('msgSenha');
+    msg.style.display = 'none';
+
+    const senhaAtual = document.getElementById('senhaAtual').value;
+    const novaSenha  = document.getElementById('novaSenha').value;
+    const novaSenha2 = document.getElementById('novaSenha2').value;
+
+    if (!senhaAtual || !novaSenha || !novaSenha2) {
+      msg.className = 'msg err';
+      msg.textContent = 'Preencha todos os campos de senha.';
+      msg.style.display = 'block';
+      return;
+    }
+    if (novaSenha !== novaSenha2) {
+      msg.className = 'msg err';
+      msg.textContent = 'A confirmação da nova senha não confere.';
+      msg.style.display = 'block';
+      return;
+    }
+
+    try {
+      const res = await fetch(API_BASE + '/user_change_password.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({
+          senha_atual: senhaAtual,
+          nova_senha: novaSenha
+        })
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        msg.className = 'msg err';
+        msg.textContent = data.error || 'Erro ao trocar senha.';
+        msg.style.display = 'block';
+        return;
+      }
+
+      msg.className = 'msg ok';
+      msg.textContent = 'Senha alterada com sucesso.';
+      msg.style.display = 'block';
+
+      // limpa campos
+      document.getElementById('senhaAtual').value = '';
+      document.getElementById('novaSenha').value  = '';
+      document.getElementById('novaSenha2').value = '';
+
+    } catch (e) {
+      console.error(e);
+      msg.className = 'msg err';
+      msg.textContent = 'Falha ao conectar ao servidor.';
+      msg.style.display = 'block';
+    }
+  });
+</script>
+</body>
+</html>
