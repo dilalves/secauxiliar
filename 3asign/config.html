@@ -355,42 +355,44 @@
     }
 
     try {
-      const res = await fetch(API_BASE + '/user_change_password.php', {
+    const res = await fetch(API_BASE + '/user_change_password.php', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + getToken()
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
         },
         body: JSON.stringify({
-            senha_atual: atual,
-            nova_senha: nova,
-            confirmar: confirma
+        senha_atual: senhaAtual,
+        nova_senha: novaSenha,
+        confirmar: novaSenha2
         })
-        });
-      const data = await res.json();
+    });
 
-      if (!res.ok || !data.ok) {
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
         msg.className = 'msg err';
         msg.textContent = data.error || 'Erro ao trocar senha.';
         msg.style.display = 'block';
         return;
-      }
+    }
 
-      msg.className = 'msg ok';
-      msg.textContent = 'Senha alterada com sucesso.';
-      msg.style.display = 'block';
+    msg.className = 'msg ok';
+    msg.textContent = 'Senha alterada com sucesso.';
+    msg.style.display = 'block';
 
-      // limpa campos
-      document.getElementById('senhaAtual').value = '';
-      document.getElementById('novaSenha').value  = '';
-      document.getElementById('novaSenha2').value = '';
+    // limpa campos
+    document.getElementById('senhaAtual').value = '';
+    document.getElementById('novaSenha').value  = '';
+    document.getElementById('novaSenha2').value = '';
 
     } catch (e) {
-      console.error(e);
-      msg.className = 'msg err';
-      msg.textContent = 'Falha ao conectar ao servidor.';
-      msg.style.display = 'block';
+    console.error(e);
+    msg.className = 'msg err';
+    msg.textContent = 'Falha ao conectar ao servidor.';
+    msg.style.display = 'block';
     }
+    
   });
 </script>
 </body>
