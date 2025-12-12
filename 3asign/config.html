@@ -358,14 +358,15 @@
       const res = await fetch(API_BASE + '/user_change_password.php', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + getToken()
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
         },
         body: JSON.stringify({
-          senha_atual: senhaAtual,
-          nova_senha: novaSenha
+            senha_atual: atual,
+            nova_senha: nova,
+            confirmar: confirma
         })
-      });
+        });
       const data = await res.json();
 
       if (!res.ok || !data.ok) {
