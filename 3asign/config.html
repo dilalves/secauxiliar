@@ -219,6 +219,9 @@
       <label for="nome">Nome</label>
       <input type="text" id="nome">
 
+      <label for="empresa">Nome da empresa</label>
+      <input type="text" id="empresa">
+
       <label for="email">E-mail de login</label>
       <input type="email" id="email" disabled>
 
@@ -269,12 +272,15 @@
       return;
     }
     document.getElementById('userNome').textContent = user.nome;
+    
     document.getElementById('userRole').textContent = user.role || 'atendimento';
 
     // Preenche campos do perfil
     document.getElementById('nome').value  = user.nome || '';
     document.getElementById('email').value = user.email || '';
     document.getElementById('role').value  = user.role  || '';
+    document.getElementById('empresa').value = user.empresa || '';
+
 
     document.getElementById('btnSair').addEventListener('click', () => {
       localStorage.removeItem('zs_token');
@@ -289,6 +295,8 @@
     msg.style.display = 'none';
 
     const nome = document.getElementById('nome').value.trim();
+    const empresa = document.getElementById('empresa').value.trim();
+
     if (!nome) {
       msg.className = 'msg err';
       msg.textContent = 'Informe o nome.';
@@ -303,8 +311,9 @@
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + getToken()
         },
-        body: JSON.stringify({ nome })
+        body: JSON.stringify({ nome, empresa })
       });
+      
       const data = await res.json();
 
       if (!res.ok || !data.ok) {
@@ -317,6 +326,8 @@
       // atualiza localStorage para refletir o novo nome no topo
       const user = getUser() || {};
       user.nome = nome;
+      user.empresa = empresa;
+
       localStorage.setItem('zs_user', JSON.stringify(user));
       document.getElementById('userNome').textContent = nome;
 
