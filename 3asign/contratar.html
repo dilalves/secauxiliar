@@ -113,7 +113,7 @@
       </div>
       <div style="display:flex; gap:14px;">
         <a class="link" href="/3asign/">← Voltar</a>
-        <a class="link" href="/3asign/login.html">Login</a>
+        <a class="link" id="loginLink" href="/3asign/index.html">Login</a>
       </div>
     </div>
 
@@ -136,6 +136,14 @@
   <script>
     // ✅ sua base correta
     const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+    const LOGIN_URL = '/3asign/index.html';
+
+    (function fixLoginLink(){
+      const ret = encodeURIComponent('/3asign/contratar.html');
+      const a = document.getElementById('loginLink');
+      if (a) a.href = `${LOGIN_URL}?return=${ret}`;
+    })();
+
 
     function moneyFromCents(cents){
       const v = (cents || 0) / 100;
@@ -163,7 +171,7 @@
         const token = localStorage.getItem('token') || '';
         if(!token){
             const url = encodeURIComponent('/3asign/contratar.html');
-            window.location.href = '/3asign/login.html?return=' + url;
+            window.location.href = '/3asign/index.html?return=' + url;
             return;
         }
 
