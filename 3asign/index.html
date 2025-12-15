@@ -118,16 +118,22 @@
  <script>
   const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
 
+  function getReturnUrl(){
+    const u = new URL(location.href);
+    const ret = u.searchParams.get('return') || '/3asign/';
+    if (!ret.startsWith('/3asign/')) return '/3asign/';
+    return ret;
+  }
+  const returnUrl = getReturnUrl();
+
   // Se já estiver logado, pula o login
   const tokenExistente = localStorage.getItem('zs_token');
   const userExistente  = localStorage.getItem('zs_user');
-  const url = new URL(location.href);
-  const ret = url.searchParams.get('return') || 'admin.html';
-    
   if (tokenExistente && userExistente) {
-    window.location.href = ret;
+    window.location.href = returnUrl;
   }
-  const form   = document.getElementById('formLogin');
+
+  const form    = document.getElementById('formLogin');
   const divErro = document.getElementById('erro');
 
   form.addEventListener('submit', async (e) => {
@@ -138,7 +144,6 @@
     const email = document.getElementById('email').value.trim();
     const senha = document.getElementById('senha').value;
 
-    // IMPORTANTE: usar FormData (POST "simples", sem JSON)
     const fd = new FormData();
     fd.append('email', email);
     fd.append('senha', senha);
@@ -146,7 +151,7 @@
     try {
       const resp = await fetch(API_BASE + '/auth_login.php', {
         method: 'POST',
-        body: fd   // sem headers Content-Type -> browser usa x-www-form-urlencoded/multipart
+        body: fd
       });
 
       const data = await resp.json().catch(() => ({}));
@@ -159,10 +164,8 @@
 
       localStorage.setItem('zs_token', data.token);
       localStorage.setItem('zs_user', JSON.stringify(data.user));
-      
-      const url = new URL(location.href);
-      const ret = url.searchParams.get('return') || 'admin.html';
-      window.location.href = ret;
+
+      window.location.href = returnUrl;
 
     } catch (err) {
       console.error(err);
@@ -171,6 +174,7 @@
     }
   });
 </script>
+
 
 </body>
 </html>
