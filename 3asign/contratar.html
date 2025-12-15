@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Contratar • 3aSign</title>
+  <style>
+    :root{
+      --nav:#0b3b78;
+      --bg:#0b3b78;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --ok:#15803d;
+      --warn:#b45309;
+      --danger:#b91c1c;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      color:#111827;
+    }
+    .wrap{width:100%; max-width:980px;}
+    .top{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:16px;
+      color:#fff;
+    }
+    .brand{display:flex; gap:10px; align-items:center; font-weight:800;}
+    .brand img{width:28px; height:28px; border-radius:8px;}
+    .link{color:#dbeafe; text-decoration:none; font-weight:600;}
+    .panel{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:16px;
+      padding:18px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 10px 28px rgba(0,0,0,.12);
+    }
+    h1{margin:0 0 6px 0; font-size:22px;}
+    p{margin:0; color:var(--muted);}
+    .grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+    }
+    @media (max-width: 820px){
+      .grid{grid-template-columns:1fr;}
+    }
+    .plan{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .plan h2{margin:0; font-size:18px;}
+    .price{font-size:24px; font-weight:800;}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:12px; font-weight:700;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      width:max-content;
+    }
+    .btn{
+      appearance:none;
+      border:0;
+      background:var(--nav);
+      color:#fff;
+      font-weight:800;
+      padding:12px 14px;
+      border-radius:12px;
+      cursor:pointer;
+    }
+    .btn:disabled{opacity:.6; cursor:not-allowed;}
+    .muted{color:var(--muted); font-size:13px;}
+    .msg{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      display:none;
+    }
+    .msg.show{display:block;}
+    .msg.err{border-color:#fecaca; background:#fff1f2; color:var(--danger);}
+    .msg.ok{border-color:#bbf7d0; background:#f0fdf4; color:var(--ok);}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <img src="icone.ico" alt="3aSign">
+        <div>3aSign</div>
+      </div>
+      <div style="display:flex; gap:14px;">
+        <a class="link" href="/3asign/">← Voltar</a>
+        <a class="link" href="/3asign/login.html">Login</a>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="card">
+        <h1>Escolha seu plano</h1>
+        <p>Finalize sua assinatura para liberar o uso completo do sistema.</p>
+
+        <div id="plans" class="grid"></div>
+
+        <div id="msg" class="msg"></div>
+
+        <div class="muted" style="margin-top:10px;">
+          Ao assinar, você concorda com os termos e política de privacidade.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ✅ sua base correta
+    const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+
+    function moneyFromCents(cents){
+      const v = (cents || 0) / 100;
+      return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    }
+
+    function showMsg(text, type){
+      const el = document.getElementById('msg');
+      el.className = 'msg show ' + (type || '');
+      el.textContent = text;
+    }
+
+    async function loadPlans(){
+      const r = await fetch(`${API_BASE}/planos_list.php`, { method:'GET' });
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.error || 'Falha ao carregar planos');
+      return j.planos || [];
+    }
+
+    async function assinar(planoId, btn){
+      try{
+        btn.disabled = true;
+        showMsg('Gerando link de pagamento...', '');
+
+        const token = localStorage.getItem('token') || '';
+        if(!token){
+          showMsg('Você precisa estar logado para contratar. Faça login e volte aqui.', 'err');
+          btn.disabled = false;
+          return;
+        }
+
+        const r = await fetch(`${API_BASE}/mp_assinatura_criar.php`,{
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ plano_id: planoId })
+        });
+        const j = await r.json();
+        if(!j.ok){
+          if(j.error === 'unauthorized'){
+            showMsg('Sessão expirada. Faça login novamente.', 'err');
+          } else {
+            showMsg('Não foi possível iniciar o pagamento: ' + (j.error || 'erro'), 'err');
+          }
+          btn.disabled = false;
+          return;
+        }
+
+        if(j.init_point){
+          showMsg('Redirecionando para o Mercado Pago...', 'ok');
+          window.location.href = j.init_point;
+          return;
+        }
+
+        showMsg('Resposta inesperada do pagamento.', 'err');
+        btn.disabled = false;
+
+      }catch(e){
+        showMsg('Erro: ' + e.message, 'err');
+        btn.disabled = false;
+      }
+    }
+
+    (async () => {
+      try{
+        const planos = await loadPlans();
+        const box = document.getElementById('plans');
+
+        if(!planos.length){
+          box.innerHTML = '<div class="muted">Nenhum plano ativo disponível no momento.</div>';
+          return;
+        }
+
+        box.innerHTML = planos.map(p => {
+          const periodo = (p.intervalo === 'year') ? 'anual' : 'mensal';
+          return `
+            <div class="plan">
+              <div class="pill">Assinatura ${periodo}</div>
+              <h2>${p.nome}</h2>
+              <div class="price">${moneyFromCents(p.preco_centavos)}/${(p.intervalo==='year'?'ano':'mês')}</div>
+              <div class="muted">${p.descricao || 'Acesso ao painel e recursos do plano selecionado.'}</div>
+              <button class="btn" data-id="${p.id}">Assinar agora</button>
+            </div>
+          `;
+        }).join('');
+
+        box.querySelectorAll('button[data-id]').forEach(btn=>{
+          btn.addEventListener('click', () => assinar(Number(btn.dataset.id), btn));
+        });
+
+      }catch(e){
+        showMsg('Falha ao carregar planos: ' + e.message, 'err');
+      }
+    })();
+  </script>
+</body>
+</html>
