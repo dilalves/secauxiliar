@@ -121,10 +121,12 @@
   // Se já estiver logado, pula o login
   const tokenExistente = localStorage.getItem('zs_token');
   const userExistente  = localStorage.getItem('zs_user');
+  const url = new URL(location.href);
+  const ret = url.searchParams.get('return') || 'admin.html';
+    
   if (tokenExistente && userExistente) {
-    window.location.href = 'admin.html';
+    window.location.href = ret;
   }
-
   const form   = document.getElementById('formLogin');
   const divErro = document.getElementById('erro');
 
@@ -157,8 +159,11 @@
 
       localStorage.setItem('zs_token', data.token);
       localStorage.setItem('zs_user', JSON.stringify(data.user));
+      
+      const url = new URL(location.href);
+      const ret = url.searchParams.get('return') || 'admin.html';
+      window.location.href = ret;
 
-      window.location.href = 'admin.html';
     } catch (err) {
       console.error(err);
       divErro.textContent = 'Erro ao conectar com o servidor.';
