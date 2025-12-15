@@ -162,9 +162,9 @@
 
         const token = localStorage.getItem('token') || '';
         if(!token){
-          showMsg('Você precisa estar logado para contratar. Faça login e volte aqui.', 'err');
-          btn.disabled = false;
-          return;
+            const url = encodeURIComponent('/3asign/contratar.html');
+            window.location.href = '/3asign/login.html?return=' + url;
+            return;
         }
 
         const r = await fetch(`${API_BASE}/mp_assinatura_criar.php`,{
