@@ -118,23 +118,13 @@
  <script>
   const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
 
-  function getReturnUrl(){
-    const u = new URL(location.href);
-    const ret = u.searchParams.get('return') || '/3asign/';
-    // segurança simples: só permite voltar pra dentro do /3asign
-    if (!ret.startsWith('/3asign/')) return '/3asign/';
-    return ret;
-  }
-  const returnUrl = getReturnUrl();
-
-
   // Se já estiver logado, pula o login
   const tokenExistente = localStorage.getItem('zs_token');
   const userExistente  = localStorage.getItem('zs_user');
-      
   if (tokenExistente && userExistente) {
-    window.location.href = returnUrl;
+    window.location.href = 'admin.html';
   }
+
   const form   = document.getElementById('formLogin');
   const divErro = document.getElementById('erro');
 
@@ -167,11 +157,8 @@
 
       localStorage.setItem('zs_token', data.token);
       localStorage.setItem('zs_user', JSON.stringify(data.user));
-      
-      const url = new URL(location.href);
-      const ret = url.searchParams.get('return') || 'admin.html';
-      window.location.href = returnUrl;
 
+      window.location.href = 'admin.html';
     } catch (err) {
       console.error(err);
       divErro.textContent = 'Erro ao conectar com o servidor.';
