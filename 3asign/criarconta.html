@@ -158,7 +158,8 @@
   </div>
 
 <script>
-  const $ = (id) => document.getElementById(id);
+    const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+    const $ = (id) => document.getElementById(id);
 
   function showMsg(text, ok=false){
     const el = $("msg");
@@ -190,17 +191,17 @@
     btn.textContent = "Criando...";
 
     try{
-      const resp = await fetch("api/signup.php", {
+        const resp = await fetch(`${API_BASE}/signup.php`, {
         method: "POST",
         headers: {"Content-Type":"application/json"},
         body: JSON.stringify({
-          nome,
-          email,
-          telefone,
-          empresa_nome: empresa
-        , senha
+            nome,
+            email,
+            telefone,
+            empresa_nome: empresa,
+            senha
         })
-      });
+        });
 
       const j = await resp.json().catch(()=>null);
       if (!j || !j.ok){
