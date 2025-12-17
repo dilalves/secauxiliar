@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Importar Lista • Aprove</title>
+
+  <!-- Materialize -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+
+  <style>
+    body { background:#f3f4f6; }
+    .nav { background:#0b3b78; }
+    .card { border-radius: 14px; }
+    pre {
+      background:#0b1220; color:#e5e7eb; padding:14px; border-radius:12px;
+      overflow:auto; max-height: 340px;
+    }
+    .muted { color:#6b7280; }
+    .pill {
+      display:inline-block; padding:6px 10px; border-radius:999px;
+      background:#eef2ff; color:#1e3a8a; font-weight:600; margin-right:8px;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="nav">
+    <div class="nav-wrapper container">
+      <a href="#!" class="brand-logo" style="font-size:1.2rem;">Aprove • Importar Lista</a>
+    </div>
+  </nav>
+
+  <div class="container" style="margin-top:22px;">
+    <div class="row">
+      <div class="col s12 m8">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Chamar importador</span>
+            <p class="muted" style="margin-top:-6px;">
+              Informe o <b>código</b> da lista e o <b>link</b> (HTML/PDF). O sistema vai importar, cruzar com o cadastro e gravar apenas os encontrados.
+            </p>
+
+            <div class="row" style="margin-top:10px;">
+              <div class="input-field col s12">
+                <input id="cod_lista" type="text" placeholder="Ex: UEG_2026_RESULTADO_FINAL" />
+                <label for="cod_lista" class="active">Código da lista</label>
+              </div>
+
+              <div class="input-field col s12">
+                <input id="url" type="url" placeholder="Cole o link aqui" />
+                <label for="url" class="active">URL da lista</label>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button id="btn_importar" class="btn waves-effect waves-light">
+                Importar
+                <i class="material-icons right">cloud_download</i>
+              </button>
+
+              <button class="btn grey lighten-1 black-text waves-effect" onclick="setExemplo('uel')">
+                Exemplo UEL
+              </button>
+              <button class="btn grey lighten-1 black-text waves-effect" onclick="setExemplo('ueg')">
+                Exemplo UEG
+              </button>
+              <button class="btn grey lighten-1 black-text waves-effect" onclick="setExemplo('vunesp')">
+                Exemplo VUNESP
+              </button>
+            </div>
+
+            <div id="status" style="margin-top:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col s12 m4">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Resumo</span>
+            <div id="resumo" class="muted">Ainda não executado.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title">Retorno (JSON)</span>
+        <pre id="json_out">{}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Materialize JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    // Ajuste aqui se o HTML ficar em outra pasta
+    const ENDPOINT = './listas_import.php';
+
+    const elCod = document.getElementById('cod_lista');
+    const elUrl = document.getElementById('url');
+    const elStatus = document.getElementById('status');
+    const elResumo = document.getElementById('resumo');
+    const elJson = document.getElementById('json_out');
+    const btn = document.getElementById('btn_importar');
+
+    function toast(msg) {
+      M.toast({html: msg});
+    }
+
+    function setLoading(on) {
+      btn.disabled = on;
+      btn.classList.toggle('disabled', on);
+      elStatus.innerHTML = on
+        ? '<div class="progress"><div class="indeterminate"></div></div>'
+        : '';
+    }
+
+    function setExemplo(tipo) {
+      if (tipo === 'uel') {
+        elCod.value = 'UEL_2026_2F_1CONV';
+        elUrl.value = 'https://www.cops.uel.br/vestibular/2026/resultado_2a_fase/1/index.html';
+      } else if (tipo === 'ueg') {
+        elCod.value = 'UEG_2026_RESULTADO_FINAL';
+        elUrl.value = 'https://ns.ueg.br/pdfs/processos/377/PS20261%20-%20resultado%20final.pdf';
+      } else if (tipo === 'vunesp') {
+        elCod.value = 'VUNESP_SANTACASA_2026';
+        elUrl.value = 'http://documento.vunesp.com.br/documento/stream/NzQ3NzIxOQ%3d%3d';
+      }
+      M.updateTextFields();
+    }
+
+    function renderResumo(data) {
+      if (!data || !data.ok) {
+        elResumo.innerHTML = '<span class="muted">Sem dados.</span>';
+        return;
+      }
+      const pills = [
+        `<span class="pill">total_linhas: ${data.total_linhas ?? '-'}</span>`,
+        `<span class="pill">encontrados: ${data.encontrados ?? '-'}</span>`,
+        `<span class="pill">gravados: ${data.gravados ?? '-'}</span>`
+      ].join('');
+      elResumo.innerHTML = `
+        ${pills}
+        <div class="muted" style="margin-top:10px;">
+          <div><b>cod_lista:</b> ${escapeHtml(data.cod_lista ?? '')}</div>
+          <div><b>usuario:</b> ${escapeHtml(data.usuario ?? '')}</div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+      }[m]));
+    }
+
+    async function importar() {
+      const cod_lista = elCod.value.trim();
+      const url = elUrl.value.trim();
+
+      if (!cod_lista || !url) {
+        toast('Preencha o código da lista e a URL.');
+        return;
+      }
+
+      setLoading(true);
+      elJson.textContent = '{}';
+      elResumo.textContent = 'Processando...';
+
+      try {
+        const res = await fetch(ENDPOINT, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+            // Se você usa Bearer token no header, adicione aqui:
+            // 'Authorization': 'Bearer ' + localStorage.getItem('aprove_jwt')
+          },
+          body: JSON.stringify({ cod_lista, url })
+        });
+
+        const data = await res.json().catch(() => null);
+
+        elJson.textContent = JSON.stringify(data, null, 2);
+        renderResumo(data);
+
+        if (data && data.ok) {
+          toast('Importação concluída!');
+        } else {
+          toast('Falhou: ' + (data?.error || ('HTTP ' + res.status)));
+        }
+      } catch (e) {
+        elJson.textContent = JSON.stringify({ ok:false, error:'fetch_failed', msg:String(e) }, null, 2);
+        elResumo.textContent = 'Erro ao chamar o endpoint.';
+        toast('Erro de rede/chamada.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    btn.addEventListener('click', importar);
+  </script>
+</body>
+</html>
