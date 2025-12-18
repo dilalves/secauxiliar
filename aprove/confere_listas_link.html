@@ -20,10 +20,9 @@
     .muted { color:#6b7280; }
     .pill{
       display:inline-block; padding:6px 10px; border-radius:999px;
-      background:#eef2ff; color:#1e3a8a; font-weight:600; margin-right:8px;
-      margin-bottom:6px;
+      background:#eef2ff; color:#1e3a8a; font-weight:600; margin-right:8px; margin-bottom:6px;
     }
-    .btnrow { display:flex; gap:10px; flex-wrap:wrap; }
+    .row-tight { margin-bottom: 0; }
   </style>
 </head>
 
@@ -44,31 +43,40 @@
               Informe o <b>código</b> da lista e o <b>link</b> (HTML/PDF/ZIP). O sistema vai importar, cruzar com o cadastro e gravar apenas os encontrados.
             </p>
 
-            <div class="row" style="margin-top:10px;">
+            <div class="row row-tight" style="margin-top:10px;">
               <div class="input-field col s12">
-                <input id="cod_lista" type="text" placeholder="Ex: UEG_2026_RESULTADO_FINAL" autocomplete="off" />
+                <input id="cod_lista" type="text" placeholder="Ex: UEG_2026_RESULTADO_FINAL" />
                 <label for="cod_lista" class="active">Código da lista</label>
               </div>
 
               <div class="input-field col s12">
-                <input id="url" type="url" placeholder="Cole o link aqui" autocomplete="off" />
+                <input id="url" type="url" placeholder="Cole o link aqui" />
                 <label for="url" class="active">URL da lista</label>
               </div>
             </div>
 
-            <div class="btnrow">
-              <button id="btn_importar" type="button" class="btn waves-effect waves-light">
+            <div class="row row-tight" style="margin-top:4px;">
+              <div class="col s12">
+                <label>
+                  <input type="checkbox" id="debug" checked />
+                  <span>Debug</span>
+                </label>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+              <button id="btn_importar" class="btn waves-effect waves-light">
                 Importar
                 <i class="material-icons right">cloud_download</i>
               </button>
 
-              <button type="button" class="btn grey lighten-1 black-text waves-effect" id="btn_ex_uel">
+              <button class="btn grey lighten-1 black-text waves-effect" onclick="setExemplo('uel')">
                 Exemplo UEL
               </button>
-              <button type="button" class="btn grey lighten-1 black-text waves-effect" id="btn_ex_ueg">
+              <button class="btn grey lighten-1 black-text waves-effect" onclick="setExemplo('ueg')">
                 Exemplo UEG
               </button>
-              <button type="button" class="btn grey lighten-1 black-text waves-effect" id="btn_ex_vunesp">
+              <button class="btn grey lighten-1 black-text waves-effect" onclick="setExemplo('vunesp')">
                 Exemplo VUNESP
               </button>
             </div>
@@ -100,17 +108,17 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
   <script>
-    // Endpoint do importador
     const ENDPOINT = 'https://apisec.secauxiliar.com.br/aprove/confere_listas.php';
 
-    const elCod   = document.getElementById('cod_lista');
-    const elUrl   = document.getElementById('url');
-    const elStatus= document.getElementById('status');
-    const elResumo= document.getElementById('resumo');
-    const elJson  = document.getElementById('json_out');
-    const btn     = document.getElementById('btn_importar');
+    const elCod    = document.getElementById('cod_lista');
+    const elUrl    = document.getElementById('url');
+    const elDebug  = document.getElementById('debug');
+    const elStatus = document.getElementById('status');
+    const elResumo = document.getElementById('resumo');
+    const elJson   = document.getElementById('json_out');
+    const btn      = document.getElementById('btn_importar');
 
-    function toast(msg){ M.toast({ html: msg }); }
+    function toast(msg){ M.toast({html: msg}); }
 
     function setLoading(on){
       btn.disabled = on;
@@ -124,19 +132,16 @@
         elUrl.value = 'https://www.cops.uel.br/vestibular/2026/resultado_2a_fase/1/index.html';
       } else if (tipo === 'ueg'){
         elCod.value = 'UEG_2026_RESULTADO_FINAL';
-        // Mantém o %20 para evitar problemas de espaços em algumas configs de fetch
         elUrl.value = 'https://ns.ueg.br/pdfs/processos/377/PS20261%20-%20resultado%20final.pdf';
       } else if (tipo === 'vunesp'){
         elCod.value = 'VUNESP_SANTACASA_2026';
-        // Prefira HTTPS (muitas vezes o browser bloqueia/derruba conteúdo misto)
         elUrl.value = 'https://documento.vunesp.com.br/documento/stream/NzQ3NzIxOQ%3d%3d';
       }
       M.updateTextFields();
-      elUrl.focus();
     }
 
     function escapeHtml(s){
-      return String(s ?? '').replace(/[&<>"']/g, m => ({
+      return String(s).replace(/[&<>"']/g, m => ({
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
       }[m]));
     }
@@ -146,18 +151,16 @@
         elResumo.innerHTML = '<span class="muted">Sem dados.</span>';
         return;
       }
-
       const pills = [
-        `<span class="pill">http: ${escapeHtml(data.http_src ?? data.http ?? '-')}</span>`,
-        `<span class="pill">total_linhas: ${escapeHtml(data.total_linhas ?? '-')}</span>`,
-        `<span class="pill">encontrados: ${escapeHtml(data.encontrados ?? '-')}</span>`,
-        `<span class="pill">gravados: ${escapeHtml(data.gravados ?? '-')}</span>`
+        `<span class="pill">http: ${data.http_src ?? '-'}</span>`,
+        `<span class="pill">total_linhas: ${data.total_linhas ?? '-'}</span>`,
+        `<span class="pill">encontrados: ${data.encontrados ?? '-'}</span>`,
+        `<span class="pill">gravados: ${data.gravados ?? '-'}</span>`
       ].join('');
 
       elResumo.innerHTML = `
         ${pills}
         <div class="muted" style="margin-top:10px;">
-         f>
           <div><b>cod_lista:</b> ${escapeHtml(data.cod_lista ?? '')}</div>
           <div><b>usuario:</b> ${escapeHtml(data.usuario ?? '')}</div>
         </div>
@@ -167,6 +170,7 @@
     async function importar(){
       const cod_lista = elCod.value.trim();
       const url       = elUrl.value.trim();
+      const debug     = !!elDebug.checked;
 
       if (!cod_lista || !url){
         toast('Preencha o código da lista e a URL.');
@@ -182,49 +186,25 @@
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cod_lista, url, debug: true })
+          body: JSON.stringify({ cod_lista, url, debug })
         });
 
-        // Nem todo erro vem como JSON; tenta ler texto para debug também
-        const rawText = await res.text();
-        let data = null;
-        try { data = JSON.parse(rawText); } catch (_) { data = { ok:false, error:'non_json_response', http: res.status, body: rawText }; }
-
+        const data = await res.json().catch(() => null);
         elJson.textContent = JSON.stringify(data, null, 2);
         renderResumo(data);
 
-        if (data && data.ok){
-          toast('Importação concluída!');
-        } else {
-          toast('Falhou: ' + (data?.error || ('HTTP ' + res.status)));
-        }
-
-      } catch (e){
+        if (data && data.ok) toast('Importação concluída!');
+        else toast('Falhou: ' + (data?.error || ('HTTP ' + res.status)));
+      }catch(e){
         elJson.textContent = JSON.stringify({ ok:false, error:'fetch_failed', msg:String(e) }, null, 2);
         elResumo.textContent = 'Erro ao chamar o endpoint.';
         toast('Erro de rede/chamada.');
-      } finally {
+      }finally{
         setLoading(false);
       }
     }
 
-    // Botões exemplos
-    document.getElementById('btn_ex_uel').addEventListener('click', () => setExemplo('uel'));
-    document.getElementById('btn_ex_ueg').addEventListener('click', () => setExemplo('ueg'));
-    document.getElementById('btn_ex_vunesp').addEventListener('click', () => setExemplo('vunesp'));
-
-    // Clique no importar
     btn.addEventListener('click', importar);
-
-    // Enter no input chama importar
-    [elCod, elUrl].forEach(el => {
-      el.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Enter'){
-          ev.preventDefault();
-          importar();
-        }
-      });
-    });
   </script>
 </body>
 </html>
