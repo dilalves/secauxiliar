@@ -18,6 +18,7 @@
 
   * { box-sizing: border-box; }
 
+  /* Regra geral: nada pode estourar horizontalmente */
   html, body { width: 100%; max-width: 100%; }
   body {
     margin: 0;
@@ -25,8 +26,9 @@
     color: var(--text-main);
     background: #ffffff;
     line-height: 1.6;
-    overflow-x: hidden; /* evita “ampliou horizontalmente” */
+    overflow-x: hidden;
   }
+  img { max-width: 100%; height: auto; display: block; }
 
   header {
     background: radial-gradient(circle at top left, #2563eb, #0b3b78 55%, #020617);
@@ -34,82 +36,69 @@
     padding: 60px 20px 80px;
   }
 
-  /* ===== HERO (corrigido) ===== */
-  .hero-img{
-    width: 100%;
-    max-width: 420px;      /* controla o tamanho no desktop */
-    height: auto;
-    object-fit: cover;
-    border-radius: 18px;
-    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.28);
-  }
-
-
+  /* ===== HERO ===== */
   .hero {
     display: flex;
     align-items: center;
     gap: 40px;
 
-    /* trava a largura e centraliza como “section” */
     max-width: 1120px;
     margin: 0 auto;
 
-    /* evita overflow quando um item fica grande */
-    flex-wrap: wrap;
+    flex-wrap: wrap; /* evita overflow */
   }
 
   /* MUITO IMPORTANTE em flex: impede “estouro” de largura */
   .hero > * { min-width: 0; }
 
-  /* Se existir a classe hero-content no HTML, ótimo */
-  .hero-content {
-    flex: 1 1 420px;
-  }
+  .hero-content { flex: 1 1 420px; }
 
-  /* Se não existir hero-content, o primeiro filho vira “conteúdo” */
-  .hero > :first-child:not(.hero-visual) {
-    flex: 1 1 420px;
-  }
+  /* Se no seu HTML não tiver hero-content, o 1º filho vira “conteúdo” */
+  .hero > :first-child:not(.hero-visual) { flex: 1 1 420px; }
 
   .hero-visual {
     flex: 1 1 520px;
     max-width: 760px;
+    display: flex;
+    justify-content: center;
   }
 
-  .hero-visual img {
-    display: block;
-    max-width: 100%;
-    height: auto;
+  /* Imagem do HERO (use class="hero-img" no <img>) */
+  .hero-img{
+    width: 100%;
+    max-width: 520px;      /* controla o tamanho no desktop */
+    max-height: 620px;     /* limita altura */
+    object-fit: cover;     /* corta bonito se precisar */
     border-radius: 22px;
     box-shadow: 0 30px 60px rgba(15, 23, 42, 0.65);
     border: 1px solid rgba(148, 163, 184, 0.4);
   }
 
-
-
   /* Mobile: texto em cima, imagem embaixo */
   @media (max-width: 768px) {
     header { padding: 44px 16px 56px; }
-    .hero-img{
-        max-width: 92vw;
-      }
+
     .hero {
       flex-direction: column;
       gap: 18px;
     }
 
     .hero-visual {
-      order: 2;   /* imagem embaixo */
+      order: 2;
       width: 100%;
       margin-top: 10px;
       max-width: 100%;
     }
 
-    /* conteúdo (texto) em cima */
     .hero-content,
     .hero > :first-child:not(.hero-visual) {
       order: 1;
       width: 100%;
+    }
+
+    .hero-img{
+      max-width: 92vw;
+      max-height: 520px;
     }
 
     header h1 {
@@ -173,10 +162,7 @@
     cursor: pointer;
   }
 
-  .btn-primary span {
-    display: inline-block;
-    margin-left: 6px;
-  }
+  .btn-primary span { display: inline-block; margin-left: 6px; }
 
   .btn-ghost {
     display: inline-flex;
@@ -211,10 +197,7 @@
     font-size: 13px;
   }
 
-  .hero-card strong {
-    display: block;
-    margin-bottom: 4px;
-  }
+  .hero-card strong { display: block; margin-bottom: 4px; }
 
   .section {
     max-width: 1120px;
@@ -236,15 +219,9 @@
     margin-bottom: 8px;
   }
 
-  h2 {
-    font-size: 28px;
-    margin: 0 0 8px;
-  }
+  h2 { font-size: 28px; margin: 0 0 8px; }
 
-  .section-sub {
-    color: var(--text-muted);
-    font-size: 15px;
-  }
+  .section-sub { color: var(--text-muted); font-size: 15px; }
 
   .grid-2 {
     display: grid;
@@ -285,16 +262,9 @@
     font-weight: 600;
   }
 
-  .step h3 {
-    margin: 0 0 4px;
-    font-size: 16px;
-  }
+  .step h3 { margin: 0 0 4px; font-size: 16px; }
 
-  .step p {
-    margin: 0;
-    font-size: 14px;
-    color: var(--text-muted);
-  }
+  .step p { margin: 0; font-size: 14px; color: var(--text-muted); }
 
   .features {
     display: grid;
@@ -324,16 +294,9 @@
     margin-bottom: 10px;
   }
 
-  .card h3 {
-    margin: 0 0 4px;
-    font-size: 16px;
-  }
+  .card h3 { margin: 0 0 4px; font-size: 16px; }
 
-  .card p {
-    margin: 0;
-    font-size: 14px;
-    color: var(--text-muted);
-  }
+  .card p { margin: 0; font-size: 14px; color: var(--text-muted); }
 
   .badge {
     display: inline-flex;
@@ -343,16 +306,9 @@
     color: var(--text-muted);
   }
 
-  .badge-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: #22c55e;
-  }
+  .badge-dot { width: 8px; height: 8px; border-radius: 999px; background: #22c55e; }
 
-  .section-alt {
-    background: var(--bg-soft);
-  }
+  .section-alt { background: var(--bg-soft); }
 
   .list-check {
     list-style: none;
@@ -408,16 +364,9 @@
     color: white;
   }
 
-  .cta-final h2 {
-    font-size: 30px;
-    margin-bottom: 8px;
-  }
+  .cta-final h2 { font-size: 30px; margin-bottom: 8px; }
 
-  .cta-final p {
-    margin: 0 0 22px;
-    font-size: 15px;
-    color: #e5e7eb;
-  }
+  .cta-final p { margin: 0 0 22px; font-size: 15px; color: #e5e7eb; }
 
   .cta-buttons {
     display: flex;
@@ -433,7 +382,22 @@
     font-size: 13px;
     color: #9ca3af;
   }
+
+  /* ===== Print/Screenshot de seção (use class="section-shot") ===== */
+  .section-shot{
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    border-radius: 16px;
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.10);
+    border: 1px solid #e5e7eb;
+  }
+
+  @media (max-width: 768px){
+    .section-shot{ max-width: 92vw; }
+  }
 </style>
+
 
 </head>
 <body>
@@ -468,7 +432,7 @@
 
       <div class="hero-visual">
         <!-- Substitua pela sua imagem mockup de dashboard -->
-        <img src="/3asign/desorganizado.png" alt="Painel">
+        <img class="hero-shot" src="/3asign/desorganizado.png" alt="Vida sem 3aSign: pilhas de papel">
       </div>
     </div>
   </header>
@@ -506,7 +470,7 @@
       </div>
 
       <div>
-        <img src="/3asign/painel.png" alt="Fluxo fácil">
+        <img class="section-shot" src="/3asign/painel.png" alt="Fluxo visual do 3aSign">
       </div>
     </div>
   </section>
@@ -633,7 +597,7 @@
       </div>
 
       <div>
-        <img src="img/security-3asign.jpg" alt="Representação de segurança digital, cadeado e camada de proteção de dados">
+        <img class="hero-shot" src="/3asign/seguranca.png" alt="Segurança Digital">
       </div>
     </div>
   </section>
@@ -687,7 +651,7 @@
   </section>
 
   <footer>
-    © 2025 3aSign — Plataforma de Assinatura Digital • Simples • Rápida • Segura
+    © 2025 3aSign — Plataforma de Assinatura Digital • Assine • Autentique • Agilize
   </footer>
 
 </body>
