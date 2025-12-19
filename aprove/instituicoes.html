@@ -278,30 +278,18 @@ async function salvarEdicao(){
   else M.toast({html:data.error||'Erro ao salvar'});
 }
 
-async function abrirNovo(){
+function abrirNovo(){
   const form = document.getElementById('form-novo');
   form.reset();
+
+  const cod = document.getElementById('novo-codinst');
+  cod.value = '';
+  cod.setAttribute('placeholder','automático');
+  cod.setAttribute('readonly','readonly');
+
   M.updateTextFields();
-
-  const modal = M.Modal.getInstance(document.querySelector('#modal-novo'));
-  modal.open();
-
-  try {
-    const res = await fetch(API+'instituicoes_next_cod.php', { credentials:'include' });
-    const data = await res.json();
-
-    if (data.ok) {
-      const el = document.getElementById('novo-codinst');
-      el.value = data.codinst;
-      M.updateTextFields();
-    } else {
-      M.toast({html: data.error || 'Erro ao gerar código'});
-    }
-  } catch (e) {
-    M.toast({html: 'Falha de rede ao gerar código'});
-  }
+  M.Modal.getInstance(document.querySelector('#modal-novo')).open();
 }
-
 
 
 async function salvarNovo(){
