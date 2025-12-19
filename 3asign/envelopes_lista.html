@@ -380,16 +380,21 @@
   //inicio do bloco de validação e envio para pagina de login
 
   function goLogin() {
-    // se você guarda token:
-    localStorage.removeItem('token'); // ajuste se usa outro nome
-    sessionStorage.removeItem('token');
+    // limpa o que o sistema realmente usa
+    localStorage.removeItem('zs_token');
+    localStorage.removeItem('zs_user');
+    sessionStorage.removeItem('zs_token');
+    sessionStorage.removeItem('zs_user');
 
     const ret = encodeURIComponent(location.pathname + location.search);
-    location.href = `/3asign/index.html?return=${ret}`;
-  }
 
+    // se o login é o index.html, mantém index.html
+    window.location.href = `index.html?return=${ret}`;
+    // (se preferir login.html: window.location.href = `login.html?return=${ret}`);
+  }
+  
   async function apiFetchJson(url, options = {}) {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+    const token = localStorage.getItem('zs_token') || sessionStorage.getItem('zs_token') || '';
 
     const headers = Object.assign({}, options.headers || {});
     if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -399,8 +404,6 @@
 
     // ✅ aqui é o pulo do gato
     if (resp.status === 401) {
-      localStorage.removeItem('zs_token');
-      localStorage.removeItem('zs_user');
       goLogin();
       return null;
     }
@@ -596,12 +599,14 @@
                 (params.toString() ? ('?' + params.toString()) : '');
 
     try {
-      const resp = await fetch(url, {
-        headers: { 'Authorization': 'Bearer ' + token }
+      const data = await apiFetchJson(url, {
+        method: 'GET',
+        headers: { 'Authorization': 'Bearer ' + token } // pode até remover, pq o wrapper coloca, mas ok
       });
-      const data = await resp.json();
 
-      if (!resp.ok || !data.ok) {
+      if (!data) return; // já redirecionou no 401
+
+      if (!data.ok) {
         mostrarMensagem(data.error || 'Falha ao carregar envelopes.', 'err');
         return;
       }
