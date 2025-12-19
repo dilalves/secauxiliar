@@ -377,6 +377,47 @@
 <script>
   const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
 
+  //inicio do bloco de validação e envio para pagina de login
+
+  function goLogin() {
+    // se você guarda token:
+    localStorage.removeItem('token'); // ajuste se usa outro nome
+    sessionStorage.removeItem('token');
+
+    const ret = encodeURIComponent(location.pathname + location.search);
+    location.href = `/3asign/index.html?return=${ret}`;
+  }
+
+  async function apiFetchJson(url, options = {}) {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+
+    const headers = Object.assign({}, options.headers || {});
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+
+    const resp = await fetch(url, { ...options, headers });
+
+    // ✅ aqui é o pulo do gato
+    if (resp.status === 401) {
+      localStorage.removeItem('zs_token');
+      localStorage.removeItem('zs_user');
+      goLogin();
+      return null;
+    }
+
+    // se o backend retornar ok=false também tratamos
+    const data = await resp.json().catch(() => null);
+    if (data && data.ok === false && (data.code === 'SESSION_EXPIRED' || /expirada|inválida/i.test(data.message || ''))) {
+      localStorage.removeItem('zs_token');
+      localStorage.removeItem('zs_user');
+      goLogin();
+      return null;
+    }
+    return data;
+  }
+
+  //fim do bloco de validação e envio para pagina de login
+
   function getUser() {
     try { return JSON.parse(localStorage.getItem('zs_user') || 'null'); }
     catch { return null; }
