@@ -199,7 +199,7 @@
     <h5 style="color:#0b3b78;">Nova Instituição</h5>
     <form id="form-novo">
       <div class="row">
-        <div class="input-field col s2"><input id="novo-codinst" name="codinst" type="text" required><label for="novo-codinst">Código</label></div>
+        <input id="novo-codinst" name="codinst" type="text" readonly>
         <div class="input-field col s3"><input id="novo-sigla" name="sigla" type="text"><label for="novo-sigla">Sigla</label></div>
         <div class="input-field col s4"><input id="novo-nome" name="nome" type="text"><label for="novo-nome">Nome</label></div>
         <div class="input-field col s2"><input id="novo-cidade" name="cidade" type="text"><label for="novo-cidade">Cidade</label></div>
@@ -278,11 +278,31 @@ async function salvarEdicao(){
   else M.toast({html:data.error||'Erro ao salvar'});
 }
 
-function abrirNovo(){
-  document.getElementById('form-novo').reset();
+async function abrirNovo(){
+  const form = document.getElementById('form-novo');
+  form.reset();
   M.updateTextFields();
-  M.Modal.getInstance(document.querySelector('#modal-novo')).open();
+
+  const modal = M.Modal.getInstance(document.querySelector('#modal-novo'));
+  modal.open();
+
+  try {
+    const res = await fetch(API+'instituicoes_next_cod.php', { credentials:'include' });
+    const data = await res.json();
+
+    if (data.ok) {
+      const el = document.getElementById('novo-codinst');
+      el.value = data.codinst;
+      M.updateTextFields();
+    } else {
+      M.toast({html: data.error || 'Erro ao gerar código'});
+    }
+  } catch (e) {
+    M.toast({html: 'Falha de rede ao gerar código'});
+  }
 }
+
+
 
 async function salvarNovo(){
   const fd=new FormData(document.getElementById('form-novo'));
