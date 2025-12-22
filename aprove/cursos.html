@@ -217,7 +217,12 @@
         <div class="input-field col s2"><input id="id" name="id" type="text" readonly><label class="active" for="id">Código</label></div>
         <div class="input-field col s3"><input id="curso" name="curso" type="text"><label for="curso">Curso</label></div>
         <div class="input-field col s4"><input id="extenso" name="extenso" type="text"><label for="extenso">Nome Extenso</label></div>
-        <div class="input-field col s2"><input id="grupo" name="grupo" type="text"><label for="grupo">Grupo</label></div>
+        <div class="input-field col s12 m3">
+          <select id="grupo" name="grupo">
+            <option value="">—</option>
+          </select>
+          <label>Grupo</label>
+        </div>
         <div class="input-field col s1">
           <label><input type="checkbox" id="exclusivo" name="exclusivo"><span>Exclusivo</span></label>
         </div>
@@ -314,21 +319,62 @@ async function buscarCursos(){
   }else document.getElementById('msg-status').textContent='Nenhum curso encontrado.';
 }
 
+
 async function abrirEdicao(id){
-  const modal=M.Modal.getInstance(document.querySelector('#modal-editar'));
-  const res=await fetch(API+'cursos_get.php?id='+id,{credentials:'include'});
-  const data=await res.json();
-  if(data.ok && data.row){
-    const r=data.row;
-    document.getElementById('id').value=r.ID;
-    document.getElementById('curso').value=r.CURSO;
-    document.getElementById('extenso').value=r.EXTENSO;
-    document.getElementById('grupo').value=r.GRUPO;
-    document.getElementById('exclusivo').checked=(r.EXCLUSIVO==1);
+  const elModal = document.querySelector('#modal-editar');
+  let modal = M.Modal.getInstance(elModal);
+  if(!modal) modal = M.Modal.init(elModal, {dismissible:true});
+
+  try{
+    const res = await fetch(API+'cursos_get.php?id='+encodeURIComponent(id), {credentials:'include'});
+    const data = await res.json();
+
+    if(!(data.ok && data.row)){
+      M.toast({html:'Curso não encontrado'});
+      return;
+    }
+
+    const r = data.row;
+
+    document.getElementById('id').value      = r.ID ?? '';
+    document.getElementById('curso').value   = r.CURSO ?? '';
+    document.getElementById('extenso').value = r.EXTENSO ?? '';
+    document.getElementById('exclusivo').checked = String(r.EXCLUSIVO) === '1';
+
+    // SELECT GRUPO (id="grupo")
+    const selGrupo = document.getElementById('grupo');
+    if(selGrupo){
+      const rg = await fetch(API+'cursos_grupos_list.php', {credentials:'include'});
+      const dg = await rg.json();
+      const grupos = (dg.ok && dg.rows) ? dg.rows.map(x => x.GRUPO) : [];
+
+      selGrupo.innerHTML =
+        `<option value="">—</option>` +
+        grupos.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');
+
+      selGrupo.value = (r.GRUPO ?? '').trim();
+
+      const inst = M.FormSelect.getInstance(selGrupo);
+      if(inst) inst.destroy();
+      M.FormSelect.init(selGrupo);
+    }
+
     M.updateTextFields();
     modal.open();
-  }else M.toast({html:'Curso não encontrado'});
+
+  } catch (e){
+    M.toast({html:'Falha ao carregar dados do curso'});
+  }
 }
+
+
+// helper (se você ainda não tem)
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+  }[m]));
+}
+
 
 async function salvarEdicao(){
   const fd=new FormData(document.getElementById('form-editar'));
