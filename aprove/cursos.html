@@ -267,9 +267,27 @@
 const API = 'https://apisec.secauxiliar.com.br/aprove/';
 async function logout(){ await fetch(API+'auth_login_out.php',{credentials:'include'}); location.href='/aprove/index.html'; }
 
+
+let gruposCache = [];
+let gruposOptionsHtml = '';
+
+async function carregarGrupos(){
+  const res = await fetch(API+'cursos_grupos_list.php', {credentials:'include'});
+  const data = await res.json();
+  gruposCache = (data.ok && data.rows) ? data.rows.map(x => x.GRUPO) : [];
+  gruposOptionsHtml = gruposCache.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   M.Modal.init(document.querySelectorAll('.modal'));
-  document.getElementById('btn-nova-linha').addEventListener('click', addLinhaNovo);
+  document.getElementById('btn-nova-linha').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await addLinhaNovo();
+  });
   buscarCursos();
 });
 
@@ -323,59 +341,109 @@ async function salvarEdicao(){
 
 // === NOVO CURSO ===
 let novoSeq=0;
-function abrirNovo(){
-  const modal=M.Modal.getInstance(document.getElementById('modal-novo'));
-  document.querySelector('#tabela-novo tbody').innerHTML='';
-  addLinhaNovo();
+async function abrirNovo(){
+  const modal = M.Modal.getInstance(document.getElementById('modal-novo'));
+  document.querySelector('#tabela-novo tbody').innerHTML = '';
+
+  novoSeq = 0; // <<< importante pra reiniciar os IDs das linhas
+
+  await carregarGrupos();
+  await addLinhaNovo();
   modal.open();
 }
 
-function addLinhaNovo(){
-  const tbody=document.querySelector('#tabela-novo tbody');
-  const idx=++novoSeq;
-  const tr=document.createElement('tr');
-  tr.innerHTML=`
-    <td><input id="novo-id-${idx}" type="text" placeholder="01"></td>
+async function addLinhaNovo(){
+  const tbody = document.querySelector('#tabela-novo tbody');
+  const idx = ++novoSeq;
+
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input id="novo-id-${idx}" type="text" readonly></td>
     <td><input id="novo-curso-${idx}" type="text" placeholder="Quím."></td>
     <td><input id="novo-extenso-${idx}" type="text" placeholder="Química Industrial"></td>
-    <td><input id="novo-grupo-${idx}" type="text" placeholder="Quím."></td>
+    <td>
+      <select id="novo-grupo-${idx}">
+        <option value="">—</option>
+        ${gruposOptionsHtml}
+      </select>
+    </td>
     <td class="center-align"><label><input type="checkbox" id="novo-exclusivo-${idx}" class="exclusivo"><span></span></label></td>
     <td><button class="btn-small blue" onclick="salvarNovo(${idx})">Salvar</button></td>
     <td id="status-${idx}" class="grey-text center-align">—</td>
   `;
   tbody.appendChild(tr);
-  tr.querySelector(`#novo-id-${idx}`).focus();
+
+  // inicializa o select do Materialize (precisa depois de inserir na DOM)
+  M.FormSelect.init(tr.querySelectorAll('select'));
+
+  // pede o próximo ID do servidor (usando o próprio insert como gerador? melhor endpoint simples)
+  // Aqui vamos só setar "—" e o ID virá no retorno do insert (mais simples e sem endpoint extra)
+  // Se você quiser ver o ID antes de salvar, eu te passo um cursos_next_id.php também.
+
+  tr.querySelector(`#novo-curso-${idx}`).focus();
 }
 
 async function salvarNovo(idx){
-  const id=document.getElementById(`novo-id-${idx}`).value.trim();
-  const curso=document.getElementById(`novo-curso-${idx}`).value.trim();
-  const extenso=document.getElementById(`novo-extenso-${idx}`).value.trim();
-  const grupo=document.getElementById(`novo-grupo-${idx}`).value.trim();
-  const exclusivo=document.getElementById(`novo-exclusivo-${idx}`).checked?1:0;
-  const status=document.getElementById(`status-${idx}`);
-  if(!id || !curso){M.toast({html:'Preencha Código e Curso.'});return;}
-  status.textContent='Salvando...';
-  const fd=new FormData();
-  fd.append('ID',id);
-  fd.append('CURSO',curso);
-  fd.append('EXTENSO',extenso);
-  fd.append('GRUPO',grupo);
-  fd.append('EXCLUSIVO',exclusivo);
+  const curso   = document.getElementById(`novo-curso-${idx}`).value.trim();
+  const extenso = document.getElementById(`novo-extenso-${idx}`).value.trim();
+  const grupoEl = document.getElementById(`novo-grupo-${idx}`);
+  const grupo   = (grupoEl ? (grupoEl.value || '') : '').trim();
+  const exclusivo = document.getElementById(`novo-exclusivo-${idx}`).checked ? 1 : 0;
+
+  const status = document.getElementById(`status-${idx}`);
+
+  // Agora o ID é gerado no servidor: não validar nem enviar ID
+  if(!curso){
+    M.toast({html:'Preencha o campo Curso.'});
+    return;
+  }
+
+  status.textContent = 'Salvando...';
+
+  const fd = new FormData();
+  fd.append('CURSO', curso);
+  fd.append('EXTENSO', extenso);
+  fd.append('GRUPO', grupo);
+  fd.append('EXCLUSIVO', exclusivo);
+
   try{
-    const res=await fetch(API+'cursos_insert.php',{method:'POST',body:fd,credentials:'include'});
-    const data=await res.json();
+    const res = await fetch(API+'cursos_insert.php', {
+      method: 'POST',
+      body: fd,
+      credentials: 'include'
+    });
+
+    const data = await res.json();
+
     if(data.ok){
-      status.innerHTML='<span style="color:green;font-weight:600;">OK</span>';
-      document.querySelectorAll(`#tabela-novo #novo-id-${idx},#novo-curso-${idx},#novo-extenso-${idx},#novo-grupo-${idx},#novo-exclusivo-${idx}`).forEach(e=>e.disabled=true);
-      addLinhaNovo();
-    }else{
-      status.innerHTML='<span style="color:red;font-weight:600;">Erro</span>';
+      // Preenche o código retornado pelo backend (se existir o campo na tela)
+      const idEl = document.getElementById(`novo-id-${idx}`);
+      if(idEl && data.id) idEl.value = data.id;
+
+      status.innerHTML = '<span style="color:green;font-weight:600;">OK</span>';
+
+      // Desabilita os campos da linha
+      document.querySelectorAll(
+        `#novo-id-${idx}, #novo-curso-${idx}, #novo-extenso-${idx}, #novo-grupo-${idx}, #novo-exclusivo-${idx}`
+      ).forEach(el => { if(el) el.disabled = true; });
+
+      // Se GRUPO for <select> do Materialize, re-renderiza pra ficar “cinza” certinho
+      if (grupoEl && grupoEl.tagName === 'SELECT') {
+        const inst = M.FormSelect.getInstance(grupoEl);
+        if (inst) inst.destroy();
+        M.FormSelect.init(grupoEl);
+      }
+
+      await addLinhaNovo();
+    } else {
+      const msg = data.error ? String(data.error) : 'Erro';
+      status.innerHTML = `<span style="color:red;font-weight:600;">${msg}</span>`;
     }
-  }catch{
-    status.innerHTML='<span style="color:red;font-weight:600;">Falha</span>';
+  } catch (e) {
+    status.innerHTML = '<span style="color:red;font-weight:600;">Falha</span>';
   }
 }
+
 
 </script>
 </body>
