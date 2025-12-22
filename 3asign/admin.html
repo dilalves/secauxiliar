@@ -204,33 +204,79 @@
     try { return JSON.parse(raw); } catch { return null; }
   }
 
+  function logoutToIndex() {
+    localStorage.removeItem('zs_token');
+    localStorage.removeItem('zs_user');
+    window.location.href = 'index.html';
+  }
+
   function ensureAuth() {
     const token = getToken();
     const user = getUser();
     if (!token || !user) {
-      // não tem login, volta pra página inicial (index)
       window.location.href = 'index.html';
+      return null;
     }
     return { token, user };
   }
 
-  (function init(){
-    const { token, user } = ensureAuth();
+  async function fetchJson(url, opt = {}) {
+    const r = await fetch(url, opt);
+    const j = await r.json().catch(() => ({}));
 
-    // Preenche header
+    if (!r.ok) {
+      // Trial expirado -> redireciona para contratação
+      if (j && j.error === 'trial_expired') {
+        const go = j.upgrade_url || 'contratar.html';
+        alert('Seu período de teste terminou. Vamos para a contratação.');
+        window.location.href = go;
+        return null;
+      }
+
+      // Token inválido/expirado -> volta pro login
+      if (r.status === 401) {
+        logoutToIndex();
+        return null;
+      }
+
+      throw new Error(j.message || j.error || 'Erro na API');
+    }
+
+    return j;
+  }
+
+  (async function init(){
+    const auth = ensureAuth();
+    if (!auth) return;
+
+    const { token, user } = auth;
+
+    // Preenche header (rápido) com dados do localStorage
     document.getElementById('userNome').textContent = user.nome;
     document.getElementById('userRole').textContent = user.role || 'usuário';
     document.getElementById('tituloBemVindo').textContent = 'Bem-vindo, ' + user.nome + '!';
 
-    document.getElementById('btnSair').addEventListener('click', () => {
-      localStorage.removeItem('zs_token');
-      localStorage.removeItem('zs_user');
-      window.location.href = 'index.html';
+    document.getElementById('btnSair').addEventListener('click', logoutToIndex);
+
+    // ✅ Agora valida token no backend (e já barra TRIAL EXPIRADO)
+    // Importante: esse endpoint precisa existir:
+    //   https://apisec.secauxiliar.com.br/digisign/api/auth/me.php
+    // Ele deve usar require_auth() por dentro.
+    const me = await fetchJson(API_BASE + '/api/auth/me.php', {
+      headers: { Authorization: 'Bearer ' + token }
     });
 
-    // futuramente: validar token chamando /api/auth/me.php se quiser
-    // fetch(API_BASE + '/api/auth/me.php', { headers:{ Authorization:'Bearer '+token }})
+    if (!me) return; // já redirecionou (trial expirado ou logout)
+
+    // Se o backend devolver user atualizado, atualiza o localStorage e o header
+    const u = me.user || user;
+    localStorage.setItem('zs_user', JSON.stringify(u));
+
+    document.getElementById('userNome').textContent = u.nome;
+    document.getElementById('userRole').textContent = u.role || 'usuário';
+    document.getElementById('tituloBemVindo').textContent = 'Bem-vindo, ' + u.nome + '!';
   })();
 </script>
 </body>
 </html>
+
