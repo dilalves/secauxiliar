@@ -3,323 +3,353 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cursos • Aprove</title>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Cursos • Aprove — Conferência de Aprovados</title>
 
   <!-- Materialize -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
   <style>
-    :root{
-      --primary:#0b3b78;
-      --bg:#f3f4f6;
-      --card:#ffffff;
-      --line:#e5e7eb;
-      --ink:#0f172a;
-      --muted:#6b7280;
-      --radius:14px;
+    :root {
+      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3;
+      --ink:#0f172a; --muted:#6b7280; 
+      --primary:#0b3b78; --accent:#2563eb;
+      --aside-w:260px; --topbar-h:64px;
     }
-    body{ background:var(--bg); color:var(--ink); }
-    .topbar{ background:var(--primary); padding:14px 18px; color:#fff; display:flex; align-items:center; justify-content:space-between; }
-    .topbar .brand{ font-weight:700; letter-spacing:.2px; }
-    .layout{ display:grid; grid-template-columns: 240px 1fr; min-height:calc(100vh - 52px); }
-    aside{ background:#fff; border-right:1px solid var(--line); padding:12px 10px; }
-    main{ padding:24px; }
-    .cardx{ background:var(--card); border-radius:var(--radius); border:1px solid var(--line); box-shadow:0 6px 18px rgba(15,23,42,.06); }
-    .cardx .hd{ padding:18px 18px 0; }
-    .cardx .bd{ padding:18px; }
-    h4{ margin:0 0 6px 0; font-weight:800; color:var(--primary); }
-    .sub{ color:var(--muted); margin:0 0 18px 0; }
 
-    table.striped>tbody>tr:nth-child(odd){ background:#fafafa; }
-    table thead th{ color:var(--primary); font-weight:800; }
-    .btn-primary{ background:var(--primary) !important; }
-    .btn-green{ background:#2e7d32 !important; }
-    .btn-blue{ background:#1976d2 !important; }
-
-    /* Modal */
-    .modal { border-radius:16px; max-height:86%; }
-    .modal .modal-content { padding:22px 22px 10px; }
-    .modal .modal-footer { padding:10px 18px 18px; }
-    .modal h5{ margin:0 0 10px 0; font-weight:900; color:var(--primary); }
-
-    /* Inputs no modo tabela */
-    .tform input[type="text"]{
-      margin:0; height:2.4rem;
+    html, body {height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
+    body {color:var(--ink);}
+    .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
+    header.topbar {
+      position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
+      background:var(--primary); color:#fff; display:flex; align-items:center;
+      padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
     }
-    .tform td{ padding:10px 10px; vertical-align:middle; }
-    .tform .mini{ width:90px; }
-    .tform .status-cell{ width:90px; text-align:center; color:var(--muted); }
-    .tform .actions-cell{ width:120px; text-align:center; }
-    .manual-wrap{ display:flex; gap:10px; align-items:center; }
-    .manual-wrap label{ margin:0; }
-    .manual-wrap span{ font-size:13px; color:var(--muted); }
-
-    /* Materialize select dentro da tabela */
-    .tform .select-wrapper{ margin:0; }
-    .tform .select-wrapper input.select-dropdown{ margin:0; height:2.4rem; line-height:2.4rem; }
-
-    /* Sidebar simples (placeholder) */
-    .navitem{ display:block; padding:10px 12px; border-radius:10px; color:#111827; }
-    .navitem:hover{ background:#f1f5f9; }
-    .navitem.active{ background:#eaf2ff; color:#0b3b78; font-weight:800; }
-
-    @media (max-width: 992px){
-      .layout{ grid-template-columns: 1fr; }
-      aside{ display:none; }
-      main{ padding:14px; }
+    aside {
+      background:#fff; border-right:1px solid var(--line);
+      position:sticky; top:var(--topbar-h);
+      height:calc(100vh - var(--topbar-h)); overflow:auto; z-index:6;
+      padding-bottom:20px;
     }
+    .menu {list-style:none; margin:0; padding:0 0 12px;}
+    .menu a {display:block; padding:10px 22px; color:#111827; text-decoration:none; font-size:15px; transition:0.25s;}
+    .menu a:hover {background:#f4f6fb; color:var(--primary);}
+    .menu .active > a {background:#eef3ff; font-weight:600; color:var(--primary);}
+    .menu-group {margin-bottom:12px;}
+    .group-title {
+      font-weight:700; color:#0b3b78; text-transform:uppercase;
+      font-size:13px; letter-spacing:0.5px;
+      padding:10px 20px 6px; border-top:1px solid #eef2f8;
+    }
+    main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
+    .page {padding:24px;}
+    footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
+    table.striped th {background:#f2f5ff; color:#0b3b78; font-weight:600;}
+    .search-box {display:flex; align-items:center; gap:8px; margin-bottom:16px;}
+    .search-box input {flex:1;}
+    #modal-editar.modal, #modal-novo.modal {
+      width:80% !important; max-height:90vh !important; overflow:hidden !important;
+    }
+    #modal-editar .modal-content, #modal-novo .modal-content {
+      padding:24px 36px; height:calc(90vh - 70px); overflow-y:auto;
+    }
+
+    /* ===== MODAL NOVO CURSO — AJUSTE FINAL ===== */
+    /* Define estrutura fixa: header + área rolável + footer fixo */
+    #modal-novo .modal-content {
+      display: flex;
+      flex-direction: column;
+      height: 90vh;           /* altura total visível */
+      padding: 0;
+    }
+
+    /* Cabeçalho fixo */
+    #modal-novo h5 {
+      padding: 24px 36px 12px;
+      margin: 0;
+      color: #0b3b78;
+      font-weight: 600;
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    /* Área que rola (somente o corpo da tabela) */
+    #modal-novo .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 36px;
+    }
+
+    /* Cabeçalho da tabela fixo */
+    #modal-novo table thead {
+      position: sticky;
+      top: 0;
+      background: #f2f5ff;
+      z-index: 10;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.05);
+    }
+
+    /* Linhas mais compactas */
+    #modal-novo table td {
+      padding-top: 4px !important;
+      padding-bottom: 4px !important;
+    }
+    #modal-novo table .input-field input {
+      height: 26px !important;
+      margin: 0 !important;
+      font-size: 14px;
+    }
+
+    /* Rodapé fixo no final */
+    #modal-novo .modal-footer {
+      background: #fff;
+      border-top: 1px solid #e5e7eb;
+      position: sticky;
+      bottom: 0;
+      padding: 10px 24px;
+      z-index: 20;
+    }
+
+    @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
   </style>
 </head>
 
 <body>
-  <div class="topbar">
-    <div class="brand">Aprove — Conferência de Aprovados</div>
-    <a href="sair.php" class="btn btn-small red lighten-1">Sair</a>
+<div class="app">
+  <aside>
+    <div class="center" style="padding:18px 0 8px;">
+      <span class="title" style="font-weight:700; color:#0b3b78">Aprove</span>
+    </div>
+
+    <ul class="menu">
+      <li><a href="/aprove/painel.html">Início</a></li>
+
+      <li class="menu-group">
+        <div class="group-title">Atualizações</div>
+        <ul>
+          <li><a href="/aprove/aprovacoes.html">Aprovações</a></li>
+          <li><a href="/aprove/alunos.html">Alunos</a></li>
+          <li><a href="/aprove/instituicoes.html">Instituições</a></li>
+          <li class="active"><a href="/aprove/cursos.html">Cursos</a></li>
+          <li><a href="/aprove/unidades.html">Unidades</a></li>
+          <li><a href="/aprove/autorizacoes.html">Autorização de Imagem</a></li>
+          <li><a href="/aprove/vestibulares.html">Listas de Aprovados</a></li>
+        </ul>
+      </li>
+
+      <li class="menu-group">
+        <div class="group-title">Ferramentas</div>
+        <ul>
+          <li><a href="/aprove/conferir_listas.html">Conferir Listas</a></li>
+          <li><a href="/aprove/importar_aprovacoes.html">Importar Aprovações</a></li>
+        </ul>
+      </li>
+
+      <li class="menu-group">
+        <div class="group-title">Relatórios</div>
+        <ul>
+          <li><a href="/aprove/convocacoes_geral.html">Convocados 2ª Fase</a></li>
+          <li><a href="/aprove/aprovacoes_geral.html">Aprovados</a></li>
+          <li><a href="/aprove/porcentagem_lista.html">Porcentagem Lista</a></li>
+          <li><a href="/aprove/totais_curso.html">Totais por Curso</a></li>
+          <li><a href="/aprove/totais_instituicao.html">Totais por Instituição</a></li>
+        </ul>
+      </li>
+    </ul>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="/aprove/logo-mini.png" style="height:28px;">
+          <h5 style="margin:0; font-weight:600;">Aprove — Conferência de Aprovados</h5>
+        </div>
+        <a class="btn-flat waves-effect white-text" href="#!" onclick="logout()">Sair</a>
+      </div>
+    </header>
+
+    <section class="page">
+      <h4 style="color:#0b3b78; font-weight:600;">Cadastro de Cursos</h4>
+      <p class="grey-text text-darken-1">Pesquise cursos ou visualize todos.</p>
+
+      <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
+        <div class="search-box">
+          <input id="search" type="text" placeholder="Buscar por nome ou código..." oninput="buscarCursos()">
+          <button class="btn blue darken-2" onclick="buscarCursos()">Buscar</button>
+          <div class="right-align">
+            <button class="btn green darken-1" onclick="abrirNovo()">+ Novo Curso</button>
+          </div>
+        </div>
+
+        <table class="striped highlight responsive-table" id="tabela-lista">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Curso</th>
+              <th>Extenso</th>
+              <th>Grupo</th>
+              <th>Exclusivo</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <p class="center grey-text" id="msg-status">Digite para buscar cursos.</p>
+      </div>
+    </section>
+
+    <footer>Desenvolvido por 3A Sistemas — Adilson Alves © 2025</footer>
+  </main>
+</div>
+
+<!-- MODAL EDITAR -->
+<div id="modal-editar" class="modal">
+  <div class="modal-content">
+    <h5 style="color:#0b3b78;">Editar Curso</h5>
+    <form id="form-editar">
+      <div class="row">
+        <div class="input-field col s2"><input id="id" name="id" type="text" readonly><label class="active" for="id">Código</label></div>
+        <div class="input-field col s3"><input id="curso" name="curso" type="text"><label for="curso">Curso</label></div>
+        <div class="input-field col s4"><input id="extenso" name="extenso" type="text"><label for="extenso">Nome Extenso</label></div>
+        <div class="input-field col s2"><input id="grupo" name="grupo" type="text"><label for="grupo">Grupo</label></div>
+        <div class="input-field col s1">
+          <label><input type="checkbox" id="exclusivo" name="exclusivo"><span>Exclusivo</span></label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn blue" onclick="salvarEdicao()">Salvar</button>
+    <a href="#!" class="modal-close btn-flat">Cancelar</a>
+  </div>
+</div>
+
+<!-- MODAL NOVO CURSO -->
+<div id="modal-novo" class="modal">
+  <div class="modal-content">
+    <h5>Novo Curso</h5>
+
+    <div class="scroll-area">
+       <table class="striped highlight responsive-table" id="tabela-novo">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Curso</th>
+            <th>Nome Extenso</th>
+            <th>Grupo</th>
+            <th>Exclusivo</th>
+            <th style="width:110px;">Ações</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="right-align" style="margin-top:20px;">
+        <button class="btn green" id="btn-nova-linha">+ Nova Linha</button>
+      </div>
+    </div>
   </div>
 
-  <div class="layout">
-    <aside>
-      <a class="navitem" href="index.html">Início</a>
-      <div style="height:10px"></div>
-      <div style="padding:8px 12px; color:var(--muted); font-weight:800; font-size:12px;">ATUALIZAÇÕES</div>
-      <a class="navitem" href="aprovacoes.html">Aprovações</a>
-      <a class="navitem" href="alunos.html">Alunos</a>
-      <a class="navitem" href="instituicoes.html">Instituições</a>
-      <a class="navitem active" href="cursos.html">Cursos</a>
-      <a class="navitem" href="unidades.html">Unidades</a>
-      <a class="navitem" href="autorizacao_imagem.html">Autorização de Imagem</a>
-      <a class="navitem" href="listas.html">Listas de Aprovados</a>
-
-      <div style="height:14px"></div>
-      <div style="padding:8px 12px; color:var(--muted); font-weight:800; font-size:12px;">FERRAMENTAS</div>
-      <a class="navitem" href="conferir.html">Conferir Listas</a>
-      <a class="navitem" href="importar.html">Importar Aprovações</a>
-
-      <div style="height:14px"></div>
-      <div style="padding:8px 12px; color:var(--muted); font-weight:800; font-size:12px;">RELATÓRIOS</div>
-      <a class="navitem" href="rel_convocados.html">Convocados 2ª Fase</a>
-      <a class="navitem" href="rel_aprovados.html">Aprovados</a>
-      <a class="navitem" href="rel_percent.html">Porcentagem Lista</a>
-      <a class="navitem" href="rel_totais_curso.html">Totais por Curso</a>
-      <a class="navitem" href="rel_totais_instituicao.html">Totais por Instituição</a>
-    </aside>
-
-    <main>
-      <div class="cardx">
-        <div class="hd">
-          <h4>Cadastro de Cursos</h4>
-          <p class="sub">Pesquise cursos ou visualize todos.</p>
-        </div>
-
-        <div class="bd">
-          <div class="row" style="margin-bottom:8px;">
-            <div class="input-field col s12 m8 l9" style="margin:0;">
-              <i class="material-icons prefix">search</i>
-              <input id="q" type="text" placeholder="Buscar por nome ou código..." />
-            </div>
-
-            <div class="col s12 m4 l3 right-align" style="margin-top:6px;">
-              <a class="btn btn-blue" id="btn-buscar"><i class="material-icons left">search</i>Buscar</a>
-              <a class="btn btn-green" id="btn-novo-curso"><i class="material-icons left">add</i>Novo Curso</a>
-            </div>
-          </div>
-
-          <div style="border-top:1px solid var(--line); margin:12px 0 0;"></div>
-
-          <div style="overflow:auto;">
-            <table class="striped highlight" id="tbl">
-              <thead>
-                <tr>
-                  <th style="width:110px;">Código</th>
-                  <th style="width:240px;">Curso</th>
-                  <th>Extenso</th>
-                  <th style="width:220px;">Grupo</th>
-                  <th style="width:110px;">Exclusivo</th>
-                  <th style="width:140px;">Ações</th>
-                </tr>
-              </thead>
-              <tbody id="tbody">
-                <!-- preenchido via JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- MODAL NOVO -->
-      <div id="modal-novo" class="modal">
-        <div class="modal-content">
-          <h5>Novo Curso</h5>
-
-          <div style="overflow:auto;">
-            <table class="tform" id="tabela-novo">
-              <thead>
-                <tr>
-                  <th style="width:170px;">Código</th>
-                  <th style="width:220px;">Curso</th>
-                  <th>Nome Extenso</th>
-                  <th style="width:220px;">Grupo</th>
-                  <th style="width:110px; text-align:center;">Exclusivo</th>
-                  <th class="actions-cell">Ações</th>
-                  <th class="status-cell">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- linhas dinâmicas -->
-              </tbody>
-            </table>
-          </div>
-
-          <div class="right-align" style="margin-top:10px;">
-            <a class="btn btn-small btn-green" id="btn-nova-linha"><i class="material-icons left">add</i>Nova linha</a>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <a href="#!" class="modal-close btn-flat">Fechar</a>
-        </div>
-      </div>
-
-      <!-- MODAL EDITAR (placeholder, se você já tiver o seu, pode manter) -->
-      <div id="modal-editar" class="modal">
-        <div class="modal-content">
-          <h5>Editar Curso</h5>
-          <p style="color:var(--muted); margin-top:0;">
-            (Se você já tem seu modal de edição, pode colar aqui e manter suas funções.)
-          </p>
-        </div>
-        <div class="modal-footer">
-          <a href="#!" class="modal-close btn-flat">Fechar</a>
-        </div>
-      </div>
-
-    </main>
+  <div class="modal-footer">
+    <a href="#!" class="modal-close btn-flat">Fechar</a>
   </div>
+</div>
+
 
 <script>
-/** ========= CONFIG =========
- * Ajuste a base dos seus endpoints PHP:
- * - Se seus PHPs estão na mesma pasta: './api/'
- * - Se estão em '/aprove/api/': '/aprove/api/'
- */
-const API = './api/'; // <<< AJUSTE AQUI SE PRECISAR
+const API = 'https://apisec.secauxiliar.com.br/aprove/';
+async function logout(){ await fetch(API+'auth_login_out.php',{credentials:'include'}); location.href='/aprove/index.html'; }
 
-let novoSeq = 0;
+
 let gruposCache = [];
 let gruposOptionsHtml = '';
 
-/** ========= INIT ========= */
-document.addEventListener('DOMContentLoaded', () => {
-  M.Modal.init(document.querySelectorAll('.modal'), { dismissible:true });
+async function carregarGrupos(){
+  const res = await fetch(API+'cursos_grupos_list.php', {credentials:'include'});
+  const data = await res.json();
+  gruposCache = (data.ok && data.rows) ? data.rows.map(x => x.GRUPO) : [];
+  gruposOptionsHtml = gruposCache.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');
+}
 
-  const btnNovo = document.getElementById('btn-novo-curso');
-  if (btnNovo) btnNovo.addEventListener('click', (e) => { e.preventDefault(); abrirNovo(); });
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
 
-  const btnNovaLinha = document.getElementById('btn-nova-linha');
-  if (btnNovaLinha) btnNovaLinha.addEventListener('click', async (e) => { e.preventDefault(); await addLinhaNovo(); });
-
-  const btnBuscar = document.getElementById('btn-buscar');
-  if (btnBuscar) btnBuscar.addEventListener('click', (e) => { e.preventDefault(); carregarLista(); });
-
-  const q = document.getElementById('q');
-  if (q) q.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); carregarLista(); }
+document.addEventListener('DOMContentLoaded',()=>{
+  M.Modal.init(document.querySelectorAll('.modal'));
+  document.getElementById('btn-nova-linha').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await addLinhaNovo();
   });
-
-  carregarLista();
+  buscarCursos();
 });
 
-/** ========= HELPERS ========= */
-function escapeHtml(s){
-  return String(s ?? '').replace(/[&<>"']/g, m => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
-  }[m]));
+async function buscarCursos(){
+  const termo=document.getElementById('search').value.trim();
+  const tbody=document.querySelector('#tabela-lista tbody');
+  tbody.innerHTML=''; document.getElementById('msg-status').textContent='Buscando...';
+  const res=await fetch(API+'cursos_list.php?busca='+encodeURIComponent(termo),{credentials:'include'});
+  const data=await res.json();
+  if(data.ok && data.rows.length){
+    document.getElementById('msg-status').textContent='';
+    data.rows.forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${r.ID}</td>
+        <td>${r.CURSO}</td>
+        <td>${r.EXTENSO||''}</td>
+        <td>${r.GRUPO||''}</td>
+        <td>${r.EXCLUSIVO==1?'Sim':'Não'}</td>
+        <td><button class="btn-small blue" onclick="abrirEdicao('${r.ID}')">Editar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }else document.getElementById('msg-status').textContent='Nenhum curso encontrado.';
 }
 
-async function fetchJson(url, opts = {}){
-  const res = await fetch(url, { credentials:'include', ...opts });
-  const txt = await res.text();
-  try { return JSON.parse(txt); }
-  catch { return { ok:false, error:'Resposta inválida do servidor.', raw:txt }; }
+async function abrirEdicao(id){
+  const modal=M.Modal.getInstance(document.querySelector('#modal-editar'));
+  const res=await fetch(API+'cursos_get.php?id='+id,{credentials:'include'});
+  const data=await res.json();
+  if(data.ok && data.row){
+    const r=data.row;
+    document.getElementById('id').value=r.ID;
+    document.getElementById('curso').value=r.CURSO;
+    document.getElementById('extenso').value=r.EXTENSO;
+    document.getElementById('grupo').value=r.GRUPO;
+    document.getElementById('exclusivo').checked=(r.EXCLUSIVO==1);
+    M.updateTextFields();
+    modal.open();
+  }else M.toast({html:'Curso não encontrado'});
 }
 
-/** ========= LISTA =========
- * Ajuste aqui para o seu endpoint real de listagem.
- * Se você já tem um, troque somente a URL e o formato do retorno.
- */
-async function carregarLista(){
-  const tbody = document.getElementById('tbody');
-  tbody.innerHTML = `<tr><td colspan="6" style="color:#6b7280;padding:16px;">Carregando...</td></tr>`;
-
-  const termo = (document.getElementById('q').value || '').trim();
-
-  // >>> Troque para seu endpoint de listagem real:
-  // Ex.: const data = await fetchJson(API+'cursos_list.php?q='+encodeURIComponent(termo));
-  // Aqui deixei um stub amigável:
-  const data = await fetchJson(API+'cursos_list.php?q='+encodeURIComponent(termo));
-
-  if(!data.ok){
-    tbody.innerHTML = `<tr><td colspan="6" style="color:#b91c1c;padding:16px;">${escapeHtml(data.error || 'Falha ao carregar')}</td></tr>`;
-    return;
-  }
-
-  const rows = data.rows || [];
-  if(!rows.length){
-    tbody.innerHTML = `<tr><td colspan="6" style="color:#6b7280;padding:16px;">Nenhum registro.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = rows.map(r => `
-    <tr>
-      <td>${escapeHtml(r.ID)}</td>
-      <td>${escapeHtml(r.CURSO)}</td>
-      <td>${escapeHtml(r.EXTENSO)}</td>
-      <td>${escapeHtml(r.GRUPO)}</td>
-      <td>${(String(r.EXCLUSIVO) === '1' || r.EXCLUSIVO === true) ? 'Sim' : 'Não'}</td>
-      <td>
-        <a class="btn btn-small btn-blue" onclick="abrirEditar('${escapeHtml(r.ID)}')">Editar</a>
-      </td>
-    </tr>
-  `).join('');
+async function salvarEdicao(){
+  const fd=new FormData(document.getElementById('form-editar'));
+  fd.set('exclusivo', document.getElementById('exclusivo').checked ? 1:0);
+  const res=await fetch(API+'cursos_update.php',{method:'POST',body:fd,credentials:'include'});
+  const data=await res.json();
+  if(data.ok){M.toast({html:'Curso atualizado!'});buscarCursos();M.Modal.getInstance(document.querySelector('#modal-editar')).close();}
+  else M.toast({html:data.error||'Erro ao salvar'});
 }
 
-/** ========= MODAL NOVO ========= */
+// === NOVO CURSO ===
+let novoSeq=0;
 async function abrirNovo(){
-  const elModal = document.getElementById('modal-novo');
-  if(!elModal){ M.toast({html:'Modal #modal-novo não encontrado.'}); return; }
-
-  let modal = M.Modal.getInstance(elModal);
-  if(!modal) modal = M.Modal.init(elModal, {dismissible:true});
-
+  const modal = M.Modal.getInstance(document.getElementById('modal-novo'));
   document.querySelector('#tabela-novo tbody').innerHTML = '';
-  novoSeq = 0;
+
+  novoSeq = 0; // <<< importante pra reiniciar os IDs das linhas
 
   await carregarGrupos();
   await addLinhaNovo();
-
   modal.open();
-}
-
-async function carregarGrupos(){
-  const data = await fetchJson(API+'cursos_grupos_list.php');
-  gruposCache = (data.ok && data.rows) ? data.rows.map(x => x.GRUPO) : [];
-  gruposOptionsHtml = gruposCache
-    .map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`)
-    .join('');
-}
-
-function toggleIdManual(idx){
-  const chk = document.getElementById(`novo-id-manual-${idx}`);
-  const idEl = document.getElementById(`novo-id-${idx}`);
-  if(!chk || !idEl) return;
-
-  idEl.readOnly = !chk.checked;
-  idEl.disabled = false;
-
-  if(!chk.checked) idEl.value = '';
-  if(chk.checked) idEl.focus();
 }
 
 async function addLinhaNovo(){
@@ -328,134 +358,93 @@ async function addLinhaNovo(){
 
   const tr = document.createElement('tr');
   tr.innerHTML = `
-    <td>
-      <div class="manual-wrap">
-        <input id="novo-id-${idx}" class="mini" type="text" readonly placeholder="auto">
-        <label>
-          <input type="checkbox" id="novo-id-manual-${idx}" onchange="toggleIdManual(${idx})">
-          <span>Manual</span>
-        </label>
-      </div>
-    </td>
-
-    <td><input id="novo-curso-${idx}" type="text" placeholder="Ex: Quím."></td>
-
-    <td><input id="novo-extenso-${idx}" type="text" placeholder="Ex: Química Industrial"></td>
-
+    <td><input id="novo-id-${idx}" type="text" readonly></td>
+    <td><input id="novo-curso-${idx}" type="text" placeholder="Quím."></td>
+    <td><input id="novo-extenso-${idx}" type="text" placeholder="Química Industrial"></td>
     <td>
       <select id="novo-grupo-${idx}">
         <option value="">—</option>
         ${gruposOptionsHtml}
       </select>
     </td>
-
-    <td style="text-align:center;">
-      <label>
-        <input type="checkbox" id="novo-exclusivo-${idx}">
-        <span></span>
-      </label>
-    </td>
-
-    <td class="actions-cell">
-      <a class="btn btn-small btn-blue" onclick="salvarNovo(${idx})">Salvar</a>
-    </td>
-
-    <td id="status-${idx}" class="status-cell">—</td>
+    <td class="center-align"><label><input type="checkbox" id="novo-exclusivo-${idx}" class="exclusivo"><span></span></label></td>
+    <td><button class="btn-small blue" onclick="salvarNovo(${idx})">Salvar</button></td>
+    <td id="status-${idx}" class="grey-text center-align">—</td>
   `;
-
   tbody.appendChild(tr);
 
-  // Init select (Materialize)
-  const sel = tr.querySelector('select');
-  if(sel) M.FormSelect.init(sel);
+  // inicializa o select do Materialize (precisa depois de inserir na DOM)
+  M.FormSelect.init(tr.querySelectorAll('select'));
+
+  // pede o próximo ID do servidor (usando o próprio insert como gerador? melhor endpoint simples)
+  // Aqui vamos só setar "—" e o ID virá no retorno do insert (mais simples e sem endpoint extra)
+  // Se você quiser ver o ID antes de salvar, eu te passo um cursos_next_id.php também.
 
   tr.querySelector(`#novo-curso-${idx}`).focus();
 }
 
-/** ========= SALVAR NOVO =========
- * Envia ID apenas se "Manual" estiver marcado.
- * Se não, o backend gera (2412+) pela seq.
- */
 async function salvarNovo(idx){
   const curso   = document.getElementById(`novo-curso-${idx}`).value.trim();
   const extenso = document.getElementById(`novo-extenso-${idx}`).value.trim();
-
   const grupoEl = document.getElementById(`novo-grupo-${idx}`);
   const grupo   = (grupoEl ? (grupoEl.value || '') : '').trim();
-
   const exclusivo = document.getElementById(`novo-exclusivo-${idx}`).checked ? 1 : 0;
 
   const status = document.getElementById(`status-${idx}`);
 
-  const idEl = document.getElementById(`novo-id-${idx}`);
-  const chkManual = document.getElementById(`novo-id-manual-${idx}`);
-  const idManual = (chkManual && chkManual.checked) ? (idEl?.value || '').trim() : '';
-
+  // Agora o ID é gerado no servidor: não validar nem enviar ID
   if(!curso){
     M.toast({html:'Preencha o campo Curso.'});
     return;
   }
 
-  if(chkManual && chkManual.checked){
-    if(!idManual){
-      M.toast({html:'Informe o Código (manual).'});
-      return;
-    }
-    if(!/^\d+$/.test(idManual)){
-      M.toast({html:'Código manual inválido (apenas números).'});
-      return;
-    }
-  }
-
   status.textContent = 'Salvando...';
 
   const fd = new FormData();
-  if(chkManual && chkManual.checked) fd.append('ID', idManual); // ativa modo manual no PHP
   fd.append('CURSO', curso);
   fd.append('EXTENSO', extenso);
   fd.append('GRUPO', grupo);
   fd.append('EXCLUSIVO', exclusivo);
 
-  const data = await fetchJson(API+'cursos_insert.php', { method:'POST', body:fd });
+  try{
+    const res = await fetch(API+'cursos_insert.php', {
+      method: 'POST',
+      body: fd,
+      credentials: 'include'
+    });
 
-  if(data.ok){
-    // mostra o ID retornado
-    if(idEl && data.id) idEl.value = data.id;
+    const data = await res.json();
 
-    status.innerHTML = '<span style="color:green;font-weight:800;">OK</span>';
+    if(data.ok){
+      // Preenche o código retornado pelo backend (se existir o campo na tela)
+      const idEl = document.getElementById(`novo-id-${idx}`);
+      if(idEl && data.id) idEl.value = data.id;
 
-    // desabilita campos
-    [`novo-id-${idx}`, `novo-id-manual-${idx}`, `novo-curso-${idx}`, `novo-extenso-${idx}`, `novo-grupo-${idx}`, `novo-exclusivo-${idx}`]
-      .forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.disabled = true;
-      });
+      status.innerHTML = '<span style="color:green;font-weight:600;">OK</span>';
 
-    // re-init select para refletir disabled bonitinho
-    if (grupoEl && grupoEl.tagName === 'SELECT') {
-      const inst = M.FormSelect.getInstance(grupoEl);
-      if (inst) inst.destroy();
-      M.FormSelect.init(grupoEl);
+      // Desabilita os campos da linha
+      document.querySelectorAll(
+        `#novo-id-${idx}, #novo-curso-${idx}, #novo-extenso-${idx}, #novo-grupo-${idx}, #novo-exclusivo-${idx}`
+      ).forEach(el => { if(el) el.disabled = true; });
+
+      // Se GRUPO for <select> do Materialize, re-renderiza pra ficar “cinza” certinho
+      if (grupoEl && grupoEl.tagName === 'SELECT') {
+        const inst = M.FormSelect.getInstance(grupoEl);
+        if (inst) inst.destroy();
+        M.FormSelect.init(grupoEl);
+      }
+
+      await addLinhaNovo();
+    } else {
+      const msg = data.error ? String(data.error) : 'Erro';
+      status.innerHTML = `<span style="color:red;font-weight:600;">${msg}</span>`;
     }
-
-    // cria próxima linha
-    await addLinhaNovo();
-
-    // atualiza lista principal (opcional)
-    // carregarLista();
-  } else {
-    const msg = data.error ? String(data.error) : 'Erro';
-    status.innerHTML = `<span style="color:#b91c1c;font-weight:800;">${escapeHtml(msg)}</span>`;
+  } catch (e) {
+    status.innerHTML = '<span style="color:red;font-weight:600;">Falha</span>';
   }
 }
 
-/** ========= EDITAR (placeholder) ========= */
-function abrirEditar(id){
-  const el = document.getElementById('modal-editar');
-  let modal = M.Modal.getInstance(el);
-  if(!modal) modal = M.Modal.init(el, {dismissible:true});
-  modal.open();
-}
+
 </script>
 </body>
 </html>
