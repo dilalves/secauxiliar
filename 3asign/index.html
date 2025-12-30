@@ -128,7 +128,7 @@
     // segurança simples: só permite voltar pra dentro do /3asign
     if (!ret.startsWith('/3asign/')) ret = '/3asign/admin.html';
 
-    // evita loop: se ret for a própria página ("/3asign/" ou "index.html"), manda pro admin
+    // evita loop: se ret for a própria página, manda pro admin
     const herePath = location.pathname; // ex: "/3asign/" ou "/3asign/index.html"
     if (ret === '/3asign/' || ret.endsWith('/index.html') || ret === herePath) {
       ret = '/3asign/admin.html';
@@ -137,17 +137,58 @@
     return ret;
   }
 
-  const returnUrl = getReturnUrl();
-
-  // Se já estiver logado, pula o login
-  const tokenExistente = localStorage.getItem('zs_token');
-  const userExistente  = localStorage.getItem('zs_user');
-  if (tokenExistente && userExistente) {
-    window.location.replace(returnUrl);
+  function goContratar(url) {
+    window.location.replace(url || '/3asign/contratar.html');
   }
+
+  function logoutLocal() {
+    localStorage.removeItem('zs_token');
+    localStorage.removeItem('zs_user');
+  }
+
+  const returnUrl = getReturnUrl();
 
   const form    = document.getElementById('formLogin');
   const divErro = document.getElementById('erro');
+
+  function showError(msg) {
+    divErro.textContent = msg || 'Falha no login.';
+    divErro.style.display = 'block';
+  }
+
+  // ✅ Se já estiver “logado”, valida no backend antes de pular
+  (async function autoCheck(){
+    const tokenExistente = localStorage.getItem('zs_token');
+    const userExistente  = localStorage.getItem('zs_user');
+    if (!tokenExistente || !userExistente) return;
+
+    try {
+      // precisa existir no backend: /digisign/api/auth/me.php (com CORS)
+      const r = await fetch(API_BASE + '/api/auth/me.php', {
+        method: 'GET',
+        headers: { Authorization: 'Bearer ' + tokenExistente }
+      });
+      const j = await r.json().catch(() => ({}));
+
+      if (!r.ok) {
+        if (j && j.error === 'trial_expired') {
+          logoutLocal();
+          goContratar(j.upgrade_url);
+          return;
+        }
+        // token inválido/expirado ou qualquer erro -> força login
+        logoutLocal();
+        return;
+      }
+
+      // ok -> segue pro returnUrl
+      window.location.replace(returnUrl);
+
+    } catch (e) {
+      // se falhar rede/CORS, não trava: deixa o usuário logar novamente
+      logoutLocal();
+    }
+  })();
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -165,9 +206,16 @@
       const resp = await fetch(API_BASE + '/auth_login.php', { method: 'POST', body: fd });
       const data = await resp.json().catch(() => ({}));
 
+      // ✅ TRIAL EXPIRADO -> redireciona
+      if (data && data.error === 'trial_expired') {
+        logoutLocal();
+        goContratar(data.upgrade_url);
+        return;
+      }
+
       if (!resp.ok || !data.ok) {
-        divErro.textContent = data.error || 'Falha no login.';
-        divErro.style.display = 'block';
+        // ✅ usa message se vier, senão error
+        showError(data.message || data.error || 'Falha no login.');
         return;
       }
 
@@ -178,11 +226,11 @@
 
     } catch (err) {
       console.error(err);
-      divErro.textContent = 'Erro ao conectar com o servidor.';
-      divErro.style.display = 'block';
+      showError('Erro ao conectar com o servidor.');
     }
   });
 </script>
+
 
 
 </body>
