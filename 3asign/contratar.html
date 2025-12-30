@@ -134,113 +134,124 @@
   </div>
 
   <script>
-    // ✅ sua base correta
-    const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
-    const LOGIN_URL = '/3asign/index.html';
+  const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+  const LOGIN_URL = '/3asign/index.html';
 
-    (function fixLoginLink(){
-      const ret = encodeURIComponent('/3asign/contratar.html');
-      const a = document.getElementById('loginLink');
-      if (a) a.href = `${LOGIN_URL}?return=${ret}`;
-    })();
+  (function fixLoginLink(){
+    const ret = encodeURIComponent('/3asign/contratar.html');
+    const a = document.getElementById('loginLink');
+    if (a) a.href = `${LOGIN_URL}?return=${ret}`;
+  })();
 
+  function moneyFromCents(cents){
+    const v = (cents || 0) / 100;
+    return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+  }
 
-    function moneyFromCents(cents){
-      const v = (cents || 0) / 100;
-      return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
-    }
+  function showMsg(text, type){
+    const el = document.getElementById('msg');
+    el.className = 'msg show ' + (type || '');
+    el.textContent = text;
+  }
 
-    function showMsg(text, type){
-      const el = document.getElementById('msg');
-      el.className = 'msg show ' + (type || '');
-      el.textContent = text;
-    }
+  async function loadPlans(){
+    const r = await fetch(`${API_BASE}/planos_list.php`, { method:'GET' });
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error || 'Falha ao carregar planos');
+    return j.planos || [];
+  }
 
-    async function loadPlans(){
-      const r = await fetch(`${API_BASE}/planos_list.php`, { method:'GET' });
+  async function assinar(planoId, btn){
+    try{
+      btn.disabled = true;
+      showMsg('Gerando link de pagamento...', '');
+
+      const token = localStorage.getItem('zs_token') || '';
+
+      if(!token){
+        const url = encodeURIComponent('/3asign/contratar.html');
+        window.location.href = '/3asign/index.html?return=' + url;
+        return;
+      }
+
+      const r = await fetch(`${API_BASE}/mp_assinatura_criar.php`,{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ plano_id: planoId })
+      });
       const j = await r.json();
-      if(!j.ok) throw new Error(j.error || 'Falha ao carregar planos');
-      return j.planos || [];
-    }
 
-    async function assinar(planoId, btn){
-      try{
-        btn.disabled = true;
-        showMsg('Gerando link de pagamento...', '');
-
-        const token = localStorage.getItem('zs_token') || '';
-
-        if(!token){
-            const url = encodeURIComponent('/3asign/contratar.html');
-            window.location.href = '/3asign/index.html?return=' + url;
-            return;
+      if(!j.ok){
+        if(j.error === 'unauthorized'){
+          showMsg('Sessão expirada. Faça login novamente.', 'err');
+        } else {
+          showMsg('Não foi possível iniciar o pagamento: ' + (j.error || 'erro'), 'err');
         }
-
-        const r = await fetch(`${API_BASE}/mp_assinatura_criar.php`,{
-          method:'POST',
-          headers:{
-            'Content-Type':'application/json',
-            'Authorization': 'Bearer ' + token
-          },
-          body: JSON.stringify({ plano_id: planoId })
-        });
-        const j = await r.json();
-        if(!j.ok){
-          if(j.error === 'unauthorized'){
-            showMsg('Sessão expirada. Faça login novamente.', 'err');
-          } else {
-            showMsg('Não foi possível iniciar o pagamento: ' + (j.error || 'erro'), 'err');
-          }
-          btn.disabled = false;
-          return;
-        }
-
-        if(j.init_point){
-          showMsg('Redirecionando para o Mercado Pago...', 'ok');
-          window.location.href = j.init_point;
-          return;
-        }
-
-        showMsg('Resposta inesperada do pagamento.', 'err');
         btn.disabled = false;
-
-      }catch(e){
-        showMsg('Erro: ' + e.message, 'err');
-        btn.disabled = false;
+        return;
       }
+
+      if(j.init_point){
+        showMsg('Redirecionando para o Mercado Pago...', 'ok');
+        window.location.href = j.init_point;
+        return;
+      }
+
+      showMsg('Resposta inesperada do pagamento.', 'err');
+      btn.disabled = false;
+
+    }catch(e){
+      showMsg('Erro: ' + e.message, 'err');
+      btn.disabled = false;
     }
+  }
 
-    (async () => {
-      try{
-        const planos = await loadPlans();
-        const box = document.getElementById('plans');
+  (async () => {
+    try{
+      const planos = await loadPlans();
+      const box = document.getElementById('plans');
 
-        if(!planos.length){
-          box.innerHTML = '<div class="muted">Nenhum plano ativo disponível no momento.</div>';
-          return;
-        }
-
-        box.innerHTML = planos.map(p => {
-          const periodo = (p.intervalo === 'year') ? 'anual' : 'mensal';
-          return `
-            <div class="plan">
-              <div class="pill">Assinatura ${periodo}</div>
-              <h2>${p.nome}</h2>
-              <div class="price">${moneyFromCents(p.preco_centavos)}/${(p.intervalo==='year'?'ano':'mês')}</div>
-              <div class="muted">${p.descricao || 'Acesso ao painel e recursos do plano selecionado.'}</div>
-              <button class="btn" data-id="${p.id}">Assinar agora</button>
-            </div>
-          `;
-        }).join('');
-
-        box.querySelectorAll('button[data-id]').forEach(btn=>{
-          btn.addEventListener('click', () => assinar(Number(btn.dataset.id), btn));
-        });
-
-      }catch(e){
-        showMsg('Falha ao carregar planos: ' + e.message, 'err');
+      if(!planos.length){
+        box.innerHTML = '<div class="muted">Nenhum plano ativo disponível no momento.</div>';
+        return;
       }
-    })();
-  </script>
+
+      box.innerHTML = planos.map(p => {
+        const periodo = (p.intervalo === 'year') ? 'anual' : 'mensal';
+
+        const limiteTxt =
+          (p.limite_assinaturas_mes === null || p.limite_assinaturas_mes === undefined || Number(p.limite_assinaturas_mes) <= 0)
+            ? 'Assinaturas ilimitadas'
+            : `Até ${Number(p.limite_assinaturas_mes)} assinaturas/mês`;
+
+        const desc = (p.descricao && String(p.descricao).trim())
+          ? String(p.descricao).trim()
+          : limiteTxt;
+
+        return `
+          <div class="plan">
+            <div class="pill">Assinatura ${periodo}</div>
+            <h2>${p.nome}</h2>
+            <div class="price">${moneyFromCents(p.preco_centavos)}/${(p.intervalo==='year'?'ano':'mês')}</div>
+            <div class="muted">${desc}</div>
+            <button class="btn" data-id="${p.id}">Assinar agora</button>
+          </div>
+        `;
+      }).join('');
+
+      box.querySelectorAll('button[data-id]').forEach(btn=>{
+        btn.addEventListener('click', () => assinar(Number(btn.dataset.id), btn));
+      });
+
+    }catch(e){
+      showMsg('Falha ao carregar planos: ' + e.message, 'err');
+    }
+  })();
+</script>
+
 </body>
 </html>
+
