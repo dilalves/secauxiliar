@@ -134,8 +134,9 @@
   </div>
 
   <script>
-  const API_BASE = 'https://apisec.secauxiliar.com.br/digisign';
+  const API_BASE  = 'https://apisec.secauxiliar.com.br/digisign';
   const LOGIN_URL = '/3asign/index.html';
+  const PAY_URL   = '/3asign/pagamento.html'; // <-- sua nova página de pagamento do cartão
 
   (function fixLoginLink(){
     const ret = encodeURIComponent('/3asign/contratar.html');
@@ -161,52 +162,25 @@
     return j.planos || [];
   }
 
-  async function assinar(planoId, btn){
-    try{
-      btn.disabled = true;
-      showMsg('Gerando link de pagamento...', '');
+  // ✅ NOVO: fluxo de ir para a página de pagamento do cartão
+  function irParaPagamento(planoId, btn){
+    btn.disabled = true;
+    showMsg('Abrindo pagamento...', '');
 
-      const token = localStorage.getItem('zs_token') || '';
-
-      if(!token){
-        const url = encodeURIComponent('/3asign/contratar.html');
-        window.location.href = '/3asign/index.html?return=' + url;
-        return;
-      }
-
-      const r = await fetch(`${API_BASE}/mp_assinatura_criar.php`,{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify({ plano_id: planoId })
-      });
-      const j = await r.json();
-
-      if(!j.ok){
-        if(j.error === 'unauthorized'){
-          showMsg('Sessão expirada. Faça login novamente.', 'err');
-        } else {
-          showMsg('Não foi possível iniciar o pagamento: ' + (j.error || 'erro'), 'err');
-        }
-        btn.disabled = false;
-        return;
-      }
-
-      if(j.init_point){
-        showMsg('Redirecionando para o Mercado Pago...', 'ok');
-        window.location.href = j.init_point;
-        return;
-      }
-
-      showMsg('Resposta inesperada do pagamento.', 'err');
-      btn.disabled = false;
-
-    }catch(e){
-      showMsg('Erro: ' + e.message, 'err');
-      btn.disabled = false;
+    const token = localStorage.getItem('zs_token') || '';
+    if(!token){
+      const ret = encodeURIComponent('/3asign/contratar.html');
+      window.location.href = `${LOGIN_URL}?return=${ret}`;
+      return;
     }
+
+    // Opcional: return para voltar depois do pagamento
+    const ret = encodeURIComponent('/3asign/contratar.html');
+
+    // Plano vai via querystring
+    const url = `${PAY_URL}?plano_id=${encodeURIComponent(planoId)}&return=${ret}`;
+
+    window.location.href = url;
   }
 
   (async () => {
@@ -243,7 +217,7 @@
       }).join('');
 
       box.querySelectorAll('button[data-id]').forEach(btn=>{
-        btn.addEventListener('click', () => assinar(Number(btn.dataset.id), btn));
+        btn.addEventListener('click', () => irParaPagamento(Number(btn.dataset.id), btn));
       });
 
     }catch(e){
@@ -251,6 +225,7 @@
     }
   })();
 </script>
+
 
 </body>
 </html>
