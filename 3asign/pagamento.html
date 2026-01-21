@@ -185,7 +185,7 @@
         <p>Informe os dados do cartão para concluir sua assinatura com segurança.</p>
 
         <div class="meta">
-          <div class="badge" id="planoBadge">Plano: —</div>
+          <div class="badge" id="planoBadge">Plano: carregando…</div>
           <div class="badge" id="ambBadge">Ambiente: Produção</div>
         </div>
 
@@ -238,8 +238,9 @@
 
   <script>
     /** CONFIG */
-    const MP_PUBLIC_KEY = "APP_USR-b4a8f895-3bc8-47c9-8445-411a410f36c9"; // public key
+    const MP_PUBLIC_KEY = "APP_USR-b4a8f895-3bc8-47c9-8445-411a410f36c9";
     const API_URL   = "https://apisec.secauxiliar.com.br/digisign/mp_assinatura_criar.php";
+    const API_BASE  = "https://apisec.secauxiliar.com.br/digisign";
     const LOGIN_URL = "/3asign/index.html";
     const DEFAULT_RETURN = "/3asign/contratar.html";
 
@@ -250,6 +251,12 @@
     const planoId = Number(params.get("plano_id") || 0);
     const returnUrl = params.get("return") || DEFAULT_RETURN;
 
+    // sem plano_id -> volta
+    if (!planoId) {
+      alert("Plano inválido. Volte e selecione um plano.");
+      window.location.href = DEFAULT_RETURN;
+    }
+
     // links topo
     (function fixLinks(){
       const ret = encodeURIComponent(location.pathname + location.search);
@@ -258,32 +265,7 @@
 
       const back = document.getElementById("backLink");
       if (back) back.href = returnUrl || DEFAULT_RETURN;
-
-      const badge = document.getElementById("planoBadge");
-      if (badge) badge.textContent = `Plano: #${planoId || "—"}`;
     })();
-
-    // sem plano_id -> volta
-    if (!planoId) {
-      alert("Plano inválido. Volte e selecione um plano.");
-      window.location.href = DEFAULT_RETURN;
-    }
-
-    // Máscaras
-    const cpfMask  = IMask(document.getElementById("cpf"), { mask: "000.000.000-00" });
-    const cardMask = IMask(document.getElementById("numero_cartao"), { mask: "0000 0000 0000 0000" });
-    const cvvMask  = IMask(document.getElementById("cvv"), { mask: "0000" });
-    const dateMask = IMask(document.getElementById("data_expiracao"), {
-      mask: "MM/YY",
-      blocks: {
-        MM: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
-        YY: { mask: IMask.MaskedRange, from: 0, to: 99, maxLength: 2 }
-      }
-    });
-
-    document.getElementById("titular").addEventListener("input", function () {
-      this.value = this.value.toUpperCase();
-    });
 
     function showMsg(text, type){
       const el = document.getElementById("msg");
@@ -302,6 +284,62 @@
       else el.classList.remove("error");
     }
 
+    function moneyFromCents(cents){
+      const v = (Number(cents || 0) / 100);
+      return v.toLocaleString("pt-BR", { style:"currency", currency:"BRL" });
+    }
+
+    function renderPlanoBadge(plano){
+      const badge = document.getElementById("planoBadge");
+      if (!badge) return;
+
+      if (!plano){
+        badge.textContent = `Plano: #${planoId}`;
+        return;
+      }
+
+      const periodo = (plano.intervalo === "year") ? "ano" : "mês";
+      const valor = moneyFromCents(plano.preco_centavos);
+      const nome = (plano.nome || `#${plano.id}`).trim();
+
+      badge.textContent = `Plano: ${nome} • ${valor}/${periodo}`;
+    }
+
+    async function loadPlanoById(id){
+      // Reaproveita o endpoint que você já tem
+      const r = await fetch(`${API_BASE}/planos_list.php`, { method:"GET" });
+      const j = await r.json();
+      if (!j.ok) return null;
+      const planos = j.planos || [];
+      return planos.find(p => Number(p.id) === Number(id)) || null;
+    }
+
+    // ✅ Carrega e mostra nome + valor do plano
+    (async () => {
+      try{
+        const plano = await loadPlanoById(planoId);
+        renderPlanoBadge(plano);
+      }catch(e){
+        renderPlanoBadge(null);
+      }
+    })();
+
+    // Máscaras
+    const cpfMask  = IMask(document.getElementById("cpf"), { mask: "000.000.000-00" });
+    const cardMask = IMask(document.getElementById("numero_cartao"), { mask: "0000 0000 0000 0000" });
+    const cvvMask  = IMask(document.getElementById("cvv"), { mask: "0000" });
+    const dateMask = IMask(document.getElementById("data_expiracao"), {
+      mask: "MM/YY",
+      blocks: {
+        MM: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
+        YY: { mask: IMask.MaskedRange, from: 0, to: 99, maxLength: 2 }
+      }
+    });
+
+    document.getElementById("titular").addEventListener("input", function () {
+      this.value = this.value.toUpperCase();
+    });
+
     const form = document.getElementById("form-checkout");
 
     form.addEventListener("submit", async (e) => {
@@ -310,7 +348,6 @@
       const btn = document.getElementById("btn-submit");
       clearMsg();
 
-      // limpa erros visuais
       ["cpf","titular","numero_cartao","data_expiracao","cvv"].forEach(id => markError(document.getElementById(id), false));
 
       btn.disabled = true;
