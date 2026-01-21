@@ -178,10 +178,13 @@
 
       // ✅ se token ok, checa trial_expired no payload
       const u = j.user || {};
-      if (u.trial_expired) {
+
+      // ✅ Se precisa pagar (trial expirado OU sem assinatura), vai pra contratar
+      if (u.needs_payment || u.trial_expired || (u.assinatura_ativa === false && u.trial_ok === false)) {
         goContratar('/3asign/contratar.html');
         return;
       }
+
 
       window.location.replace(returnUrl);
 
