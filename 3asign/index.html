@@ -209,9 +209,17 @@
       const data = await resp.json().catch(() => ({}));
 
       if (!resp.ok || !data.ok) {
+
+        // ✅ Se backend mandou redirecionar (trial expirado / precisa pagar)
+        if (data && (data.code === 'NEEDS_PAYMENT' || data.redirect_to)) {
+          goContratar(data.redirect_to || '/3asign/contratar.html');
+          return;
+        }
+
         showError(data.message || data.error || 'Falha no login.');
         return;
       }
+
 
       localStorage.setItem('zs_token', data.token);
       localStorage.setItem('zs_user', JSON.stringify(data.user));
