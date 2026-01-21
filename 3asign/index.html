@@ -170,11 +170,17 @@
       });
       const j = await r.json().catch(() => ({}));
 
+      // ✅ 402 = logado, mas precisa pagar -> vai contratar (SEM deslogar)
+      if (r.status === 402) {
+        goContratar((j && (j.upgrade_url || j.redirect_to)) || '/3asign/contratar.html');
+        return;
+      }
+
       if (!r.ok) {
-        // token inválido/expirado ou qualquer erro -> força login
         logoutLocal();
         return;
       }
+
 
       // ✅ se token ok, checa trial_expired no payload
       const u = j.user || {};
@@ -191,7 +197,7 @@
 
     } catch (e) {
       // se falhar rede/CORS, não trava: deixa o usuário logar novamente
-      logoutLocal();
+      // logoutLocal();
     }
   })();
 
@@ -214,10 +220,11 @@
       if (!resp.ok || !data.ok) {
 
         // ✅ Se backend mandou redirecionar (trial expirado / precisa pagar)
-        if (data && (data.code === 'NEEDS_PAYMENT' || data.redirect_to)) {
-          goContratar(data.redirect_to || '/3asign/contratar.html');
+        if (data && (data.code === 'NEEDS_PAYMENT' || data.redirect_to || data.upgrade_url)) {
+          goContratar(data.redirect_to || data.upgrade_url || '/3asign/contratar.html');
           return;
         }
+
 
         showError(data.message || data.error || 'Falha no login.');
         return;
@@ -228,10 +235,11 @@
       localStorage.setItem('zs_user', JSON.stringify(data.user));
 
       // ✅ agora é por flag
-      if (data.user && data.user.trial_expired) {
+      if (data.user && (data.user.needs_payment || data.user.trial_expired || (data.user.assinatura_ativa === false && data.user.trial_ok === false))) {
         goContratar('/3asign/contratar.html');
         return;
       }
+
 
       window.location.replace(returnUrl);
 
@@ -242,8 +250,6 @@
     }
   });
 </script>
-
-
 
 </body>
 </html>
