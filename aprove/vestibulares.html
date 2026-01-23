@@ -728,31 +728,48 @@ async function buscarNomeCurso(){
   const id = document.getElementById('curso_id_novo').value.trim();
   const nomeInput = document.getElementById('curso_nome_novo');
   nomeInput.value = '';
-  if(!id) return;
+  if (!id) return;
 
   try {
-    const res = await fetch(API+'cursos_get.php?id='+id, {credentials:'include'});
+    const res = await fetch(API + 'cursos_get.php?id=' + encodeURIComponent(id), { credentials:'include' });
     const data = await res.json();
-    if(data.ok && data.row){
-      // Se vestibular é exclusivo, o curso deve ser exclusivo
-      if(vestibularSomenteExclusivo && data.row.curso_exc != 1){
+
+    if (data.ok && data.row) {
+      // pega o nome do curso com fallback (caso o PHP tenha mudado o campo)
+      const nomeCurso =
+        data.row.nome ??
+        data.row.curso ??
+        data.row.nome_curso ??
+        data.row.descricao ??
+        data.row.titulo ??
+        '';
+
+      // flag de exclusivo com fallback também
+      const exc = parseInt(
+        data.row.curso_exc ?? data.row.exclusivo ?? data.row.exc ?? 0
+      );
+
+      if (vestibularSomenteExclusivo && exc !== 1) {
         nomeInput.value = 'Curso NÃO é exclusivo';
         nomeInput.style.color = '#c62828';
-      }else{
-        nomeInput.value = data.row.nome || '';
+      } else {
+        nomeInput.value = nomeCurso || '(sem nome)';
         nomeInput.style.color = '#0b3b78';
       }
     } else {
       nomeInput.value = 'Curso não encontrado';
       nomeInput.style.color = '#c62828';
     }
+
     M.updateTextFields();
-  } catch(err){
+  } catch (err) {
     console.error(err);
     nomeInput.value = 'Erro ao buscar curso';
     nomeInput.style.color = '#c62828';
+    M.updateTextFields();
   }
 }
+
 
 // === SALVAR NOVO CURSO ===
 async function salvarCurso(){
