@@ -735,18 +735,22 @@ async function buscarNomeCurso(){
     const data = await res.json();
 
     if (data.ok && data.row) {
-      // pega o nome do curso com fallback (caso o PHP tenha mudado o campo)
+      const r = data.row;
+
+      // ✅ nome do curso (aceita minúsculo e MAIÚSCULO)
       const nomeCurso =
-        data.row.nome ??
-        data.row.curso ??
-        data.row.nome_curso ??
-        data.row.descricao ??
-        data.row.titulo ??
+        r.nome ??
+        r.curso ??
+        r.CURSO ??
+        r.nome_curso ??
+        r.NOME_CURSO ??
+        r.descricao ??
+        r.titulo ??
         '';
 
-      // flag de exclusivo com fallback também
+      // ✅ exclusivo (aceita minúsculo e MAIÚSCULO)
       const exc = parseInt(
-        data.row.curso_exc ?? data.row.exclusivo ?? data.row.exc ?? 0
+        r.curso_exc ?? r.exclusivo ?? r.EXCLUSIVO ?? r.exc ?? 0
       );
 
       if (vestibularSomenteExclusivo && exc !== 1) {
@@ -769,6 +773,7 @@ async function buscarNomeCurso(){
     M.updateTextFields();
   }
 }
+
 
 
 // === SALVAR NOVO CURSO ===
