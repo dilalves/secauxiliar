@@ -226,21 +226,31 @@ async function logout(){
   location.replace(LOGIN_URL);
 }
 
-/* ===== Exemplo de atualização dos KPIs ===== */
+/* ===== Atualização dos KPIs ===== */
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const res = await fetch(API + 'dashboard_stats.php', {credentials:'include'});
+    const res = await fetch(API + 'dashboard_stats.php', { credentials:'include' });
     const data = await res.json();
     const d = data.data || {};
     const nf = new Intl.NumberFormat('pt-BR');
-    document.getElementById('kpiTotal').textContent = nf.format(d.total ?? 0);
+
+    // Geral
+    document.getElementById('kpiTotal').textContent = nf.format(d.total_geral ?? d.total ?? 0);
+
+    // USP (Fuvest = vest=1)
+    const elUSP = document.getElementById('kpiUSP');
+    if (elUSP) elUSP.textContent = nf.format(d.total_usp ?? 0);
+
+    // Os demais continuam
     document.getElementById('kpiNovos').textContent = nf.format(d.novos ?? 0);
     document.getElementById('kpiConfirmados').textContent = nf.format(d.confirmados ?? 0);
     document.getElementById('kpiPendentes').textContent = nf.format(d.pendentes ?? 0);
-  } catch(e) {
+
+  } catch (e) {
     console.warn('Falha ao carregar KPIs', e);
   }
 });
+
 
 
 /* ===== Mostra nome e login do usuário ===== */
