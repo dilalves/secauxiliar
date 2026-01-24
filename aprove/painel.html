@@ -139,7 +139,7 @@
         <div class="col s12 m6 l2">
           <div class="card z-depth-0">
             <div class="card-content center">
-              <div class="value" id="kpiUSP">—</div>
+              <div class="value" id="kpiUsp">—</div>
               <div class="label">USP</div>
             </div>
           </div>
@@ -232,33 +232,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     const res = await fetch(API + 'painel_kpi_geral.php', { credentials:'include' });
     const data = await res.json();
 
-    // Aceita retorno no formato { data: {...} } ou no root { total_usp: ..., total_geral: ... }
-    const d = data.data ?? data;
+    // aceita tanto data.data quanto root
+    const totalGeral = data?.data?.total_geral ?? data?.total_geral ?? data?.total ?? 0;
+    const totalUSP   = data?.data?.total_usp   ?? data?.total_usp   ?? 0;
 
     const nf = new Intl.NumberFormat('pt-BR');
 
-    // Geral
-    const elTotal = document.getElementById('kpiTotal');
-    if (elTotal) elTotal.textContent = nf.format(d.total_geral ?? d.total ?? 0);
+    // IDs corretos do seu HTML
+    const elGeral = document.getElementById('kpiGeral');
+    if (elGeral) elGeral.textContent = nf.format(totalGeral);
 
-    // USP (Fuvest = vest=1)
-    const elUSP = document.getElementById('kpiUSP');
-    if (elUSP) elUSP.textContent = nf.format(d.total_usp ?? 0);
+    const elUsp = document.getElementById('kpiUsp');
+    if (elUsp) elUsp.textContent = nf.format(totalUSP);
 
-    // Os demais continuam
-    const elNovos = document.getElementById('kpiNovos');
-    if (elNovos) elNovos.textContent = nf.format(d.novos ?? 0);
+    // (opcional) se um dia você devolver esses no mesmo endpoint:
+    const elUnicamp = document.getElementById('kpiUnicamp');
+    if (elUnicamp) elUnicamp.textContent = nf.format(data?.data?.total_unicamp ?? data?.total_unicamp ?? 0);
 
-    const elConfirmados = document.getElementById('kpiConfirmados');
-    if (elConfirmados) elConfirmados.textContent = nf.format(d.confirmados ?? 0);
+    const elUnesp = document.getElementById('kpiUnesp');
+    if (elUnesp) elUnesp.textContent = nf.format(data?.data?.total_unesp ?? data?.total_unesp ?? 0);
 
-    const elPendentes = document.getElementById('kpiPendentes');
-    if (elPendentes) elPendentes.textContent = nf.format(d.pendentes ?? 0);
+    const elSisu = document.getElementById('kpiSisu');
+    if (elSisu) elSisu.textContent = nf.format(data?.data?.total_sisu ?? data?.total_sisu ?? 0);
+
+    const elUnifesp = document.getElementById('kpiUnifesp');
+    if (elUnifesp) elUnifesp.textContent = nf.format(data?.data?.total_unifesp ?? data?.total_unifesp ?? 0);
 
   } catch (e) {
     console.warn('Falha ao carregar KPIs', e);
   }
 });
+
 
 
 
