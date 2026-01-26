@@ -259,8 +259,8 @@
 
       <div class="row">
         <div class="input-field col s6">
-          <input id="cpf" name="cpf" type="text" maxlength="14" placeholder="000.000.000-00">
-          <label for="cpf">CPF</label>
+          <input id="cpf_editar" name="cpf" type="text" maxlength="14" placeholder="000.000.000-00">
+          <label for="cpf_editar">CPF</label>
         </div>
         <div class="input-field col s6">
           <input id="serie" name="serie" type="text">
@@ -589,7 +589,7 @@ async function abrirEdicao(id) {
 
       set('id', r.id);
       set('nome', r.nome);
-      set('cpf', r.cpf);
+      set('cpf_editar', r.cpf);
       set('serie', r.serie);
       set('codunidade', r.codunidade);
       set('unidade', r.unidade);
@@ -673,7 +673,7 @@ document.getElementById('codunidade').addEventListener('change', async e => {
 
 /* ===== CPF: validação e limpeza ===== */
 document.addEventListener('input', e => {
-  if (e.target.id === 'cpf') {
+  if (e.target.id === 'cpf_editar') {
     const campo = e.target;
     campo.value = campo.value.replace(/\D/g, ''); // só números
 
@@ -868,29 +868,28 @@ function abrirAutorizacao(cpf){
     return;
   }
 
-  // abre a página em outra aba (igual você queria)
   const url = `/aprove/autorizacoes.html`;
   const w = window.open(url, '_blank', 'noopener');
 
-  // quando carregar, injeta o CPF e aciona o fluxo igual ao botão "Abrir" da página
   const timer = setInterval(() => {
     try {
       if (!w || w.closed) { clearInterval(timer); return; }
+      if (!w.document || w.document.readyState !== 'complete') return;
 
-      // tenta achar o input #cpf e a função loadFilesByCPF (que já existe aí)
-      const cpfInput = w.document && w.document.getElementById('cpf');
+      const cpfInput = w.document.getElementById('cpf');
       if (cpfInput && typeof w.loadFilesByCPF === 'function') {
+
+        // mascara
         cpfInput.value = cpf.replace(/(\d{3})(\d)/,'$1.$2')
-                           .replace(/(\d{3})(\d)/,'$1.$2')
-                           .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+                            .replace(/(\d{3})(\d)/,'$1.$2')
+                            .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
 
         if (w.M && w.M.updateTextFields) w.M.updateTextFields();
 
-        w.loadFilesByCPF(cpf);  // 🔥 mesmo fluxo do "Abrir" interno
+        w.loadFilesByCPF(cpf);
         clearInterval(timer);
       }
     } catch (e) {
-      // se cross-origin bloquear (não deveria, pois é mesmo domínio), só para
       clearInterval(timer);
     }
   }, 200);
