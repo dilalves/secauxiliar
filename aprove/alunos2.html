@@ -486,7 +486,11 @@ async function buscarAlunos(){
         const temAut = (parseInt(r.TEM_AUT_IMAGEM || 0) === 1);
 
         const btnAut = temAut
-          ? `<a class="btn-small green darken-2" href="/aprove/autorizacoes.html?cpf=${encodeURIComponent(r.CPF || '')}" target="_blank" rel="noopener">Aut. Imagem</a>`
+          ? `<button class="btn-small green darken-2"
+                type="button"
+                onclick="abrirAutorizacao('${String(r.CPF || '').replace(/\D/g,'')}')">
+                Aut. Imagem
+            </button>`
           : '';
 
         tr.innerHTML = `
@@ -856,6 +860,42 @@ async function salvarLinhaNovo(idx){
     M.toast({ html: 'Falha na conexão com o servidor.' });
   }
 }
+
+function abrirAutorizacao(cpf){
+  cpf = String(cpf || '').replace(/\D/g,'');
+  if (!cpf) {
+    M.toast({ html:'CPF do aluno não informado.' });
+    return;
+  }
+
+  // abre a página em outra aba (igual você queria)
+  const url = `/aprove/autorizacoes.html`;
+  const w = window.open(url, '_blank', 'noopener');
+
+  // quando carregar, injeta o CPF e aciona o fluxo igual ao botão "Abrir" da página
+  const timer = setInterval(() => {
+    try {
+      if (!w || w.closed) { clearInterval(timer); return; }
+
+      // tenta achar o input #cpf e a função loadFilesByCPF (que já existe aí)
+      const cpfInput = w.document && w.document.getElementById('cpf');
+      if (cpfInput && typeof w.loadFilesByCPF === 'function') {
+        cpfInput.value = cpf.replace(/(\d{3})(\d)/,'$1.$2')
+                           .replace(/(\d{3})(\d)/,'$1.$2')
+                           .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+
+        if (w.M && w.M.updateTextFields) w.M.updateTextFields();
+
+        w.loadFilesByCPF(cpf);  // 🔥 mesmo fluxo do "Abrir" interno
+        clearInterval(timer);
+      }
+    } catch (e) {
+      // se cross-origin bloquear (não deveria, pois é mesmo domínio), só para
+      clearInterval(timer);
+    }
+  }, 200);
+}
+
 
 </script>
 </body>
