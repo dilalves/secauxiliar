@@ -447,46 +447,72 @@ async function carregarUsuario() {
   }
 }
 
+// contador global para controlar qual busca é a "mais recente"
+let buscaSeq = 0;
+
 /* ===== BUSCA DE ALUNOS (AJUSTADA) ===== */
 async function buscarAlunos(){
   const termo = document.getElementById('search').value.trim();
   const tbody = document.querySelector('#tabela-alunos tbody');
+  const msgStatus = document.getElementById('msg-status');
+
+  // marca esta chamada como a busca mais recente
+  const minhaSeq = ++buscaSeq;
+
+  // limpa e mostra status
   tbody.innerHTML = '';
-  document.getElementById('msg-status').textContent = 'Buscando...';
+  msgStatus.textContent = 'Buscando...';
 
   try {
-    const res = await fetch(API + 'alunos_list.php?nome=' + encodeURIComponent(termo), { credentials:'include' });
+    const res = await fetch(
+      API + 'alunos_list.php?nome=' + encodeURIComponent(termo),
+      { credentials:'include' }
+    );
     const data = await res.json();
 
-    if (data.ok && data.rows.length){
-      document.getElementById('msg-status').textContent = '';
-      data.rows.forEach(r=>{
-      const tr = document.createElement('tr');
-      const temAprov = (parseInt(r.QTDE_APROV || 0) > 0);
-      const btnAprov = temAprov
-        ? `<button class="btn-small grey" onclick="verAprovacoes(${r.ID}, '${r.NOME.replace(/'/g, "\\'")}')">Ver Aprovações</button>`
-        : '';
+    // se outra busca foi feita depois dessa, ignora esta resposta
+    if (minhaSeq !== buscaSeq) return;
 
-      tr.innerHTML = `
-        <td>${r.ID}</td>
-        <td>${r.NOME}</td>
-        <td>${r.SERIE ?? ''}</td>
-        <td>${r.CODUNIDADE ?? ''}</td>
-        <td>${r.UNIDADE ?? ''}</td>
-        <td>${r.CADASTRO ?? ''}</td>
-        <td>${r.LISTAGEM ?? ''}</td>
-        <td>
-          <button class="btn-small blue" onclick="abrirEdicao(${r.ID})">Editar</button>
-          ${btnAprov}
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+    if (data.ok && data.rows.length){
+      msgStatus.textContent = '';
+      data.rows.forEach(r=>{
+        const tr = document.createElement('tr');
+        const temAprov = (parseInt(r.QTDE_APROV || 0) > 0);
+        
+        const btnAprov = temAprov
+          ? `<button class="btn-small grey" onclick="verAprovacoes(${r.ID}, '${String(r.NOME).replace(/'/g, "\\'")}')">Ver Aprovações</button>`
+          : '';
+
+        const temAut = (parseInt(r.TEM_AUT_IMAGEM || 0) === 1);
+
+        const btnAut = temAut
+          ? `<a class="btn-small green darken-2" href="/aprove/autorizacoes.html?cpf=${encodeURIComponent(r.CPF || '')}" target="_blank" rel="noopener">Aut. Imagem</a>`
+          : '';
+
+        tr.innerHTML = `
+          <td>${r.ID}</td>
+          <td>${r.NOME}</td>
+          <td>${r.SERIE ?? ''}</td>
+          <td>${r.CODUNIDADE ?? ''}</td>
+          <td>${r.UNIDADE ?? ''}</td>
+          <td>${r.CADASTRO ?? ''}</td>
+          <td>${r.LISTAGEM ?? ''}</td>
+          <td style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn-small blue" onclick="abrirEdicao(${r.ID})">Editar</button>
+            ${btnAprov}
+            ${btnAut}
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
     } else {
-      document.getElementById('msg-status').textContent = 'Nenhum aluno encontrado.';
+      msgStatus.textContent = 'Nenhum aluno encontrado.';
     }
   } catch(e){
-    document.getElementById('msg-status').textContent = 'Erro ao carregar dados.';
+    // idem: só mostra erro se ainda for a busca atual
+    if (minhaSeq !== buscaSeq) return;
+    msgStatus.textContent = 'Erro ao carregar dados.';
   }
 }
 
@@ -568,8 +594,10 @@ async function abrirEdicao(id) {
       set('ddd', r.ddd);
       set('celular', r.celular);
       set('email', r.email);
-      set('excluir', r.excluir);
       set('listagem', r.listagem);
+
+      // 🔹 checkbox não usa .value, usa .checked
+      document.getElementById('excluir').checked = (r.excluir == 1);
 
       M.updateTextFields();
       modal.open();
@@ -587,6 +615,10 @@ async function abrirEdicao(id) {
 async function salvarEdicao() {
   const form = document.getElementById('form-editar');
   const fd = new FormData(form);
+
+  // 🔹 força o campo EXCLUIR a ser 0 ou 1
+  const excluirMarcado = document.getElementById('excluir').checked ? 1 : 0;
+  fd.set('excluir', excluirMarcado);
 
   try {
     const res = await fetch(API + 'alunos_update.php', {
@@ -687,8 +719,8 @@ async function abrirNovoAluno(){
   // Reset sessão
   document.getElementById('novo-codunidade').value = '';
   document.getElementById('novo-unidade').value = '';
-  document.getElementById('novo-cadastro').value = '2025';
-  document.getElementById('novo-listagem').value = '2026';
+  document.getElementById('novo-cadastro').value = '2025';                  //   <<<<------- ESSES 2 CAMPOS PRECISAM DE AJUSTES EM CADA ANO DE LISTAGEM
+  document.getElementById('novo-listagem').value = '2026';                  //   <<<<------- ESSES 2 CAMPOS PRECISAM DE AJUSTES EM CADA ANO DE LISTAGEM
   document.getElementById('tbody-novo').innerHTML = '';
 
   // Ao abrir, já cria uma linha
@@ -792,6 +824,13 @@ async function salvarLinhaNovo(idx){
   fd.append('cadastro', cadastro);
   fd.append('listagem', listagem);
 
+  // 👇 NOVO: valor do checkbox (1 marcado, 0 desmarcado)
+  const excluir = document.querySelector('#excluir').checked ? 1 : 0;
+  fd.append('excluir', excluir);
+
+  // (garante também que o ID está indo)
+  // fd.append('id', idAluno);   -> LINHA GERANDO ERRO AO INSERIR NOVO ALUNO COMENTADO.
+
   try {
     const res = await fetch(API + 'alunos_insert.php', {
       method: 'POST',
@@ -817,8 +856,6 @@ async function salvarLinhaNovo(idx){
     M.toast({ html: 'Falha na conexão com o servidor.' });
   }
 }
-
-
 
 </script>
 </body>
