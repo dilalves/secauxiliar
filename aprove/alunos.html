@@ -259,8 +259,8 @@
 
       <div class="row">
         <div class="input-field col s6">
-          <input id="cpf" name="cpf" type="text" maxlength="14" placeholder="000.000.000-00">
-          <label for="cpf">CPF</label>
+          <input id="cpf_editar" name="cpf" type="text" maxlength="14" placeholder="000.000.000-00">
+          <label for="cpf_editar">CPF</label>
         </div>
         <div class="input-field col s6">
           <input id="serie" name="serie" type="text">
@@ -478,8 +478,19 @@ async function buscarAlunos(){
       data.rows.forEach(r=>{
         const tr = document.createElement('tr');
         const temAprov = (parseInt(r.QTDE_APROV || 0) > 0);
+        
         const btnAprov = temAprov
-          ? `<button class="btn-small grey" onclick="verAprovacoes(${r.ID}, '${r.NOME.replace(/'/g, "\\'")}')">Ver Aprovações</button>`
+          ? `<button class="btn-small grey" onclick="verAprovacoes(${r.ID}, '${String(r.NOME).replace(/'/g, "\\'")}')">Ver Aprovações</button>`
+          : '';
+
+        const temAut = (parseInt(r.TEM_AUT_IMAGEM || 0) === 1);
+
+        const btnAut = temAut
+          ? `<button class="btn-small green darken-2"
+                type="button"
+                onclick="abrirAutorizacao('${String(r.CPF || '').replace(/\D/g,'')}')">
+                Aut. Imagem
+            </button>`
           : '';
 
         tr.innerHTML = `
@@ -490,11 +501,13 @@ async function buscarAlunos(){
           <td>${r.UNIDADE ?? ''}</td>
           <td>${r.CADASTRO ?? ''}</td>
           <td>${r.LISTAGEM ?? ''}</td>
-          <td>
+          <td style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn-small blue" onclick="abrirEdicao(${r.ID})">Editar</button>
             ${btnAprov}
+            ${btnAut}
           </td>
         `;
+
         tbody.appendChild(tr);
       });
     } else {
@@ -576,7 +589,7 @@ async function abrirEdicao(id) {
 
       set('id', r.id);
       set('nome', r.nome);
-      set('cpf', r.cpf);
+      set('cpf_editar', r.cpf);
       set('serie', r.serie);
       set('codunidade', r.codunidade);
       set('unidade', r.unidade);
@@ -660,7 +673,7 @@ document.getElementById('codunidade').addEventListener('change', async e => {
 
 /* ===== CPF: validação e limpeza ===== */
 document.addEventListener('input', e => {
-  if (e.target.id === 'cpf') {
+  if (e.target.id === 'cpf_editar') {
     const campo = e.target;
     campo.value = campo.value.replace(/\D/g, ''); // só números
 
@@ -848,7 +861,39 @@ async function salvarLinhaNovo(idx){
   }
 }
 
+function abrirAutorizacao(cpf){
+  cpf = String(cpf || '').replace(/\D/g,'');
+  if (!cpf) {
+    M.toast({ html:'CPF do aluno não informado.' });
+    return;
+  }
 
+  const url = `/aprove/autorizacoes.html`;
+  const w = window.open(url, '_blank');
+
+  const timer = setInterval(() => {
+    try {
+      if (!w || w.closed) { clearInterval(timer); return; }
+      if (!w.document || w.document.readyState !== 'complete') return;
+
+      const cpfInput = w.document.getElementById('cpf');
+      if (cpfInput && typeof w.loadFilesByCPF === 'function') {
+
+        // mascara
+        cpfInput.value = cpf.replace(/(\d{3})(\d)/,'$1.$2')
+                            .replace(/(\d{3})(\d)/,'$1.$2')
+                            .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+
+        if (w.M && w.M.updateTextFields) w.M.updateTextFields();
+
+        w.loadFilesByCPF(cpf);
+        clearInterval(timer);
+      }
+    } catch (e) {
+      clearInterval(timer);
+    }
+  }, 200);
+}
 
 </script>
 </body>
