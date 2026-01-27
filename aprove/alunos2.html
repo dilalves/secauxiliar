@@ -934,6 +934,13 @@ async function salvarColocacao(idAprovacao){
   if (!inp) return;
 
   const colocacao = (inp.value || '').trim();
+  const v = colocacao === '' ? null : parseInt(colocacao, 10);
+
+  if (v !== null && v < 0) {
+    M.toast({ html:'Classificação inválida.' });
+    inp.focus();
+    return;
+  }
 
   const fd = new FormData();
   fd.append('id', idAprovacao);
