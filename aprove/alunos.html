@@ -345,6 +345,7 @@
           <th>Chamada</th>
           <th>Classificação</th>
           <th>Data</th>
+          <th>Ação</th>
         </tr>
       </thead>
       <tbody id="tbody-aprov"></tbody>
@@ -522,40 +523,73 @@ async function buscarAlunos(){
 
 /* === FUNÇÃO PARA VER APROVAÇÕES DO ALUNO === */
 async function verAprovacoes(idAluno, nomeAluno){
-  const modal = M.Modal.getInstance(document.querySelector('#modal-aprovacoes'));
+  const modalEl = document.querySelector('#modal-aprovacoes');
+  const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl);
+
   const tbody = document.getElementById('tbody-aprov');
   const msg = document.getElementById('msg-aprov');
+
   tbody.innerHTML = '';
   msg.textContent = 'Carregando...';
   document.getElementById('aprov-nome').textContent = nomeAluno;
 
   try {
-    const res = await fetch(API + 'aprovacoes_by_aluno.php?id=' + idAluno, {credentials:'include'});
+    const res = await fetch(API + 'aprovacoes_by_aluno.php?id=' + encodeURIComponent(idAluno), { credentials:'include' });
     const data = await res.json();
 
-    if(data.ok && data.rows.length){
+    if (data.ok && data.rows && data.rows.length){
       msg.textContent = '';
+
       data.rows.forEach(r=>{
         const tr = document.createElement('tr');
+
+        // <<< AQUI define a variável que estava faltando
+        const coloc = (r.colocacao ?? '').toString();
+
         tr.innerHTML = `
-          <td>${r.curso}</td>
-          <td>${r.instituicao}</td>
-          <td>${r.listagem}</td>
-          <td>${r.chamada}</td>
-          <td>${r.colocacao || '-'}</td>
-          <td>${r.data}</td>
+          <td>${r.curso ?? ''}</td>
+          <td>${r.instituicao ?? ''}</td>
+          <td>${r.listagem ?? ''}</td>
+          <td>${r.chamada ?? ''}</td>
+
+          <td style="min-width:70px;">
+            <div class="input-field" style="margin:0;">
+              <input
+                type="number"
+                min="1"
+                step="1"
+                id="coloc-${r.id}"
+                value="${coloc}"
+                style="margin:0; height:2rem;"
+              />
+            </div>
+          </td>
+
+          <td>${r.data ?? ''}</td>
+
+          <td style="white-space:nowrap;">
+            <button class="btn-small blue" type="button"
+              onclick="salvarColocacao(${r.id})">
+              Salvar
+            </button>
+          </td>
         `;
+
         tbody.appendChild(tr);
       });
+
     } else {
       msg.textContent = 'Nenhuma aprovação registrada para este aluno.';
     }
 
     modal.open();
   } catch(e){
+    console.error(e);
     msg.textContent = 'Erro ao carregar aprovações.';
+    modal.open(); // abre mesmo assim pra mostrar a msg
   }
 }
+
 
 /* === INICIALIZAÇÃO === */
 document.addEventListener('DOMContentLoaded', () => {
@@ -894,6 +928,42 @@ function abrirAutorizacao(cpf){
     }
   }, 200);
 }
+
+async function salvarColocacao(idAprovacao){
+  const inp = document.getElementById(`coloc-${idAprovacao}`);
+  if (!inp) return;
+
+  const colocacao = (inp.value || '').trim();
+  const v = colocacao === '' ? null : parseInt(colocacao, 10);
+
+  if (v !== null && v < 0) {
+    M.toast({ html:'Classificação inválida.' });
+    inp.focus();
+    return;
+  }
+
+  const fd = new FormData();
+  fd.append('id', idAprovacao);
+  fd.append('colocacao', colocacao); // pode ser '' para limpar
+
+  try {
+    const res = await fetch(API + 'aprovacao_update_colocacao.php', {
+      method:'POST',
+      body: fd,
+      credentials:'include'
+    });
+    const data = await res.json();
+
+    if (data.ok){
+      M.toast({ html:'Classificação atualizada!' });
+    } else {
+      M.toast({ html: data.error || 'Erro ao salvar.' });
+    }
+  } catch(e){
+    M.toast({ html:'Falha na conexão.' });
+  }
+}
+
 
 </script>
 </body>
