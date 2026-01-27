@@ -203,6 +203,7 @@ const ENDPOINT_APROVACOES = API + 'aprovacoes_by_aluno.php';
 
 const $ = s => document.querySelector(s);
 const digits = v => (v||'').replace(/\D+/g,'');
+
 function maskCPF(v){
   v = digits(v).slice(0,11);
   return v.replace(/(\d{3})(\d)/,'$1.$2')
@@ -243,6 +244,7 @@ async function carregar(){
 
     allRows = (j.rows || []).map(x => ({
       cpf: digits(x.CPF || ''),
+      // >>> se o PHP devolver CODALUNO, habilita "Ver aprovações"
       codaluno: x.CODALUNO ? String(x.CODALUNO) : '',
       nome: x.NOME || '',
       serie: (x.SERIE ?? '').toString(),
@@ -283,16 +285,23 @@ function renderTabela(rows){
     const tr = document.createElement('tr');
     const dt = r.updated_at ? String(r.updated_at).replace('T',' ').slice(0,19) : '';
 
+    // >>> do jeito que você pediu: Aut. Imagem chama abrirAutorizacao(cpf)
     const btnAut = `
-      <button class="btn-small blue" data-open-aut="${r.cpf}">
-        Abrir autorização
+      <button class="btn-small green darken-2"
+              type="button"
+              data-autcpf="${r.cpf}">
+        Aut. Imagem
       </button>`;
 
     const btnAprov = r.codaluno
-      ? `<button class="btn-small teal" data-open-aprov="${r.codaluno}" data-nome="${(r.nome||'').replace(/"/g,'&quot;')}" data-cpf="${r.cpf}">
+      ? `<button class="btn-small teal"
+                 type="button"
+                 data-open-aprov="${r.codaluno}"
+                 data-nome="${(r.nome||'').replace(/"/g,'&quot;')}"
+                 data-cpf="${r.cpf}">
            Ver aprovações
          </button>`
-      : `<button class="btn-small grey" disabled title="Aluno sem ID no CADALUNO">
+      : `<button class="btn-small grey" type="button" disabled title="Aluno sem ID no CADALUNO">
            Ver aprovações
          </button>`;
 
@@ -307,11 +316,11 @@ function renderTabela(rows){
     tb.appendChild(tr);
   }
 
-  tb.querySelectorAll('[data-open-aut]').forEach(b=>{
+  // ===== ações =====
+  tb.querySelectorAll('[data-autcpf]').forEach(b=>{
     b.addEventListener('click', ()=>{
-      const cpf = b.getAttribute('data-open-aut');
-      //location.href = `/aprove/autorizacoes.html?cpf=${encodeURIComponent(cpf)}`;
-      onclick="abrirAutorizacao('${String(r.CPF || '').replace(/\D/g,'')}')">
+      const cpf = b.getAttribute('data-autcpf') || '';
+      abrirAutorizacao(cpf);
     });
   });
 
@@ -320,7 +329,6 @@ function renderTabela(rows){
       const codaluno = b.getAttribute('data-open-aprov');
       const nome = b.getAttribute('data-nome') || '';
       const cpf = b.getAttribute('data-cpf') || '';
-
       await abrirModalAprovacoes(codaluno, nome, cpf);
     });
   });
@@ -336,6 +344,7 @@ async function abrirModalAprovacoes(codaluno, nome, cpf){
   modal.open();
 
   try{
+    // seu PHP aceita id (do jeito que você mandou)
     const r = await fetch(`${ENDPOINT_APROVACOES}?id=${encodeURIComponent(codaluno)}`, {credentials:'include'});
     const j = await r.json();
     if(!j.ok) throw new Error(j.error || 'Falha ao listar aprovações');
@@ -348,10 +357,11 @@ async function abrirModalAprovacoes(codaluno, nome, cpf){
 
     $('#aprovMsg').textContent = '';
     const tb = $('#tbodyAprov');
+
     rows.forEach(a=>{
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${a.curso || a.codcurso || '-'}</td>
+        <td>${a.curso || '-'}</td>
         <td>${a.instituicao || '-'}</td>
         <td>${a.listagem || '-'}</td>
         <td>${a.chamada ?? '-'}</td>
@@ -367,7 +377,6 @@ async function abrirModalAprovacoes(codaluno, nome, cpf){
   }
 }
 
-// Exporta o que está filtrado
 function exportCsv(){
   const q = ($('#q').value || '').trim().toLowerCase();
   const rows = !q ? allRows : allRows.filter(r => {
@@ -415,6 +424,48 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
   carregar();
 });
+
+/* ======== ABRIR AUTORIZAÇÃO ========
+   Abre /aprove/autorizacoes.html e injeta o CPF lá dentro,
+   tentando chamar loadFilesByCPF (como você já tinha).
+   Também deixa fallback via querystring (?cpf=...) se você quiser usar depois.
+*/
+function abrirAutorizacao(cpf){
+  cpf = String(cpf || '').replace(/\D/g,'');
+  if (!cpf) {
+    toast('CPF do aluno não informado.', 'red');
+    return;
+  }
+
+  // (fallback) se você no futuro tratar ?cpf= no autorizacoes.html
+  const url = `/aprove/autorizacoes.html?cpf=${encodeURIComponent(cpf)}`;
+  const w = window.open(url, '_blank');
+
+  const timer = setInterval(() => {
+    try {
+      if (!w || w.closed) { clearInterval(timer); return; }
+      if (!w.document || w.document.readyState !== 'complete') return;
+
+      const cpfInput = w.document.getElementById('cpf');
+
+      // tenta usar a função que já existe lá
+      if (cpfInput && typeof w.loadFilesByCPF === 'function') {
+
+        cpfInput.value = cpf.replace(/(\d{3})(\d)/,'$1.$2')
+                            .replace(/(\d{3})(\d)/,'$1.$2')
+                            .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+
+        if (w.M && w.M.updateTextFields) w.M.updateTextFields();
+
+        w.loadFilesByCPF(cpf);
+        clearInterval(timer);
+      }
+    } catch (e) {
+      // cross-origin / bloqueio do browser: para de tentar
+      clearInterval(timer);
+    }
+  }, 200);
+}
 </script>
 </body>
 </html>
