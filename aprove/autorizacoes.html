@@ -132,6 +132,7 @@
             <input id="cpf" type="text" maxlength="14" placeholder="000.000.000-00">
             <label for="cpf">CPF do aluno</label>
             <span class="helper-text">Digite o CPF e clique <b>Salvar / Criar pasta</b>.</span>
+            <span id="cpfAlunoStatus" class="helper-text" style="font-weight:600;"></span>
           </div>
 
           <div class="col s12 m6" style="margin-top:18px">
@@ -240,7 +241,7 @@
             .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
   }
 
-  // >>> NOVO: validação real de CPF
+  // >>> validação real de CPF
   function cpfValido(cpf){
     cpf = digits(cpf);
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
@@ -277,6 +278,73 @@
     return 'insert_drive_file';
   }
 
+  // ===== CADALUNO CHECK (deixe AQUI EM CIMA) =====
+  let alunoEncontrado = false;
+  let alunoNome = '';
+
+  function setCpfStatus(msg, ok=null){
+    const el = $('#cpfAlunoStatus');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.style.color = (ok === true) ? '#2e7d32' : (ok === false) ? '#c62828' : '#6b7280';
+  }
+
+  function setSalvarEnabled(enabled){
+    const btn = document.getElementById('btnSalvar');
+    btn.disabled = !enabled;
+    if (enabled) btn.classList.remove('disabled');
+    else btn.classList.add('disabled');
+  }
+
+  async function checarAlunoCPF(){
+    const cpfInput = document.getElementById('cpf');
+    const cpf = digits(cpfInput.value);
+
+    alunoEncontrado = false;
+    alunoNome = '';
+    setSalvarEnabled(false);
+
+    if (cpf.length !== 11){
+      setCpfStatus('', null);
+      return false;
+    }
+
+    if (!cpfValido(cpf)) {
+      cpfInput.classList.add('invalid');
+      setCpfStatus('CPF inválido.', false);
+      return false;
+    }
+
+    cpfInput.classList.remove('invalid');
+    setCpfStatus('Verificando aluno...', null);
+
+    try{
+      const r = await fetch(API + 'aluno_by_cpf.php?cpf=' + encodeURIComponent(cpf), { credentials:'include' });
+      const j = await r.json();
+
+      if (!j.ok) throw new Error(j.error || 'Falha');
+
+      if (!j.found){
+        alunoEncontrado = false;
+        setCpfStatus('Aluno NÃO encontrado no CADALUNO.', false);
+        setSalvarEnabled(false);
+        return false;
+      }
+
+      alunoEncontrado = true;
+      alunoNome = j.aluno?.nome || '';
+      setCpfStatus('Aluno encontrado: ' + (alunoNome || '—'), true);
+      setSalvarEnabled(true);
+      return true;
+
+    } catch(e){
+      setCpfStatus('Erro ao consultar aluno.', false);
+      setSalvarEnabled(false);
+      toast('Erro ao consultar aluno: ' + e.message);
+      return false;
+    }
+  }
+
   // === Topbar
   async function carregarUsuario(){
     try{
@@ -308,11 +376,16 @@
   const progressText = $('#progressText');
   const cpfInfo = $('#cpfInfo');
 
-  // Máscara CPF
+  // Máscara CPF + reset status
   cpfInput.addEventListener('input', () => {
     cpfInput.value = maskCPF(cpfInput.value);
     cpfInput.classList.remove('invalid');
+    setCpfStatus('', null);
+    setSalvarEnabled(false);
   });
+
+  // Checa CADALUNO quando sai do campo
+  cpfInput.addEventListener('blur', checarAlunoCPF);
 
   // Salvar / Criar pasta
   btnSalvar.addEventListener('click', async () => {
@@ -324,6 +397,13 @@
       return;
     }
     cpfInput.classList.remove('invalid');
+
+    // >>> AJUSTE FINAL: garante que existe no CADALUNO antes de salvar
+    const okAluno = await checarAlunoCPF();
+    if (!okAluno) {
+      toast('Aluno não encontrado no cadastro (CADALUNO).');
+      return;
+    }
 
     const payload = {
       cpf_aluno: cpf,
@@ -375,6 +455,13 @@
       return;
     }
     cpfInput.classList.remove('invalid');
+
+    // opcional: força validar CADALUNO antes de upload também
+    const okAluno = await checarAlunoCPF();
+    if (!okAluno) {
+      toast('Aluno não encontrado no cadastro (CADALUNO).');
+      return;
+    }
 
     const fd = new FormData();
     fd.append('cpf_aluno', cpf);
@@ -451,7 +538,7 @@
           <a href="${url}" target="_blank" style="text-decoration:none">${f.nome_original}</a>
         </span>
         <p class="grey-text">${f.mime_type} • ${fmtBytes(f.tamanho_bytes)}<br>
-          <small>Enviado em ${new Date(f.uploaded_at.replace(' ','T')).toLocaleString()}</small>
+          <small>Enviado em ${new Date(String(f.uploaded_at||'').replace(' ','T')).toLocaleString()}</small>
         </p>
         <div class="secondary-content" style="display:flex;gap:8px">
           <a class="btn-flat tooltipped" data-tooltip="Abrir em nova aba" href="${url}" target="_blank">
@@ -466,12 +553,6 @@
     });
     M.Tooltip.init(document.querySelectorAll('.tooltipped'));
   }
-
-  // Init
-  document.addEventListener('DOMContentLoaded', ()=>{
-    M.CharacterCounter.init(document.querySelectorAll('#observacao'));
-    carregarUsuario();
-  });
 
   // ======= LISTAGEM =======
   const tbodyAuts = document.getElementById('tbody-auts');
@@ -542,6 +623,10 @@
         cpfInput.value = maskCPF(cpf);
         cpfInput.classList.remove('invalid');
         M.updateTextFields();
+
+        // >>> AJUSTE FINAL: checa CADALUNO também no Abrir (mostra status e habilita salvar)
+        await checarAlunoCPF();
+
         await loadFilesByCPF(cpf);
         window.scrollTo({top:0, behavior:'smooth'});
         cardUpload.style.display = '';
@@ -626,12 +711,16 @@
     }
   }
 
-  // carrega a lista na abertura
-  document.addEventListener('DOMContentLoaded', carregarLista);
-
-  // garantir inicialização do modal
+  // Init geral
   document.addEventListener('DOMContentLoaded', ()=>{
+    M.CharacterCounter.init(document.querySelectorAll('#observacao'));
     M.Modal.init(document.querySelectorAll('.modal'));
+    carregarUsuario();
+
+    setSalvarEnabled(false);
+    setCpfStatus('', null);
+
+    carregarLista();
   });
 </script>
 </body>
