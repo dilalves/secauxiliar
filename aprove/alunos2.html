@@ -542,11 +542,31 @@ async function verAprovacoes(idAluno, nomeAluno){
           <td>${r.instituicao}</td>
           <td>${r.listagem}</td>
           <td>${r.chamada}</td>
-          <td>${r.colocacao || '-'}</td>
+          
+              <td style="min-width:160px;">
+                <div class="input-field" style="margin:0;">
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    id="coloc-${r.id}"
+                    value="${coloc}"
+                    style="margin:0; height:2rem;"
+                  />
+                </div>
+              </td>
+          
           <td>${r.data}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+
+              <td style="white-space:nowrap;">
+                <button class="btn-small blue" type="button"
+                  onclick="salvarColocacao(${r.id})">
+                  Salvar
+                </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
     } else {
       msg.textContent = 'Nenhuma aprovação registrada para este aluno.';
     }
@@ -894,6 +914,40 @@ function abrirAutorizacao(cpf){
     }
   }, 200);
 }
+
+async function salvarColocacao(idAprovacao){
+  const inp = document.getElementById(`coloc-${idAprovacao}`);
+  if (!inp) return;
+
+  const colocacao = (inp.value || '').trim();
+  if (colocacao && (parseInt(colocacao,10) <= 0)) {
+    M.toast({ html:'Classificação inválida.' });
+    inp.focus();
+    return;
+  }
+
+  const fd = new FormData();
+  fd.append('id', idAprovacao);
+  fd.append('colocacao', colocacao); // pode ser '' para limpar
+
+  try {
+    const res = await fetch(API + 'aprovacao_update_colocacao.php', {
+      method:'POST',
+      body: fd,
+      credentials:'include'
+    });
+    const data = await res.json();
+
+    if (data.ok){
+      M.toast({ html:'Classificação atualizada!' });
+    } else {
+      M.toast({ html: data.error || 'Erro ao salvar.' });
+    }
+  } catch(e){
+    M.toast({ html:'Falha na conexão.' });
+  }
+}
+
 
 </script>
 </body>
