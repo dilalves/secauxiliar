@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Controle de Sala • Painel</title>
+
+  <!-- Materialize -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- Ícones -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary:#0b3b78;      /* azul Objetivo-like */
+      --primary2:#1456a3;
+      --bg:#f4f6f9;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --radius:14px;
+    }
+    body{ background:var(--bg); }
+    .topbar{
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      padding: 18px 0;
+      color:#fff;
+    }
+    .topbar .title{
+      font-weight:700;
+      font-size: 1.25rem;
+      margin:0;
+      letter-spacing:.2px;
+    }
+    .topbar .subtitle{
+      margin:0;
+      opacity:.9;
+      font-size:.95rem;
+    }
+    .wrap{ margin-top: 18px; }
+    .card-panel{
+      border-radius: var(--radius);
+      box-shadow: 0 10px 25px rgba(15,23,42,.10);
+    }
+    .menu-card{
+      border-radius: var(--radius);
+      box-shadow: 0 10px 25px rgba(15,23,42,.10);
+      overflow:hidden;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease;
+      height: 100%;
+    }
+    .menu-card:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px rgba(15,23,42,.14);
+    }
+    .menu-card .head{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:16px 16px 10px 16px;
+    }
+    .menu-card .icon{
+      width:42px; height:42px;
+      display:flex; align-items:center; justify-content:center;
+      border-radius: 12px;
+      background: rgba(11,59,120,.10);
+      color: var(--primary);
+    }
+    .menu-card .name{
+      margin:0;
+      font-weight:700;
+      font-size: 1.05rem;
+      color:#111827;
+    }
+    .menu-card .desc{
+      padding: 0 16px 14px 16px;
+      margin:0;
+      color: var(--muted);
+      font-size: .92rem;
+      min-height: 44px;
+    }
+    .menu-card .foot{
+      padding: 0 16px 16px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      color: var(--primary);
+      font-weight:600;
+      font-size:.92rem;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius: 999px;
+      background: rgba(20,86,163,.10);
+      color: var(--primary2);
+      font-weight:600;
+      font-size:.85rem;
+    }
+    .mini{
+      color: rgba(255,255,255,.9);
+      font-size:.9rem;
+    }
+    .btn-logout{
+      border-radius: 999px;
+      background: rgba(255,255,255,.15);
+      box-shadow:none;
+    }
+    .btn-logout:hover{ background: rgba(255,255,255,.22); }
+  </style>
+</head>
+
+<body>
+
+  <!-- Topo -->
+  <div class="topbar">
+    <div class="container">
+      <div class="row" style="margin-bottom:0;">
+        <div class="col s12 m8">
+          <p class="title">Controle de Sala</p>
+          <p class="subtitle">Painel de gestão</p>
+        </div>
+        <div class="col s12 m4 right-align" style="margin-top:10px;">
+          <a class="btn btn-small btn-logout white-text" href="logout.php">
+            <i class="material-icons left">logout</i>Sair
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container wrap">
+
+    <!-- Aviso rápido / status -->
+    <div class="row">
+      <div class="col s12">
+        <div class="card-panel">
+          <div class="row" style="margin-bottom:0;">
+            <div class="col s12 m8">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <i class="material-icons" style="color:var(--primary);">info</i>
+                <div>
+                  <div style="font-weight:700;color:#111827;">Acesso liberado</div>
+                  <div style="color:var(--muted);font-size:.92rem;">
+                    Use os atalhos abaixo para administrar salas, fiscais, vínculos e presenças.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col s12 m4 right-align" style="margin-top:10px;">
+              <span class="pill">
+                <i class="material-icons" style="font-size:18px;">shield</i>
+                Área restrita
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards do menu -->
+    <div class="row">
+
+      <div class="col s12 m6 l4">
+        <div class="menu-card white" onclick="go('salas.html')">
+          <div class="head">
+            <div class="icon"><i class="material-icons">meeting_room</i></div>
+            <p class="name">Salas</p>
+          </div>
+          <p class="desc">Cadastrar, editar e organizar salas e dias de aula.</p>
+          <div class="foot">
+            <span>Acessar</span>
+            <i class="material-icons">chevron_right</i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col s12 m6 l4">
+        <div class="menu-card white" onclick="go('fiscais.html')">
+          <div class="head">
+            <div class="icon"><i class="material-icons">group</i></div>
+            <p class="name">Fiscais</p>
+          </div>
+          <p class="desc">Cadastro e gerenciamento de usuários fiscais.</p>
+          <div class="foot">
+            <span>Acessar</span>
+            <i class="material-icons">chevron_right</i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col s12 m6 l4">
+        <div class="menu-card white" onclick="go('vinculo-aluno-sala.html')">
+          <div class="head">
+            <div class="icon"><i class="material-icons">how_to_reg</i></div>
+            <p class="name">Vínculo Aluno × Sala</p>
+          </div>
+          <p class="desc">Vincular alunos importados às salas (por turma/dia).</p>
+          <div class="foot">
+            <span>Acessar</span>
+            <i class="material-icons">chevron_right</i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col s12 m6 l4">
+        <div class="menu-card white" onclick="go('presencas.html')">
+          <div class="head">
+            <div class="icon"><i class="material-icons">playlist_add_check</i></div>
+            <p class="name">Presenças</p>
+          </div>
+          <p class="desc">Relatórios por data, sala, aluno e fiscal.</p>
+          <div class="foot">
+            <span>Acessar</span>
+            <i class="material-icons">chevron_right</i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col s12 m6 l4">
+        <div class="menu-card white" onclick="go('config.html')">
+          <div class="head">
+            <div class="icon"><i class="material-icons">settings</i></div>
+            <p class="name">Configurações</p>
+          </div>
+          <p class="desc">Parâmetros do sistema (ex.: tolerância, regras, etc.).</p>
+          <div class="foot">
+            <span>Acessar</span>
+            <i class="material-icons">chevron_right</i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col s12 m6 l4">
+        <div class="menu-card white" onclick="go('dashboard.html')">
+          <div class="head">
+            <div class="icon"><i class="material-icons">insights</i></div>
+            <p class="name">Dashboard</p>
+          </div>
+          <p class="desc">Visão geral rápida (KPIs e atalhos administrativos).</p>
+          <div class="foot">
+            <span>Acessar</span>
+            <i class="material-icons">chevron_right</i>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Rodapé -->
+    <div class="row">
+      <div class="col s12 center-align" style="color:var(--muted);font-size:.9rem;padding:12px 0 20px;">
+        Controle de Sala • 3A Sistemas
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function go(url){ window.location.href = url; }
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
