@@ -64,7 +64,8 @@
 
             <div class="col s12 m6" style="margin-top:18px;">
               <a class="btn green" id="btn_buscar">Buscar</a>
-              <a class="btn teal" id="btn_ensalar" disabled>Ensal ar</a>
+              <!-- Materialize usa a classe "disabled" para bloquear <a class="btn"> -->
+              <a class="btn teal disabled" id="btn_ensalar">Ensalar</a>
             </div>
           </div>
 
@@ -162,6 +163,17 @@
       b.textContent = text;
     }
 
+    // ✅ Controle correto do botão <a class="btn"> no Materialize
+    function setEnsalEnabled(on){
+      if(on){
+        btnEnsal.classList.remove('disabled');
+        btnEnsal.removeAttribute('disabled'); // por garantia
+      } else {
+        btnEnsal.classList.add('disabled');
+        btnEnsal.setAttribute('disabled','disabled'); // por garantia
+      }
+    }
+
     function fillAluno(d){
       const a = d.aluno || {};
       document.getElementById('aluno_nome').textContent = a.nome || '—';
@@ -218,7 +230,7 @@
 
     function resetAlunoUI(){
       lastLookup = null;
-      btnEnsal.disabled = true;
+      setEnsalEnabled(false);
       setBadge('warn','Aguardando busca…');
       fillAluno({ aluno:{}, curso:{}, motivo:'—' });
     }
@@ -289,11 +301,11 @@
       fillAluno(j);
 
       if(j.direito_ok){
-        setBadge('ok','OK • Pode ensalar');
-        btnEnsal.disabled = false;
+        setBadge('ok','Liberado');
+        setEnsalEnabled(true);
       } else {
         setBadge('bad','Bloqueado • Sem direito');
-        btnEnsal.disabled = true;
+        setEnsalEnabled(false);
       }
     }
 
@@ -306,6 +318,9 @@
     });
 
     async function ensalar(){
+      // impede clique se estiver "disabled" pelo Materialize
+      if(btnEnsal.classList.contains('disabled')) return;
+
       if(!cursoSel || !salaSel){
         M.toast({html:'Trave Curso/Sala antes.'});
         return;
@@ -320,7 +335,7 @@
         return;
       }
 
-      btnEnsal.disabled = true;
+      setEnsalEnabled(false);
       setBadge('warn','Ensalando e gerando calendário…');
 
       const fd = new FormData();
@@ -339,7 +354,7 @@
       if(!j.ok){
         setBadge('bad', j.msg || 'Erro ao ensalar');
         document.getElementById('motivo').textContent = (j.motivo || j.msg || '—');
-        btnEnsal.disabled = false;
+        setEnsalEnabled(true); // volta a permitir tentar de novo
         return;
       }
 
@@ -366,7 +381,7 @@
       // prepara próxima matrícula
       inpMat.value = '';
       M.updateTextFields();
-      btnEnsal.disabled = true;
+      setEnsalEnabled(false);
       lastLookup = null;
       inpMat.focus();
     }
@@ -379,6 +394,7 @@
         await loadCursos();
         await loadSalas();
         M.FormSelect.init(document.querySelectorAll('select'));
+        resetAlunoUI(); // garante botão ensalar travado no início
       } catch(e){
         console.error(e);
         M.toast({html:'Erro ao carregar listas (cursos/salas). Veja console.'});
