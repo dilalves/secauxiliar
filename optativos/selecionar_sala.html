@@ -42,56 +42,114 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script>
-    const msg = (t='') => document.getElementById('msg').textContent = t;
+    const API = 'https://apisec.secauxiliar.com.br/optativo/';
+
+    const $msg = document.getElementById('msg');
+    const $sel = document.getElementById('salaSelect');
+    const $btn = document.getElementById('btnEntrar');
+
+    const msg = (t='') => $msg.textContent = t;
+
+    function reinitSelect(){
+      // Se já existir instância do Materialize, destrói antes
+      const inst = M.FormSelect.getInstance($sel);
+      if(inst) inst.destroy();
+      M.FormSelect.init($sel);
+    }
 
     async function carregarSalas(){
       msg('');
-      const sel = document.getElementById('salaSelect');
-      sel.innerHTML = `<option value="" disabled selected>Carregando...</option>`;
-      M.FormSelect.init(sel);
+      $btn.disabled = true;
 
-      const r = await fetch('fiscal_salas_list.php', { credentials: 'include' });
-      const j = await r.json();
+      $sel.innerHTML = `<option value="" disabled selected>Carregando...</option>`;
+      reinitSelect();
 
-      if(!j.ok){
-        msg(j.msg || 'Falha ao carregar salas');
-        sel.innerHTML = `<option value="" disabled selected>Erro</option>`;
-        M.FormSelect.init(sel);
-        return;
+      try{
+        const r = await fetch(API + 'fiscal_salas_list.php', {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        if(!r.ok){
+          msg('Falha ao carregar salas (HTTP ' + r.status + ')');
+          $sel.innerHTML = `<option value="" disabled selected>Erro</option>`;
+          reinitSelect();
+          return;
+        }
+
+        const j = await r.json();
+
+        if(!j.ok){
+          msg(j.msg || 'Falha ao carregar salas');
+          $sel.innerHTML = `<option value="" disabled selected>Erro</option>`;
+          reinitSelect();
+          return;
+        }
+
+        const rows = Array.isArray(j.rows) ? j.rows : [];
+
+        $sel.innerHTML =
+          `<option value="" disabled selected>Selecione...</option>` +
+          rows.map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
+
+        reinitSelect();
+        $btn.disabled = true;
+
+      }catch(e){
+        msg('Erro de rede ao carregar salas');
+        $sel.innerHTML = `<option value="" disabled selected>Erro</option>`;
+        reinitSelect();
       }
-
-      sel.innerHTML = `<option value="" disabled selected>Selecione...</option>` +
-        j.rows.map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
-
-      M.FormSelect.init(sel);
-
-      sel.addEventListener('change', () => {
-        document.getElementById('btnEntrar').disabled = !sel.value;
-      });
     }
 
-    document.getElementById('btnEntrar').addEventListener('click', async () => {
+    // Registra 1x só (evita duplicar listener se recarregar salas)
+    $sel.addEventListener('change', () => {
+      $btn.disabled = !$sel.value;
       msg('');
-      const sala_id = document.getElementById('salaSelect').value;
-      if(!sala_id) return;
-
-      const fd = new FormData();
-      fd.append('sala_id', sala_id);
-
-      const r = await fetch('https://apisec.secauxiliar.com.br/optativo/fiscal_set_sala.php', { method:'POST', body: fd, credentials:'include' });
-      const j = await r.json();
-
-      if(!j.ok){
-        msg(j.msg || 'Não foi possível selecionar a sala');
-        return;
-      }
-
-      // Agora manda pro painel de presença (vamos criar/usar depois)
-      // Ex.: presenca.html
-      window.location.href = 'presenca.html';
     });
 
-    carregarSalas();
+    $btn.addEventListener('click', async () => {
+      msg('');
+      const sala_id = $sel.value;
+      if(!sala_id) return;
+
+      $btn.disabled = true;
+
+      try{
+        const fd = new FormData();
+        fd.append('sala_id', sala_id);
+
+        const r = await fetch(API + 'fiscal_set_sala.php', {
+          method: 'POST',
+          body: fd,
+          credentials: 'include'
+        });
+
+        if(!r.ok){
+          msg('Não foi possível selecionar a sala (HTTP ' + r.status + ')');
+          $btn.disabled = false;
+          return;
+        }
+
+        const j = await r.json();
+
+        if(!j.ok){
+          msg(j.msg || 'Não foi possível selecionar a sala');
+          $btn.disabled = false;
+          return;
+        }
+
+        window.location.href = 'presenca.html';
+
+      }catch(e){
+        msg('Erro de rede ao selecionar a sala');
+        $btn.disabled = false;
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarSalas();
+    });
   </script>
 </body>
 </html>
