@@ -6,19 +6,24 @@
   <title>Selecionar Sala • Fiscal</title>
 
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <style>
+    .wrap { margin-top:24px; max-width:720px; }
+    .brand-logo { font-size:1.2rem !important; }
+  </style>
 </head>
+
 <body class="grey lighten-4">
 
   <nav class="blue darken-3">
     <div class="nav-wrapper container">
-      <a class="brand-logo" style="font-size:1.2rem;">Controle de Sala</a>
+      <a class="brand-logo">Controle de Sala</a>
       <ul class="right">
-        <li><a href="logout.php">Sair</a></li>
+        <li><a id="logoutLink" href="#">Sair</a></li>
       </ul>
     </div>
   </nav>
 
-  <div class="container" style="margin-top:24px; max-width:720px;">
+  <div class="container wrap">
     <div class="card">
       <div class="card-content">
         <span class="card-title">Selecione a sala</span>
@@ -42,52 +47,83 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script>
-    const API = 'https://apisec.secauxiliar.com.br/optativo/';
+    /**
+     * Base da API:
+     * - Se estiver em apisec, já usa o mesmo host
+     * - Se estiver em secauxiliar, aponta para apisec
+     */
+    const API = (location.hostname === 'apisec.secauxiliar.com.br')
+      ? (location.origin + '/optativo/')
+      : 'https://apisec.secauxiliar.com.br/optativo/';
 
     const $msg = document.getElementById('msg');
     const $sel = document.getElementById('salaSelect');
     const $btn = document.getElementById('btnEntrar');
+    const $logout = document.getElementById('logoutLink');
 
     const msg = (t='') => $msg.textContent = t;
 
     function reinitSelect(){
-      // Se já existir instância do Materialize, destrói antes
-      const inst = M.FormSelect.getInstance($sel);
-      if(inst) inst.destroy();
+      try{
+        const inst = M.FormSelect.getInstance($sel);
+        if(inst) inst.destroy();
+      }catch(e){}
       M.FormSelect.init($sel);
     }
 
+    function setLoading(state){
+      $btn.disabled = true;
+      $sel.disabled = !!state;
+      if(state){
+        $sel.innerHTML = `<option value="" disabled selected>Carregando...</option>`;
+      }
+      reinitSelect();
+    }
+
+    function setError(text){
+      msg(text);
+      $sel.innerHTML = `<option value="" disabled selected>Erro</option>`;
+      $btn.disabled = true;
+      reinitSelect();
+    }
+
+    // Logout aponta para o backend (porque quem limpa cookie é o PHP)
+    $logout.href = API + 'logout.php';
+
     async function carregarSalas(){
       msg('');
-      $btn.disabled = true;
-
-      $sel.innerHTML = `<option value="" disabled selected>Carregando...</option>`;
-      reinitSelect();
+      setLoading(true);
 
       try{
         const r = await fetch(API + 'fiscal_salas_list.php', {
           method: 'GET',
-          credentials: 'include'
+          credentials: 'include',
+          cache: 'no-store'
         });
 
+        let j = null;
+        try { j = await r.json(); } catch(e){}
+
         if(!r.ok){
-          msg('Falha ao carregar salas (HTTP ' + r.status + ')');
-          $sel.innerHTML = `<option value="" disabled selected>Erro</option>`;
-          reinitSelect();
+          const detalhe = (j && (j.msg || j.error)) ? ` — ${j.msg || j.error}` : '';
+          setError(`Falha ao carregar salas (HTTP ${r.status})${detalhe}`);
           return;
         }
 
-        const j = await r.json();
-
-        if(!j.ok){
-          msg(j.msg || 'Falha ao carregar salas');
-          $sel.innerHTML = `<option value="" disabled selected>Erro</option>`;
-          reinitSelect();
+        if(!j || !j.ok){
+          const detalhe = j && (j.msg || j.error) ? (j.msg || j.error) : 'Resposta inválida';
+          setError(`Falha ao carregar salas: ${detalhe}`);
           return;
         }
 
         const rows = Array.isArray(j.rows) ? j.rows : [];
 
+        if(rows.length === 0){
+          setError('Nenhuma sala disponível para seleção.');
+          return;
+        }
+
+        $sel.disabled = false;
         $sel.innerHTML =
           `<option value="" disabled selected>Selecione...</option>` +
           rows.map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
@@ -96,13 +132,12 @@
         $btn.disabled = true;
 
       }catch(e){
-        msg('Erro de rede ao carregar salas');
-        $sel.innerHTML = `<option value="" disabled selected>Erro</option>`;
-        reinitSelect();
+        console.error(e);
+        setError('Erro de rede ao carregar salas.');
       }
     }
 
-    // Registra 1x só (evita duplicar listener se recarregar salas)
+    // listener 1x
     $sel.addEventListener('change', () => {
       $btn.disabled = !$sel.value;
       msg('');
@@ -122,32 +157,39 @@
         const r = await fetch(API + 'fiscal_set_sala.php', {
           method: 'POST',
           body: fd,
-          credentials: 'include'
+          credentials: 'include',
+          cache: 'no-store'
         });
 
+        let j = null;
+        try { j = await r.json(); } catch(e){}
+
         if(!r.ok){
-          msg('Não foi possível selecionar a sala (HTTP ' + r.status + ')');
+          const detalhe = (j && (j.msg || j.error)) ? ` — ${j.msg || j.error}` : '';
+          msg(`Não foi possível selecionar a sala (HTTP ${r.status})${detalhe}`);
           $btn.disabled = false;
           return;
         }
 
-        const j = await r.json();
-
-        if(!j.ok){
-          msg(j.msg || 'Não foi possível selecionar a sala');
+        if(!j || !j.ok){
+          msg((j && (j.msg || j.error)) ? (j.msg || j.error) : 'Não foi possível selecionar a sala.');
           $btn.disabled = false;
           return;
         }
 
-        window.location.href = 'presenca.html';
+        // ✅ Redireciona para a tela de presença no MESMO host da API (evita confusão de domínio)
+        window.location.href = API + 'presenca.html';
 
       }catch(e){
-        msg('Erro de rede ao selecionar a sala');
+        console.error(e);
+        msg('Erro de rede ao selecionar a sala.');
         $btn.disabled = false;
       }
     });
 
     document.addEventListener('DOMContentLoaded', () => {
+      // garante Materialize funcionando antes de mexer no select
+      M.AutoInit();
       carregarSalas();
     });
   </script>
