@@ -138,268 +138,318 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  
   <script>
-    // Ajuste o caminho base se seus PHP estiverem em outra pasta
-    const API = 'https://apisec.secauxiliar.com.br/optativo/';
+  // Ajuste o caminho base se seus PHP estiverem em outra pasta
+  const API = 'https://apisec.secauxiliar.com.br/optativo/';
 
-    const elCurso = document.getElementById('curso_id');
-    const elSala  = document.getElementById('sala_id');
+  const elCurso = document.getElementById('curso_id');
+  const elSala  = document.getElementById('sala_id');
 
-    const btnTravar = document.getElementById('btn_travar');
-    const btnDestravar = document.getElementById('btn_destravar');
-    const areaMatricula = document.getElementById('area_matricula');
+  const btnTravar = document.getElementById('btn_travar');
+  const btnDestravar = document.getElementById('btn_destravar');
+  const areaMatricula = document.getElementById('area_matricula');
 
-    const inpMat = document.getElementById('matricula');
-    const btnBuscar = document.getElementById('btn_buscar');
-    const btnEnsal = document.getElementById('btn_ensalar');
+  const inpMat = document.getElementById('matricula');
+  const btnBuscar = document.getElementById('btn_buscar');
+  const btnEnsal = document.getElementById('btn_ensalar');
 
-    let cursoSel = null;
-    let salaSel  = null;
-    let lastLookup = null;
+  let cursoSel = null;
+  let salaSel  = null;
+  let lastLookup = null;
 
-    function setBadge(type, text){
-      const b = document.getElementById('status_badge');
-      b.className = 'badge-soft ' + (type || 'warn');
-      b.textContent = text;
+  function setBadge(type, text){
+    const b = document.getElementById('status_badge');
+    b.className = 'badge-soft ' + (type || 'warn');
+    b.textContent = text;
+  }
+
+  // ✅ Controle correto do botão <a class="btn"> no Materialize
+  function setEnsalEnabled(on){
+    if(on){
+      btnEnsal.classList.remove('disabled');
+      btnEnsal.removeAttribute('disabled');
+    } else {
+      btnEnsal.classList.add('disabled');
+      btnEnsal.setAttribute('disabled','disabled');
     }
+  }
 
-    // ✅ Controle correto do botão <a class="btn"> no Materialize
-    function setEnsalEnabled(on){
-      if(on){
-        btnEnsal.classList.remove('disabled');
-        btnEnsal.removeAttribute('disabled'); // por garantia
-      } else {
-        btnEnsal.classList.add('disabled');
-        btnEnsal.setAttribute('disabled','disabled'); // por garantia
-      }
-    }
+  function fillAluno(d){
+    const a = d.aluno || {};
+    document.getElementById('aluno_nome').textContent = a.nome || '—';
+    document.getElementById('aluno_email').textContent = a.email || '—';
+    document.getElementById('aluno_cpf').textContent = a.cpf || '—';
+    document.getElementById('aluno_turma_esp').textContent = a.turma_especial || '—';
+    document.getElementById('aluno_disc').textContent = a.nome_disciplina || (a.cod_disciplina ? String(a.cod_disciplina) : '—');
+    document.getElementById('aluno_sit').textContent = a.desc_situacao || '—';
 
-    function fillAluno(d){
-      const a = d.aluno || {};
-      document.getElementById('aluno_nome').textContent = a.nome || '—';
-      document.getElementById('aluno_email').textContent = a.email || '—';
-      document.getElementById('aluno_cpf').textContent = a.cpf || '—';
-      document.getElementById('aluno_turma_esp').textContent = a.turma_especial || '—';
-      document.getElementById('aluno_disc').textContent = a.nome_disciplina || (a.cod_disciplina ? String(a.cod_disciplina) : '—');
-      document.getElementById('aluno_sit').textContent = a.desc_situacao || '—';
+    const c = d.curso || {};
+    document.getElementById('curso_nome').textContent = c.nome || '—';
+    document.getElementById('curso_regra').textContent = c.turma_especial_required ? ('Exige: ' + c.turma_especial_required) : 'Sem regra';
+    document.getElementById('sala_nome').textContent = salaSel?.nome || '—';
 
-      const c = d.curso || {};
-      document.getElementById('curso_nome').textContent = c.nome || '—';
-      document.getElementById('curso_regra').textContent = c.turma_especial_required ? ('Exige: ' + c.turma_especial_required) : 'Sem regra';
-      document.getElementById('sala_nome').textContent = salaSel?.nome || '—';
+    document.getElementById('motivo').textContent = d.motivo || '—';
+  }
 
-      document.getElementById('motivo').textContent = d.motivo || '—';
-    }
+  function getSelectedOption(selectEl){
+    const id = parseInt(selectEl.value || '0', 10);
+    if(!id) return null;
+    const text = selectEl.options[selectEl.selectedIndex]?.textContent || '';
+    return { id, nome: text };
+  }
 
-    async function loadCursos(){
-      const r = await fetch(API + 'cursos_list.php', { credentials:'include' });
-      const j = await r.json();
-      if(!j.ok) throw new Error(j.msg || 'Erro cursos_list');
+  function resetAlunoUI(){
+    lastLookup = null;
+    setEnsalEnabled(false);
+    setBadge('warn','Aguardando busca…');
+    fillAluno({ aluno:{}, curso:{}, motivo:'—' });
+  }
 
-      elCurso.innerHTML = '<option value="" disabled selected>Selecione</option>';
-      j.rows.forEach(x=>{
-        const op = document.createElement('option');
-        op.value = x.id;
-        op.textContent = x.nome;
-        elCurso.appendChild(op);
-      });
-      M.FormSelect.init(elCurso);
-    }
+  async function loadCursos(){
+    const r = await fetch(API + 'cursos_list.php', { credentials:'include' });
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.msg || 'Erro cursos_list');
 
-    async function loadSalas(){
-      const r = await fetch(API + 'salas_list.php', { credentials:'include' });
-      const j = await r.json();
-      if(!j.ok) throw new Error(j.msg || 'Erro salas_list');
-
-      elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
-      j.rows.forEach(x=>{
-        const op = document.createElement('option');
-        op.value = x.id;
-        op.textContent = x.nome + (x.capacidade ? (' (cap ' + x.capacidade + ')') : '');
-        elSala.appendChild(op);
-      });
-      M.FormSelect.init(elSala);
-    }
-
-    function getSelectedOption(selectEl){
-      const id = parseInt(selectEl.value || '0', 10);
-      if(!id) return null;
-      const text = selectEl.options[selectEl.selectedIndex]?.textContent || '';
-      return { id, nome: text };
-    }
-
-    function resetAlunoUI(){
-      lastLookup = null;
-      setEnsalEnabled(false);
-      setBadge('warn','Aguardando busca…');
-      fillAluno({ aluno:{}, curso:{}, motivo:'—' });
-    }
-
-    btnTravar.addEventListener('click', ()=>{
-      const c = getSelectedOption(elCurso);
-      const s = getSelectedOption(elSala);
-      if(!c || !s){
-        M.toast({html:'Selecione Curso e Sala antes de travar.'});
-        return;
-      }
-      cursoSel = c;
-      salaSel  = s;
-
-      elCurso.disabled = true;
-      elSala.disabled  = true;
-      M.FormSelect.init(elCurso);
-      M.FormSelect.init(elSala);
-
-      btnTravar.style.display = 'none';
-      btnDestravar.style.display = 'inline-block';
-      areaMatricula.style.display = 'block';
-
-      resetAlunoUI();
-      inpMat.value = '';
-      M.updateTextFields();
-      inpMat.focus();
+    elCurso.innerHTML = '<option value="" disabled selected>Selecione</option>';
+    j.rows.forEach(x=>{
+      const op = document.createElement('option');
+      op.value = x.id;
+      op.textContent = x.nome;
+      elCurso.appendChild(op);
     });
+    M.FormSelect.init(elCurso);
+  }
 
-    btnDestravar.addEventListener('click', ()=>{
-      cursoSel = null; salaSel = null;
-      elCurso.disabled = false;
-      elSala.disabled = false;
-      M.FormSelect.init(elCurso);
-      M.FormSelect.init(elSala);
+  async function loadSalas(){
+    const r = await fetch(API + 'salas_list.php', { credentials:'include' });
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.msg || 'Erro salas_list');
 
-      btnTravar.style.display = 'inline-block';
-      btnDestravar.style.display = 'none';
-      areaMatricula.style.display = 'none';
-      resetAlunoUI();
+    elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
+    j.rows.forEach(x=>{
+      const op = document.createElement('option');
+      op.value = x.id;
+      op.textContent = x.nome + (x.capacidade ? (' (cap ' + x.capacidade + ')') : '');
+      elSala.appendChild(op);
     });
+    M.FormSelect.init(elSala);
+  }
 
-    async function lookup(){
-      const mat = (inpMat.value || '').trim();
-      if(!mat){
-        M.toast({html:'Digite a matrícula.'});
-        return;
-      }
-      if(!cursoSel){
-        M.toast({html:'Trave Curso/Sala antes.'});
-        return;
-      }
+  // ✅ Carrega do BANCO e renderiza na tabela "Últimos ensalados"
+  async function carregarUltimosEnsalados(){
+    // aqui usamos os selects (mesmo sem travar)
+    const cursoId = parseInt(elCurso.value || '0', 10) || 0;
+    const salaId  = parseInt(elSala.value  || '0', 10) || 0;
 
-      resetAlunoUI();
-      setBadge('warn','Buscando aluno…');
+    const tbody = document.getElementById('log_body');
+    tbody.innerHTML = `<tr><td colspan="4" class="muted">Carregando...</td></tr>`;
 
-      const url = API + 'aluno_lookup.php?matricula=' + encodeURIComponent(mat) + '&curso_id=' + encodeURIComponent(cursoSel.id);
+    // endpoint que você vai criar/usar no PHP
+    const url = API + `opt_ensalados_list.php?curso_id=${cursoId}&sala_id=${salaId}&limit=20`;
+
+    try{
       const r = await fetch(url, { credentials:'include' });
       const j = await r.json();
 
       if(!j.ok){
-        setBadge('bad', j.msg || 'Não encontrado');
-        document.getElementById('motivo').textContent = j.msg || '—';
+        tbody.innerHTML = `<tr><td colspan="4" class="muted">Erro ao carregar: ${j.msg || '---'}</td></tr>`;
         return;
       }
 
-      lastLookup = j;
-      fillAluno(j);
-
-      if(j.direito_ok){
-        setBadge('ok','Liberado');
-        setEnsalEnabled(true);
-      } else {
-        setBadge('bad','Bloqueado • Sem direito');
-        setEnsalEnabled(false);
+      if(!j.rows || j.rows.length === 0){
+        tbody.innerHTML = `<tr><td colspan="4" class="muted">Ainda sem registros…</td></tr>`;
+        return;
       }
+
+      tbody.innerHTML = j.rows.map(x => {
+        const statusTxt = x.email_sent ? 'Email OK' : 'Email pendente';
+        const calLink = x.cal_url ? `<a href="${x.cal_url}" target="_blank">link</a>` : '—';
+        return `
+          <tr>
+            <td class="mono">${x.matricula || '—'}</td>
+            <td>${x.nome || '—'}</td>
+            <td>${statusTxt}</td>
+            <td>${calLink}</td>
+          </tr>
+        `;
+      }).join('');
+
+    } catch(e){
+      console.error(e);
+      tbody.innerHTML = `<tr><td colspan="4" class="muted">Falha ao carregar (console).</td></tr>`;
+    }
+  }
+
+  btnTravar.addEventListener('click', async ()=>{
+    const c = getSelectedOption(elCurso);
+    const s = getSelectedOption(elSala);
+    if(!c || !s){
+      M.toast({html:'Selecione Curso e Sala antes de travar.'});
+      return;
+    }
+    cursoSel = c;
+    salaSel  = s;
+
+    elCurso.disabled = true;
+    elSala.disabled  = true;
+    M.FormSelect.init(elCurso);
+    M.FormSelect.init(elSala);
+
+    btnTravar.style.display = 'none';
+    btnDestravar.style.display = 'inline-block';
+    areaMatricula.style.display = 'block';
+
+    resetAlunoUI();
+    inpMat.value = '';
+    M.updateTextFields();
+    inpMat.focus();
+
+    // opcional: ao travar, recarrega a lista já filtrada
+    await carregarUltimosEnsalados();
+  });
+
+  btnDestravar.addEventListener('click', async ()=>{
+    cursoSel = null; salaSel = null;
+    elCurso.disabled = false;
+    elSala.disabled = false;
+    M.FormSelect.init(elCurso);
+    M.FormSelect.init(elSala);
+
+    btnTravar.style.display = 'inline-block';
+    btnDestravar.style.display = 'none';
+    areaMatricula.style.display = 'none';
+    resetAlunoUI();
+
+    await carregarUltimosEnsalados();
+  });
+
+  async function lookup(){
+    const mat = (inpMat.value || '').trim();
+    if(!mat){
+      M.toast({html:'Digite a matrícula.'});
+      return;
+    }
+    if(!cursoSel){
+      M.toast({html:'Trave Curso/Sala antes.'});
+      return;
     }
 
-    btnBuscar.addEventListener('click', lookup);
-    inpMat.addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter'){
-        e.preventDefault();
-        lookup();
-      }
+    resetAlunoUI();
+    setBadge('warn','Buscando aluno…');
+
+    const url = API + 'aluno_lookup.php?matricula=' + encodeURIComponent(mat) + '&curso_id=' + encodeURIComponent(cursoSel.id);
+    const r = await fetch(url, { credentials:'include' });
+    const j = await r.json();
+
+    if(!j.ok){
+      setBadge('bad', j.msg || 'Não encontrado');
+      document.getElementById('motivo').textContent = j.msg || '—';
+      return;
+    }
+
+    lastLookup = j;
+    fillAluno(j);
+
+    if(j.direito_ok){
+      setBadge('ok','Liberado');
+      setEnsalEnabled(true);
+    } else {
+      setBadge('bad','Bloqueado • Sem direito');
+      setEnsalEnabled(false);
+    }
+  }
+
+  btnBuscar.addEventListener('click', lookup);
+  inpMat.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      lookup();
+    }
+  });
+
+  async function ensalar(){
+    if(btnEnsal.classList.contains('disabled')) return;
+
+    if(!cursoSel || !salaSel){
+      M.toast({html:'Trave Curso/Sala antes.'});
+      return;
+    }
+    const mat = (inpMat.value || '').trim();
+    if(!mat){
+      M.toast({html:'Digite a matrícula.'});
+      return;
+    }
+    if(!lastLookup || !lastLookup.direito_ok){
+      M.toast({html:'Busque e valide o aluno antes de ensalar.'});
+      return;
+    }
+
+    setEnsalEnabled(false);
+    setBadge('warn','Ensalando e gerando calendário…');
+
+    const fd = new FormData();
+    fd.append('curso_id', cursoSel.id);
+    fd.append('sala_id', salaSel.id);
+    fd.append('matricula', mat);
+
+    const r = await fetch(API + 'ensalamento_add.php', {
+      method: 'POST',
+      body: fd,
+      credentials: 'include'
     });
 
-    async function ensalar(){
-      // impede clique se estiver "disabled" pelo Materialize
-      if(btnEnsal.classList.contains('disabled')) return;
+    const j = await r.json();
 
-      if(!cursoSel || !salaSel){
-        M.toast({html:'Trave Curso/Sala antes.'});
-        return;
-      }
-      const mat = (inpMat.value || '').trim();
-      if(!mat){
-        M.toast({html:'Digite a matrícula.'});
-        return;
-      }
-      if(!lastLookup || !lastLookup.direito_ok){
-        M.toast({html:'Busque e valide o aluno antes de ensalar.'});
-        return;
-      }
-
-      setEnsalEnabled(false);
-      setBadge('warn','Ensalando e gerando calendário…');
-
-      const fd = new FormData();
-      fd.append('curso_id', cursoSel.id);
-      fd.append('sala_id', salaSel.id);
-      fd.append('matricula', mat);
-
-      const r = await fetch(API + 'ensalamento_add.php', {
-        method: 'POST',
-        body: fd,
-        credentials: 'include'
-      });
-
-      const j = await r.json();
-
-      if(!j.ok){
-        setBadge('bad', j.msg || 'Erro ao ensalar');
-        document.getElementById('motivo').textContent = (j.motivo || j.msg || '—');
-        setEnsalEnabled(true); // volta a permitir tentar de novo
-        return;
-      }
-
-      setBadge('ok','Ensalado ✅ (previstos + email se configurado)');
-      M.toast({html:'Ensalado com sucesso!'});
-
-      // log
-      const tbody = document.getElementById('log_body');
-      if(tbody.querySelector('td')?.getAttribute('colspan') === '4'){
-        tbody.innerHTML = '';
-      }
-
-      const tr = document.createElement('tr');
-      const calUrl = j.previstos?.response?.cal_url || '';
-      const emailSent = j.previstos?.response?.email_sent ? 'Email OK' : 'Email pendente';
-      tr.innerHTML = `
-        <td class="mono">${j.matricula || mat}</td>
-        <td>${j.aluno?.nome || '—'}</td>
-        <td>${emailSent}</td>
-        <td>${calUrl ? `<a href="${calUrl}" target="_blank">link .ics</a>` : '—'}</td>
-      `;
-      tbody.prepend(tr);
-
-      // prepara próxima matrícula
-      inpMat.value = '';
-      M.updateTextFields();
-      setEnsalEnabled(false);
-      lastLookup = null;
-      inpMat.focus();
+    if(!j.ok){
+      setBadge('bad', j.msg || 'Erro ao ensalar');
+      document.getElementById('motivo').textContent = (j.motivo || j.msg || '—');
+      setEnsalEnabled(true);
+      return;
     }
 
-    btnEnsal.addEventListener('click', ensalar);
+    setBadge('ok','Ensalado ✅');
+    M.toast({html:'Ensalado com sucesso!'});
 
-    // boot
-    (async ()=>{
-      try{
-        await loadCursos();
-        await loadSalas();
-        M.FormSelect.init(document.querySelectorAll('select'));
-        resetAlunoUI(); // garante botão ensalar travado no início
-      } catch(e){
-        console.error(e);
-        M.toast({html:'Erro ao carregar listas (cursos/salas). Veja console.'});
-      }
-    })();
-  </script>
+    // ✅ Recarrega do banco (sem prepend manual)
+    await carregarUltimosEnsalados();
+
+    // prepara próxima matrícula
+    inpMat.value = '';
+    M.updateTextFields();
+    setEnsalEnabled(false);
+    lastLookup = null;
+    inpMat.focus();
+  }
+
+  btnEnsal.addEventListener('click', ensalar);
+
+  // recarrega lista ao selecionar curso/sala
+  elCurso.addEventListener('change', ()=>{
+    M.FormSelect.init(elCurso);
+    carregarUltimosEnsalados();
+  });
+
+  elSala.addEventListener('change', ()=>{
+    M.FormSelect.init(elSala);
+    carregarUltimosEnsalados();
+  });
+
+  // boot
+  (async ()=>{
+    try{
+      await loadCursos();
+      await loadSalas();
+      M.FormSelect.init(document.querySelectorAll('select'));
+      resetAlunoUI();
+      await carregarUltimosEnsalados(); // ✅ carrega assim que entra na página
+    } catch(e){
+      console.error(e);
+      M.toast({html:'Erro ao carregar listas (cursos/salas). Veja console.'});
+    }
+  })();
+</script>
+
+
 </body>
 </html>
