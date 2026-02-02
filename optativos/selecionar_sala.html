@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Selecionar Sala • Fiscal</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+</head>
+<body class="grey lighten-4">
+
+  <nav class="blue darken-3">
+    <div class="nav-wrapper container">
+      <a class="brand-logo" style="font-size:1.2rem;">Controle de Sala</a>
+      <ul class="right">
+        <li><a href="logout.php">Sair</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container" style="margin-top:24px; max-width:720px;">
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title">Selecione a sala</span>
+        <p class="grey-text">Escolha a sala que você vai controlar agora.</p>
+
+        <div class="input-field" style="margin-top:20px;">
+          <select id="salaSelect">
+            <option value="" disabled selected>Carregando...</option>
+          </select>
+          <label>Sala</label>
+        </div>
+
+        <div id="msg" class="red-text" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card-action right-align">
+        <button id="btnEntrar" class="btn blue darken-3" disabled>Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    const msg = (t='') => document.getElementById('msg').textContent = t;
+
+    async function carregarSalas(){
+      msg('');
+      const sel = document.getElementById('salaSelect');
+      sel.innerHTML = `<option value="" disabled selected>Carregando...</option>`;
+      M.FormSelect.init(sel);
+
+      const r = await fetch('fiscal_salas_list.php', { credentials: 'include' });
+      const j = await r.json();
+
+      if(!j.ok){
+        msg(j.msg || 'Falha ao carregar salas');
+        sel.innerHTML = `<option value="" disabled selected>Erro</option>`;
+        M.FormSelect.init(sel);
+        return;
+      }
+
+      sel.innerHTML = `<option value="" disabled selected>Selecione...</option>` +
+        j.rows.map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
+
+      M.FormSelect.init(sel);
+
+      sel.addEventListener('change', () => {
+        document.getElementById('btnEntrar').disabled = !sel.value;
+      });
+    }
+
+    document.getElementById('btnEntrar').addEventListener('click', async () => {
+      msg('');
+      const sala_id = document.getElementById('salaSelect').value;
+      if(!sala_id) return;
+
+      const fd = new FormData();
+      fd.append('sala_id', sala_id);
+
+      const r = await fetch('fiscal_set_sala.php', { method:'POST', body: fd, credentials:'include' });
+      const j = await r.json();
+
+      if(!j.ok){
+        msg(j.msg || 'Não foi possível selecionar a sala');
+        return;
+      }
+
+      // Agora manda pro painel de presença (vamos criar/usar depois)
+      // Ex.: presenca.html
+      window.location.href = 'presenca.html';
+    });
+
+    carregarSalas();
+  </script>
+</body>
+</html>
