@@ -86,9 +86,14 @@ document.getElementById('btn').onclick = async () => {
       return;
     }
 
-    // O cookie foi criado no servidor (HttpOnly)
-    // Agora só redireciona para o painel protegido
-    location.href = './painel.html';
+    // Redireciona conforme o nível do usuário
+    const nivel = (data.user && data.user.nivel) ? data.user.nivel : 'admin';
+
+    if (nivel === 'fiscal') {
+      location.href = './selecionar_sala.html';
+    } else {
+      location.href = './painel.html';
+    }
 
   } catch (e) {
     console.error(e);
