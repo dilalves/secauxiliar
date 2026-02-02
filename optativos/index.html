@@ -61,6 +61,26 @@
 <script>
 const API = 'https://apisec.secauxiliar.com.br/optativo/';
 
+function getNivel(data){
+  // tenta achar o nível em vários lugares possíveis
+  let n =
+    (data && data.user && data.user.nivel) ? data.user.nivel :
+    (data && data.user && data.user.role)  ? data.user.role  :
+    (data && data.user && data.user.tipo)  ? data.user.tipo  :
+    (data && data.nivel) ? data.nivel :
+    (data && data.role)  ? data.role  :
+    (data && data.tipo)  ? data.tipo  :
+    '';
+
+  n = String(n).trim().toLowerCase();
+
+  // mapeia formatos comuns
+  if (n === 'fiscal' || n === '2' || n === 'f') return 'fiscal';
+  if (n === 'admin'  || n === '1' || n === 'a') return 'admin';
+
+  return ''; // desconhecido
+}
+
 document.getElementById('btn').onclick = async () => {
   const login = document.getElementById('login').value.trim();
   const senha = document.getElementById('senha').value;
@@ -77,23 +97,33 @@ document.getElementById('btn').onclick = async () => {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({login, senha}),
-      credentials: 'include' // 🔥 importante para enviar/receber cookie
+      credentials: 'include'
     });
 
+    // se o PHP retornar HTML/erro, isso estoura aqui; por isso o try/catch
     const data = await r.json();
+
+    console.log('LOGIN RESPONSE:', data);
+
     if (!r.ok || !data.ok) {
       msg.textContent = data.error || 'Falha no login';
       return;
     }
 
-    // Redireciona conforme o nível do usuário
-    const nivel = (data.user && data.user.nivel) ? data.user.nivel : 'admin';
+    const nivel = getNivel(data);
 
     if (nivel === 'fiscal') {
       location.href = './selecionar_sala.html';
-    } else {
-      location.href = './painel.html';
+      return;
     }
+
+    if (nivel === 'admin') {
+      location.href = './painel.html';
+      return;
+    }
+
+    // Não veio nível no retorno -> não chute "admin"
+    msg.textContent = 'Login OK, mas o servidor não informou o nível do usuário. Veja o console (F12).';
 
   } catch (e) {
     console.error(e);
@@ -101,5 +131,8 @@ document.getElementById('btn').onclick = async () => {
   }
 };
 </script>
+
+
+
 </body>
 </html>
