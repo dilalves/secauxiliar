@@ -180,23 +180,11 @@
       <div class="card z-depth-0" style="padding:20px; margin-top:20px;">
         <div class="search-box">
           <input id="search" type="text" placeholder="Buscar por nome ou código..." oninput="buscarCursos()">
-
-          <div class="input-field" style="width:220px; margin:0;">
-            <select id="filtro-exclusivo" onchange="buscarCursos()">
-              <option value="" selected>Todos</option>
-              <option value="1">Somente exclusivos</option>
-              <option value="0">Somente não exclusivos</option>
-            </select>
-            <label>Exclusivo</label>
-          </div>
-
           <button class="btn blue darken-2" onclick="buscarCursos()">Buscar</button>
-
           <div class="right-align">
             <button class="btn green darken-1" onclick="abrirNovo()">+ Novo Curso</button>
           </div>
         </div>
-
 
         <table class="striped highlight responsive-table" id="tabela-lista">
           <thead>
@@ -301,7 +289,6 @@ function escapeHtml(s){
 
 document.addEventListener('DOMContentLoaded',()=>{
   M.Modal.init(document.querySelectorAll('.modal'));
-  M.FormSelect.init(document.querySelectorAll('select')); // <<< adiciona isso
   document.getElementById('btn-nova-linha').addEventListener('click', async (e) => {
     e.preventDefault();
     await addLinhaNovo();
@@ -310,20 +297,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 async function buscarCursos(){
-  const termo = document.getElementById('search').value.trim();
-  const exclusivo = document.getElementById('filtro-exclusivo')?.value ?? ''; // '', '1' ou '0'
-
-  const tbody = document.querySelector('#tabela-lista tbody');
-  tbody.innerHTML = '';
-  document.getElementById('msg-status').textContent = 'Buscando...';
-
-  const url =
-    API + 'cursos_list.php?busca=' + encodeURIComponent(termo) +
-    '&exclusivo=' + encodeURIComponent(exclusivo);
-
-  const res = await fetch(url, { credentials:'include' });
-  const data = await res.json();
-
+  const termo=document.getElementById('search').value.trim();
+  const tbody=document.querySelector('#tabela-lista tbody');
+  tbody.innerHTML=''; document.getElementById('msg-status').textContent='Buscando...';
+  const res=await fetch(API+'cursos_list.php?busca='+encodeURIComponent(termo),{credentials:'include'});
+  const data=await res.json();
   if(data.ok && data.rows.length){
     document.getElementById('msg-status').textContent='';
     data.rows.forEach(r=>{
@@ -338,9 +316,7 @@ async function buscarCursos(){
       `;
       tbody.appendChild(tr);
     });
-  } else {
-    document.getElementById('msg-status').textContent='Nenhum curso encontrado.';
-  }
+  }else document.getElementById('msg-status').textContent='Nenhum curso encontrado.';
 }
 
 
