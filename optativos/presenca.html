@@ -14,8 +14,6 @@
     .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-weight:600; }
     .pill-blue { background:#e3f2fd; color:#0d47a1; }
     .pill-gray { background:#eceff1; color:#263238; }
-    .pill-green{ background:#e8f5e9; color:#1b5e20; }
-    .pill-red  { background:#ffebee; color:#b71c1c; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
     .small { font-size:.92rem; color:#607d8b; }
     .row-tight { margin-bottom: 0; }
@@ -27,63 +25,54 @@
       background: #f4f6fb; padding-top: 10px;
     }
     .searchbox { border-radius: 12px !important; background:#fff; }
+
     .badge-soft { padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size:.85rem; display:inline-block; }
     .b-ok { background:#e8f5e9; color:#1b5e20; }
     .b-bloq { background:#fff3e0; color:#e65100; }
     .b-prev { background:#e3f2fd; color:#0d47a1; }
 
-    /* Linha única: matrícula + nome */
-.aluno-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
+    html, body { overflow-x: hidden; }
 
-.aluno-idnome {
-  flex: 1;
-  min-width: 0;              /* permite ellipsis */
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+    /* ===== mobile list ===== */
+    .mobile-only { display:none; }
+    .desktop-only { display:block; }
 
-.aluno-idnome .mat {
-  font-variant-numeric: tabular-nums;
-  opacity: .85;
-  margin-right: 10px;
-}
+    @media (max-width: 600px){
+      .desktop-only { display:none; }
+      .mobile-only { display:block; }
+    }
 
-.aluno-sub {
-  font-size: 12px;
-  opacity: .7;
-  margin-top: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+    .collection { border-radius: 14px; overflow:hidden; }
+    .collection .collection-item { padding: 14px 14px; }
 
-/* Badge compacta no mobile */
-.badge-status {
-  flex: 0 0 auto;
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-weight: 700;
-}
-
-/* Exemplo de cores (ajuste se quiser) */
-.badge-ok { background: #e8f5e9; color: #1b5e20; }
-.badge-bloq { background: #fff3e0; color: #e65100; }
-
-/* Se estiver usando tabela, deixa as colunas mais “mobile” */
-@media (max-width: 600px){
-  .col-matricula, .col-aluno, .col-situacao { width: auto !important; }
-}
-
-
-
+    .aluno-line {
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .aluno-mat {
+      font-weight:800;
+      font-variant-numeric: tabular-nums;
+      flex:0 0 auto;
+      min-width:92px;
+    }
+    .aluno-nome {
+      flex:1 1 auto;
+      min-width:0;
+      font-weight:600;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      line-height:1.2;
+    }
+    .aluno-sub {
+      font-size: 12px;
+      opacity: .75;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   </style>
 </head>
 <body>
@@ -104,15 +93,9 @@
     <div class="card">
       <div class="card-content">
         <div class="top-info">
-          <span class="pill pill-blue">
-            <b>Data:</b> <span id="ctx_data">—</span>
-          </span>
-          <span class="pill pill-gray">
-            <b>Sala:</b> <span id="ctx_sala">—</span>
-          </span>
-          <span class="pill pill-gray">
-            <b>Fiscal:</b> <span id="ctx_fiscal">—</span>
-          </span>
+          <span class="pill pill-blue"><b>Data:</b> <span id="ctx_data">—</span></span>
+          <span class="pill pill-gray"><b>Sala:</b> <span id="ctx_sala">—</span></span>
+          <span class="pill pill-gray"><b>Fiscal:</b> <span id="ctx_fiscal">—</span></span>
         </div>
 
         <div class="row row-tight" style="margin-top:12px;">
@@ -143,18 +126,29 @@
             </div>
           </div>
 
-          <table class="striped responsive-table">
-            <thead>
-              <tr>
-                <th style="width:110px;">Matrícula</th>
-                <th>Aluno</th>
-                <th style="width:160px;">Situação</th>
-              </tr>
-            </thead>
-            <tbody id="tbody">
-              <tr><td colspan="3" class="muted">Carregando…</td></tr>
-            </tbody>
-          </table>
+          <!-- DESKTOP -->
+          <div class="desktop-only">
+            <table class="striped responsive-table">
+              <thead>
+                <tr>
+                  <th style="width:110px;">Matrícula</th>
+                  <th>Aluno</th>
+                  <th style="width:160px;">Situação</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <tr><td colspan="3" class="muted">Carregando…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- MOBILE: só matrícula + nome (sem status) -->
+          <div class="mobile-only">
+            <ul id="listaMobile" class="collection">
+              <li class="collection-item muted">Carregando…</li>
+            </ul>
+          </div>
+
         </div>
       </div>
     </div>
@@ -168,7 +162,7 @@
       <p class="small" style="margin-top:6px;">
         Aluno: <b id="m_nome">—</b><br>
         Matrícula: <span class="mono" id="m_mat">—</span><br>
-        Status: <span id="m_status" class="badge-soft b-prev">—</span>
+        Status: <span id="m_status" class="badge-soft b-prev">Verificando…</span>
       </p>
 
       <div id="m_motivo" class="small" style="margin-top:10px;"></div>
@@ -192,6 +186,7 @@
 
     const $turmaSelect = document.getElementById('turmaSelect');
     const $tbody = document.getElementById('tbody');
+    const $listaMobile = document.getElementById('listaMobile');
     const $total = document.getElementById('total');
     const $busca = document.getElementById('busca');
 
@@ -214,14 +209,16 @@
       M.FormSelect.init($turmaSelect);
     }
 
-    function badgeStatus(a){
-      // a.status_local é só UI (não vem do banco)
-      if(a.bloqueado){
-        return `<span class="badge-soft b-bloq">BLOQUEADO</span>`;
-      }
-      if(a.presenca_ok){
-        return `<span class="badge-soft b-ok">OK</span>`;
-      }
+    function escapeHtml(s){
+      return String(s ?? '').replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[m]));
+    }
+
+    // status só no DESKTOP
+    function badgeStatusDesktop(a){
+      if(a.bloqueado) return `<span class="badge-soft b-bloq">BLOQUEADO</span>`;
+      if(a.presenca_ok) return `<span class="badge-soft b-ok">OK</span>`;
       return `<span class="badge-soft b-prev">LIBERADO</span>`;
     }
 
@@ -236,49 +233,45 @@
 
       $total.textContent = String(list.length);
 
+      // ===== DESKTOP =====
       if(list.length === 0){
         $tbody.innerHTML = `<tr><td colspan="3" class="muted">Nenhum aluno encontrado.</td></tr>`;
-        return;
+      } else {
+        $tbody.innerHTML = list.map(a => {
+          const statusHtml = badgeStatusDesktop(a);
+          return `
+            <tr class="list-item" data-mat="${escapeHtml(a.matricula)}">
+              <td class="mono">${escapeHtml(a.matricula)}</td>
+              <td>
+                <b>${escapeHtml(a.nome || '—')}</b>
+                ${a.email ? `<div class="small muted">${escapeHtml(a.email)}</div>` : ``}
+              </td>
+              <td>
+                ${statusHtml}
+                ${a.bloqueado ? `<div class="small muted">Venc.: ${escapeHtml(a.vencido_desde || '—')}</div>` : ``}
+              </td>
+            </tr>
+          `;
+        }).join('');
       }
 
-      $tbody.innerHTML = list.map(a => {
-        const statusHtml = badgeStatus(a);
-        const sub = [
-            a.email ? a.email : '',
-            a.bloqueado ? `Venc.: ${a.vencido_desde || '—'}` : ''
-        ].filter(Boolean).join(' • ');
-
-        return `
-            <tr class="list-item" data-mat="${a.matricula}">
-            <!-- desktop continua "colunas" normais -->
-            <td class="mono col-matricula hide-on-small-only">${a.matricula}</td>
-
-            <td class="col-aluno hide-on-small-only">
-                <b>${a.nome || '—'}</b>
-                ${a.email ? `<div class="small muted">${a.email}</div>` : ``}
-            </td>
-
-            <td class="col-situacao hide-on-small-only">
-                ${statusHtml}
-                ${a.bloqueado ? `<div class="small muted">Venc.: ${a.vencido_desde || '—'}</div>` : ``}
-            </td>
-
-            <!-- mobile: 1 coluna só, do jeito que você quer -->
-            <td class="hide-on-med-and-up">
-                <div class="aluno-line">
-                <div class="aluno-idnome" title="${a.matricula} - ${a.nome || ''}">
-                    <span class="mat mono">${a.matricula}</span>
-                    <span class="nome">${a.nome || '—'}</span>
-                </div>
-                <span>${statusHtml}</span>
-                </div>
-
-                ${sub ? `<div class="aluno-sub muted">${sub}</div>` : ``}
-            </td>
-            </tr>
-        `;
+      // ===== MOBILE (só matrícula + nome; sem status) =====
+      if(list.length === 0){
+        $listaMobile.innerHTML = `<li class="collection-item muted">Nenhum aluno encontrado.</li>`;
+      } else {
+        $listaMobile.innerHTML = list.map(a => {
+          const sub = a.email ? a.email : '';
+          return `
+            <li class="collection-item list-item" data-mat="${escapeHtml(a.matricula)}">
+              <div class="aluno-line">
+                <span class="aluno-mat mono">${escapeHtml(a.matricula)}</span>
+                <span class="aluno-nome" title="${escapeHtml(a.nome || '')}">${escapeHtml(a.nome || '—')}</span>
+              </div>
+              ${sub ? `<div class="aluno-sub muted">${escapeHtml(sub)}</div>` : ``}
+            </li>
+          `;
         }).join('');
-
+      }
     }
 
     async function carregarContexto(){
@@ -288,7 +281,6 @@
 
       if(!r.ok || !j.ok){
         msgCtx(j.msg || 'Falha ao carregar contexto.');
-        // se sem sala -> manda escolher
         if(r.status === 409){
           setTimeout(()=> location.href='selecionar_sala.html', 600);
         }
@@ -301,7 +293,6 @@
       $ctxSala.textContent = j.sala?.nome ? `${j.sala.nome} (#${j.sala.id})` : '—';
       $ctxFiscal.textContent = j.user?.nome || '—';
 
-      // monta select de turmas do dia
       const turmas = Array.isArray(j.turmas_hoje) ? j.turmas_hoje : [];
       if(turmas.length === 0){
         $turmaSelect.innerHTML = `<option value="" disabled selected>Nenhuma turma hoje</option>`;
@@ -316,7 +307,7 @@
         turmas.map(t => {
           const label = `${t.curso_nome} • ${t.hora_inicio.substr(0,5)}–${t.hora_fim.substr(0,5)} (turma ${t.turma_id})`;
           const sel = (t.turma_id == defId) ? 'selected' : '';
-          return `<option value="${t.turma_id}" ${sel}>${label}</option>`;
+          return `<option value="${t.turma_id}" ${sel}>${escapeHtml(label)}</option>`;
         }).join('');
 
       reinitSelect();
@@ -328,6 +319,7 @@
       const turma_id = $turmaSelect.value;
 
       $tbody.innerHTML = `<tr><td colspan="3" class="muted">Carregando…</td></tr>`;
+      $listaMobile.innerHTML = `<li class="collection-item muted">Carregando…</li>`;
       $total.textContent = '0';
 
       const url = API + 'presenca_alunos_list.php?turma_id=' + encodeURIComponent(turma_id || '');
@@ -337,12 +329,13 @@
       if(!r.ok || !j.ok){
         msgCtx(j.msg || 'Falha ao carregar alunos');
         $tbody.innerHTML = `<tr><td colspan="3" class="muted">Erro ao carregar.</td></tr>`;
+        $listaMobile.innerHTML = `<li class="collection-item muted">Erro ao carregar.</li>`;
         return;
       }
 
       alunos = (Array.isArray(j.rows) ? j.rows : []).map(x => ({
         ...x,
-        presenca_ok: false, // UI (vai virar true quando registrar)
+        presenca_ok: false
       }));
 
       filtrarRender();
@@ -354,24 +347,17 @@
       $mNome.textContent = a.nome || '—';
       $mMat.textContent = a.matricula || '—';
 
-      if(a.bloqueado){
-        $mStatus.className = 'badge-soft b-bloq';
-        $mStatus.textContent = 'BLOQUEADO';
-        $mMotivo.innerHTML = `<span class="red-text"><b>Não é possível registrar presença.</b></span><br>` +
-          `<span class="small">Motivo: ${a.motivo_bloqueio || 'Pendência financeira'}.</span>`;
-        $btnConfirmar.classList.add('disabled');
-      } else {
-        $mStatus.className = a.presenca_ok ? 'badge-soft b-ok' : 'badge-soft b-prev';
-        $mStatus.textContent = a.presenca_ok ? 'OK' : 'LIBERADO';
-        $mMotivo.innerHTML = `<span class="small muted">Confirme a presença do aluno.</span>`;
-        $btnConfirmar.classList.remove('disabled');
-      }
+      // aqui NÃO decide bloqueio; só “verificando”
+      $mStatus.className = 'badge-soft b-prev';
+      $mStatus.textContent = 'Verificando…';
+      $mMotivo.innerHTML = `<span class="small muted">Confirme para validar e registrar a presença.</span>`;
+      $btnConfirmar.classList.remove('disabled');
 
       const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
       modal.open();
     }
 
-    // Clique na linha da tabela
+    // clique desktop
     $tbody.addEventListener('click', (e) => {
       const tr = e.target.closest('tr[data-mat]');
       if(!tr) return;
@@ -381,35 +367,69 @@
       abrirModalAluno(a);
     });
 
-    // confirmar (vai chamar presenca_registrar.php depois)
-    $btnConfirmar.addEventListener('click', async () => {
-      if(!alunoSelecionado) return;
-      if(alunoSelecionado.bloqueado) return;
-
-      // ✅ por enquanto, só marca OK na tela
-      // no próximo passo você cola o presenca_registrar.php e a gente liga aqui.
-      alunoSelecionado.presenca_ok = true;
-
-      // atualiza badge no modal
-      $mStatus.className = 'badge-soft b-ok';
-      $mStatus.textContent = 'OK';
-
-      // atualiza tabela
-      filtrarRender();
-
-      M.toast({html:'Presença registrada (modo UI). Agora vamos ligar no PHP.'});
-
-      // fecha modal
-      const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
-      modal.close();
+    // clique mobile
+    $listaMobile.addEventListener('click', (e) => {
+      const li = e.target.closest('li[data-mat]');
+      if(!li) return;
+      const mat = li.getAttribute('data-mat');
+      const a = alunos.find(x => x.matricula === mat);
+      if(!a) return;
+      abrirModalAluno(a);
     });
 
-    // troca de turma
+    // confirmar: aqui você liga no PHP e ele devolve OK ou motivo do bloqueio
+    $btnConfirmar.addEventListener('click', async () => {
+      if(!alunoSelecionado) return;
+      if($btnConfirmar.classList.contains('disabled')) return;
+
+      const turma_id = $turmaSelect.value;
+
+      $btnConfirmar.classList.add('disabled');
+      $mMsg.textContent = '';
+      $mStatus.className = 'badge-soft b-prev';
+      $mStatus.textContent = 'Processando…';
+
+      try {
+        // ✅ coloque aqui o endpoint real que registra presença e valida bloqueios
+        const r = await fetch(API + 'presenca_registrar.php', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          credentials:'include',
+          body: JSON.stringify({ turma_id, matricula: alunoSelecionado.matricula })
+        });
+        const j = await r.json().catch(() => ({}));
+
+        if(!r.ok || !j.ok){
+          const err = j.error || j.msg || 'Não foi possível registrar.';
+          $mStatus.className = 'badge-soft b-bloq';
+          $mStatus.textContent = 'NEGADO';
+          $mMotivo.innerHTML = `<span class="red-text"><b>${escapeHtml(err)}</b></span>`;
+          $btnConfirmar.classList.remove('disabled');
+          return;
+        }
+
+        alunoSelecionado.presenca_ok = true;
+
+        $mStatus.className = 'badge-soft b-ok';
+        $mStatus.textContent = 'OK';
+        $mMotivo.innerHTML = `<span class="small"><b>Presença registrada.</b></span>`;
+
+        filtrarRender();
+        M.toast({html:'Presença registrada ✅'});
+
+        const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
+        setTimeout(()=> modal.close(), 450);
+
+      } catch(err){
+        $mStatus.className = 'badge-soft b-bloq';
+        $mStatus.textContent = 'ERRO';
+        $mMsg.textContent = 'Falha de rede ao registrar.';
+        $btnConfirmar.classList.remove('disabled');
+      }
+    });
+
     $turmaSelect.addEventListener('change', () => carregarAlunos());
-
-    // buscar
     $busca.addEventListener('input', () => filtrarRender());
-
     document.getElementById('btnRecarregar').addEventListener('click', () => carregarAlunos());
 
     document.addEventListener('DOMContentLoaded', async () => {
