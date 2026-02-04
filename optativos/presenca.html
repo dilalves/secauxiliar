@@ -31,6 +31,59 @@
     .b-ok { background:#e8f5e9; color:#1b5e20; }
     .b-bloq { background:#fff3e0; color:#e65100; }
     .b-prev { background:#e3f2fd; color:#0d47a1; }
+
+    /* Linha única: matrícula + nome */
+.aluno-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.aluno-idnome {
+  flex: 1;
+  min-width: 0;              /* permite ellipsis */
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aluno-idnome .mat {
+  font-variant-numeric: tabular-nums;
+  opacity: .85;
+  margin-right: 10px;
+}
+
+.aluno-sub {
+  font-size: 12px;
+  opacity: .7;
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Badge compacta no mobile */
+.badge-status {
+  flex: 0 0 auto;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+/* Exemplo de cores (ajuste se quiser) */
+.badge-ok { background: #e8f5e9; color: #1b5e20; }
+.badge-bloq { background: #fff3e0; color: #e65100; }
+
+/* Se estiver usando tabela, deixa as colunas mais “mobile” */
+@media (max-width: 600px){
+  .col-matricula, .col-aluno, .col-situacao { width: auto !important; }
+}
+
+
+
   </style>
 </head>
 <body>
@@ -188,16 +241,44 @@
         return;
       }
 
-      $tbody.innerHTML = list.map(a => `
-        <tr class="list-item" data-mat="${a.matricula}">
-          <td class="mono">${a.matricula}</td>
-          <td>
-            <b>${a.nome || '—'}</b>
-            ${a.email ? `<div class="small muted">${a.email}</div>` : ``}
-          </td>
-          <td>${badgeStatus(a)}${a.bloqueado ? `<div class="small muted">Venc.: ${a.vencido_desde || '—'}</div>` : ``}</td>
-        </tr>
-      `).join('');
+      $tbody.innerHTML = list.map(a => {
+        const statusHtml = badgeStatus(a);
+        const sub = [
+            a.email ? a.email : '',
+            a.bloqueado ? `Venc.: ${a.vencido_desde || '—'}` : ''
+        ].filter(Boolean).join(' • ');
+
+        return `
+            <tr class="list-item" data-mat="${a.matricula}">
+            <!-- desktop continua "colunas" normais -->
+            <td class="mono col-matricula hide-on-small-only">${a.matricula}</td>
+
+            <td class="col-aluno hide-on-small-only">
+                <b>${a.nome || '—'}</b>
+                ${a.email ? `<div class="small muted">${a.email}</div>` : ``}
+            </td>
+
+            <td class="col-situacao hide-on-small-only">
+                ${statusHtml}
+                ${a.bloqueado ? `<div class="small muted">Venc.: ${a.vencido_desde || '—'}</div>` : ``}
+            </td>
+
+            <!-- mobile: 1 coluna só, do jeito que você quer -->
+            <td class="hide-on-med-and-up">
+                <div class="aluno-line">
+                <div class="aluno-idnome" title="${a.matricula} - ${a.nome || ''}">
+                    <span class="mat mono">${a.matricula}</span>
+                    <span class="nome">${a.nome || '—'}</span>
+                </div>
+                <span>${statusHtml}</span>
+                </div>
+
+                ${sub ? `<div class="aluno-sub muted">${sub}</div>` : ``}
+            </td>
+            </tr>
+        `;
+        }).join('');
+
     }
 
     async function carregarContexto(){
