@@ -341,21 +341,31 @@
       filtrarRender();
     }
 
-    function abrirModalAluno(a){
-      alunoSelecionado = a;
-      $mMsg.textContent = '';
-      $mNome.textContent = a.nome || '—';
-      $mMat.textContent = a.matricula || '—';
+function abrirModalAluno(a){
+  alunoSelecionado = a;
+  $mMsg.textContent = '';
+  $mNome.textContent = a.nome || '—';
+  $mMat.textContent = a.matricula || '—';
 
-      // aqui NÃO decide bloqueio; só “verificando”
-      $mStatus.className = 'badge-soft b-prev';
-      $mStatus.textContent = 'Verificando…';
-      $mMotivo.innerHTML = `<span class="small muted">Confirme para validar e registrar a presença.</span>`;
-      $btnConfirmar.classList.remove('disabled');
+  if (a.bloqueado) {
+    $mStatus.className = 'badge-soft b-bloq';
+    $mStatus.textContent = 'BLOQUEADO';
+    $mMotivo.innerHTML =
+      `<span class="red-text"><b>Não é possível registrar presença.</b></span><br>` +
+      `<span class="small">Motivo: ${a.motivo_bloqueio || 'Pendência financeira'}.</span>` +
+      (a.vencido_desde ? `<div class="small muted">Venc.: ${a.vencido_desde}</div>` : '');
+    $btnConfirmar.classList.add('disabled');
+  } else {
+    $mStatus.className = a.presenca_ok ? 'badge-soft b-ok' : 'badge-soft b-prev';
+    $mStatus.textContent = a.presenca_ok ? 'OK' : 'LIBERADO';
+    $mMotivo.innerHTML = `<span class="small muted">Confirme a presença do aluno.</span>`;
+    $btnConfirmar.classList.remove('disabled');
+  }
 
-      const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
-      modal.open();
-    }
+  const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
+  modal.open();
+}
+
 
     // clique desktop
     $tbody.addEventListener('click', (e) => {
@@ -380,6 +390,7 @@
     // confirmar: aqui você liga no PHP e ele devolve OK ou motivo do bloqueio
     $btnConfirmar.addEventListener('click', async () => {
       if(!alunoSelecionado) return;
+      if(alunoSelecionado.bloqueado) return; // 🔒 trava aqui também
       if($btnConfirmar.classList.contains('disabled')) return;
 
       const turma_id = $turmaSelect.value;
