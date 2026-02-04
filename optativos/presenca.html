@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Presença • Fiscal</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <style>
+    body { background:#f4f6fb; }
+    .wrap { max-width: 980px; margin: 18px auto; padding: 0 12px; }
+    .card { border-radius: 14px; }
+    .top-info { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-weight:600; }
+    .pill-blue { background:#e3f2fd; color:#0d47a1; }
+    .pill-gray { background:#eceff1; color:#263238; }
+    .pill-green{ background:#e8f5e9; color:#1b5e20; }
+    .pill-red  { background:#ffebee; color:#b71c1c; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
+    .small { font-size:.92rem; color:#607d8b; }
+    .row-tight { margin-bottom: 0; }
+    .list-item { cursor:pointer; }
+    .list-item:hover { background:#fafafa; }
+    .muted { color:#78909c; }
+    .stickybar {
+      position: sticky; top: 0; z-index: 5;
+      background: #f4f6fb; padding-top: 10px;
+    }
+    .searchbox { border-radius: 12px !important; background:#fff; }
+    .badge-soft { padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size:.85rem; display:inline-block; }
+    .b-ok { background:#e8f5e9; color:#1b5e20; }
+    .b-bloq { background:#fff3e0; color:#e65100; }
+    .b-prev { background:#e3f2fd; color:#0d47a1; }
+  </style>
+</head>
+<body>
+
+  <nav class="blue darken-3">
+    <div class="nav-wrapper" style="padding:0 14px;">
+      <span class="brand-logo" style="font-size:1.1rem;">Controle de Sala • Presença</span>
+      <ul class="right">
+        <li><a href="selecionar_sala.html">Trocar sala</a></li>
+        <li><a href="logout.php">Sair</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="wrap">
+
+    <!-- Cabeçalho/Contexto -->
+    <div class="card">
+      <div class="card-content">
+        <div class="top-info">
+          <span class="pill pill-blue">
+            <b>Data:</b> <span id="ctx_data">—</span>
+          </span>
+          <span class="pill pill-gray">
+            <b>Sala:</b> <span id="ctx_sala">—</span>
+          </span>
+          <span class="pill pill-gray">
+            <b>Fiscal:</b> <span id="ctx_fiscal">—</span>
+          </span>
+        </div>
+
+        <div class="row row-tight" style="margin-top:12px;">
+          <div class="input-field col s12 m8">
+            <select id="turmaSelect"></select>
+            <label>Turma / Curso do dia</label>
+          </div>
+
+          <div class="col s12 m4" style="margin-top:18px;">
+            <a class="btn blue darken-2" id="btnRecarregar" style="width:100%;">Recarregar lista</a>
+          </div>
+        </div>
+
+        <div id="ctx_msg" class="small red-text" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Lista -->
+    <div class="stickybar">
+      <div class="card" style="margin-top:12px;">
+        <div class="card-content" style="padding-bottom:10px;">
+          <div class="row row-tight" style="margin-bottom:6px;">
+            <div class="col s12 m8">
+              <input id="busca" class="searchbox" placeholder="Buscar por nome ou matrícula..." autocomplete="off">
+            </div>
+            <div class="col s12 m4 right-align" style="margin-top:8px;">
+              <span class="small">Total: <b id="total">0</b></span>
+            </div>
+          </div>
+
+          <table class="striped responsive-table">
+            <thead>
+              <tr>
+                <th style="width:110px;">Matrícula</th>
+                <th>Aluno</th>
+                <th style="width:160px;">Situação</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <tr><td colspan="3" class="muted">Carregando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal Confirma Presença -->
+  <div id="modalConfirm" class="modal">
+    <div class="modal-content">
+      <h5 style="margin-top:0;">Confirmar presença</h5>
+      <p class="small" style="margin-top:6px;">
+        Aluno: <b id="m_nome">—</b><br>
+        Matrícula: <span class="mono" id="m_mat">—</span><br>
+        Status: <span id="m_status" class="badge-soft b-prev">—</span>
+      </p>
+
+      <div id="m_motivo" class="small" style="margin-top:10px;"></div>
+      <div id="m_msg" class="small red-text" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="modal-footer">
+      <a href="#!" class="modal-close btn-flat">Cancelar</a>
+      <a href="#!" id="btnConfirmar" class="btn green">Confirmar</a>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/optativo/';
+
+    const $ctxData   = document.getElementById('ctx_data');
+    const $ctxSala   = document.getElementById('ctx_sala');
+    const $ctxFiscal = document.getElementById('ctx_fiscal');
+    const $ctxMsg    = document.getElementById('ctx_msg');
+
+    const $turmaSelect = document.getElementById('turmaSelect');
+    const $tbody = document.getElementById('tbody');
+    const $total = document.getElementById('total');
+    const $busca = document.getElementById('busca');
+
+    const $mNome = document.getElementById('m_nome');
+    const $mMat  = document.getElementById('m_mat');
+    const $mStatus = document.getElementById('m_status');
+    const $mMotivo = document.getElementById('m_motivo');
+    const $mMsg = document.getElementById('m_msg');
+    const $btnConfirmar = document.getElementById('btnConfirmar');
+
+    let contexto = null;
+    let alunos = [];
+    let alunoSelecionado = null;
+
+    function msgCtx(t=''){ $ctxMsg.textContent = t; }
+
+    function reinitSelect(){
+      const inst = M.FormSelect.getInstance($turmaSelect);
+      if(inst) inst.destroy();
+      M.FormSelect.init($turmaSelect);
+    }
+
+    function badgeStatus(a){
+      // a.status_local é só UI (não vem do banco)
+      if(a.bloqueado){
+        return `<span class="badge-soft b-bloq">BLOQUEADO</span>`;
+      }
+      if(a.presenca_ok){
+        return `<span class="badge-soft b-ok">OK</span>`;
+      }
+      return `<span class="badge-soft b-prev">LIBERADO</span>`;
+    }
+
+    function filtrarRender(){
+      const q = ($busca.value || '').trim().toLowerCase();
+
+      const list = !q ? alunos : alunos.filter(a => {
+        const m = (a.matricula || '').toLowerCase();
+        const n = (a.nome || '').toLowerCase();
+        return m.includes(q) || n.includes(q);
+      });
+
+      $total.textContent = String(list.length);
+
+      if(list.length === 0){
+        $tbody.innerHTML = `<tr><td colspan="3" class="muted">Nenhum aluno encontrado.</td></tr>`;
+        return;
+      }
+
+      $tbody.innerHTML = list.map(a => `
+        <tr class="list-item" data-mat="${a.matricula}">
+          <td class="mono">${a.matricula}</td>
+          <td>
+            <b>${a.nome || '—'}</b>
+            ${a.email ? `<div class="small muted">${a.email}</div>` : ``}
+          </td>
+          <td>${badgeStatus(a)}${a.bloqueado ? `<div class="small muted">Venc.: ${a.vencido_desde || '—'}</div>` : ``}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function carregarContexto(){
+      msgCtx('');
+      const r = await fetch(API + 'presenca_contexto.php', { credentials:'include' });
+      const j = await r.json();
+
+      if(!r.ok || !j.ok){
+        msgCtx(j.msg || 'Falha ao carregar contexto.');
+        // se sem sala -> manda escolher
+        if(r.status === 409){
+          setTimeout(()=> location.href='selecionar_sala.html', 600);
+        }
+        return null;
+      }
+
+      contexto = j;
+
+      $ctxData.textContent = j.now?.date || '—';
+      $ctxSala.textContent = j.sala?.nome ? `${j.sala.nome} (#${j.sala.id})` : '—';
+      $ctxFiscal.textContent = j.user?.nome || '—';
+
+      // monta select de turmas do dia
+      const turmas = Array.isArray(j.turmas_hoje) ? j.turmas_hoje : [];
+      if(turmas.length === 0){
+        $turmaSelect.innerHTML = `<option value="" disabled selected>Nenhuma turma hoje</option>`;
+        reinitSelect();
+        msgCtx('Nenhuma turma encontrada para hoje nessa sala (verifique opt_turma_horarios).');
+        return j;
+      }
+
+      const defId = j.turma_default?.turma_id || turmas[0].turma_id;
+
+      $turmaSelect.innerHTML =
+        turmas.map(t => {
+          const label = `${t.curso_nome} • ${t.hora_inicio.substr(0,5)}–${t.hora_fim.substr(0,5)} (turma ${t.turma_id})`;
+          const sel = (t.turma_id == defId) ? 'selected' : '';
+          return `<option value="${t.turma_id}" ${sel}>${label}</option>`;
+        }).join('');
+
+      reinitSelect();
+      return j;
+    }
+
+    async function carregarAlunos(){
+      msgCtx('');
+      const turma_id = $turmaSelect.value;
+
+      $tbody.innerHTML = `<tr><td colspan="3" class="muted">Carregando…</td></tr>`;
+      $total.textContent = '0';
+
+      const url = API + 'presenca_alunos_list.php?turma_id=' + encodeURIComponent(turma_id || '');
+      const r = await fetch(url, { credentials:'include' });
+      const j = await r.json();
+
+      if(!r.ok || !j.ok){
+        msgCtx(j.msg || 'Falha ao carregar alunos');
+        $tbody.innerHTML = `<tr><td colspan="3" class="muted">Erro ao carregar.</td></tr>`;
+        return;
+      }
+
+      alunos = (Array.isArray(j.rows) ? j.rows : []).map(x => ({
+        ...x,
+        presenca_ok: false, // UI (vai virar true quando registrar)
+      }));
+
+      filtrarRender();
+    }
+
+    function abrirModalAluno(a){
+      alunoSelecionado = a;
+      $mMsg.textContent = '';
+      $mNome.textContent = a.nome || '—';
+      $mMat.textContent = a.matricula || '—';
+
+      if(a.bloqueado){
+        $mStatus.className = 'badge-soft b-bloq';
+        $mStatus.textContent = 'BLOQUEADO';
+        $mMotivo.innerHTML = `<span class="red-text"><b>Não é possível registrar presença.</b></span><br>` +
+          `<span class="small">Motivo: ${a.motivo_bloqueio || 'Pendência financeira'}.</span>`;
+        $btnConfirmar.classList.add('disabled');
+      } else {
+        $mStatus.className = a.presenca_ok ? 'badge-soft b-ok' : 'badge-soft b-prev';
+        $mStatus.textContent = a.presenca_ok ? 'OK' : 'LIBERADO';
+        $mMotivo.innerHTML = `<span class="small muted">Confirme a presença do aluno.</span>`;
+        $btnConfirmar.classList.remove('disabled');
+      }
+
+      const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
+      modal.open();
+    }
+
+    // Clique na linha da tabela
+    $tbody.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr[data-mat]');
+      if(!tr) return;
+      const mat = tr.getAttribute('data-mat');
+      const a = alunos.find(x => x.matricula === mat);
+      if(!a) return;
+      abrirModalAluno(a);
+    });
+
+    // confirmar (vai chamar presenca_registrar.php depois)
+    $btnConfirmar.addEventListener('click', async () => {
+      if(!alunoSelecionado) return;
+      if(alunoSelecionado.bloqueado) return;
+
+      // ✅ por enquanto, só marca OK na tela
+      // no próximo passo você cola o presenca_registrar.php e a gente liga aqui.
+      alunoSelecionado.presenca_ok = true;
+
+      // atualiza badge no modal
+      $mStatus.className = 'badge-soft b-ok';
+      $mStatus.textContent = 'OK';
+
+      // atualiza tabela
+      filtrarRender();
+
+      M.toast({html:'Presença registrada (modo UI). Agora vamos ligar no PHP.'});
+
+      // fecha modal
+      const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
+      modal.close();
+    });
+
+    // troca de turma
+    $turmaSelect.addEventListener('change', () => carregarAlunos());
+
+    // buscar
+    $busca.addEventListener('input', () => filtrarRender());
+
+    document.getElementById('btnRecarregar').addEventListener('click', () => carregarAlunos());
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      M.Modal.init(document.querySelectorAll('.modal'), { dismissible:true });
+      await carregarContexto();
+      await carregarAlunos();
+    });
+  </script>
+</body>
+</html>
