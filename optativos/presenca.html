@@ -289,24 +289,38 @@
 
       contexto = j;
 
-      $ctxData.textContent = j.now?.date || '—';
-      $ctxSala.textContent = j.sala?.nome ? `${j.sala.nome} (#${j.sala.id})` : '—';
-      $ctxFiscal.textContent = j.user?.nome || '—';
+      // ✅ data (aceita j.now.date OU j.data)
+      const dataStr = (j.now && j.now.date) ? j.now.date : (j.data || '—');
+      $ctxData.textContent = dataStr;
 
-      const turmas = Array.isArray(j.turmas_hoje) ? j.turmas_hoje : [];
+      // ✅ sala
+      $ctxSala.textContent = j.sala?.nome ? `${j.sala.nome} (#${j.sala.id})` : '—';
+
+      // ✅ fiscal/user
+      const fiscalNome = (j.user && j.user.nome) ? j.user.nome : (j.fiscal?.nome || '—');
+      $ctxFiscal.textContent = fiscalNome;
+
+      // ✅ turmas (aceita j.turmas_hoje OU j.turmas)
+      const turmas = Array.isArray(j.turmas_hoje) ? j.turmas_hoje : (Array.isArray(j.turmas) ? j.turmas : []);
       if(turmas.length === 0){
         $turmaSelect.innerHTML = `<option value="" disabled selected>Nenhuma turma hoje</option>`;
         reinitSelect();
-        msgCtx('Nenhuma turma encontrada para hoje nessa sala (verifique opt_turma_horarios).');
+        msgCtx('Nenhuma turma encontrada para hoje nessa sala.');
         return j;
       }
 
-      const defId = j.turma_default?.turma_id || turmas[0].turma_id;
+      // ✅ turma default (aceita objeto OU número)
+      const defId =
+        (j.turma_default && typeof j.turma_default === 'object' && j.turma_default.turma_id) ? j.turma_default.turma_id :
+        (typeof j.turma_default === 'number' ? j.turma_default :
+        (j.turma_default_id || turmas[0].turma_id));
 
       $turmaSelect.innerHTML =
         turmas.map(t => {
-          const label = `${t.curso_nome} • ${t.hora_inicio.substr(0,5)}–${t.hora_fim.substr(0,5)} (turma ${t.turma_id})`;
-          const sel = (t.turma_id == defId) ? 'selected' : '';
+          const hi = String(t.hora_inicio || '').substr(0,5);
+          const hf = String(t.hora_fim || '').substr(0,5);
+          const label = `${t.curso_nome} • ${hi}–${hf} (turma ${t.turma_id})`;
+          const sel = (Number(t.turma_id) === Number(defId)) ? 'selected' : '';
           return `<option value="${t.turma_id}" ${sel}>${escapeHtml(label)}</option>`;
         }).join('');
 
