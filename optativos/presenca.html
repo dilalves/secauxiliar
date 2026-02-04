@@ -390,54 +390,70 @@ function abrirModalAluno(a){
     // confirmar: aqui você liga no PHP e ele devolve OK ou motivo do bloqueio
     $btnConfirmar.addEventListener('click', async () => {
       if(!alunoSelecionado) return;
-      if(alunoSelecionado.bloqueado) return; // 🔒 trava aqui também
+      if(alunoSelecionado.bloqueado) return;
       if($btnConfirmar.classList.contains('disabled')) return;
 
-      const turma_id = $turmaSelect.value;
-
-      $btnConfirmar.classList.add('disabled');
       $mMsg.textContent = '';
-      $mStatus.className = 'badge-soft b-prev';
-      $mStatus.textContent = 'Processando…';
+      $btnConfirmar.classList.add('disabled');
 
       try {
-        // ✅ coloque aqui o endpoint real que registra presença e valida bloqueios
-        const r = await fetch(API + 'presenca_sala_confirmar.php', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          credentials:'include',
-          body: JSON.stringify({ turma_id, matricula: alunoSelecionado.matricula })
-        });
-        const j = await r.json().catch(() => ({}));
+        const salaId = (contexto && contexto.sala && contexto.sala.id) ? Number(contexto.sala.id) : 0;
+        const turmaId = Number($turmaSelect.value || 0);
+        const mat = String(alunoSelecionado.matricula || '').trim();
 
-        if(!r.ok || !j.ok){
-          const err = j.error || j.msg || 'Não foi possível registrar.';
+        if(!salaId || !mat){
           $mStatus.className = 'badge-soft b-bloq';
           $mStatus.textContent = 'NEGADO';
-          $mMotivo.innerHTML = `<span class="red-text"><b>${escapeHtml(err)}</b></span>`;
-          $btnConfirmar.classList.remove('disabled');
+          $mMsg.textContent = 'Contexto inválido (sala_id/matrícula). Recarregue a página.';
           return;
         }
 
+        // envia como FormData (compatível com seu PHP)
+        const fd = new FormData();
+        fd.append('sala_id', String(salaId));
+        fd.append('turma_id', String(turmaId));
+        fd.append('matricula', mat);
+        // fd.append('data', (contexto?.now?.date || '')); // opcional
+
+        const r = await fetch(API + 'presenca_sala_confirmar.php', {
+          method: 'POST',
+          credentials: 'include',
+          body: fd
+        });
+
+        const j = await r.json().catch(()=> ({}));
+
+        if(!r.ok || !j.ok){
+          // Se bloqueio financeiro (403), já mostra motivo.
+          $mStatus.className = 'badge-soft b-bloq';
+          $mStatus.textContent = 'NEGADO';
+          $mMsg.textContent = j.msg || 'Falha ao registrar presença.';
+          return;
+        }
+
+        // ✅ sucesso
         alunoSelecionado.presenca_ok = true;
 
         $mStatus.className = 'badge-soft b-ok';
         $mStatus.textContent = 'OK';
-        $mMotivo.innerHTML = `<span class="small"><b>Presença registrada.</b></span>`;
+        $mMsg.textContent = '';
 
         filtrarRender();
-        M.toast({html:'Presença registrada ✅'});
+        M.toast({html: 'Presença registrada ✅'});
 
         const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
-        setTimeout(()=> modal.close(), 450);
+        modal.close();
 
-      } catch(err){
+      } catch (err) {
         $mStatus.className = 'badge-soft b-bloq';
         $mStatus.textContent = 'ERRO';
         $mMsg.textContent = 'Falha de rede ao registrar.';
+      } finally {
+        // reabilita (se ainda estiver aberto)
         $btnConfirmar.classList.remove('disabled');
       }
     });
+
 
     $turmaSelect.addEventListener('change', () => carregarAlunos());
     $busca.addEventListener('input', () => filtrarRender());
