@@ -164,21 +164,23 @@
         let j = null;
         try { j = await r.json(); } catch(e){}
 
-        if(!r.ok){
-          const detalhe = (j && (j.msg || j.error)) ? ` — ${j.msg || j.error}` : '';
-          msg(`Não foi possível selecionar a sala (HTTP ${r.status})${detalhe}`);
+        // ✅ tratamento especial: sala ocupada
+        if (r.status === 409 && j && j.code === 'SALA_OCUPADA') {
+          M.toast({html: j.msg || 'Sala ocupada por outro fiscal.'});
+          msg(j.msg || 'Sala ocupada por outro fiscal.');
           $btn.disabled = false;
           return;
         }
 
-        if(!j || !j.ok){
-          msg((j && (j.msg || j.error)) ? (j.msg || j.error) : 'Não foi possível selecionar a sala.');
+        // ✅ tratamento padrão de erro
+        if (!r.ok || !j || !j.ok) {
+          const detalhe = (j && (j.msg || j.error)) ? (j.msg || j.error) : '';
+          msg(detalhe || `Não foi possível selecionar a sala (HTTP ${r.status})`);
           $btn.disabled = false;
           return;
         }
 
-        // ✅ Redireciona para a tela de presença no MESMO host da API (evita confusão de domínio)
-        // window.location.href = API + 'presenca.html';
+        // ✅ sucesso
         location.href = './presenca.html';
 
       }catch(e){
