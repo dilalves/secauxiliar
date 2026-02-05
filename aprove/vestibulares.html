@@ -831,16 +831,6 @@ async function salvarCurso(){
 }
 
 
-// === ENTER SALVA CURSO (somente quando estiver no campo "Vagas") ===
-document.getElementById('vagas_novo').addEventListener('keydown', function(e){
-  if (e.key === 'Enter') {
-    e.preventDefault(); // evita enviar formulário ou recarregar
-    salvarCurso();
-  }
-  atualizarTotalVagas();
-});
-
-
 
 
 
@@ -930,6 +920,9 @@ function atualizarTotalVagas() {
 }
 
 function setupEnterFlowCursosModal(){
+  if (window.__enterFlowCursosModalReady) return;  // ✅ evita duplicar
+  window.__enterFlowCursosModalReady = true;
+
   const modal = document.getElementById('modal-cursos');
   if (!modal) return;
 
