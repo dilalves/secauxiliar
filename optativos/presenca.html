@@ -218,7 +218,7 @@
     // status só no DESKTOP
     function badgeStatusDesktop(a){
       if(a.bloqueado) return `<span class="badge-soft b-bloq">BLOQUEADO</span>`;
-      if(a.presenca_ok) return `<span class="badge-soft b-ok">OK</span>`;
+      if(a.presenca_ok) return `<span class="badge-soft b-ok">PRESENTE</span>`;
       return `<span class="badge-soft b-prev">LIBERADO</span>`;
     }
 
@@ -347,10 +347,17 @@
         return;
       }
 
-      alunos = (Array.isArray(j.rows) ? j.rows : []).map(x => ({
-        ...x,
-        presenca_ok: false
-      }));
+      alunos = (Array.isArray(j.rows) ? j.rows : []).map(x => {
+        const st = String(x.status || '').toUpperCase();
+        const presenca_ok = (st === 'PRESENTE' || st === 'OK');
+
+        return {
+          ...x,
+          status: st,       // 👈 recomendo
+          presenca_ok
+        };
+      });
+
 
       filtrarRender();
     }
@@ -371,7 +378,7 @@ function abrirModalAluno(a){
     $btnConfirmar.classList.add('disabled');
   } else {
     $mStatus.className = a.presenca_ok ? 'badge-soft b-ok' : 'badge-soft b-prev';
-    $mStatus.textContent = a.presenca_ok ? 'OK' : 'LIBERADO';
+    $mStatus.textContent = a.presenca_ok ? 'PRESENTE' : 'LIBERADO';
     $mMotivo.innerHTML = `<span class="small muted">Confirme a presença do aluno.</span>`;
     $btnConfirmar.classList.remove('disabled');
   }
