@@ -392,21 +392,37 @@ function abrirModalAluno(a){
     $tbody.addEventListener('click', (e) => {
       const tr = e.target.closest('tr[data-mat]');
       if(!tr) return;
+
       const mat = tr.getAttribute('data-mat');
       const a = alunos.find(x => x.matricula === mat);
       if(!a) return;
+
+      if (a.presenca_ok) {
+        M.toast({ html: `✅ Presença já registrada (${a.matricula})` });
+        return;
+      }
+
       abrirModalAluno(a);
     });
+
 
     // clique mobile
     $listaMobile.addEventListener('click', (e) => {
       const li = e.target.closest('li[data-mat]');
       if(!li) return;
+
       const mat = li.getAttribute('data-mat');
       const a = alunos.find(x => x.matricula === mat);
       if(!a) return;
+
+      if (a.presenca_ok) {
+        M.toast({ html: `✅ Presença já registrada (${a.matricula})` });
+        return;
+      }
+
       abrirModalAluno(a);
     });
+
 
     // confirmar: aqui você liga no PHP e ele devolve OK ou motivo do bloqueio
     $btnConfirmar.addEventListener('click', async () => {
