@@ -73,6 +73,29 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
+    /* indicador de presença (mobile) */
+    .pres-ind {
+      margin-left: auto;
+      flex: 0 0 auto;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 12px;
+      background: #e8f5e9;
+      color: #1b5e20;
+      border: 1px solid #c8e6c9;
+    }
+
+    .pres-row .aluno-mat,
+    .pres-row .aluno-nome {
+      color: #1b5e20;
+    }
+
   </style>
 </head>
 <body>
@@ -261,11 +284,14 @@
       } else {
         $listaMobile.innerHTML = list.map(a => {
           const sub = a.email ? a.email : '';
+          const pres = !!a.presenca_ok;
+
           return `
-            <li class="collection-item list-item" data-mat="${escapeHtml(a.matricula)}">
+            <li class="collection-item list-item ${pres ? 'pres-row' : ''}" data-mat="${escapeHtml(a.matricula)}">
               <div class="aluno-line">
                 <span class="aluno-mat mono">${escapeHtml(a.matricula)}</span>
                 <span class="aluno-nome" title="${escapeHtml(a.nome || '')}">${escapeHtml(a.nome || '—')}</span>
+                ${pres ? `<span class="pres-ind" title="Presente">P</span>` : ``}
               </div>
               ${sub ? `<div class="aluno-sub muted">${escapeHtml(sub)}</div>` : ``}
             </li>
