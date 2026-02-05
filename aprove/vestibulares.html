@@ -781,8 +781,15 @@ async function salvarCurso(){
   const vId      = document.getElementById('vestibular_id_curso').value;
   const cursoId  = document.getElementById('curso_id_novo').value.trim();
   const codinst  = document.getElementById('curso_codinst_novo').value.trim();
-  const periodo  = document.getElementById('periodo_novo').value.trim();
-  const vagas    = document.getElementById('vagas_novo').value.trim();
+
+  let periodo  = document.getElementById('periodo_novo').value.trim();
+  let vagas    = document.getElementById('vagas_novo').value.trim();
+
+  // período opcional (1 letra). se vier qualquer coisa, normaliza
+  periodo = (periodo || '').toUpperCase().slice(0,1);
+
+  // vagas opcional: vazio vira 0
+  if (vagas === '') vagas = '0';
 
   if (!cursoId || !codinst){
     M.toast({ html:'Informe o curso e a instituição.' });
@@ -803,19 +810,16 @@ async function salvarCurso(){
     if (data.ok){
       M.toast({ html:'Curso adicionado com sucesso!' });
 
-      // limpa campos
       document.getElementById('curso_id_novo').value = '';
       document.getElementById('curso_nome_novo').value = '';
       document.getElementById('periodo_novo').value = '';
-      document.getElementById('vagas_novo').value = '0';
+      document.getElementById('vagas_novo').value = ''; // <- deixa vazio (opcional)
 
-      // ✅ restaura o padrão da instituição do vestibular atual
       document.getElementById('curso_codinst_novo').value  = VEST_ATUAL.instituicao_id || '';
       document.getElementById('curso_siglainst_novo').value = VEST_ATUAL.sigla || '';
 
       M.updateTextFields();
 
-      // ⚡ Recarrega tabela e devolve foco ao campo "Cód. Curso"
       setTimeout(async () => {
         await carregarCursosVestibular(vId);
         const campoCurso = document.getElementById('curso_id_novo');
@@ -831,6 +835,7 @@ async function salvarCurso(){
     M.toast({ html:'Falha na comunicação com o servidor.' });
   }
 }
+
 
 // === ENTER SALVA CURSO (somente quando estiver no campo "Vagas") ===
 document.getElementById('vagas_novo').addEventListener('keydown', function(e){
@@ -929,6 +934,71 @@ function atualizarTotalVagas() {
   const div = document.getElementById('total-vagas');
   if (div) div.textContent = `Total de vagas: ${total.toLocaleString('pt-BR')}`;
 }
+
+function setupEnterFlowCursosModal(){
+  const modal = document.getElementById('modal-cursos');
+  if (!modal) return;
+
+  const cursoId  = document.getElementById('curso_id_novo');
+  const codinst  = document.getElementById('curso_codinst_novo');
+  const periodo  = document.getElementById('periodo_novo');
+  const vagas    = document.getElementById('vagas_novo');
+
+  if (!cursoId || !codinst || !periodo || !vagas) return;
+
+  const isModalOpen = () => modal.classList.contains('open');
+
+  const onEnter = (el, fn) => {
+    el.addEventListener('keydown', async (e) => {
+      if (e.key !== 'Enter') return;
+      if (!isModalOpen()) return;
+
+      e.preventDefault();
+
+      // chama ação (se tiver) e só depois troca foco
+      if (fn) await fn();
+    });
+  };
+
+  // ENTER no curso -> busca nome + vai pra instituição
+  onEnter(cursoId, async () => {
+    await Promise.resolve(buscarNomeCurso());
+    codinst.focus();
+    codinst.select?.();
+  });
+
+  // ENTER na instituição -> busca sigla + vai pro período
+  onEnter(codinst, async () => {
+    await Promise.resolve(buscarInstituicaoPorCodigo());
+    periodo.focus();
+    periodo.select?.();
+  });
+
+  // ENTER no período -> vai pras vagas
+  onEnter(periodo, async () => {
+    vagas.focus();
+    vagas.select?.();
+  });
+
+  // ENTER nas vagas -> SALVA
+  onEnter(vagas, async () => {
+    await salvarCurso();
+  });
+
+  // Extra: ENTER no botão verde também salva (se alguém parar nele)
+  const btnAdd = modal.querySelector('button.btn.green');
+  if (btnAdd){
+    btnAdd.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter' && isModalOpen()){
+        e.preventDefault();
+        salvarCurso();
+      }
+    });
+  }
+}
+
+// chame 1 vez quando a página carregar
+document.addEventListener('DOMContentLoaded', setupEnterFlowCursosModal);
 
 
 </script>
