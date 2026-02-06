@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-br">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+<title>Login — Curso Optativo - Controle de sala</title>
+
+<style>
+  :root {
+    --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3; --ink:#0f172a; 
+    --muted:#6b7280; --primary:#0b3b78; --accent:#2563eb;
+  }
+  body {
+    font-family:system-ui,Arial;
+    padding:24px;
+    background:var(--bg);
+  }
+  header.topbar {
+    position:fixed; top:0; left:0; right:0; height:64px;
+    background:var(--primary); color:#fff;
+    display:flex; align-items:center; z-index:10;
+    padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+  }
+  header.topbar h5 {
+    margin:0; font-weight:600; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;
+  }
+  .card {
+    max-width:420px; margin:96px auto 0;
+    background:#fff; border-radius:12px; padding:24px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+  }
+  input {
+    width:95%; padding:12px; border-radius:8px;
+    border:1px solid #ddd; margin-top:8px;
+  }
+  #btn {
+    width:160px; padding:12px 16px;
+    border-radius:8px; display:block; margin:16px auto 0;
+    border:none; background:#0d6efd; color:#fff; cursor:pointer;
+  }
+  #btn:hover{ filter:brightness(1.05); }
+  #btn:disabled{ opacity:.6; cursor:default; }
+  .msg{ margin-top:12px; color:#b00; text-align:center; }
+</style>
+
+<body>
+  <header class="topbar">
+    <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px; margin-right:12px;">
+    <h5>Curso Optativo - Controle de Salas</h5>
+  </header>
+
+
+  <div class="card">
+    <h2 style="margin-top:0;">Acesso ao Sistema</h2>
+    <input id="login" placeholder="Login da unidade (ex.: 1501)" inputmode="numeric">
+    <input id="senha" type="password" placeholder="Senha">
+    <button id="btn">Entrar</button>
+    <div id="msg" class="msg"></div>
+  </div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/optativo/';
+
+function getNivel(data){
+  // tenta achar o nível em vários lugares possíveis
+  let n =
+    (data && data.user && data.user.nivel) ? data.user.nivel :
+    (data && data.user && data.user.role)  ? data.user.role  :
+    (data && data.user && data.user.tipo)  ? data.user.tipo  :
+    (data && data.nivel) ? data.nivel :
+    (data && data.role)  ? data.role  :
+    (data && data.tipo)  ? data.tipo  :
+    '';
+
+  n = String(n).trim().toLowerCase();
+
+  // mapeia formatos comuns
+  if (n === 'fiscal' || n === '2' || n === 'f') return 'fiscal';
+  if (n === 'admin'  || n === '1' || n === 'a') return 'admin';
+
+  return ''; // desconhecido
+}
+
+document.getElementById('btn').onclick = async () => {
+  const login = document.getElementById('login').value.trim();
+  const senha = document.getElementById('senha').value;
+  const msg = document.getElementById('msg');
+  msg.textContent = '';
+
+  if (!login || !senha) {
+    msg.textContent = 'Informe login e senha.';
+    return;
+  }
+
+  try {
+    const r = await fetch(API + 'auth_login.php', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({login, senha}),
+      credentials: 'include'
+    });
+
+    // se o PHP retornar HTML/erro, isso estoura aqui; por isso o try/catch
+    const data = await r.json();
+
+    console.log('LOGIN RESPONSE:', data);
+
+    if (!r.ok || !data.ok) {
+      msg.textContent = data.error || 'Falha no login';
+      return;
+    }
+
+    const nivel = getNivel(data);
+
+    if (nivel === 'fiscal') {
+      location.href = './selecionar_sala.html';
+      return;
+    }
+
+    if (nivel === 'admin') {
+      location.href = './painel.html';
+      return;
+    }
+
+    // Não veio nível no retorno -> não chute "admin"
+    msg.textContent = 'Login OK, mas o servidor não informou o nível do usuário. Veja o console (F12).';
+
+  } catch (e) {
+    console.error(e);
+    msg.textContent = 'Erro de rede ou servidor indisponível.';
+  }
+};
+</script>
+
+
+
+</body>
+</html>
