@@ -1,190 +1,35 @@
-<!doctype html>
-<html lang="pt-br">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
-  <title>Controle de Sala • Vínculo Aluno × Sala</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Controle de Sala • Ensalamento</title>
 
-  <!-- Materialize -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-  <!-- Ícones -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <style>
-    :root{
-      --bg:#f7f8fb;
-      --card:#ffffff;
-      --line:#e9edf3;
-      --ink:#0f172a;
-      --muted:#6b7280;
-      --primary:#0b3b78;
-      --accent:#2563eb;
-      --radius:14px;
-    }
-    body{
-      background:var(--bg);
-      font-family:system-ui, Arial;
-      padding:24px;
-    }
-
-    /* ===== Topbar (igual painel) ===== */
-    header.topbar{
-      position:fixed; top:0; left:0; right:0; height:64px;
-      background:var(--primary); color:#fff;
-      display:flex; align-items:center; z-index:10;
-      padding:0 24px;
-      box-shadow:0 2px 10px rgba(16,24,40,.12);
-    }
-    header.topbar .brand{
-      display:flex; align-items:center; gap:12px;
-      min-width:0;
-    }
-    header.topbar h5{
-      margin:0; font-weight:600;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-      font-size:1.1rem;
-    }
-    header.topbar .right-actions{
-      margin-left:auto;
-      display:flex; align-items:center; gap:10px;
-    }
-    .btn-logout{
-      border-radius:999px;
-      background: rgba(255,255,255,.15);
-      box-shadow:none;
-    }
-    .btn-logout:hover{ background: rgba(255,255,255,.22); }
-
-    /* ===== Layout ===== */
-    .wrap{ max-width:1100px; margin:96px auto 0; }
-    .panel-card{
-      background:var(--card);
-      border-radius:var(--radius);
-      box-shadow:0 10px 30px rgba(0,0,0,.06);
-      border:1px solid var(--line);
-      overflow:hidden;
-    }
-    .card-head{ padding:18px 18px 0; }
-    .card-head .title{
-      margin:0;
-      font-weight:800;
-      color:#111827;
-      font-size:1.25rem;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .card-head .subtitle{
-      margin:6px 0 0;
-      color:var(--muted);
-      font-size:.95rem;
-    }
-    .card-body{ padding:12px 18px 16px; }
-    .card-foot{
-      padding:14px 18px 18px;
-      display:flex; justify-content:flex-end; gap:10px;
-      border-top:1px solid var(--line);
-      background:#fff;
-    }
-
-    /* badges */
-    .badge-soft{
-      padding:6px 10px; border-radius:999px; font-weight:700;
-      display:inline-flex; align-items:center; gap:6px;
-      font-size:.9rem;
-    }
-    .ok   { background:#e8f5e9; color:#1b5e20; }
-    .warn { background:#fff8e1; color:#8d6e63; }
-    .bad  { background:#ffebee; color:#b71c1c; }
-
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
-    .muted{ color: var(--muted); }
-    .small{ font-size:.92rem; color: var(--muted); }
-
-    /* Materialize focus */
-    .input-field label{ color: var(--muted); }
-    .input-field input:focus + label{ color: var(--primary) !important; }
-    .input-field input:focus{ border-bottom:1px solid var(--primary) !important; box-shadow:0 1px 0 0 var(--primary) !important; }
-
-    /* mobile */
-    @media (max-width:600px){
-      body{ padding:16px; }
-      header.topbar{ padding:0 14px; }
-      .wrap{ margin-top:86px; }
-    }
+    body { background:#f6f7fb; }
+    .wrap { max-width: 980px; margin: 24px auto; }
+    .card { border-radius: 14px; }
+    .badge-soft { padding: 6px 10px; border-radius: 999px; font-weight: 600; display:inline-block; }
+    .ok { background: #e8f5e9; color:#1b5e20; }
+    .warn { background: #fff8e1; color:#8d6e63; }
+    .bad { background: #ffebee; color:#b71c1c; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
+    .small { font-size: 0.92rem; color:#616161; }
+    .muted { color:#757575; }
+    .row-tight { margin-bottom: 0; }
   </style>
 </head>
 
 <body>
-
-  <header class="topbar">
-    <div class="brand">
-      <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
-      <h5>Curso Optativo - Controle de Salas</h5>
-    </div>
-
-    <div class="right-actions">
-      <a class="btn btn-small btn-logout white-text" href="https://apisec.secauxiliar.com.br/optativo/logout.php">
-        <i class="material-icons left">logout</i>Sair
-      </a>
-    </div>
-  </header>
-
   <div class="wrap">
-
-    <div class="panel-card">
-      <div class="card-head">
-        <div class="title">
-          <i class="material-icons" style="color:var(--primary);">how_to_reg</i>
-          Vínculo Aluno × Sala
-        </div>
-        <p class="subtitle">
-          Busque pela <b>matrícula</b>, confira os dados do aluno e selecione <b>Curso</b> e <b>Sala</b> para vincular.
-        </p>
-      </div>
-
-      <div class="card-body">
-
-        <!-- Linha 1: matrícula + buscar -->
-        <div class="row" style="margin-bottom:0;">
-          <div class="input-field col s12 m6">
-            <input id="matricula" type="text" class="mono" inputmode="numeric" autocomplete="off">
-            <label for="matricula">Matrícula</label>
-          </div>
-          <div class="col s12 m6" style="margin-top:18px;">
-            <a id="btnBuscar" class="btn" style="border-radius:12px; background:var(--primary);">
-              <i class="material-icons left">search</i>Buscar
-            </a>
-            <span id="badge" class="badge-soft warn" style="margin-left:10px;">
-              <i class="material-icons" style="font-size:18px;">hourglass_empty</i>
-              Aguardando busca…
-            </span>
-          </div>
-        </div>
-
-        <!-- Card aluno -->
-        <div class="panel-card" style="margin-top:12px;">
-          <div class="card-body" style="padding:14px 16px;">
-            <div class="row" style="margin-bottom:0;">
-              <div class="col s12 m8">
-                <div><b>Aluno:</b> <span id="aluno_nome" class="muted">—</span></div>
-                <div><b>E-mail:</b> <span id="aluno_email" class="muted">—</span></div>
-                <div><b>CPF:</b> <span id="aluno_cpf" class="muted">—</span></div>
-              </div>
-              <div class="col s12 m4">
-                <div><b>Turma especial:</b> <span id="aluno_turma_esp" class="muted">—</span></div>
-                <div><b>Situação:</b> <span id="aluno_sit" class="muted">—</span></div>
-              </div>
-            </div>
-            <div class="small" style="margin-top:10px;">
-              <b>Observação:</b> <span id="motivo" class="muted">—</span>
-            </div>
-          </div>
-        </div>
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title">Ensalamento • Cadastro de Alunos na Sala</span>
+        <p class="small">Selecione <b>Curso</b> e <b>Sala</b>. Depois digite a <b>matrícula</b> para validar e ensalar.</p>
 
         <!-- Seletores -->
-        <div class="row" style="margin-top:14px; margin-bottom:0;">
+        <div class="row row-tight" style="margin-top:16px;">
           <div class="input-field col s12 m6">
             <select id="curso_id"></select>
             <label>Curso</label>
@@ -196,287 +41,415 @@
           </div>
         </div>
 
-        <!-- Tabela vínculos -->
-        <div class="panel-card" style="margin-top:12px;">
-          <div class="card-body" style="padding:14px 16px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-              <div style="font-weight:800; color:#111827; display:flex; align-items:center; gap:8px;">
-                <i class="material-icons" style="color:var(--primary);">list</i>
-                Últimos vínculos
-              </div>
-              <a id="btnReload" class="btn-flat" style="border-radius:999px;">
-                <i class="material-icons left">refresh</i>Atualizar
-              </a>
-            </div>
-
-            <table class="striped responsive-table" style="margin-top:10px;">
-              <thead>
-                <tr>
-                  <th>Matrícula</th>
-                  <th>Nome</th>
-                  <th>Curso</th>
-                  <th>Sala</th>
-                  <th>Em</th>
-                </tr>
-              </thead>
-              <tbody id="log_body">
-                <tr><td colspan="5" class="muted">Carregando...</td></tr>
-              </tbody>
-            </table>
+        <div class="row row-tight">
+          <div class="col s12">
+            <a class="btn blue" id="btn_travar">
+              Travar seleção (começar a inserir)
+            </a>
+            <a class="btn grey lighten-1 black-text" id="btn_destravar" style="display:none;">
+              Destravar
+            </a>
           </div>
         </div>
 
-      </div>
+        <div class="divider" style="margin:18px 0;"></div>
 
-      <div class="card-foot">
-        <a id="btnVincular" class="btn disabled" style="border-radius:12px; background:var(--primary);">
-          <i class="material-icons left">link</i>Vincular
-        </a>
-      </div>
-    </div>
+        <!-- Matrícula -->
+        <div id="area_matricula" style="display:none;">
+          <div class="row row-tight">
+            <div class="input-field col s12 m6">
+              <input id="matricula" type="text" inputmode="numeric" class="mono" autocomplete="off">
+              <label for="matricula">Matrícula</label>
+            </div>
 
-    <div style="text-align:center; color:var(--muted); font-size:.9rem; padding:10px 0 2px;">
-      Controle de Sala • 3A Sistemas
+            <div class="col s12 m6" style="margin-top:18px;">
+              <a class="btn green" id="btn_buscar">Buscar</a>
+              <!-- Materialize usa a classe "disabled" para bloquear <a class="btn"> -->
+              <a class="btn teal disabled" id="btn_ensalar">Ensalar</a>
+            </div>
+          </div>
+
+          <!-- Resultado -->
+          <div class="card" style="background:#fff; margin-top:10px;">
+            <div class="card-content">
+              <div class="row row-tight">
+                <div class="col s12">
+                  <span id="status_badge" class="badge-soft warn">Aguardando busca…</span>
+                </div>
+              </div>
+
+              <div class="row row-tight" style="margin-top:12px;">
+                <div class="col s12 m8">
+                  <div><b>Aluno:</b> <span id="aluno_nome" class="muted">—</span></div>
+                  <div><b>E-mail:</b> <span id="aluno_email" class="muted">—</span></div>
+                  <div><b>CPF:</b> <span id="aluno_cpf" class="muted">—</span></div>
+                </div>
+                <div class="col s12 m4">
+                  <div><b>Turma especial:</b> <span id="aluno_turma_esp" class="muted">—</span></div>
+                  <div><b>Disciplina:</b> <span id="aluno_disc" class="muted">—</span></div>
+                  <div><b>Situação:</b> <span id="aluno_sit" class="muted">—</span></div>
+                </div>
+              </div>
+
+              <div class="row row-tight" style="margin-top:10px;">
+                <div class="col s12">
+                  <div class="small"><b>Motivo:</b> <span id="motivo" class="muted">—</span></div>
+                </div>
+              </div>
+
+              <div class="row row-tight" style="margin-top:12px;">
+                <div class="col s12">
+                  <div class="small">
+                    <b>Curso:</b> <span id="curso_nome" class="muted">—</span>
+                    &nbsp;•&nbsp;
+                    <b>Regra:</b> <span id="curso_regra" class="muted">—</span>
+                    &nbsp;•&nbsp;
+                    <b>Sala:</b> <span id="sala_nome" class="muted">—</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Log -->
+          <div class="card" style="margin-top:12px;">
+            <div class="card-content">
+              <span class="card-title" style="font-size:1.1rem;">Últimos ensalados</span>
+              <table class="striped responsive-table">
+                <thead>
+                  <tr>
+                    <th>Matrícula</th>
+                    <th>Nome</th>
+                    <th>Status</th>
+                    <th>Calendário</th>
+                  </tr>
+                </thead>
+                <tbody id="log_body">
+                  <tr><td colspan="4" class="muted">Ainda sem registros…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-
+  
   <script>
-    const API = 'https://apisec.secauxiliar.com.br/optativo/';
+  // Ajuste o caminho base se seus PHP estiverem em outra pasta
+  const API = 'https://apisec.secauxiliar.com.br/optativo/';
 
-    const elMat = document.getElementById('matricula');
-    const btnBuscar = document.getElementById('btnBuscar');
-    const btnVinc = document.getElementById('btnVincular');
-    const btnReload = document.getElementById('btnReload');
+  const elCurso = document.getElementById('curso_id');
+  const elSala  = document.getElementById('sala_id');
 
-    const elCurso = document.getElementById('curso_id');
-    const elSala  = document.getElementById('sala_id');
-    const tbody   = document.getElementById('log_body');
+  const btnTravar = document.getElementById('btn_travar');
+  const btnDestravar = document.getElementById('btn_destravar');
+  const areaMatricula = document.getElementById('area_matricula');
 
-    let lastAluno = null;
+  const inpMat = document.getElementById('matricula');
+  const btnBuscar = document.getElementById('btn_buscar');
+  const btnEnsal = document.getElementById('btn_ensalar');
 
-    function setBadge(type, text, icon){
-      const b = document.getElementById('badge');
-      b.className = 'badge-soft ' + (type || 'warn');
-      b.innerHTML = `<i class="material-icons" style="font-size:18px;">${icon || 'info'}</i>${text}`;
+  let cursoSel = null;
+  let salaSel  = null;
+  let lastLookup = null;
+
+  function setBadge(type, text){
+    const b = document.getElementById('status_badge');
+    b.className = 'badge-soft ' + (type || 'warn');
+    b.textContent = text;
+  }
+
+  // ✅ Controle correto do botão <a class="btn"> no Materialize
+  function setEnsalEnabled(on){
+    if(on){
+      btnEnsal.classList.remove('disabled');
+      btnEnsal.removeAttribute('disabled');
+    } else {
+      btnEnsal.classList.add('disabled');
+      btnEnsal.setAttribute('disabled','disabled');
     }
+  }
 
-    function setVincEnabled(on){
-      if(on){
-        btnVinc.classList.remove('disabled');
-        btnVinc.removeAttribute('disabled');
-      }else{
-        btnVinc.classList.add('disabled');
-        btnVinc.setAttribute('disabled','disabled');
-      }
-    }
+  function fillAluno(d){
+    const a = d.aluno || {};
+    document.getElementById('aluno_nome').textContent = a.nome || '—';
+    document.getElementById('aluno_email').textContent = a.email || '—';
+    document.getElementById('aluno_cpf').textContent = a.cpf || '—';
+    document.getElementById('aluno_turma_esp').textContent = a.turma_especial || '—';
+    document.getElementById('aluno_disc').textContent = a.nome_disciplina || (a.cod_disciplina ? String(a.cod_disciplina) : '—');
+    document.getElementById('aluno_sit').textContent = a.desc_situacao || '—';
 
-    function fillAluno(d){
-      const a = d?.aluno || {};
-      document.getElementById('aluno_nome').textContent = a.nome || '—';
-      document.getElementById('aluno_email').textContent = a.email || '—';
-      document.getElementById('aluno_cpf').textContent = a.cpf || '—';
-      document.getElementById('aluno_turma_esp').textContent = a.turma_especial || '—';
-      document.getElementById('aluno_sit').textContent = a.desc_situacao || '—';
-      document.getElementById('motivo').textContent = d?.msg || d?.motivo || '—';
-    }
+    const c = d.curso || {};
+    document.getElementById('curso_nome').textContent = c.nome || '—';
+    document.getElementById('curso_regra').textContent = c.turma_especial_required ? ('Exige: ' + c.turma_especial_required) : 'Sem regra';
+    document.getElementById('sala_nome').textContent = salaSel?.nome || '—';
 
-    async function loadCursos(){
-      const r = await fetch(API + 'cursos_list.php', { credentials:'include' });
+    document.getElementById('motivo').textContent = d.motivo || '—';
+  }
+
+  function getSelectedOption(selectEl){
+    const id = parseInt(selectEl.value || '0', 10);
+    if(!id) return null;
+    const text = selectEl.options[selectEl.selectedIndex]?.textContent || '';
+    return { id, nome: text };
+  }
+
+  function resetAlunoUI(){
+    lastLookup = null;
+    setEnsalEnabled(false);
+    setBadge('warn','Aguardando busca…');
+    fillAluno({ aluno:{}, curso:{}, motivo:'—' });
+  }
+
+  async function loadCursos(){
+    const r = await fetch(API + 'cursos_list.php', { credentials:'include' });
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.msg || 'Erro cursos_list');
+
+    elCurso.innerHTML = '<option value="" disabled selected>Selecione</option>';
+    j.rows.forEach(x=>{
+      const op = document.createElement('option');
+      op.value = x.id;
+      op.textContent = x.nome;
+      elCurso.appendChild(op);
+    });
+    M.FormSelect.init(elCurso);
+  }
+
+  async function loadSalas(){
+    const r = await fetch(API + 'salas_list.php', { credentials:'include' });
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.msg || 'Erro salas_list');
+
+    elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
+    j.rows.forEach(x=>{
+      const op = document.createElement('option');
+      op.value = x.id;
+      op.textContent = x.nome + (x.capacidade ? (' (cap ' + x.capacidade + ')') : '');
+      elSala.appendChild(op);
+    });
+    M.FormSelect.init(elSala);
+  }
+
+  // ✅ Carrega do BANCO e renderiza na tabela "Últimos ensalados"
+  async function carregarUltimosEnsalados(){
+    // aqui usamos os selects (mesmo sem travar)
+    const cursoId = parseInt(elCurso.value || '0', 10) || 0;
+    const salaId  = parseInt(elSala.value  || '0', 10) || 0;
+
+    const tbody = document.getElementById('log_body');
+    tbody.innerHTML = `<tr><td colspan="4" class="muted">Carregando...</td></tr>`;
+
+    // endpoint que você vai criar/usar no PHP
+    const url = API + `opt_ensalados_list.php?curso_id=${cursoId}&sala_id=${salaId}&limit=20`;
+
+    try{
+      const r = await fetch(url, { credentials:'include' });
       const j = await r.json();
-      if(!j.ok) throw new Error(j.msg || 'Erro cursos_list');
-      elCurso.innerHTML = '<option value="" disabled selected>Selecione</option>';
-      (j.rows || []).forEach(x=>{
-        const op = document.createElement('option');
-        op.value = x.id;
-        op.textContent = x.nome;
-        elCurso.appendChild(op);
-      });
-      M.FormSelect.init(elCurso);
-    }
 
-    async function loadSalas(){
-      const r = await fetch(API + 'salas_list.php', { credentials:'include' });
-      const j = await r.json();
-      if(!j.ok) throw new Error(j.msg || 'Erro salas_list');
-      elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
-      (j.rows || []).forEach(x=>{
-        const op = document.createElement('option');
-        op.value = x.id;
-        op.textContent = x.nome + (x.capacidade ? (' (cap ' + x.capacidade + ')') : '');
-        elSala.appendChild(op);
-      });
-      M.FormSelect.init(elSala);
-    }
-
-    function canEnableVinc(){
-      const cursoOk = !!(parseInt(elCurso.value || '0', 10));
-      const salaOk  = !!(parseInt(elSala.value  || '0', 10));
-      const alunoOk = !!(lastAluno && lastAluno.ok);
-      return cursoOk && salaOk && alunoOk;
-    }
-
-    async function buscarAluno(){
-      const mat = (elMat.value || '').trim();
-      if(!mat){ M.toast({html:'Digite a matrícula.'}); return; }
-
-      setBadge('warn','Buscando aluno…','hourglass_empty');
-      setVincEnabled(false);
-      lastAluno = null;
-      fillAluno({});
-
-      try{
-        const url = API + 'aluno_lookup.php?matricula=' + encodeURIComponent(mat);
-        const r = await fetch(url, { credentials:'include', cache:'no-store' });
-        const j = await r.json();
-
-        if(!r.ok || !j || !j.ok){
-          setBadge('bad', (j?.msg || 'Aluno não encontrado'), 'error');
-          fillAluno({ motivo: j?.msg || '—' });
-          return;
-        }
-
-        lastAluno = j;
-        fillAluno(j);
-        setBadge('ok','Aluno encontrado','check_circle');
-        setVincEnabled(canEnableVinc());
-
-      }catch(e){
-        console.error(e);
-        setBadge('bad','Falha de rede','wifi_off');
-      }
-    }
-
-    async function vincular(){
-      if(btnVinc.classList.contains('disabled')) return;
-
-      const mat = (elMat.value || '').trim();
-      const curso_id = parseInt(elCurso.value || '0', 10) || 0;
-      const sala_id  = parseInt(elSala.value  || '0', 10) || 0;
-
-      if(!mat || !curso_id || !sala_id){
-        M.toast({html:'Informe matrícula, curso e sala.'});
+      if(!j.ok){
+        tbody.innerHTML = `<tr><td colspan="4" class="muted">Erro ao carregar: ${j.msg || '---'}</td></tr>`;
         return;
       }
 
-      setVincEnabled(false);
-      setBadge('warn','Vinculando…','hourglass_empty');
-
-      const fd = new FormData();
-      fd.append('matricula', mat);
-      fd.append('curso_id', curso_id);
-      fd.append('sala_id', sala_id);
-
-      try{
-        const r = await fetch(API + 'vinculo_add.php', {
-          method:'POST',
-          body: fd,
-          credentials:'include'
-        });
-
-        const j = await r.json();
-
-        if(!r.ok || !j || !j.ok){
-          setBadge('bad', (j?.msg || `Erro (HTTP ${r.status})`), 'error');
-          document.getElementById('motivo').textContent = j?.msg || '—';
-          setVincEnabled(true);
-          return;
-        }
-
-        setBadge('ok','Vinculado ✅','check_circle');
-        M.toast({html:'Vínculo criado com sucesso!'});
-        await carregarUltimosVinculos();
-
-        // prepara próxima
-        elMat.value = '';
-        M.updateTextFields();
-        lastAluno = null;
-        fillAluno({});
-        setVincEnabled(false);
-        setBadge('warn','Aguardando busca…','hourglass_empty');
-        elMat.focus();
-
-      }catch(e){
-        console.error(e);
-        setBadge('bad','Falha de rede','wifi_off');
-        setVincEnabled(true);
+      if(!j.rows || j.rows.length === 0){
+        tbody.innerHTML = `<tr><td colspan="4" class="muted">Ainda sem registros…</td></tr>`;
+        return;
       }
-    }
 
-    async function carregarUltimosVinculos(){
-      const cursoId = parseInt(elCurso.value || '0', 10) || 0;
-      const salaId  = parseInt(elSala.value  || '0', 10) || 0;
-      tbody.innerHTML = `<tr><td colspan="5" class="muted">Carregando...</td></tr>`;
-
-      const url = API + `vinculo_list.php?curso_id=${cursoId}&sala_id=${salaId}&limit=20`;
-
-      try{
-        const r = await fetch(url, { credentials:'include', cache:'no-store' });
-        const j = await r.json();
-
-        if(!j.ok){
-          tbody.innerHTML = `<tr><td colspan="5" class="muted">Erro ao carregar: ${j.msg || '---'}</td></tr>`;
-          return;
-        }
-        if(!j.rows || j.rows.length === 0){
-          tbody.innerHTML = `<tr><td colspan="5" class="muted">Ainda sem registros…</td></tr>`;
-          return;
-        }
-
-        tbody.innerHTML = j.rows.map(x => `
+      tbody.innerHTML = j.rows.map(x => {
+        const statusTxt = x.email_sent ? 'Email OK' : 'Email pendente';
+        const calLink = x.cal_url ? `<a href="${x.cal_url}" target="_blank">link</a>` : '—';
+        return `
           <tr>
             <td class="mono">${x.matricula || '—'}</td>
             <td>${x.nome || '—'}</td>
-            <td>${x.curso || '—'}</td>
-            <td>${x.sala || '—'}</td>
-            <td class="mono">${x.created_at || '—'}</td>
+            <td>${statusTxt}</td>
+            <td>${calLink}</td>
           </tr>
-        `).join('');
+        `;
+      }).join('');
 
-      }catch(e){
-        console.error(e);
-        tbody.innerHTML = `<tr><td colspan="5" class="muted">Falha ao carregar (console).</td></tr>`;
-      }
+    } catch(e){
+      console.error(e);
+      tbody.innerHTML = `<tr><td colspan="4" class="muted">Falha ao carregar (console).</td></tr>`;
+    }
+  }
+
+  btnTravar.addEventListener('click', async ()=>{
+    const c = getSelectedOption(elCurso);
+    const s = getSelectedOption(elSala);
+    if(!c || !s){
+      M.toast({html:'Selecione Curso e Sala antes de travar.'});
+      return;
+    }
+    cursoSel = c;
+    salaSel  = s;
+
+    elCurso.disabled = true;
+    elSala.disabled  = true;
+    M.FormSelect.init(elCurso);
+    M.FormSelect.init(elSala);
+
+    btnTravar.style.display = 'none';
+    btnDestravar.style.display = 'inline-block';
+    areaMatricula.style.display = 'block';
+
+    resetAlunoUI();
+    inpMat.value = '';
+    M.updateTextFields();
+    inpMat.focus();
+
+    // opcional: ao travar, recarrega a lista já filtrada
+    await carregarUltimosEnsalados();
+  });
+
+  btnDestravar.addEventListener('click', async ()=>{
+    cursoSel = null; salaSel = null;
+    elCurso.disabled = false;
+    elSala.disabled = false;
+    M.FormSelect.init(elCurso);
+    M.FormSelect.init(elSala);
+
+    btnTravar.style.display = 'inline-block';
+    btnDestravar.style.display = 'none';
+    areaMatricula.style.display = 'none';
+    resetAlunoUI();
+
+    await carregarUltimosEnsalados();
+  });
+
+  async function lookup(){
+    const mat = (inpMat.value || '').trim();
+    if(!mat){
+      M.toast({html:'Digite a matrícula.'});
+      return;
+    }
+    if(!cursoSel){
+      M.toast({html:'Trave Curso/Sala antes.'});
+      return;
     }
 
-    // events
-    btnBuscar.addEventListener('click', buscarAluno);
-    elMat.addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter'){ e.preventDefault(); buscarAluno(); }
+    resetAlunoUI();
+    setBadge('warn','Buscando aluno…');
+
+    const url = API + 'aluno_lookup.php?matricula=' + encodeURIComponent(mat) + '&curso_id=' + encodeURIComponent(cursoSel.id);
+    const r = await fetch(url, { credentials:'include' });
+    const j = await r.json();
+
+    if(!j.ok){
+      setBadge('bad', j.msg || 'Não encontrado');
+      document.getElementById('motivo').textContent = j.msg || '—';
+      return;
+    }
+
+    lastLookup = j;
+    fillAluno(j);
+
+    if(j.direito_ok){
+      setBadge('ok','Liberado');
+      setEnsalEnabled(true);
+    } else {
+      setBadge('bad','Bloqueado • Sem direito');
+      setEnsalEnabled(false);
+    }
+  }
+
+  btnBuscar.addEventListener('click', lookup);
+  inpMat.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      lookup();
+    }
+  });
+
+  async function ensalar(){
+    if(btnEnsal.classList.contains('disabled')) return;
+
+    if(!cursoSel || !salaSel){
+      M.toast({html:'Trave Curso/Sala antes.'});
+      return;
+    }
+    const mat = (inpMat.value || '').trim();
+    if(!mat){
+      M.toast({html:'Digite a matrícula.'});
+      return;
+    }
+    if(!lastLookup || !lastLookup.direito_ok){
+      M.toast({html:'Busque e valide o aluno antes de ensalar.'});
+      return;
+    }
+
+    setEnsalEnabled(false);
+    setBadge('warn','Ensalando e gerando calendário…');
+
+    const fd = new FormData();
+    fd.append('curso_id', cursoSel.id);
+    fd.append('sala_id', salaSel.id);
+    fd.append('matricula', mat);
+
+    const r = await fetch(API + 'ensalamento_add.php', {
+      method: 'POST',
+      body: fd,
+      credentials: 'include'
     });
 
-    btnVinc.addEventListener('click', vincular);
+    const j = await r.json();
 
-    elCurso.addEventListener('change', ()=>{
-      M.FormSelect.init(elCurso);
-      setVincEnabled(canEnableVinc());
-      carregarUltimosVinculos();
-    });
-    elSala.addEventListener('change', ()=>{
-      M.FormSelect.init(elSala);
-      setVincEnabled(canEnableVinc());
-      carregarUltimosVinculos();
-    });
+    if(!j.ok){
+      setBadge('bad', j.msg || 'Erro ao ensalar');
+      document.getElementById('motivo').textContent = (j.motivo || j.msg || '—');
+      setEnsalEnabled(true);
+      return;
+    }
 
-    btnReload.addEventListener('click', carregarUltimosVinculos);
+    setBadge('ok','Ensalado ✅');
+    M.toast({html:'Ensalado com sucesso!'});
 
-    // boot
-    (async ()=>{
-      try{
-        await loadCursos();
-        await loadSalas();
-        M.FormSelect.init(document.querySelectorAll('select'));
-        fillAluno({});
-        setVincEnabled(false);
-        await carregarUltimosVinculos();
-        M.updateTextFields();
-      }catch(e){
-        console.error(e);
-        M.toast({html:'Erro ao carregar listas (cursos/salas). Veja console.'});
-      }
-    })();
-  </script>
+    // ✅ Recarrega do banco (sem prepend manual)
+    await carregarUltimosEnsalados();
+
+    // prepara próxima matrícula
+    inpMat.value = '';
+    M.updateTextFields();
+    setEnsalEnabled(false);
+    lastLookup = null;
+    inpMat.focus();
+  }
+
+  btnEnsal.addEventListener('click', ensalar);
+
+  // recarrega lista ao selecionar curso/sala
+  elCurso.addEventListener('change', ()=>{
+    M.FormSelect.init(elCurso);
+    carregarUltimosEnsalados();
+  });
+
+  elSala.addEventListener('change', ()=>{
+    M.FormSelect.init(elSala);
+    carregarUltimosEnsalados();
+  });
+
+  // boot
+  (async ()=>{
+    try{
+      await loadCursos();
+      await loadSalas();
+      M.FormSelect.init(document.querySelectorAll('select'));
+      resetAlunoUI();
+      await carregarUltimosEnsalados(); // ✅ carrega assim que entra na página
+    } catch(e){
+      console.error(e);
+      M.toast({html:'Erro ao carregar listas (cursos/salas). Veja console.'});
+    }
+  })();
+</script>
+
 
 </body>
 </html>
