@@ -6,9 +6,46 @@
   <title>Presença • Fiscal</title>
 
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
   <style>
+    :root{
+      --bg:#f7f8fb;
+      --primary:#0b3b78;
+    }
+
     body { background:#f4f6fb; }
-    .wrap { max-width: 980px; margin: 18px auto; padding: 0 12px; }
+
+    /* ===== Topbar padrão painel ===== */
+    header.topbar{
+      position:fixed; top:0; left:0; right:0; height:64px;
+      background:var(--primary); color:#fff;
+      display:flex; align-items:center; z-index:10;
+      padding:0 24px;
+      box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+    header.topbar .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width: 0;
+    }
+    header.topbar h5{
+      margin:0; font-weight:600;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-size:1.1rem;
+    }
+    header.topbar .right-actions{
+      margin-left:auto;
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn-logout{
+      border-radius:999px;
+      background: rgba(255,255,255,.15);
+      box-shadow:none;
+    }
+    .btn-logout:hover{ background: rgba(255,255,255,.22); }
+
+    /* ===== Seu CSS original ===== */
+    .wrap { max-width: 980px; margin: 96px auto 18px; padding: 0 12px; } /* ⬅️ desce por causa da topbar */
     .card { border-radius: 14px; }
     .top-info { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
     .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-weight:600; }
@@ -20,10 +57,15 @@
     .list-item { cursor:pointer; }
     .list-item:hover { background:#fafafa; }
     .muted { color:#78909c; }
+
     .stickybar {
-      position: sticky; top: 0; z-index: 5;
-      background: #f4f6fb; padding-top: 10px;
+      position: sticky;
+      top: 74px; /* ⬅️ evita ficar embaixo da topbar fixa */
+      z-index: 5;
+      background: #f4f6fb;
+      padding-top: 10px;
     }
+
     .searchbox { border-radius: 12px !important; background:#fff; }
 
     .badge-soft { padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size:.85rem; display:inline-block; }
@@ -38,6 +80,9 @@
     .desktop-only { display:block; }
 
     @media (max-width: 600px){
+      header.topbar{ padding:0 14px; }
+      .wrap{ margin-top:86px; } /* ⬅️ igual painel */
+      .stickybar{ top: 64px; }  /* ⬅️ topbar no mobile */
       .desktop-only { display:none; }
       .mobile-only { display:block; }
     }
@@ -95,20 +140,29 @@
     .pres-row .aluno-nome {
       color: #1b5e20;
     }
-
   </style>
 </head>
+
 <body>
 
-  <nav class="blue darken-3">
-    <div class="nav-wrapper" style="padding:0 14px;">
-      <span class="brand-logo" style="font-size:1.1rem;">Controle de Sala • Presença</span>
-      <ul class="right">
-        <li><a href="selecionar_sala.html">Trocar sala</a></li>
-        <li><a href="logout.php">Sair</a></li>
-      </ul>
+  <!-- ✅ Topo padrão painel -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
+      <h5>Curso Optativo - Controle de Salas</h5>
     </div>
-  </nav>
+
+    <div class="right-actions">
+      <!-- mantive "Trocar sala" pq você já tinha -->
+      <a class="btn btn-small btn-logout white-text" href="selecionar_sala.html">
+        <i class="material-icons left">swap_horiz</i>Trocar sala
+      </a>
+
+      <a class="btn btn-small btn-logout white-text" href="https://apisec.secauxiliar.com.br/optativo/logout.php">
+        <i class="material-icons left">logout</i>Sair
+      </a>
+    </div>
+  </header>
 
   <div class="wrap">
 
@@ -379,40 +433,38 @@
 
         return {
           ...x,
-          status: st,       // 👈 recomendo
+          status: st,
           presenca_ok
         };
       });
 
-
       filtrarRender();
     }
 
-function abrirModalAluno(a){
-  alunoSelecionado = a;
-  $mMsg.textContent = '';
-  $mNome.textContent = a.nome || '—';
-  $mMat.textContent = a.matricula || '—';
+    function abrirModalAluno(a){
+      alunoSelecionado = a;
+      $mMsg.textContent = '';
+      $mNome.textContent = a.nome || '—';
+      $mMat.textContent = a.matricula || '—';
 
-  if (a.bloqueado) {
-    $mStatus.className = 'badge-soft b-bloq';
-    $mStatus.textContent = 'BLOQUEADO';
-    $mMotivo.innerHTML =
-      `<span class="red-text"><b>Não é possível registrar presença.</b></span><br>` +
-      `<span class="small">-> ${a.motivo_bloqueio || 'Pendência financeira'}.</span>` +
-      (a.vencido_desde ? `<div class="small muted">Venc.: ${a.vencido_desde}</div>` : '');
-    $btnConfirmar.classList.add('disabled');
-  } else {
-    $mStatus.className = a.presenca_ok ? 'badge-soft b-ok' : 'badge-soft b-prev';
-    $mStatus.textContent = a.presenca_ok ? 'PRESENTE' : 'LIBERADO';
-    $mMotivo.innerHTML = `<span class="small muted">Confirme a presença do aluno.</span>`;
-    $btnConfirmar.classList.remove('disabled');
-  }
+      if (a.bloqueado) {
+        $mStatus.className = 'badge-soft b-bloq';
+        $mStatus.textContent = 'BLOQUEADO';
+        $mMotivo.innerHTML =
+          `<span class="red-text"><b>Não é possível registrar presença.</b></span><br>` +
+          `<span class="small">-> ${a.motivo_bloqueio || 'Pendência financeira'}.</span>` +
+          (a.vencido_desde ? `<div class="small muted">Venc.: ${a.vencido_desde}</div>` : '');
+        $btnConfirmar.classList.add('disabled');
+      } else {
+        $mStatus.className = a.presenca_ok ? 'badge-soft b-ok' : 'badge-soft b-prev';
+        $mStatus.textContent = a.presenca_ok ? 'PRESENTE' : 'LIBERADO';
+        $mMotivo.innerHTML = `<span class="small muted">Confirme a presença do aluno.</span>`;
+        $btnConfirmar.classList.remove('disabled');
+      }
 
-  const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
-  modal.open();
-}
-
+      const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
+      modal.open();
+    }
 
     // clique desktop
     $tbody.addEventListener('click', (e) => {
@@ -431,7 +483,6 @@ function abrirModalAluno(a){
       abrirModalAluno(a);
     });
 
-
     // clique mobile
     $listaMobile.addEventListener('click', (e) => {
       const li = e.target.closest('li[data-mat]');
@@ -449,8 +500,7 @@ function abrirModalAluno(a){
       abrirModalAluno(a);
     });
 
-
-    // confirmar: aqui você liga no PHP e ele devolve OK ou motivo do bloqueio
+    // confirmar
     $btnConfirmar.addEventListener('click', async () => {
       if(!alunoSelecionado) return;
       if(alunoSelecionado.bloqueado) return;
@@ -471,13 +521,10 @@ function abrirModalAluno(a){
           return;
         }
 
-        // envia como FormData (compatível com seu PHP)
         const fd = new FormData();
         fd.append('sala_id', String(salaId));
         fd.append('turma_id', String(turmaId));
         fd.append('matricula', mat);
-        
-        // fd.append('data', (contexto?.now?.date || '')); // opcional
         fd.append('data', String(contexto?.data || ''));
 
         const r = await fetch(API + 'presenca_sala_confirmar.php', {
@@ -489,14 +536,12 @@ function abrirModalAluno(a){
         const j = await r.json().catch(()=> ({}));
 
         if(!r.ok || !j.ok){
-          // Se bloqueio financeiro (403), já mostra motivo.
           $mStatus.className = 'badge-soft b-bloq';
           $mStatus.textContent = 'NEGADO';
           $mMsg.textContent = j.msg || 'Falha ao registrar presença.';
           return;
         }
 
-        // ✅ sucesso
         alunoSelecionado.presenca_ok = true;
 
         $mStatus.className = 'badge-soft b-ok';
@@ -514,11 +559,9 @@ function abrirModalAluno(a){
         $mStatus.textContent = 'ERRO';
         $mMsg.textContent = 'Falha de rede ao registrar.';
       } finally {
-        // reabilita (se ainda estiver aberto)
         $btnConfirmar.classList.remove('disabled');
       }
     });
-
 
     $turmaSelect.addEventListener('change', () => carregarAlunos());
     $busca.addEventListener('input', () => filtrarRender());
