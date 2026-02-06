@@ -3,12 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
   <title>Controle de Sala • Ensalamento</title>
 
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
   <style>
-    body { background:#f6f7fb; }
-    .wrap { max-width: 980px; margin: 24px auto; }
+    :root{
+      --bg:#f7f8fb;
+      --primary:#0b3b78;
+    }
+
+    body { background:var(--bg); }
+
+    /* ===== Topbar padrão painel ===== */
+    header.topbar{
+      position:fixed; top:0; left:0; right:0; height:64px;
+      background:var(--primary); color:#fff;
+      display:flex; align-items:center; z-index:10;
+      padding:0 24px;
+      box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+    header.topbar .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width:0;
+    }
+    header.topbar h5{
+      margin:0; font-weight:600;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-size:1.1rem;
+    }
+    header.topbar .right-actions{
+      margin-left:auto;
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn-logout{
+      border-radius:999px;
+      background: rgba(255,255,255,.15);
+      box-shadow:none;
+    }
+    .btn-logout:hover{ background: rgba(255,255,255,.22); }
+
+    /* ===== Seu layout original (só ajustado pra topbar) ===== */
+    .wrap { max-width: 980px; margin: 96px auto 24px; padding: 0 12px; }
     .card { border-radius: 14px; }
     .badge-soft { padding: 6px 10px; border-radius: 999px; font-weight: 600; display:inline-block; }
     .ok { background: #e8f5e9; color:#1b5e20; }
@@ -18,10 +56,30 @@
     .small { font-size: 0.92rem; color:#616161; }
     .muted { color:#757575; }
     .row-tight { margin-bottom: 0; }
+
+    @media (max-width: 600px){
+      header.topbar{ padding:0 14px; }
+      .wrap{ margin-top: 86px; }
+    }
   </style>
 </head>
 
 <body>
+
+  <!-- ✅ Topo padrão painel -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
+      <h5>Curso Optativo - Controle de Salas</h5>
+    </div>
+
+    <div class="right-actions">
+      <a class="btn btn-small btn-logout white-text" href="https://apisec.secauxiliar.com.br/optativo/logout.php">
+        <i class="material-icons left">logout</i>Sair
+      </a>
+    </div>
+  </header>
+
   <div class="wrap">
     <div class="card">
       <div class="card-content">
@@ -138,7 +196,7 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  
+
   <script>
   // Ajuste o caminho base se seus PHP estiverem em outra pasta
   const API = 'https://apisec.secauxiliar.com.br/optativo/';
@@ -448,8 +506,7 @@
       M.toast({html:'Erro ao carregar listas (cursos/salas). Veja console.'});
     }
   })();
-</script>
-
+  </script>
 
 </body>
 </html>
