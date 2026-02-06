@@ -11,6 +11,7 @@
   <style>
     body { background:#f5f7fb; }
     .wrap { max-width: 520px; margin: 40px auto; }
+    .btn + .btn { margin-left: 8px; }
   </style>
 </head>
 <body>
@@ -18,10 +19,13 @@
   <div class="wrap card">
     <div class="card-content">
       <span class="card-title">📄 Relatórios</span>
+      <p class="grey-text">Escolha o curso e abra o relatório para imprimir / salvar em PDF.</p>
 
-      <div class="input-field">
+      <div class="input-field" style="margin-top:22px;">
         <select id="curso">
           <option value="" disabled selected>Selecione o curso</option>
+
+          <!-- pode deixar fixo por enquanto -->
           <option value="1">EXT - MEDICINA</option>
           <option value="2">EXT - ESPECIAL BIOLÓGICAS</option>
           <option value="3">EXT - ESPECIAL HUMANAS</option>
@@ -33,49 +37,53 @@
       <div class="divider"></div>
       <br>
 
-      <button class="btn blue darken-2" onclick="abrirListaGeral()">
-        📋 Lista Geral (Entrada)
-      </button>
+      <div class="row" style="margin-bottom:0;">
+        <div class="col s12">
+          <button class="btn blue darken-2" onclick="abrirListaGeral()">
+            📋 Lista Geral (Entrada)
+          </button>
 
-      <button class="btn green darken-2 right" onclick="abrirListaSala()">
-        🚪 Lista por Sala
-      </button>
+          <button class="btn green darken-2 right" onclick="abrirListaSala()">
+            🚪 Lista por Sala
+          </button>
+        </div>
+      </div>
 
-      <div class="clearfix"></div>
     </div>
   </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  M.FormSelect.init(document.querySelectorAll('select'));
-});
+  // ✅ mesmo padrão do seu projeto
+  const API = 'https://apisec.secauxiliar.com.br/optativo/';
 
-function cursoId(){
-  const v = document.getElementById('curso').value;
-  if(!v){
-    M.toast({html:'Selecione um curso'});
-    return null;
+  document.addEventListener('DOMContentLoaded', () => {
+    M.FormSelect.init(document.querySelectorAll('select'));
+  });
+
+  function cursoId(){
+    const v = document.getElementById('curso').value;
+    if(!v){
+      M.toast({html:'Selecione um curso'});
+      return null;
+    }
+    return v;
   }
-  return v;
-}
 
-function abrirListaGeral(){
-  const id = cursoId();
-  if(!id) return;
-  window.open(
-    'relatorio_lista_entrada.php?curso_id=' + id,
-    '_blank'
-  );
-}
+  function abrirListaGeral(){
+    const id = cursoId();
+    if(!id) return;
 
-function abrirListaSala(){
-  const id = cursoId();
-  if(!id) return;
-  window.open(
-    'relatorio_porta_sala.php?curso_id=' + id,
-    '_blank'
-  );
-}
+    const url = API + 'relatorio_lista_entrada.php?curso_id=' + encodeURIComponent(id);
+    window.open(url, '_blank');
+  }
+
+  function abrirListaSala(){
+    const id = cursoId();
+    if(!id) return;
+
+    const url = API + 'relatorio_porta_sala.php?curso_id=' + encodeURIComponent(id);
+    window.open(url, '_blank');
+  }
 </script>
 
 </body>
