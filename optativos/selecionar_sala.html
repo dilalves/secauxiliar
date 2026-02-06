@@ -3,49 +3,175 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Selecionar Sala • Fiscal</title>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Controle de Sala • Selecionar Sala</title>
 
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <!-- Materialize -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- Ícones -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
   <style>
-    .wrap { margin-top:24px; max-width:720px; }
-    .brand-logo { font-size:1.2rem !important; }
+    :root{
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e9edf3;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --radius:14px;
+    }
+
+    body{
+      background:var(--bg);
+      font-family:system-ui, Arial;
+      padding:24px;
+    }
+
+    /* ===== Topbar igual painel/login ===== */
+    header.topbar{
+      position:fixed; top:0; left:0; right:0; height:64px;
+      background:var(--primary); color:#fff;
+      display:flex; align-items:center; z-index:10;
+      padding:0 24px;
+      box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+    header.topbar .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width:0;
+    }
+    header.topbar h5{
+      margin:0; font-weight:600;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-size:1.1rem;
+    }
+    header.topbar .right-actions{
+      margin-left:auto;
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn-logout{
+      border-radius:999px;
+      background: rgba(255,255,255,.15);
+      box-shadow:none;
+    }
+    .btn-logout:hover{ background: rgba(255,255,255,.22); }
+
+    /* ===== Layout ===== */
+    .wrap{
+      max-width:720px;
+      margin:96px auto 0; /* por causa da topbar fixa */
+    }
+
+    .panel-card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
+      border:1px solid var(--line);
+      overflow:hidden;
+    }
+
+    .card-head{
+      padding:18px 18px 0;
+    }
+    .card-head .title{
+      margin:0;
+      font-weight:800;
+      color:#111827;
+      font-size:1.25rem;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .card-head .subtitle{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:.95rem;
+    }
+
+    .card-body{ padding:10px 18px 8px; }
+    .card-foot{
+      padding:14px 18px 18px;
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      border-top:1px solid var(--line);
+      background:#fff;
+    }
+
+    /* Materialize select / label ajuste */
+    .input-field label{ color: var(--muted); }
+    .input-field input:focus + label,
+    .input-field textarea:focus + label{ color: var(--primary) !important; }
+    .input-field input:focus,
+    .input-field textarea:focus{ border-bottom:1px solid var(--primary) !important; box-shadow:0 1px 0 0 var(--primary) !important; }
+
+    /* Mensagem */
+    #msg{ margin-top:10px; }
+
+    /* mobile */
+    @media (max-width: 600px){
+      body{ padding:16px; }
+      header.topbar{ padding:0 14px; }
+      .wrap{ margin-top:86px; }
+    }
   </style>
 </head>
 
-<body class="grey lighten-4">
+<body>
 
-  <nav class="blue darken-3">
-    <div class="nav-wrapper container">
-      <a class="brand-logo">Controle de Sala</a>
-      <ul class="right">
-        <li><a id="logoutLink" href="#">Sair</a></li>
-      </ul>
+  <!-- Topo (igual painel/login) -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
+      <h5>Curso Optativo - Controle de Salas</h5>
     </div>
-  </nav>
 
-  <div class="container wrap">
-    <div class="card">
-      <div class="card-content">
-        <span class="card-title">Selecione a sala</span>
-        <p class="grey-text">Escolha a sala que você vai controlar agora.</p>
+    <div class="right-actions">
+      <a id="logoutLink" class="btn btn-small btn-logout white-text" href="#">
+        <i class="material-icons left">logout</i>Sair
+      </a>
+    </div>
+  </header>
 
-        <div class="input-field" style="margin-top:20px;">
+  <div class="wrap">
+
+    <div class="panel-card">
+      <div class="card-head">
+        <div class="title">
+          <i class="material-icons" style="color:var(--primary);">meeting_room</i>
+          Selecionar sala
+        </div>
+        <p class="subtitle">Escolha a sala que você vai controlar agora.</p>
+      </div>
+
+      <div class="card-body">
+
+        <div class="input-field" style="margin-top:18px;">
           <select id="salaSelect">
             <option value="" disabled selected>Carregando...</option>
           </select>
           <label>Sala</label>
         </div>
 
-        <div id="msg" class="red-text" style="margin-top:10px;"></div>
+        <div id="msg" class="red-text"></div>
       </div>
 
-      <div class="card-action right-align">
-        <button id="btnEntrar" class="btn blue darken-3" disabled>Entrar</button>
+      <div class="card-foot">
+        <button id="btnEntrar" class="btn" style="border-radius:12px; background:var(--primary);" disabled>
+          <i class="material-icons left">login</i>Entrar
+        </button>
       </div>
     </div>
+
+    <div style="text-align:center; color:var(--muted); font-size:.9rem; padding:10px 0 2px;">
+      Controle de Sala • 3A Sistemas
+    </div>
+
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
   <script>
     /**
      * Base da API:
@@ -191,10 +317,10 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-      // garante Materialize funcionando antes de mexer no select
       M.AutoInit();
       carregarSalas();
     });
   </script>
+
 </body>
 </html>
