@@ -60,7 +60,7 @@
     /* ===== Layout ===== */
     .wrap{
       max-width:720px;
-      margin:96px auto 0; /* por causa da topbar fixa */
+      margin:96px auto 0;
     }
 
     .panel-card{
@@ -89,38 +89,105 @@
       font-size:.95rem;
     }
 
-    .card-body{ padding:10px 18px 8px; }
-    .card-foot{
-      padding:14px 18px 18px;
-      display:flex;
-      justify-content:flex-end;
-      gap:10px;
-      border-top:1px solid var(--line);
-      background:#fff;
-    }
-
-    /* Materialize select / label ajuste */
-    .input-field label{ color: var(--muted); }
-    .input-field input:focus + label,
-    .input-field textarea:focus + label{ color: var(--primary) !important; }
-    .input-field input:focus,
-    .input-field textarea:focus{ border-bottom:1px solid var(--primary) !important; box-shadow:0 1px 0 0 var(--primary) !important; }
+    .card-body{ padding:16px 18px 18px; }
 
     /* Mensagem */
-    #msg{ margin-top:10px; }
+    #msg{ margin-top:12px; }
+
+    /* ===== Grid de salas (quadrinhos) ===== */
+    .salas-grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .sala-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      padding:12px;
+      cursor:pointer;
+      user-select:none;
+      box-shadow:0 6px 16px rgba(0,0,0,.05);
+      transition: transform .08s ease, box-shadow .08s ease, border-color .08s ease;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      min-height:64px;
+    }
+
+    .sala-card:hover{
+      transform: translateY(-1px);
+      border-color:#cfe0ff;
+      box-shadow:0 10px 22px rgba(0,0,0,.07);
+    }
+
+    .sala-left{
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+
+    .sala-tag{
+      font-size:12px;
+      letter-spacing:.08em;
+      font-weight:800;
+      color:var(--muted);
+      text-transform:uppercase;
+      line-height:1.1;
+    }
+
+    .sala-nome{
+      font-size:22px;
+      font-weight:900;
+      color:#0f172a;
+      line-height:1.1;
+    }
+
+    .sala-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 260px;
+    }
+
+    .sala-right{
+      flex:0 0 auto;
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      background:#eaf1ff;
+      color:#0b3b78;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+    }
+
+    .sala-card.disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
 
     /* mobile */
     @media (max-width: 600px){
       body{ padding:16px; }
       header.topbar{ padding:0 14px; }
       .wrap{ margin-top:86px; }
+      .salas-grid{ grid-template-columns: 1fr; } /* no celular fica 1 por linha */
+      .sala-sub{ max-width: 100%; }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- Topo (igual painel/login) -->
   <header class="topbar">
     <div class="brand">
       <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
@@ -142,25 +209,15 @@
           <i class="material-icons" style="color:var(--primary);">meeting_room</i>
           Selecionar sala
         </div>
-        <p class="subtitle">Escolha a sala que você vai controlar agora.</p>
+        <p class="subtitle">Toque em uma sala para começar.</p>
       </div>
 
       <div class="card-body">
-
-        <div class="input-field" style="margin-top:18px;">
-          <select id="salaSelect">
-            <option value="" disabled selected>Carregando...</option>
-          </select>
-          <label>Sala</label>
+        <div id="salasGrid" class="salas-grid">
+          <!-- cards entram aqui -->
         </div>
 
         <div id="msg" class="red-text"></div>
-      </div>
-
-      <div class="card-foot">
-        <button id="btnEntrar" class="btn" style="border-radius:12px; background:var(--primary);" disabled>
-          <i class="material-icons left">login</i>Entrar
-        </button>
       </div>
     </div>
 
@@ -173,165 +230,166 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
   <script>
-  const API = (location.hostname === 'apisec.secauxiliar.com.br')
-    ? (location.origin + '/optativo/')
-    : 'https://apisec.secauxiliar.com.br/optativo/';
+    const API = (location.hostname === 'apisec.secauxiliar.com.br')
+      ? (location.origin + '/optativo/')
+      : 'https://apisec.secauxiliar.com.br/optativo/';
 
-  const $msg = document.getElementById('msg');
-  const $sel = document.getElementById('salaSelect');
-  const $btn = document.getElementById('btnEntrar');
-  const $logout = document.getElementById('logoutLink');
+    const $msg = document.getElementById('msg');
+    const $grid = document.getElementById('salasGrid');
+    const $logout = document.getElementById('logoutLink');
 
-  const msg = (t='') => $msg.textContent = t;
+    const msg = (t='') => $msg.textContent = t;
 
-  function reinitSelect(){
-    try{
-      const inst = M.FormSelect.getInstance($sel);
-      if(inst) inst.destroy();
-    }catch(e){}
-    M.FormSelect.init($sel);
-  }
-
-  function setLoading(state){
-    $btn.disabled = true;
-    $sel.disabled = !!state;
-    if(state){
-      $sel.innerHTML = `<option value="" disabled selected>Carregando...</option>`;
+    function goLogin(){
+      const next = encodeURIComponent(location.pathname + location.search);
+      location.href = `./login.html?next=${next}`;
     }
-    reinitSelect();
-  }
 
-  function setError(text){
-    msg(text);
-    $sel.innerHTML = `<option value="" disabled selected>Erro</option>`;
-    $btn.disabled = true;
-    reinitSelect();
-  }
+    $logout.href = API + 'logout.php';
 
-  // ✅ manda pro login e volta pra selecao depois
-  function goLogin(){
-    const next = encodeURIComponent(location.pathname + location.search);
-    location.href = `./login.html?next=${next}`;
-  }
-
-  // Logout aponta para o backend (porque quem limpa cookie é o PHP)
-  $logout.href = API + 'logout.php';
-
-  async function carregarSalas(){
-    msg('');
-    setLoading(true);
-
-    try{
-      const r = await fetch(API + 'fiscal_salas_list.php', {
-        method: 'GET',
-        credentials: 'include',
-        cache: 'no-store'
-      });
-
-      // ✅ se não está autenticado, vai pro login (tablet novo cai aqui)
-      if (r.status === 401) {
-        msg('Sessão expirada. Faça login novamente.');
-        return goLogin();
-      }
-
-      let j = null;
-      try { j = await r.json(); } catch(e){}
-
-      if(!r.ok){
-        const detalhe = (j && (j.msg || j.error)) ? ` — ${j.msg || j.error}` : '';
-        setError(`Falha ao carregar salas (HTTP ${r.status})${detalhe}`);
-        return;
-      }
-
-      if(!j || !j.ok){
-        const detalhe = j && (j.msg || j.error) ? (j.msg || j.error) : 'Resposta inválida';
-        setError(`Falha ao carregar salas: ${detalhe}`);
-        return;
-      }
-
-      const rows = Array.isArray(j.rows) ? j.rows : [];
-
-      if(rows.length === 0){
-        setError('Nenhuma sala disponível para seleção.');
-        return;
-      }
-
-      $sel.disabled = false;
-      $sel.innerHTML =
-        `<option value="" disabled selected>Selecione...</option>` +
-        rows.map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
-
-      reinitSelect();
-      $btn.disabled = true;
-
-    }catch(e){
-      console.error(e);
-      setError('Erro de rede ao carregar salas.');
+    function setLoading(){
+      $grid.innerHTML = `
+        <div class="sala-card disabled">
+          <div class="sala-left">
+            <div class="sala-tag">Carregando</div>
+            <div class="sala-nome">...</div>
+            <div class="sala-sub">Aguarde</div>
+          </div>
+          <div class="sala-right"><i class="material-icons">hourglass_empty</i></div>
+        </div>
+        <div class="sala-card disabled">
+          <div class="sala-left">
+            <div class="sala-tag">Carregando</div>
+            <div class="sala-nome">...</div>
+            <div class="sala-sub">Aguarde</div>
+          </div>
+          <div class="sala-right"><i class="material-icons">hourglass_empty</i></div>
+        </div>
+      `;
     }
-  }
 
-  $sel.addEventListener('change', () => {
-    $btn.disabled = !$sel.value;
-    msg('');
-  });
-
-  $btn.addEventListener('click', async () => {
-    msg('');
-    const sala_id = $sel.value;
-    if(!sala_id) return;
-
-    $btn.disabled = true;
-
-    try{
-      const fd = new FormData();
-      fd.append('sala_id', sala_id);
-
-      const r = await fetch(API + 'fiscal_set_sala.php', {
-        method: 'POST',
-        body: fd,
-        credentials: 'include',
-        cache: 'no-store'
-      });
-
-      // ✅ se perder a sessão entre um passo e outro
-      if (r.status === 401) {
-        msg('Sessão expirada. Faça login novamente.');
-        return goLogin();
-      }
-
-      let j = null;
-      try { j = await r.json(); } catch(e){}
-
-      // sala ocupada
-      if (r.status === 409 && j && j.code === 'SALA_OCUPADA') {
-        M.toast({html: j.msg || 'Sala ocupada por outro fiscal.'});
-        msg(j.msg || 'Sala ocupada por outro fiscal.');
-        $btn.disabled = false;
-        return;
-      }
-
-      if (!r.ok || !j || !j.ok) {
-        const detalhe = (j && (j.msg || j.error)) ? (j.msg || j.error) : '';
-        msg(detalhe || `Não foi possível selecionar a sala (HTTP ${r.status})`);
-        $btn.disabled = false;
-        return;
-      }
-
-      location.href = './presenca.html';
-
-    }catch(e){
-      console.error(e);
-      msg('Erro de rede ao selecionar a sala.');
-      $btn.disabled = false;
+    function extractShortName(full){
+      // tenta pegar "P1" / "P2" do nome
+      // exemplos: "P1 (#1)" / "P2 MED" / "Sala P1"
+      const m = String(full || '').toUpperCase().match(/\bP\d+\b/);
+      return m ? m[0] : (full || 'Sala');
     }
-  });
 
-  document.addEventListener('DOMContentLoaded', () => {
-    M.AutoInit();
-    carregarSalas();
-  });
-</script>
+    async function selecionarSala(sala_id){
+      msg('');
+      try{
+        const fd = new FormData();
+        fd.append('sala_id', sala_id);
 
+        const r = await fetch(API + 'fiscal_set_sala.php', {
+          method: 'POST',
+          body: fd,
+          credentials: 'include',
+          cache: 'no-store'
+        });
 
+        if (r.status === 401) {
+          msg('Sessão expirada. Faça login novamente.');
+          return goLogin();
+        }
+
+        let j = null;
+        try { j = await r.json(); } catch(e){}
+
+        if (r.status === 409 && j && j.code === 'SALA_OCUPADA') {
+          M.toast({html: j.msg || 'Sala ocupada por outro fiscal.'});
+          msg(j.msg || 'Sala ocupada por outro fiscal.');
+          return;
+        }
+
+        if (!r.ok || !j || !j.ok) {
+          const detalhe = (j && (j.msg || j.error)) ? (j.msg || j.error) : '';
+          msg(detalhe || `Não foi possível selecionar a sala (HTTP ${r.status})`);
+          return;
+        }
+
+        location.href = './presenca.html';
+      }catch(e){
+        console.error(e);
+        msg('Erro de rede ao selecionar a sala.');
+      }
+    }
+
+    async function carregarSalas(){
+      msg('');
+      setLoading();
+
+      try{
+        const r = await fetch(API + 'fiscal_salas_list.php', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        if (r.status === 401) {
+          msg('Sessão expirada. Faça login novamente.');
+          return goLogin();
+        }
+
+        let j = null;
+        try { j = await r.json(); } catch(e){}
+
+        if(!r.ok){
+          const detalhe = (j && (j.msg || j.error)) ? ` — ${j.msg || j.error}` : '';
+          msg(`Falha ao carregar salas (HTTP ${r.status})${detalhe}`);
+          $grid.innerHTML = '';
+          return;
+        }
+
+        if(!j || !j.ok){
+          const detalhe = j && (j.msg || j.error) ? (j.msg || j.error) : 'Resposta inválida';
+          msg(`Falha ao carregar salas: ${detalhe}`);
+          $grid.innerHTML = '';
+          return;
+        }
+
+        const rows = Array.isArray(j.rows) ? j.rows : [];
+        if(rows.length === 0){
+          msg('Nenhuma sala disponível para seleção.');
+          $grid.innerHTML = '';
+          return;
+        }
+
+        $grid.innerHTML = rows.map(x => {
+          const shortName = extractShortName(x.nome);
+          const fullName = String(x.nome || '');
+          return `
+            <div class="sala-card" data-id="${x.id}">
+              <div class="sala-left">
+                <div class="sala-tag">SALA</div>
+                <div class="sala-nome">${shortName}</div>
+                <div class="sala-sub">${fullName}</div>
+              </div>
+              <div class="sala-right"><i class="material-icons">chevron_right</i></div>
+            </div>
+          `;
+        }).join('');
+
+        // clique nos cards
+        $grid.querySelectorAll('.sala-card[data-id]').forEach(el => {
+          el.addEventListener('click', () => {
+            const id = el.getAttribute('data-id');
+            if(!id) return;
+            selecionarSala(id);
+          });
+        });
+
+      }catch(e){
+        console.error(e);
+        msg('Erro de rede ao carregar salas.');
+        $grid.innerHTML = '';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      M.AutoInit();
+      carregarSalas();
+    });
+  </script>
 </body>
 </html>
