@@ -10,152 +10,150 @@
 
   <style>
     :root{
-      --bg:#f7f8fb;
-      --primary:#0b3b78;
-    }
+  --bg:#f7f8fb;
+  --primary:#0b3b78;
+}
 
-    body { background:#f4f6fb; }
+body { background:#f4f6fb; }
+html, body { overflow-x: hidden; }
 
-    /* ===== Topbar padrão painel ===== */
-    header.topbar{
-      position:fixed; top:0; left:0; right:0; height:64px;
-      background:var(--primary); color:#fff;
-      display:flex; align-items:center; z-index:10;
-      padding:0 24px;
-      box-shadow:0 2px 10px rgba(16,24,40,.12);
-    }
-    header.topbar .brand{
-      display:flex; align-items:center; gap:12px;
-      min-width: 0;
-    }
-    header.topbar h5{
-      margin:0; font-weight:600;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-      font-size:1.1rem;
-    }
-    header.topbar .right-actions{
-      margin-left:auto;
-      display:flex; align-items:center; gap:10px;
-    }
-    .btn-logout{
-      border-radius:999px;
-      background: rgba(255,255,255,.15);
-      box-shadow:none;
-    }
-    .btn-logout:hover{ background: rgba(255,255,255,.22); }
+/* ===== Topbar padrão painel ===== */
+header.topbar{
+  position:fixed; top:0; left:0; right:0; height:64px;
+  background:var(--primary); color:#fff;
+  display:flex; align-items:center; z-index:10;
+  padding:0 24px;
+  box-shadow:0 2px 10px rgba(16,24,40,.12);
+}
+header.topbar .brand{
+  display:flex; align-items:center; gap:12px;
+  min-width: 0;
+}
+header.topbar h5{
+  margin:0; font-weight:600;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font-size:1.1rem;
+}
+header.topbar .right-actions{
+  margin-left:auto;
+  display:flex; align-items:center; gap:10px;
+}
+.btn-logout{
+  border-radius:999px;
+  background: rgba(255,255,255,.15);
+  box-shadow:none;
+}
+.btn-logout:hover{ background: rgba(255,255,255,.22); }
 
-    /* ===== Seu CSS original ===== */
-    .wrap { max-width: 980px; margin: 96px auto 18px; padding: 0 12px; } /* ⬅️ desce por causa da topbar */
-    .card { border-radius: 14px; }
-    .top-info { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
-    .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-weight:600; }
-    .pill-blue { background:#e3f2fd; color:#0d47a1; }
-    .pill-gray { background:#eceff1; color:#263238; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
-    .small { font-size:.92rem; color:#607d8b; }
-    .row-tight { margin-bottom: 0; }
-    .list-item { cursor:pointer; }
-    .list-item:hover { background:#fafafa; }
-    .muted { color:#78909c; }
+/* ===== Layout base ===== */
+.wrap { max-width: 980px; margin: 96px auto 18px; padding: 0 12px; }
+.card { border-radius: 14px; }
+.top-info { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+.pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-weight:600; }
+.pill-blue { background:#e3f2fd; color:#0d47a1; }
+.pill-gray { background:#eceff1; color:#263238; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
+.small { font-size:.92rem; color:#607d8b; }
+.row-tight { margin-bottom: 0; }
+.list-item { cursor:pointer; }
+.list-item:hover { background:#fafafa; }
+.muted { color:#78909c; }
 
-    .stickybar {
-      position: sticky;
-      top: 74px; /* ⬅️ evita ficar embaixo da topbar fixa */
-      z-index: 5;
-      background: #f4f6fb;
-      padding-top: 10px;
-    }
+.stickybar {
+  position: sticky;
+  top: 74px;
+  z-index: 5;
+  background: #f4f6fb;
+  padding-top: 10px;
+}
 
-    .searchbox { border-radius: 12px !important; background:#fff; }
+.searchbox { border-radius: 12px !important; background:#fff; }
 
-    .badge-soft { padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size:.85rem; display:inline-block; }
-    .b-ok { background:#e8f5e9; color:#1b5e20; }
-    .b-bloq { background:#fff3e0; color:#e65100; }
-    .b-prev { background:#e3f2fd; color:#0d47a1; }
+.badge-soft { padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size:.85rem; display:inline-block; }
+.b-ok { background:#e8f5e9; color:#1b5e20; }
+.b-bloq { background:#fff3e0; color:#e65100; }
+.b-prev { background:#e3f2fd; color:#0d47a1; }
 
-    html, body { overflow-x: hidden; }
+/* ===== Desktop (cards/grid) ===== */
+.desktop-only { display:block; }
+.mobile-only  { display:none; }
 
-    /* ===== mobile list ===== */
-    .mobile-only { display:none; }
-    .desktop-only { display:block; }
+.alunos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
 
-    @media (max-width: 600px){
-      header.topbar{ padding:0 14px; }
-      .wrap{ margin-top:86px; } /* ⬅️ igual painel */
-      .stickybar{ top: 64px; }  /* ⬅️ topbar no mobile */
-      .desktop-only { display:none; }
-      .mobile-only { display:block; }
-    }
+/* ===== Mobile/Tablet: força lista vertical ===== */
+@media (max-width: 1024px){
+  header.topbar{ padding:0 14px; }
+  .wrap{ margin-top:86px; }
+  .stickybar{ top: 64px; }
 
-    .collection { border-radius: 14px; overflow:hidden; }
-    .collection .collection-item { padding: 14px 14px; }
+  .desktop-only { display:none; }
+  .mobile-only  { display:block; }
 
-    .aluno-line {
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-    .aluno-mat {
-      font-weight:800;
-      font-variant-numeric: tabular-nums;
-      flex:0 0 auto;
-      min-width:92px;
-    }
-    .aluno-nome {
-      flex:1 1 auto;
-      min-width:0;
-      font-weight:600;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      line-height:1.2;
-    }
-    .aluno-sub {
-      font-size: 12px;
-      opacity: .75;
-      margin-top: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+  .alunos-grid { grid-template-columns: 1fr !important; }
+}
 
-    /* indicador de presença (mobile) */
-    .pres-ind {
-      margin-left: auto;
-      flex: 0 0 auto;
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 12px;
-      background: #e8f5e9;
-      color: #1b5e20;
-      border: 1px solid #c8e6c9;
-    }
+/* ===== Lista mobile ===== */
+.collection { border-radius: 14px; overflow:hidden; }
+.collection .collection-item { padding: 14px 14px; }
 
-    .pres-row .aluno-mat,
-    .pres-row .aluno-nome {
-      color: #1b5e20;
-    }
+.aluno-line {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.aluno-mat {
+  font-weight:800;
+  font-variant-numeric: tabular-nums;
+  flex:0 0 auto;
+  min-width:92px;
+}
+.aluno-nome {
+  flex:1 1 auto;
+  min-width:0;
+  font-weight:600;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  line-height:1.2;
+}
+.aluno-sub {
+  font-size: 12px;
+  opacity: .75;
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-    /* container que envolve os cards */
-    .alunos-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 12px;
-    }
+/* indicador presença */
+.pres-ind {
+  margin-left: auto;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 12px;
+  background: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #c8e6c9;
+}
 
-    /* ===== FORÇAR MOBILE EM TABLET ===== */
-    @media (max-width: 1024px) {
-      .alunos-grid {
-        grid-template-columns: 1fr !important;
-      }
-    }
+.pres-row .aluno-mat,
+.pres-row .aluno-nome {
+  color: #1b5e20;
+}
+
+    
   
-    </style>
+  </style>
 </head>
 
 <body>
