@@ -173,154 +173,165 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
   <script>
-    /**
-     * Base da API:
-     * - Se estiver em apisec, já usa o mesmo host
-     * - Se estiver em secauxiliar, aponta para apisec
-     */
-    const API = (location.hostname === 'apisec.secauxiliar.com.br')
-      ? (location.origin + '/optativo/')
-      : 'https://apisec.secauxiliar.com.br/optativo/';
+  const API = (location.hostname === 'apisec.secauxiliar.com.br')
+    ? (location.origin + '/optativo/')
+    : 'https://apisec.secauxiliar.com.br/optativo/';
 
-    const $msg = document.getElementById('msg');
-    const $sel = document.getElementById('salaSelect');
-    const $btn = document.getElementById('btnEntrar');
-    const $logout = document.getElementById('logoutLink');
+  const $msg = document.getElementById('msg');
+  const $sel = document.getElementById('salaSelect');
+  const $btn = document.getElementById('btnEntrar');
+  const $logout = document.getElementById('logoutLink');
 
-    const msg = (t='') => $msg.textContent = t;
+  const msg = (t='') => $msg.textContent = t;
 
-    function reinitSelect(){
-      try{
-        const inst = M.FormSelect.getInstance($sel);
-        if(inst) inst.destroy();
-      }catch(e){}
-      M.FormSelect.init($sel);
+  function reinitSelect(){
+    try{
+      const inst = M.FormSelect.getInstance($sel);
+      if(inst) inst.destroy();
+    }catch(e){}
+    M.FormSelect.init($sel);
+  }
+
+  function setLoading(state){
+    $btn.disabled = true;
+    $sel.disabled = !!state;
+    if(state){
+      $sel.innerHTML = `<option value="" disabled selected>Carregando...</option>`;
     }
+    reinitSelect();
+  }
 
-    function setLoading(state){
-      $btn.disabled = true;
-      $sel.disabled = !!state;
-      if(state){
-        $sel.innerHTML = `<option value="" disabled selected>Carregando...</option>`;
+  function setError(text){
+    msg(text);
+    $sel.innerHTML = `<option value="" disabled selected>Erro</option>`;
+    $btn.disabled = true;
+    reinitSelect();
+  }
+
+  // ✅ manda pro login e volta pra selecao depois
+  function goLogin(){
+    const next = encodeURIComponent(location.pathname + location.search);
+    location.href = `./login.html?next=${next}`;
+  }
+
+  // Logout aponta para o backend (porque quem limpa cookie é o PHP)
+  $logout.href = API + 'logout.php';
+
+  async function carregarSalas(){
+    msg('');
+    setLoading(true);
+
+    try{
+      const r = await fetch(API + 'fiscal_salas_list.php', {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      // ✅ se não está autenticado, vai pro login (tablet novo cai aqui)
+      if (r.status === 401) {
+        msg('Sessão expirada. Faça login novamente.');
+        return goLogin();
       }
-      reinitSelect();
-    }
 
-    function setError(text){
-      msg(text);
-      $sel.innerHTML = `<option value="" disabled selected>Erro</option>`;
-      $btn.disabled = true;
-      reinitSelect();
-    }
+      let j = null;
+      try { j = await r.json(); } catch(e){}
 
-    // Logout aponta para o backend (porque quem limpa cookie é o PHP)
-    $logout.href = API + 'logout.php';
-
-    async function carregarSalas(){
-      msg('');
-      setLoading(true);
-
-      try{
-        const r = await fetch(API + 'fiscal_salas_list.php', {
-          method: 'GET',
-          credentials: 'include',
-          cache: 'no-store'
-        });
-
-        let j = null;
-        try { j = await r.json(); } catch(e){}
-
-        if(!r.ok){
-          const detalhe = (j && (j.msg || j.error)) ? ` — ${j.msg || j.error}` : '';
-          setError(`Falha ao carregar salas (HTTP ${r.status})${detalhe}`);
-          return;
-        }
-
-        if(!j || !j.ok){
-          const detalhe = j && (j.msg || j.error) ? (j.msg || j.error) : 'Resposta inválida';
-          setError(`Falha ao carregar salas: ${detalhe}`);
-          return;
-        }
-
-        const rows = Array.isArray(j.rows) ? j.rows : [];
-
-        if(rows.length === 0){
-          setError('Nenhuma sala disponível para seleção.');
-          return;
-        }
-
-        $sel.disabled = false;
-        $sel.innerHTML =
-          `<option value="" disabled selected>Selecione...</option>` +
-          rows.map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
-
-        reinitSelect();
-        $btn.disabled = true;
-
-      }catch(e){
-        console.error(e);
-        setError('Erro de rede ao carregar salas.');
+      if(!r.ok){
+        const detalhe = (j && (j.msg || j.error)) ? ` — ${j.msg || j.error}` : '';
+        setError(`Falha ao carregar salas (HTTP ${r.status})${detalhe}`);
+        return;
       }
-    }
 
-    // listener 1x
-    $sel.addEventListener('change', () => {
-      $btn.disabled = !$sel.value;
-      msg('');
-    });
+      if(!j || !j.ok){
+        const detalhe = j && (j.msg || j.error) ? (j.msg || j.error) : 'Resposta inválida';
+        setError(`Falha ao carregar salas: ${detalhe}`);
+        return;
+      }
 
-    $btn.addEventListener('click', async () => {
-      msg('');
-      const sala_id = $sel.value;
-      if(!sala_id) return;
+      const rows = Array.isArray(j.rows) ? j.rows : [];
 
+      if(rows.length === 0){
+        setError('Nenhuma sala disponível para seleção.');
+        return;
+      }
+
+      $sel.disabled = false;
+      $sel.innerHTML =
+        `<option value="" disabled selected>Selecione...</option>` +
+        rows.map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
+
+      reinitSelect();
       $btn.disabled = true;
 
-      try{
-        const fd = new FormData();
-        fd.append('sala_id', sala_id);
+    }catch(e){
+      console.error(e);
+      setError('Erro de rede ao carregar salas.');
+    }
+  }
 
-        const r = await fetch(API + 'fiscal_set_sala.php', {
-          method: 'POST',
-          body: fd,
-          credentials: 'include',
-          cache: 'no-store'
-        });
+  $sel.addEventListener('change', () => {
+    $btn.disabled = !$sel.value;
+    msg('');
+  });
 
-        let j = null;
-        try { j = await r.json(); } catch(e){}
+  $btn.addEventListener('click', async () => {
+    msg('');
+    const sala_id = $sel.value;
+    if(!sala_id) return;
 
-        // ✅ tratamento especial: sala ocupada
-        if (r.status === 409 && j && j.code === 'SALA_OCUPADA') {
-          M.toast({html: j.msg || 'Sala ocupada por outro fiscal.'});
-          msg(j.msg || 'Sala ocupada por outro fiscal.');
-          $btn.disabled = false;
-          return;
-        }
+    $btn.disabled = true;
 
-        // ✅ tratamento padrão de erro
-        if (!r.ok || !j || !j.ok) {
-          const detalhe = (j && (j.msg || j.error)) ? (j.msg || j.error) : '';
-          msg(detalhe || `Não foi possível selecionar a sala (HTTP ${r.status})`);
-          $btn.disabled = false;
-          return;
-        }
+    try{
+      const fd = new FormData();
+      fd.append('sala_id', sala_id);
 
-        // ✅ sucesso
-        location.href = './presenca.html';
+      const r = await fetch(API + 'fiscal_set_sala.php', {
+        method: 'POST',
+        body: fd,
+        credentials: 'include',
+        cache: 'no-store'
+      });
 
-      }catch(e){
-        console.error(e);
-        msg('Erro de rede ao selecionar a sala.');
+      // ✅ se perder a sessão entre um passo e outro
+      if (r.status === 401) {
+        msg('Sessão expirada. Faça login novamente.');
+        return goLogin();
+      }
+
+      let j = null;
+      try { j = await r.json(); } catch(e){}
+
+      // sala ocupada
+      if (r.status === 409 && j && j.code === 'SALA_OCUPADA') {
+        M.toast({html: j.msg || 'Sala ocupada por outro fiscal.'});
+        msg(j.msg || 'Sala ocupada por outro fiscal.');
         $btn.disabled = false;
+        return;
       }
-    });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      M.AutoInit();
-      carregarSalas();
-    });
-  </script>
+      if (!r.ok || !j || !j.ok) {
+        const detalhe = (j && (j.msg || j.error)) ? (j.msg || j.error) : '';
+        msg(detalhe || `Não foi possível selecionar a sala (HTTP ${r.status})`);
+        $btn.disabled = false;
+        return;
+      }
+
+      location.href = './presenca.html';
+
+    }catch(e){
+      console.error(e);
+      msg('Erro de rede ao selecionar a sala.');
+      $btn.disabled = false;
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    M.AutoInit();
+    carregarSalas();
+  });
+</script>
+
 
 </body>
 </html>
