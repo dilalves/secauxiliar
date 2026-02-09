@@ -230,6 +230,15 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
   <script>
+    // ===== Token (fallback para Chrome Android que não manda cookie) =====
+    function getToken(){
+      return localStorage.getItem('PRESENCA_token') || '';
+    }
+    function authHeaders(extra = {}){
+      const t = getToken();
+      return t ? { ...extra, 'Authorization': `Bearer ${t}` } : extra;
+    }
+
     const API = (location.hostname === 'apisec.secauxiliar.com.br')
       ? (location.origin + '/optativo/')
       : 'https://apisec.secauxiliar.com.br/optativo/';
@@ -245,7 +254,11 @@
       location.href = `./login.html?next=${next}`;
     }
 
+    // logout: limpa token local e manda pro endpoint
     $logout.href = API + 'logout.php';
+    $logout.addEventListener('click', () => {
+      localStorage.removeItem('PRESENCA_token');
+    });
 
     function setLoading(){
       $grid.innerHTML = `
@@ -269,8 +282,6 @@
     }
 
     function extractShortName(full){
-      // tenta pegar "P1" / "P2" do nome
-      // exemplos: "P1 (#1)" / "P2 MED" / "Sala P1"
       const m = String(full || '').toUpperCase().match(/\bP\d+\b/);
       return m ? m[0] : (full || 'Sala');
     }
@@ -285,6 +296,7 @@
           method: 'POST',
           body: fd,
           credentials: 'include',
+          headers: authHeaders(),          // ✅ AQUI
           cache: 'no-store'
         });
 
@@ -323,6 +335,7 @@
         const r = await fetch(API + 'fiscal_salas_list.php', {
           method: 'GET',
           credentials: 'include',
+          headers: authHeaders(),          // ✅ AQUI
           cache: 'no-store'
         });
 
@@ -370,7 +383,6 @@
           `;
         }).join('');
 
-        // clique nos cards
         $grid.querySelectorAll('.sala-card[data-id]').forEach(el => {
           el.addEventListener('click', () => {
             const id = el.getAttribute('data-id');

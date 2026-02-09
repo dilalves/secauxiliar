@@ -97,8 +97,8 @@ document.getElementById('btn').onclick = async () => {
     const r = await fetch(API + 'auth_login.php', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({login, senha}),
-      credentials: 'include'
+      credentials: 'include',
+      body: JSON.stringify({login, senha})    
     });
 
     // se o PHP retornar HTML/erro, isso estoura aqui; por isso o try/catch
@@ -109,6 +109,10 @@ document.getElementById('btn').onclick = async () => {
     if (!r.ok || !data.ok) {
       msg.textContent = data.error || 'Falha no login';
       return;
+    }
+
+     if (data.token) {
+      localStorage.setItem('PRESENCA_token', data.token);
     }
 
     const nivel = getNivel(data);
