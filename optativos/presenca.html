@@ -334,12 +334,8 @@ header.topbar .right-actions{
               <td class="mono">${escapeHtml(a.matricula)}</td>
               <td>
                 <b>${escapeHtml(a.nome || '—')}</b>
-                ${a.email ? `<div class="small muted">${escapeHtml(a.email)}</div>` : ``}
               </td>
-              <td>
-                ${statusHtml}
-                ${a.bloqueado ? `<div class="small muted">Venc.: ${escapeHtml(a.vencido_desde || '—')}</div>` : ``}
-              </td>
+              
             </tr>
           `;
         }).join('');
@@ -463,17 +459,19 @@ header.topbar .right-actions{
       if (a.bloqueado) {
         $mStatus.className = 'badge-soft b-bloq';
         $mStatus.textContent = 'BLOQUEADO';
+
         $mMotivo.innerHTML =
           `<span class="red-text"><b>Não é possível registrar presença.</b></span><br>` +
-          `<span class="small">-> ${a.motivo_bloqueio || 'Pendência financeira'}.</span>` +
-          (a.vencido_desde ? `<div class="small muted">Venc.: ${a.vencido_desde}</div>` : '');
+          `<span class="small">-> ${a.motivo_bloqueio || 'Encaminhar à secretaria'}.</span>`;
+
         $btnConfirmar.classList.add('disabled');
-      } else {
-        $mStatus.className = a.presenca_ok ? 'badge-soft b-ok' : 'badge-soft b-prev';
-        $mStatus.textContent = a.presenca_ok ? 'PRESENTE' : 'LIBERADO';
-        $mMotivo.innerHTML = `<span class="small muted">Confirme a presença do aluno.</span>`;
-        $btnConfirmar.classList.remove('disabled');
       }
+      else {
+              $mStatus.className = a.presenca_ok ? 'badge-soft b-ok' : 'badge-soft b-prev';
+              $mStatus.textContent = a.presenca_ok ? 'PRESENTE' : 'LIBERADO';
+              $mMotivo.innerHTML = `<span class="small muted">Confirme a presença do aluno.</span>`;
+              $btnConfirmar.classList.remove('disabled');
+            }
 
       const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
       modal.open();
