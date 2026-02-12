@@ -155,6 +155,17 @@
     }
     .day.has-event{ border-color:#fed7aa; }
 
+    /* ===== Domingo e Feriados ===== */
+    .dow.sun { color:#dc2626 !important; }
+    .day.sunday .num { color:#dc2626; }
+
+    .day.holiday{
+      border-color:#fecaca;
+      background:#fff5f5;
+    }
+    .day.holiday .num{ color:#dc2626; }
+    .day.sunday.holiday{ border-color:#fca5a5; }
+
     .hint{ color:var(--muted); font-size:.9rem; padding:12px 16px; }
 
     @media (max-width: 600px){
@@ -245,6 +256,7 @@
     <div class="hint">
       • Ponto azul = previsto • verde = presente • vermelho = ausente • cinza = cancelado
       &nbsp;&nbsp;• 📌 = evento
+      &nbsp;&nbsp;• Domingo/feriado = vermelho
     </div>
   </div>
 
@@ -252,6 +264,17 @@
 
 <script>
   const API = 'https://apisec.secauxiliar.com.br/optativo/';
+
+  /**
+   * Feriados extras (estado/cidade/interno) — você pode editar livre:
+   * Exemplo SP: 09/07
+   */
+  const EXTRA_HOLIDAYS = {
+    "2026-07-09": "Revolução Constitucionalista (SP)"
+    // "2026-01-25": "Aniversário de São Paulo",
+    // "2026-03-29": "Feriado interno do curso",
+  };
+
   let currentMatricula = '';
   let currentYM = ''; // YYYY-MM
 
@@ -289,27 +312,103 @@
     return 'previsto';
   }
 
-  // Calendário começando na SEGUNDA (pt-BR estilo escola) + EVENTOS
+  function pad2(n){ return String(n).padStart(2,'0'); }
+
+  function toYMD(d){
+    const y = d.getFullYear();
+    const m = pad2(d.getMonth()+1);
+    const day = pad2(d.getDate());
+    return `${y}-${m}-${day}`;
+  }
+
+  // Páscoa (Meeus/Jones/Butcher)
+  function easterDate(year){
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19*a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2*e + 2*i - h - k) % 7;
+    const m = Math.floor((a + 11*h + 22*l) / 451);
+    const month = Math.floor((h + l - 7*m + 114) / 31); // 3=Mar, 4=Abr
+    const day = ((h + l - 7*m + 114) % 31) + 1;
+    return new Date(year, month-1, day);
+  }
+
+  function addDays(date, n){
+    const d = new Date(date.getTime());
+    d.setDate(d.getDate() + n);
+    return d;
+  }
+
+  /**
+   * Feriados nacionais (fixos + móveis principais) + extras (EXTRA_HOLIDAYS)
+   * Retorna { set: Set<YYYY-MM-DD>, names: {YYYY-MM-DD: "Nome"} }
+   */
+  function brHolidays(year){
+    const set = new Set();
+    const names = {};
+
+    const add = (ymd, name) => {
+      set.add(ymd);
+      if(name) names[ymd] = name;
+    };
+
+    // Fixos nacionais
+    add(`${year}-01-01`, 'Confraternização Universal');
+    add(`${year}-04-21`, 'Tiradentes');
+    add(`${year}-05-01`, 'Dia do Trabalho');
+    add(`${year}-09-07`, 'Independência do Brasil');
+    add(`${year}-10-12`, 'Nossa Senhora Aparecida');
+    add(`${year}-11-02`, 'Finados');
+    add(`${year}-11-15`, 'Proclamação da República');
+    add(`${year}-11-20`, 'Consciência Negra');
+    add(`${year}-12-25`, 'Natal');
+
+    // Móveis
+    const pascoa = easterDate(year);
+    add(toYMD(addDays(pascoa, -2)),  'Sexta-feira Santa');
+    add(toYMD(addDays(pascoa, -48)), 'Carnaval (Segunda)');
+    add(toYMD(addDays(pascoa, -47)), 'Carnaval (Terça)');
+    add(toYMD(addDays(pascoa, 60)),  'Corpus Christi');
+
+    // Extras configuráveis
+    for(const [ymd, nome] of Object.entries(EXTRA_HOLIDAYS || {})){
+      if(String(ymd).startsWith(String(year) + '-')){
+        add(ymd, nome || 'Feriado');
+      }
+    }
+
+    return { set, names };
+  }
+
+  // DOMINGO primeiro + eventos + domingos vermelhos + feriados vermelhos
   function buildCalendarGrid(ym, daysMap, eventsByDate){
     const [y,m] = ym.split('-').map(n=>parseInt(n,10));
     const first = new Date(y, m-1, 1);
     const last  = new Date(y, m, 0);
     const daysInMonth = last.getDate();
 
-    // JS: 0=Dom ... 6=Sáb | queremos seg=0 ... dom=6
-    const jsDow = first.getDay();
-    const offset = (jsDow + 6) % 7;
+    // Começando no DOMINGO: offset = 0..6
+    const offset = first.getDay();
 
-    const dows = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+    const dows = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
 
     const grid = $('calGrid');
     grid.innerHTML = '';
 
-    // linha de dias da semana
-    for(const label of dows){
+    const { set: holidaySet, names: holidayNames } = brHolidays(y);
+
+    // header
+    for(let i=0;i<dows.length;i++){
       const el = document.createElement('div');
-      el.className = 'dow';
-      el.textContent = label;
+      el.className = 'dow' + (i===0 ? ' sun' : '');
+      el.textContent = dows[i];
       grid.appendChild(el);
     }
 
@@ -325,10 +424,19 @@
     for(let d=1; d<=daysInMonth; d++){
       const el = document.createElement('div');
       el.className = 'day';
-      const dd = String(d).padStart(2,'0');
+
+      const dd = pad2(d);
       const dateStr = `${ym}-${dd}`;
 
       el.innerHTML = `<div class="num">${d}</div>`;
+
+      // Domingo?
+      const dow = new Date(y, m-1, d).getDay(); // 0=Dom
+      if(dow === 0) el.classList.add('sunday');
+
+      // Feriado?
+      const isHoliday = holidaySet.has(dateStr);
+      if(isHoliday) el.classList.add('holiday');
 
       // Aulas (opt_chamadas)
       if(daysMap[dateStr]){
@@ -359,6 +467,13 @@
         if(!el.title) el.title = badge.title;
       }
 
+      // Tooltip do feriado (nome)
+      if(isHoliday){
+        const nomeFer = holidayNames[dateStr] || 'Feriado';
+        if(!el.title) el.title = `${dateStr} • ${nomeFer}`;
+        else el.title = `${el.title}\n${nomeFer}`;
+      }
+
       grid.appendChild(el);
     }
 
@@ -386,9 +501,7 @@
   }
 
   async function carregarEventos(ym){
-    // eventos globais (para todos)
     const j = await apiGet(`${API}eventos_calendario.php?ym=${encodeURIComponent(ym)}`);
-
     const map = {};
     for(const e of (j.eventos || [])){
       if(!map[e.data]) map[e.data] = [];
