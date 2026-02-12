@@ -141,6 +141,20 @@
     .dot.ausente{ background:#dc2626; }
     .dot.cancelado{ background:#6b7280; }
 
+    /* ===== Eventos (opt_eventos) ===== */
+    .ev-badge{
+      position:absolute;
+      top:8px; right:10px;
+      font-size:.75rem;
+      font-weight:800;
+      padding:2px 7px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff7ed;
+      color:#9a3412;
+    }
+    .day.has-event{ border-color:#fed7aa; }
+
     .hint{ color:var(--muted); font-size:.9rem; padding:12px 16px; }
 
     @media (max-width: 600px){
@@ -230,6 +244,7 @@
 
     <div class="hint">
       • Ponto azul = previsto • verde = presente • vermelho = ausente • cinza = cancelado
+      &nbsp;&nbsp;• 📌 = evento
     </div>
   </div>
 
@@ -246,8 +261,7 @@
 
   function fmtDT(v){
     if(!v) return '—';
-    // v pode vir como "YYYY-MM-DD HH:MM:SS"
-    const d = new Date(v.replace(' ', 'T'));
+    const d = new Date(String(v).replace(' ', 'T'));
     if (isNaN(d.getTime())) return v;
     const dd = String(d.getDate()).padStart(2,'0');
     const mm = String(d.getMonth()+1).padStart(2,'0');
@@ -275,16 +289,16 @@
     return 'previsto';
   }
 
-  // Calendário começando na SEGUNDA (pt-BR estilo escola)
-  function buildCalendarGrid(ym, daysMap){
+  // Calendário começando na SEGUNDA (pt-BR estilo escola) + EVENTOS
+  function buildCalendarGrid(ym, daysMap, eventsByDate){
     const [y,m] = ym.split('-').map(n=>parseInt(n,10));
     const first = new Date(y, m-1, 1);
     const last  = new Date(y, m, 0);
     const daysInMonth = last.getDate();
 
     // JS: 0=Dom ... 6=Sáb | queremos seg=0 ... dom=6
-    const jsDow = first.getDay(); // 0..6
-    const offset = (jsDow + 6) % 7; // seg=0, ter=1,... dom=6
+    const jsDow = first.getDay();
+    const offset = (jsDow + 6) % 7;
 
     const dows = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
 
@@ -312,10 +326,11 @@
       const el = document.createElement('div');
       el.className = 'day';
       const dd = String(d).padStart(2,'0');
-      const dateStr = `${ym}-${dd}`; // YYYY-MM-DD
+      const dateStr = `${ym}-${dd}`;
 
       el.innerHTML = `<div class="num">${d}</div>`;
 
+      // Aulas (opt_chamadas)
       if(daysMap[dateStr]){
         const dot = document.createElement('div');
         dot.className = 'dot ' + statusClass(daysMap[dateStr]);
@@ -323,12 +338,32 @@
         el.title = `${dateStr} • ${daysMap[dateStr]}`;
       }
 
+      // Eventos (opt_eventos)
+      const evs = (eventsByDate && eventsByDate[dateStr]) ? eventsByDate[dateStr] : [];
+      if (evs.length){
+        el.classList.add('has-event');
+
+        const badge = document.createElement('div');
+        badge.className = 'ev-badge';
+        badge.textContent = `📌 ${evs.length}`;
+
+        const linhas = evs.map(e => {
+          const h = (e.hora_inicio && String(e.hora_inicio).length>=5) ? String(e.hora_inicio).slice(0,5) : '';
+          const tipo = e.tipo ? `[${e.tipo}] ` : '';
+          return `${h ? (h+' ') : ''}${tipo}${e.titulo}`;
+        });
+
+        badge.title = linhas.join('\n');
+        el.appendChild(badge);
+
+        if(!el.title) el.title = badge.title;
+      }
+
       grid.appendChild(el);
     }
 
-    // fillers depois (fecha a grade certinha)
-    // (não é obrigatório, mas deixa alinhado)
-    const totalCells = 7 + offset + daysInMonth; // 7 da header
+    // fillers depois
+    const totalCells = 7 + offset + daysInMonth;
     const remainder = totalCells % 7;
     if(remainder !== 0){
       const add = 7 - remainder;
@@ -348,6 +383,18 @@
     const j = await r.json().catch(()=>null);
     if(!r.ok || !j) throw new Error((j && j.msg) ? j.msg : `Erro HTTP ${r.status}`);
     return j;
+  }
+
+  async function carregarEventos(ym){
+    // eventos globais (para todos)
+    const j = await apiGet(`${API}eventos_calendario.php?ym=${encodeURIComponent(ym)}`);
+
+    const map = {};
+    for(const e of (j.eventos || [])){
+      if(!map[e.data]) map[e.data] = [];
+      map[e.data].push(e);
+    }
+    return map;
   }
 
   async function carregarAluno(matricula){
@@ -387,7 +434,7 @@
 
     img.onload = () => { icon.style.display='none'; img.style.display='block'; };
     img.onerror = () => { img.style.display='none'; icon.style.display=''; };
-    img.src = a.foto_url + '&_=' + Date.now(); // cache-buster leve
+    img.src = a.foto_url + '&_=' + Date.now();
 
     // mês atual
     const now = new Date();
@@ -403,13 +450,18 @@
     if(!currentMatricula) return;
 
     setMsg('Carregando calendário...');
-    const j = await apiGet(`${API}aluno_calendario.php?matricula=${encodeURIComponent(currentMatricula)}&ym=${encodeURIComponent(ym)}`);
+
+    const [chamadas, eventosMap] = await Promise.all([
+      apiGet(`${API}aluno_calendario.php?matricula=${encodeURIComponent(currentMatricula)}&ym=${encodeURIComponent(ym)}`),
+      carregarEventos(ym)
+    ]);
 
     const daysMap = {};
-    for(const d of (j.dias || [])){
+    for(const d of (chamadas.dias || [])){
       daysMap[d.data] = d.status;
     }
-    buildCalendarGrid(ym, daysMap);
+
+    buildCalendarGrid(ym, daysMap, eventosMap);
     setMsg('');
   }
 
