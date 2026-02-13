@@ -279,31 +279,46 @@
     M.FormSelect.init(elCurso);
   }
 
-  async function loadSalas(){
-    const r = await fetch(API + 'salas_list.php', { credentials:'include' });
+  // ✅ NOVO: carrega SOMENTE salas permitidas pelo curso (opt_curso_salas)
+  async function loadSalasDoCurso(cursoId){
+    if(!cursoId){
+      elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
+      M.FormSelect.init(elSala);
+      return { salas: [], auto: false };
+    }
+
+    const r = await fetch(API + 'salas_por_curso.php?curso_id=' + encodeURIComponent(cursoId), { credentials:'include' });
     const j = await r.json();
-    if(!j.ok) throw new Error(j.msg || 'Erro salas_list');
+    if(!j.ok) throw new Error(j.msg || 'Erro salas_por_curso');
 
     elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
-    j.rows.forEach(x=>{
+
+    (j.salas || []).forEach(x=>{
       const op = document.createElement('option');
       op.value = x.id;
       op.textContent = x.nome + (x.capacidade ? (' (cap ' + x.capacidade + ')') : '');
       elSala.appendChild(op);
     });
+
+    let auto = false;
+    const salas = j.salas || [];
+    if(salas.length === 1){
+      elSala.value = String(salas[0].id);
+      auto = true;
+    }
+
     M.FormSelect.init(elSala);
+    return { salas, auto };
   }
 
   // ✅ Carrega do BANCO e renderiza na tabela "Últimos ensalados"
   async function carregarUltimosEnsalados(){
-    // aqui usamos os selects (mesmo sem travar)
     const cursoId = parseInt(elCurso.value || '0', 10) || 0;
     const salaId  = parseInt(elSala.value  || '0', 10) || 0;
 
     const tbody = document.getElementById('log_body');
     tbody.innerHTML = `<tr><td colspan="4" class="muted">Carregando...</td></tr>`;
 
-    // endpoint que você vai criar/usar no PHP
     const url = API + `opt_ensalados_list.php?curso_id=${cursoId}&sala_id=${salaId}&limit=20`;
 
     try{
@@ -363,7 +378,6 @@
     M.updateTextFields();
     inpMat.focus();
 
-    // opcional: ao travar, recarrega a lista já filtrada
     await carregarUltimosEnsalados();
   });
 
@@ -469,10 +483,8 @@
     setBadge('ok','Ensalado ✅');
     M.toast({html:'Ensalado com sucesso!'});
 
-    // ✅ Recarrega do banco (sem prepend manual)
     await carregarUltimosEnsalados();
 
-    // prepara próxima matrícula
     inpMat.value = '';
     M.updateTextFields();
     setEnsalEnabled(false);
@@ -482,12 +494,20 @@
 
   btnEnsal.addEventListener('click', ensalar);
 
-  // recarrega lista ao selecionar curso/sala
-  elCurso.addEventListener('change', ()=>{
+  // ✅ AO SELECIONAR CURSO: filtra salas permitidas (opt_curso_salas)
+  elCurso.addEventListener('change', async ()=>{
     M.FormSelect.init(elCurso);
-    carregarUltimosEnsalados();
+    try{
+      const cursoId = parseInt(elCurso.value || '0', 10) || 0;
+      await loadSalasDoCurso(cursoId);
+      await carregarUltimosEnsalados();
+    }catch(e){
+      console.error(e);
+      M.toast({html:'Erro ao carregar salas do curso. Veja console.'});
+    }
   });
 
+  // recarrega lista ao selecionar sala
   elSala.addEventListener('change', ()=>{
     M.FormSelect.init(elSala);
     carregarUltimosEnsalados();
@@ -497,7 +517,7 @@
   (async ()=>{
     try{
       await loadCursos();
-      await loadSalas();
+      await loadSalasDoCurso(0); // limpa salas até escolher curso
       M.FormSelect.init(document.querySelectorAll('select'));
       resetAlunoUI();
       await carregarUltimosEnsalados(); // ✅ carrega assim que entra na página
@@ -506,7 +526,8 @@
       M.toast({html:'Erro ao carregar listas (cursos/salas). Veja console.'});
     }
   })();
-  </script>
+</script>
+
 
 </body>
 </html>
