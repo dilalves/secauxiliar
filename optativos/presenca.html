@@ -586,18 +586,25 @@ header.topbar .right-actions{
     });
 
     async function trocarSala(){
-    try{
-      const r = await fetch(API + 'fiscal_trocar_sala.php', { method:'POST' });
-      const j = await r.json();
-      if(!j.ok){
-        M.toast({html: j.msg || 'Falha ao liberar sala'});
-        return;
+      try{
+        const r = await fetch(API + 'fiscal_trocar_sala.php', {
+          method: 'POST',
+          credentials: 'include' // <<< ESSENCIAL pra mandar o cookie no subdomínio
+        });
+
+        const j = await r.json();
+
+        if(!j.ok){
+          M.toast({html: j.msg || j.error || 'Falha ao liberar sala'});
+          return;
+        }
+
+        location.href = 'selecionar_sala.html';
+      }catch(e){
+        M.toast({html:'Erro de rede ao trocar sala'});
       }
-      location.href = 'selecionar_sala.html';
-    }catch(e){
-      M.toast({html:'Erro de rede ao trocar sala'});
     }
-  }
+
 
   </script>
 </body>
