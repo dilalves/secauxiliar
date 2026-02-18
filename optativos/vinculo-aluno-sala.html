@@ -293,12 +293,58 @@
 
     elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
 
-    (j.salas || []).forEach(x=>{
-      const op = document.createElement('option');
-      op.value = x.id;
-      op.textContent = x.nome + (x.capacidade ? (' (cap ' + x.capacidade + ')') : '');
-      elSala.appendChild(op);
-    });
+    async function loadSalasDoCurso(cursoId){
+      if(!cursoId){
+        elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
+        M.FormSelect.init(elSala);
+        return { salas: [], auto: false };
+      }
+
+      // 1) salas permitidas
+      const r = await fetch(API + 'salas_por_curso.php?curso_id=' + encodeURIComponent(cursoId), { credentials:'include' });
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.msg || 'Erro salas_por_curso');
+
+      // 2) totais por sala (contador)
+      let totais = {};
+      try{
+        const r2 = await fetch(API + 'salas_status.php?curso_id=' + encodeURIComponent(cursoId), { credentials:'include' });
+        const j2 = await r2.json();
+        if(j2.ok) totais = j2.totais || {};
+      }catch(e){
+        console.warn('Falha ao carregar totais de sala:', e);
+      }
+
+      elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
+
+      (j.salas || []).forEach(x=>{
+        const total = Number(totais[x.id] ?? 0);
+        const cap   = Number(x.capacidade ?? 0);
+
+        let label = x.nome;
+        if(cap > 0){
+          label += ` (${total}/${cap})`;
+        }else{
+          label += ` (${total})`;
+        }
+
+        const op = document.createElement('option');
+        op.value = x.id;
+        op.textContent = label;
+        elSala.appendChild(op);
+      });
+
+      let auto = false;
+      const salas = j.salas || [];
+      if(salas.length === 1){
+        elSala.value = String(salas[0].id);
+        auto = true;
+      }
+
+      M.FormSelect.init(elSala);
+      return { salas, auto };
+    }
+
 
     let auto = false;
     const salas = j.salas || [];
@@ -484,6 +530,12 @@
     M.toast({html:'Ensalado com sucesso!'});
 
     await carregarUltimosEnsalados();
+    
+    await loadSalasDoCurso(cursoSel.id);
+
+    // Re-seleciona a sala travada (porque o select foi re-renderizado)
+    elSala.value = String(salaSel.id);
+    M.FormSelect.init(elSala);
 
     inpMat.value = '';
     M.updateTextFields();
@@ -526,6 +578,8 @@
       M.toast({html:'Erro ao carregar listas (cursos/salas). Veja console.'});
     }
   })();
+
+
 </script>
 
 
