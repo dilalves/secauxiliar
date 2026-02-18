@@ -216,6 +216,9 @@
   let salaSel  = null;
   let lastLookup = null;
 
+  // ✅ cache das salas carregadas para aplicar total/capacidade sem recriar select
+  let salasCache = []; // [{id,nome,capacidade}]
+
   function setBadge(type, text){
     const b = document.getElementById('status_badge');
     b.className = 'badge-soft ' + (type || 'warn');
@@ -279,11 +282,13 @@
     M.FormSelect.init(elCurso);
   }
 
-  // ✅ NOVO: carrega SOMENTE salas permitidas pelo curso (opt_curso_salas)
+  // ✅ Carrega SOMENTE salas permitidas pelo curso (salas_por_curso.php)
+  // e guarda no cache para depois aplicar "total/capacidade" no texto das opções
   async function loadSalasDoCurso(cursoId){
     if(!cursoId){
       elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
       M.FormSelect.init(elSala);
+      salasCache = [];
       return { salas: [], auto: false };
     }
 
@@ -293,68 +298,69 @@
 
     elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
 
-    async function loadSalasDoCurso(cursoId){
-      if(!cursoId){
-        elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
-        M.FormSelect.init(elSala);
-        return { salas: [], auto: false };
-      }
+    salasCache = (j.salas || []).map(x => ({
+      id: Number(x.id),
+      nome: x.nome,
+      capacidade: Number(x.capacidade || 0)
+    }));
 
-      // 1) salas permitidas
-      const r = await fetch(API + 'salas_por_curso.php?curso_id=' + encodeURIComponent(cursoId), { credentials:'include' });
-      const j = await r.json();
-      if(!j.ok) throw new Error(j.msg || 'Erro salas_por_curso');
-
-      // 2) totais por sala (contador)
-      let totais = {};
-      try{
-        const r2 = await fetch(API + 'salas_status.php?curso_id=' + encodeURIComponent(cursoId), { credentials:'include' });
-        const j2 = await r2.json();
-        if(j2.ok) totais = j2.totais || {};
-      }catch(e){
-        console.warn('Falha ao carregar totais de sala:', e);
-      }
-
-      elSala.innerHTML = '<option value="" disabled selected>Selecione</option>';
-
-      (j.salas || []).forEach(x=>{
-        const total = Number(totais[x.id] ?? 0);
-        const cap   = Number(x.capacidade ?? 0);
-
-        let label = x.nome;
-        if(cap > 0){
-          label += ` (${total}/${cap})`;
-        }else{
-          label += ` (${total})`;
-        }
-
-        const op = document.createElement('option');
-        op.value = x.id;
-        op.textContent = label;
-        elSala.appendChild(op);
-      });
-
-      let auto = false;
-      const salas = j.salas || [];
-      if(salas.length === 1){
-        elSala.value = String(salas[0].id);
-        auto = true;
-      }
-
-      M.FormSelect.init(elSala);
-      return { salas, auto };
-    }
-
+    salasCache.forEach(x=>{
+      const op = document.createElement('option');
+      op.value = x.id;
+      op.textContent = x.nome + (x.capacidade ? (' (cap ' + x.capacidade + ')') : '');
+      elSala.appendChild(op);
+    });
 
     let auto = false;
-    const salas = j.salas || [];
-    if(salas.length === 1){
-      elSala.value = String(salas[0].id);
+    if(salasCache.length === 1){
+      elSala.value = String(salasCache[0].id);
       auto = true;
     }
 
     M.FormSelect.init(elSala);
-    return { salas, auto };
+    return { salas: salasCache, auto };
+  }
+
+  // ✅ Só "enfeita" o texto das opções com total/capacidade (não recria o select)
+  async function aplicarTotaisNasSalas(cursoId){
+    if(!cursoId || !salasCache.length) return;
+
+    const keepValue = elSala.value;
+
+    const r = await fetch(API + 'salas_status.php?curso_id=' + encodeURIComponent(cursoId), { credentials:'include' });
+    const j = await r.json();
+    if(!j.ok) return;
+
+    // Aceita 2 formatos:
+    // A) j.totais = { "3": 10, "4": 20 }
+    // B) j.salas  = [{id,total}, ...]
+    let totais = {};
+
+    if(j.totais && typeof j.totais === 'object'){
+      totais = j.totais;
+    } else if(Array.isArray(j.salas)){
+      j.salas.forEach(s => totais[String(s.id)] = Number(s.total || 0));
+    }
+
+    for(const opt of elSala.options){
+      const id = Number(opt.value || 0);
+      if(!id) continue;
+
+      const sala = salasCache.find(s => s.id === id);
+      if(!sala) continue;
+
+      const total = Number(totais[String(id)] ?? 0);
+      const cap   = Number(sala.capacidade || 0);
+
+      opt.textContent = cap > 0
+        ? `${sala.nome} (${total}/${cap})`
+        : `${sala.nome} (${total})`;
+    }
+
+    // re-render do Materialize e preserva seleção
+    M.FormSelect.init(elSala);
+    if(keepValue) elSala.value = keepValue;
+    M.FormSelect.init(elSala);
   }
 
   // ✅ Carrega do BANCO e renderiza na tabela "Últimos ensalados"
@@ -530,12 +536,8 @@
     M.toast({html:'Ensalado com sucesso!'});
 
     await carregarUltimosEnsalados();
-    
-    await loadSalasDoCurso(cursoSel.id);
-
-    // Re-seleciona a sala travada (porque o select foi re-renderizado)
-    elSala.value = String(salaSel.id);
-    M.FormSelect.init(elSala);
+    // ✅ atualiza o texto das salas (total/capacidade) após ensalar
+    await aplicarTotaisNasSalas(cursoSel.id);
 
     inpMat.value = '';
     M.updateTextFields();
@@ -546,12 +548,13 @@
 
   btnEnsal.addEventListener('click', ensalar);
 
-  // ✅ AO SELECIONAR CURSO: filtra salas permitidas (opt_curso_salas)
+  // ✅ AO SELECIONAR CURSO: carrega salas permitidas e aplica totais
   elCurso.addEventListener('change', async ()=>{
     M.FormSelect.init(elCurso);
     try{
       const cursoId = parseInt(elCurso.value || '0', 10) || 0;
       await loadSalasDoCurso(cursoId);
+      await aplicarTotaisNasSalas(cursoId);
       await carregarUltimosEnsalados();
     }catch(e){
       console.error(e);
@@ -578,10 +581,7 @@
       M.toast({html:'Erro ao carregar listas (cursos/salas). Veja console.'});
     }
   })();
-
-
-</script>
-
+  </script>
 
 </body>
 </html>
