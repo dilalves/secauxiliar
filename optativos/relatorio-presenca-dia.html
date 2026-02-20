@@ -26,11 +26,7 @@
       --warn:#f59e0b;
     }
 
-    body{
-      background:var(--bg);
-      font-family:system-ui, Arial;
-      padding:24px;
-    }
+    body{ background:var(--bg); font-family:system-ui, Arial; padding:24px; }
 
     header.topbar{
       position:fixed; top:0; left:0; right:0; height:64px;
@@ -39,30 +35,19 @@
       padding:0 24px;
       box-shadow:0 2px 10px rgba(16,24,40,.12);
     }
-    header.topbar .brand{
-      display:flex; align-items:center; gap:12px;
-      min-width:0;
-    }
+    header.topbar .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
     header.topbar h5{
       margin:0; font-weight:600;
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
       font-size:1.1rem;
     }
     header.topbar .right-actions{
-      margin-left:auto;
-      display:flex; align-items:center; gap:10px;
+      margin-left:auto; display:flex; align-items:center; gap:10px;
     }
-    .btn-top{
-      border-radius:999px;
-      background: rgba(255,255,255,.15);
-      box-shadow:none;
-    }
+    .btn-top{ border-radius:999px; background: rgba(255,255,255,.15); box-shadow:none; }
     .btn-top:hover{ background: rgba(255,255,255,.22); }
 
-    .wrap{
-      max-width:1200px;
-      margin:96px auto 0;
-    }
+    .wrap{ max-width:1200px; margin:96px auto 0; }
 
     .panel-card{
       background:var(--card);
@@ -117,11 +102,7 @@
       color:#111827;
       margin-top:2px;
     }
-    .kpi .sub{
-      color:var(--muted);
-      font-size:.85rem;
-      margin-top:2px;
-    }
+    .kpi .sub{ color:var(--muted); font-size:.85rem; margin-top:2px; }
 
     .tag{
       display:inline-flex;
@@ -156,9 +137,7 @@
       align-items:center;
       flex: 1 1 340px;
     }
-    .search input{
-      margin:0 !important;
-    }
+    .search input{ margin:0 !important; }
 
     .btn-round{
       border-radius: 999px;
@@ -224,7 +203,7 @@
             <span class="pill"><i class="material-icons" style="font-size:18px;">school</i><span id="lblCurso">—</span></span>
           </div>
           <div class="muted" style="margin-top:8px; font-size:.92rem;">
-            Selecione a <b>data</b> e (se quiser) a <b>turma</b> da sala. Depois clique em <b>Atualizar</b>.
+            Selecione a <b>data</b>, o <b>curso</b>, a <b>sala</b> e a <b>turma</b>. Depois clique em <b>Atualizar</b>.
           </div>
         </div>
 
@@ -239,6 +218,16 @@
         <div class="input-field field">
           <input type="date" id="data" />
           <label class="active" for="data">Data</label>
+        </div>
+
+        <div class="input-field field">
+          <select id="curso_id"></select>
+          <label>Curso</label>
+        </div>
+
+        <div class="input-field field">
+          <select id="sala_id"></select>
+          <label>Sala</label>
         </div>
 
         <div class="input-field field">
@@ -333,15 +322,19 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
   <script>
-    // Ajuste para seu ambiente:
-    const API_BASE = "https://apisec.secauxiliar.com.br/optativo/"
-    const ENDPOINT = API_BASE + 'relatorio_presenca_sala.php';
+    // ===== API =====
+    const API_BASE = "https://apisec.secauxiliar.com.br/optativo/";
+    const ENDPOINT = API_BASE + "relatorio_presenca_admin.php";
 
-    const elData   = document.getElementById('data');
-    const elTurma  = document.getElementById('turma_id');
-    const elBtn    = document.getElementById('btnLoad');
-    const elPrint  = document.getElementById('btnPrint');
-    const elQ      = document.getElementById('q');
+    // ===== Elements =====
+    const elData  = document.getElementById('data');
+    const elCurso = document.getElementById('curso_id');
+    const elSala  = document.getElementById('sala_id');
+    const elTurma = document.getElementById('turma_id');
+
+    const elBtn   = document.getElementById('btnLoad');
+    const elPrint = document.getElementById('btnPrint');
+    const elQ     = document.getElementById('q');
 
     const lblData = document.getElementById('lblData');
     const lblSala = document.getElementById('lblSala');
@@ -359,8 +352,8 @@
 
     let ALL = [];
 
+    // ===== Helpers =====
     function fmtBR(iso){
-      // iso YYYY-MM-DD -> DD/MM/YYYY
       if(!iso || iso.length < 10) return iso || '';
       const [y,m,d] = iso.split('-');
       return `${d}/${m}/${y}`;
@@ -434,58 +427,114 @@
       kPct.textContent   = pct + '%';
     }
 
-    function fillTurmas(turmas, selectedId){
-      elTurma.innerHTML = turmas.map(t => {
-        const id = Number(t.id);
-        const label = `${t.curso_nome}` + (t.turma_especial_required ? ` • req: ${t.turma_especial_required}` : '');
-        return `<option value="${id}" ${id===Number(selectedId) ? 'selected':''}>${escapeHtml(label)}</option>`;
-      }).join('');
-
-      // re-init Materialize select
-      M.FormSelect.init(elTurma);
-    }
-
-    function applyHeader(data, sala, turma){
+    function applyHeader(data, salaNome, cursoNome){
       lblData.textContent = fmtBR(data);
-      lblSala.textContent = sala?.nome ? sala.nome : '—';
-      lblCurso.textContent = turma?.curso_nome ? turma.curso_nome : '—';
+      lblSala.textContent = salaNome || '—';
+      lblCurso.textContent = cursoNome || '—';
     }
 
-    async function load(){
+    function clearSelect(sel, placeholder){
+      sel.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+      M.FormSelect.init(sel);
+    }
+
+    function fillSelect(sel, rows, getId, getLabel, selectedId){
+      sel.innerHTML = rows.map(r => {
+        const id = String(getId(r));
+        const label = getLabel(r);
+        const selAttr = (selectedId && String(selectedId) === id) ? 'selected' : '';
+        return `<option value="${escapeHtml(id)}" ${selAttr}>${escapeHtml(label)}</option>`;
+      }).join('');
+      M.FormSelect.init(sel);
+    }
+
+    async function api(params){
+      const url = new URL(ENDPOINT);
+      Object.entries(params).forEach(([k,v]) => {
+        if(v !== undefined && v !== null && String(v) !== '') url.searchParams.set(k, String(v));
+      });
+
+      const resp = await fetch(url.toString(), { credentials: 'include' });
+      const j = await resp.json();
+      if(!j.ok) throw new Error(j.msg || 'Erro na API');
+      return j;
+    }
+
+    // ===== Loading chained selects =====
+    async function loadCursos(){
+      clearSelect(elCurso, 'Carregando cursos...');
+      const j = await api({ action:'cursos' });
+      const rows = j.rows || [];
+      fillSelect(elCurso, rows, r => r.id, r => r.nome, rows[0]?.id);
+      // auto segue
+      await loadSalas();
+    }
+
+    async function loadSalas(){
+      clearSelect(elSala, 'Selecione o curso...');
+      clearSelect(elTurma, 'Selecione a sala...');
+
+      const curso_id = elCurso.value;
+      if(!curso_id) return;
+
+      clearSelect(elSala, 'Carregando salas...');
+      const j = await api({ action:'salas', curso_id });
+      const rows = j.rows || [];
+      if(!rows.length){
+        clearSelect(elSala, 'Sem salas nesse curso');
+        return;
+      }
+      fillSelect(elSala, rows, r => r.id, r => r.nome, rows[0]?.id);
+      await loadTurmas();
+    }
+
+    async function loadTurmas(){
+      clearSelect(elTurma, 'Selecione a sala...');
+      const sala_id = elSala.value;
+      if(!sala_id) return;
+
+      clearSelect(elTurma, 'Carregando turmas...');
+      const j = await api({ action:'turmas', sala_id });
+      const rows = j.rows || [];
+      if(!rows.length){
+        clearSelect(elTurma, 'Sem turmas ativas');
+        return;
+      }
+
+      // label da turma: Curso + req
+      fillSelect(
+        elTurma,
+        rows,
+        r => r.turma_id,
+        r => `${r.curso_nome}${r.turma_especial_required ? ' • req: ' + r.turma_especial_required : ''}`,
+        rows[0]?.turma_id
+      );
+    }
+
+    // ===== Relatório =====
+    async function loadRelatorio(){
       setError('');
       setLoading(true);
 
       try{
         const data = elData.value;
-        const turmaId = elTurma.value || '';
+        const turma_id = elTurma.value;
 
-        const url = new URL(ENDPOINT, window.location.origin);
-        if(data) url.searchParams.set('data', data);
-        if(turmaId) url.searchParams.set('turma_id', turmaId);
+        if(!data) throw new Error('Selecione a data.');
+        if(!elCurso.value) throw new Error('Selecione o curso.');
+        if(!elSala.value) throw new Error('Selecione a sala.');
+        if(!turma_id) throw new Error('Selecione a turma.');
 
-        const resp = await fetch(url.toString(), { credentials: 'include' });
-        const j = await resp.json();
+        const j = await api({ action:'relatorio', data, turma_id });
 
-        if(!j.ok){
-          setError(j.msg || 'Erro ao carregar relatório.');
-          setLoading(false);
-          return;
-        }
+        // Header
+        applyHeader(j.data, j.sala?.nome, j.turma?.curso_nome);
 
-        // Header + turmas
-        applyHeader(j.data, j.sala, j.turma);
-
-        if(Array.isArray(j.turmas) && j.turmas.length){
-          // se turma selecionada não existe mais, usa a do retorno
-          fillTurmas(j.turmas, j.turma?.id || (j.turmas[0]?.id));
-        }
-
+        // Table + KPIs
         ALL = Array.isArray(j.rows) ? j.rows : [];
-
-        renderKpis(j.resumo || {total: ALL.length, presentes:0, ausentes:ALL.length});
+        renderKpis(j.resumo || { total: ALL.length, presentes:0, ausentes:ALL.length });
         renderTable(ALL);
 
-        // filtro atual (se já estava digitado)
         filterNow();
 
       } catch(e){
@@ -516,23 +565,32 @@
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    // init
-    document.addEventListener('DOMContentLoaded', () => {
-      // default data = hoje
+    // ===== init =====
+    document.addEventListener('DOMContentLoaded', async () => {
       elData.value = todayISO();
       lblData.textContent = fmtBR(elData.value);
-
       M.updateTextFields();
 
-      // init select vazio (Materialize precisa)
-      M.FormSelect.init(elTurma);
+      // init selects vazios
+      clearSelect(elCurso, 'Carregando cursos...');
+      clearSelect(elSala, 'Selecione o curso...');
+      clearSelect(elTurma, 'Selecione a sala...');
 
-      elBtn.addEventListener('click', load);
+      // listeners cascata
+      elCurso.addEventListener('change', async () => { await loadSalas(); });
+      elSala.addEventListener('change', async () => { await loadTurmas(); });
+
+      elBtn.addEventListener('click', loadRelatorio);
       elPrint.addEventListener('click', () => window.print());
       elQ.addEventListener('input', filterNow);
 
-      // auto-load
-      load();
+      try{
+        await loadCursos();
+        // auto: já traz relatório da primeira turma
+        await loadRelatorio();
+      } catch(e){
+        setError('Falha ao iniciar. ' + (e?.message || e));
+      }
     });
   </script>
 
