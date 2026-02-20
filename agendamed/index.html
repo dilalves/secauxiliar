@@ -83,13 +83,13 @@ function getNivel(data){
 }
 
 document.getElementById('btn').onclick = async () => {
-  const login = document.getElementById('login').value.trim();
+  const matricula = document.getElementById('login').value.trim(); // campo visual continua "login"
   const senha = document.getElementById('senha').value;
   const msg = document.getElementById('msg');
   msg.textContent = '';
 
-  if (!login || !senha) {
-    msg.textContent = 'Informe login e senha.';
+  if (!matricula || !senha) {
+    msg.textContent = 'Informe matrícula e senha.';
     return;
   }
 
@@ -97,13 +97,11 @@ document.getElementById('btn').onclick = async () => {
     const r = await fetch(API + 'auth_login.php', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({login, senha}),
+      body: JSON.stringify({ matricula, senha }), // ✅ aqui muda
       credentials: 'include'
     });
 
-    // se o PHP retornar HTML/erro, isso estoura aqui; por isso o try/catch
     const data = await r.json();
-
     console.log('LOGIN RESPONSE:', data);
 
     if (!r.ok || !data.ok) {
@@ -111,26 +109,14 @@ document.getElementById('btn').onclick = async () => {
       return;
     }
 
-    const nivel = getNivel(data);
-
-    if (nivel === 'fiscal') {
-      location.href = './selecionar_sala.html';
-      return;
-    }
-
-    if (nivel === 'admin') {
-      location.href = './painel.html';
-      return;
-    }
-
-    // Não veio nível no retorno -> não chute "admin"
-    msg.textContent = 'Login OK, mas o servidor não informou o nível do usuário. Veja o console (F12).';
-
+    // ✅ Agora é login de aluno, então redireciona pra agenda (ajuste o nome da página)
+    location.href = './agenda.html';
   } catch (e) {
     console.error(e);
     msg.textContent = 'Erro de rede ou servidor indisponível.';
   }
 };
+
 </script>
 
 
