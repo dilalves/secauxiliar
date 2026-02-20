@@ -104,6 +104,10 @@
       flex-wrap:wrap;
       margin-top: 8px;
     }
+    .actions-center{
+      justify-content:center;
+    }
+
     .btn-wide{
       border-radius: 12px;
       box-shadow:none;
@@ -165,13 +169,18 @@
 
         <div class="divider"></div>
 
-        <div class="actions" style="margin-top:16px;">
+        <!-- Botões centralizados -->
+        <div class="actions actions-center" style="margin-top:16px;">
           <button class="btn blue darken-2 btn-wide" onclick="abrirListaGeral()">
             <i class="material-icons left">list</i>Lista Geral (Entrada)
           </button>
 
           <button class="btn green darken-2 btn-wide" onclick="abrirListaSala()">
             <i class="material-icons left">meeting_room</i>Lista por Sala (Porta)
+          </button>
+
+          <button class="btn indigo darken-2 btn-wide" onclick="abrirPresencaDia()">
+            <i class="material-icons left">fact_check</i>Presença do Dia (Admin)
           </button>
         </div>
 
@@ -212,6 +221,13 @@
     const id = cursoId();
     if(!id) return;
     const url = API + 'relatorio_porta_sala.php?curso_id=' + encodeURIComponent(id);
+    window.open(url, '_blank');
+  }
+
+  // ✅ novo relatório (admin solto: data + curso + sala)
+  function abrirPresencaDia(){
+    // não precisa passar curso_id, porque a tela já lista os cursos via API
+    const url = 'relatorio-presenca-dia.html';
     window.open(url, '_blank');
   }
 </script>
