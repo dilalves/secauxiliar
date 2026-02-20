@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Curso Optativo • Agenda do Aluno</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e9edf3;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --radius:14px;
+    }
+    body{ background:var(--bg); font-family:system-ui, Arial; padding:24px; }
+
+    header.topbar{
+      position:fixed; top:0; left:0; right:0; height:64px;
+      background:var(--primary); color:#fff;
+      display:flex; align-items:center; z-index:10;
+      padding:0 24px;
+      box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+    header.topbar .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
+    header.topbar h5{
+      margin:0; font-weight:600;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-size:1.1rem;
+    }
+    header.topbar .right-actions{ margin-left:auto; display:flex; align-items:center; gap:10px; }
+    .btn-ghost{
+      border-radius:999px;
+      background: rgba(255,255,255,.15);
+      box-shadow:none;
+    }
+    .btn-ghost:hover{ background: rgba(255,255,255,.22); }
+
+    .wrap{ max-width:1100px; margin:96px auto 0; }
+    .panel-card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
+      border:1px solid var(--line);
+    }
+
+    .row-tight{ margin-bottom: 10px; }
+
+    .student{
+      display:flex; gap:16px; align-items:flex-start;
+      padding:16px;
+    }
+    .avatar{
+      width:84px; height:84px; border-radius:16px; overflow:hidden;
+      background:#eef2ff; border:1px solid var(--line);
+      flex:0 0 auto;
+      display:flex; align-items:center; justify-content:center;
+      color:var(--primary);
+    }
+    .avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .s-name{ font-weight:800; color:#111827; font-size:1.1rem; }
+    .s-sub{ color:var(--muted); font-size:.92rem; margin-top:2px; }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 160px 1fr;
+      gap:8px 12px;
+      margin-top:10px;
+    }
+    .k{ color:var(--muted); font-size:.9rem; }
+    .v{ color:#111827; font-weight:700; font-size:.95rem; }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .chip-soft{
+      display:inline-flex; align-items:center; gap:8px;
+      border-radius:999px;
+      padding:6px 10px;
+      background:#eef2ff;
+      border:1px solid #dbeafe;
+      color:var(--primary);
+      font-weight:700;
+      font-size:.85rem;
+    }
+    .chip-soft i{ font-size:18px; }
+
+    /* Calendário */
+    .cal-head{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px;
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+    }
+    .cal-title{ font-weight:900; color:#111827; }
+    .cal-grid{
+      padding:12px 14px 16px;
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap:8px;
+    }
+    .dow{
+      text-align:center;
+      font-weight:800;
+      color:var(--muted);
+      font-size:.82rem;
+      padding:6px 0;
+    }
+    .day{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      min-height:56px;
+      padding:8px;
+      position:relative;
+      cursor:default;
+    }
+    .day.muted{
+      background:#fafafa;
+      color:#9aa3b2;
+    }
+    .num{
+      font-weight:900;
+      font-size:.95rem;
+      color:#111827;
+    }
+    .dot{
+      position:absolute;
+      bottom:8px; right:10px;
+      width:10px; height:10px;
+      border-radius:99px;
+      background:#cbd5e1;
+    }
+    .dot.previsto{ background:#2563eb; }
+    .dot.presente{ background:#16a34a; }
+    .dot.ausente{ background:#dc2626; }
+    .dot.cancelado{ background:#6b7280; }
+
+    .day { overflow: visible; }
+    .dot { z-index: 3; pointer-events: none; }
+    .ev-badge { z-index: 4; }
+
+    @media (max-width: 600px){
+      .day{ min-height: 62px; padding: 8px; }
+      .dot{
+        width: 12px; height: 12px;
+        bottom: 10px; right: 10px;
+        box-shadow: 0 0 0 2px rgba(255,255,255,.9);
+      }
+      .ev-badge{
+        top: 8px; right: 8px;
+        font-size: .72rem;
+      }
+    }
+
+    /* ===== Eventos (opt_eventos) ===== */
+    .ev-badge{
+      position:absolute;
+      top:8px; right:10px;
+      z-index:4;
+      font-size:.75rem;
+      font-weight:800;
+      padding:2px 7px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff7ed;
+      color:#9a3412;
+    }
+    .day.has-event{ border-color:#fed7aa; }
+
+    /* ===== Domingo e Feriados ===== */
+    .dow.sun { color:#dc2626 !important; }
+    .day.sunday .num { color:#dc2626; }
+
+    .day.holiday{
+      border-color:#fecaca;
+      background:#fff5f5;
+    }
+    .day.holiday .num{ color:#dc2626; }
+    .day.sunday.holiday{ border-color:#fca5a5; }
+
+    .hint{ color:var(--muted); font-size:.9rem; padding:12px 16px; }
+
+    @media (max-width: 600px){
+      body{ padding:16px; }
+      header.topbar{ padding:0 14px; }
+      .wrap{ margin-top:86px; }
+      .student{ flex-direction:row; }
+      .kv{ grid-template-columns: 130px 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
+    <h5>Agenda do Aluno</h5>
+  </div>
+
+  <div class="right-actions">
+    <a class="btn btn-small btn-ghost white-text" href="https://apisec.secauxiliar.com.br/aluno/logout.php">
+      <i class="material-icons left">logout</i>Sair
+    </a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- Busca (admin) - no modo aluno a gente esconde via JS -->
+  <div id="boxBusca" class="panel-card" style="padding:16px; margin-bottom:16px;">
+    <div class="row row-tight" style="margin-bottom:0;">
+      <div class="input-field col s12 m6" style="margin:0;">
+        <i class="material-icons prefix" style="color:var(--primary);">badge</i>
+        <input id="matricula" type="text" inputmode="numeric" autocomplete="off" />
+        <label for="matricula">Matrícula</label>
+      </div>
+      <div class="col s12 m6" style="display:flex; gap:10px; align-items:center; padding-top:10px;">
+        <a id="btnBuscar" class="btn waves-effect waves-light" style="background:var(--primary); border-radius:12px;">
+          <i class="material-icons left">search</i>Buscar
+        </a>
+        <span id="msg" class="grey-text" style="font-weight:600;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resultado -->
+  <div id="cardAluno" class="panel-card" style="display:none; overflow:hidden;">
+    <div class="student">
+      <div class="avatar">
+        <img id="foto" alt="Foto" style="display:none;">
+        <i id="avatarIcon" class="material-icons" style="font-size:42px;">person</i>
+      </div>
+
+      <div style="flex:1 1 auto; min-width:0;">
+        <div class="s-name" id="nome">—</div>
+        <div class="s-sub" id="mat">—</div>
+
+        <div class="kv">
+          <div class="k">Turma</div><div class="v" id="turma">—</div>
+          <div class="k">Data matrícula</div><div class="v" id="dtMat">—</div>
+          <div class="k">Cancelamento</div><div class="v" id="dtCanc">—</div>
+        </div>
+
+        <div class="chips" id="chipsEspeciais" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="cal-head">
+      <div class="cal-title" id="calTitle">—</div>
+      <div style="display:flex; gap:8px;">
+        <a id="prevMonth" class="btn btn-small btn-ghost white-text" style="background:var(--primary);">
+          <i class="material-icons">chevron_left</i>
+        </a>
+        <a id="nextMonth" class="btn btn-small btn-ghost white-text" style="background:var(--primary);">
+          <i class="material-icons">chevron_right</i>
+        </a>
+      </div>
+    </div>
+
+    <div class="cal-grid" id="calGrid"></div>
+
+    <div class="hint">
+      • Ponto azul = previsto • verde = presente • vermelho = ausente • cinza = cancelado
+      &nbsp;&nbsp;• 📌 = Simulado
+      &nbsp;&nbsp;• Domingo/feriado = vermelho
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API = 'https://apisec.secauxiliar.com.br/aluno/';
+
+  const EXTRA_HOLIDAYS = {
+    "2026-07-09": "Revolução Constitucionalista (SP)"
+  };
+
+  let currentMatricula = '';
+  let currentYM = ''; // YYYY-MM
+
+  const $ = (id) => document.getElementById(id);
+
+  function setMsg(t){ $('msg').textContent = t || ''; }
+
+  function fmtDT(v){
+    if(!v) return '—';
+    const d = new Date(String(v).replace(' ', 'T'));
+    if (isNaN(d.getTime())) return v;
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yy = d.getFullYear();
+    return `${dd}/${mm}/${yy}`;
+  }
+
+  function ymFromDate(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    return `${y}-${m}`;
+  }
+
+  function monthLabel(ym){
+    const [y,m] = ym.split('-').map(x=>parseInt(x,10));
+    const nomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    return `${nomes[m-1]} / ${y}`;
+  }
+
+  function statusClass(s){
+    s = (s||'').toUpperCase();
+    if(s === 'PRESENTE') return 'presente';
+    if(s === 'AUSENTE') return 'ausente';
+    if(s === 'CANCELADO') return 'cancelado';
+    return 'previsto';
+  }
+
+  function pad2(n){ return String(n).padStart(2,'0'); }
+
+  function toYMD(d){
+    const y = d.getFullYear();
+    const m = pad2(d.getMonth()+1);
+    const day = pad2(d.getDate());
+    return `${y}-${m}-${day}`;
+  }
+
+  function easterDate(year){
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19*a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2*e + 2*i - h - k) % 7;
+    const m = Math.floor((a + 11*h + 22*l) / 451);
+    const month = Math.floor((h + l - 7*m + 114) / 31);
+    const day = ((h + l - 7*m + 114) % 31) + 1;
+    return new Date(year, month-1, day);
+  }
+
+  function addDays(date, n){
+    const d = new Date(date.getTime());
+    d.setDate(d.getDate() + n);
+    return d;
+  }
+
+  function brHolidays(year){
+    const set = new Set();
+    const names = {};
+
+    const add = (ymd, name) => {
+      set.add(ymd);
+      if(name) names[ymd] = name;
+    };
+
+    add(`${year}-01-01`, 'Confraternização Universal');
+    add(`${year}-04-21`, 'Tiradentes');
+    add(`${year}-05-01`, 'Dia do Trabalho');
+    add(`${year}-09-07`, 'Independência do Brasil');
+    add(`${year}-10-12`, 'Nossa Senhora Aparecida');
+    add(`${year}-11-02`, 'Finados');
+    add(`${year}-11-15`, 'Proclamação da República');
+    add(`${year}-11-20`, 'Consciência Negra');
+    add(`${year}-12-25`, 'Natal');
+
+    const pascoa = easterDate(year);
+    add(toYMD(addDays(pascoa, -2)),  'Sexta-feira Santa');
+    add(toYMD(addDays(pascoa, -48)), 'Carnaval (Segunda)');
+    add(toYMD(addDays(pascoa, -47)), 'Carnaval (Terça)');
+    add(toYMD(addDays(pascoa, 60)),  'Corpus Christi');
+
+    for(const [ymd, nome] of Object.entries(EXTRA_HOLIDAYS || {})){
+      if(String(ymd).startsWith(String(year) + '-')){
+        add(ymd, nome || 'Feriado');
+      }
+    }
+
+    return { set, names };
+  }
+
+  function buildCalendarGrid(ym, daysMap, eventsByDate){
+    const [y,m] = ym.split('-').map(n=>parseInt(n,10));
+    const first = new Date(y, m-1, 1);
+    const last  = new Date(y, m, 0);
+    const daysInMonth = last.getDate();
+
+    const offset = first.getDay(); // domingo primeiro
+    const dows = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+
+    const grid = $('calGrid');
+    grid.innerHTML = '';
+
+    const { set: holidaySet, names: holidayNames } = brHolidays(y);
+
+    for(let i=0;i<dows.length;i++){
+      const el = document.createElement('div');
+      el.className = 'dow' + (i===0 ? ' sun' : '');
+      el.textContent = dows[i];
+      grid.appendChild(el);
+    }
+
+    for(let i=0;i<offset;i++){
+      const el = document.createElement('div');
+      el.className = 'day muted';
+      el.innerHTML = `<div class="num"> </div>`;
+      grid.appendChild(el);
+    }
+
+    for(let d=1; d<=daysInMonth; d++){
+      const el = document.createElement('div');
+      el.className = 'day';
+
+      const dd = pad2(d);
+      const dateStr = `${ym}-${dd}`;
+
+      el.innerHTML = `<div class="num">${d}</div>`;
+
+      const dow = new Date(y, m-1, d).getDay();
+      if(dow === 0) el.classList.add('sunday');
+
+      const isHoliday = holidaySet.has(dateStr);
+      if(isHoliday) el.classList.add('holiday');
+
+      if(daysMap[dateStr]){
+        const dot = document.createElement('div');
+        dot.className = 'dot ' + statusClass(daysMap[dateStr]);
+        el.appendChild(dot);
+        el.title = `${dateStr} • ${daysMap[dateStr]}`;
+      }
+
+      const evs = (eventsByDate && eventsByDate[dateStr]) ? eventsByDate[dateStr] : [];
+      if (evs.length){
+        el.classList.add('has-event');
+        const badge = document.createElement('div');
+        badge.className = 'ev-badge';
+        badge.textContent = `📌 ${evs.length}`;
+
+        const linhas = evs.map(e => {
+          const h = (e.hora_inicio && String(e.hora_inicio).length>=5) ? String(e.hora_inicio).slice(0,5) : '';
+          const tipo = e.tipo ? `[${e.tipo}] ` : '';
+          return `${h ? (h+' ') : ''}${tipo}${e.titulo}`;
+        });
+
+        badge.title = linhas.join('\n');
+        el.appendChild(badge);
+        if(!el.title) el.title = badge.title;
+      }
+
+      if(isHoliday){
+        const nomeFer = holidayNames[dateStr] || 'Feriado';
+        if(!el.title) el.title = `${dateStr} • ${nomeFer}`;
+        else el.title = `${el.title}\n${nomeFer}`;
+      }
+
+      grid.appendChild(el);
+    }
+
+    const totalCells = 7 + offset + daysInMonth;
+    const remainder = totalCells % 7;
+    if(remainder !== 0){
+      const add = 7 - remainder;
+      for(let i=0;i<add;i++){
+        const el = document.createElement('div');
+        el.className = 'day muted';
+        el.innerHTML = `<div class="num"> </div>`;
+        grid.appendChild(el);
+      }
+    }
+
+    $('calTitle').textContent = monthLabel(ym);
+  }
+
+  async function apiGet(url){
+    const r = await fetch(url, { credentials: 'include' });
+    const j = await r.json().catch(()=>null);
+    if(!r.ok || !j) throw new Error((j && j.msg) ? j.msg : `Erro HTTP ${r.status}`);
+    return j;
+  }
+
+  async function carregarEventos(ym){
+    const j = await apiGet(`${API}eventos_calendario.php?ym=${encodeURIComponent(ym)}`);
+    const map = {};
+    for(const e of (j.eventos || [])){
+      if(!map[e.data]) map[e.data] = [];
+      map[e.data].push(e);
+    }
+    return map;
+  }
+
+  async function carregarAluno(matricula){
+    setMsg('Carregando seus dados...');
+    $('cardAluno').style.display = 'none';
+
+    const j = await apiGet(`${API}aluno_get.php?matricula=${encodeURIComponent(matricula)}`);
+    const a = j.aluno;
+
+    currentMatricula = a.matricula;
+    $('nome').textContent = a.nome || '—';
+    $('mat').textContent = `Matrícula: ${a.matricula || '—'}`;
+    $('turma').textContent = a.turma || '—';
+    $('dtMat').textContent = fmtDT(a.data_matricula);
+    $('dtCanc').textContent = fmtDT(a.data_cancelamento);
+
+    const chips = $('chipsEspeciais');
+    chips.innerHTML = '';
+    if (a.turmas_especiais && a.turmas_especiais.length){
+      chips.style.display = '';
+      for(const t of a.turmas_especiais){
+        const div = document.createElement('div');
+        div.className = 'chip-soft';
+        const salaTxt = t.sala ? ` - (${t.sala})` : '';
+        div.innerHTML = `<i class="material-icons">star</i>${(t.nome_disciplina||'Especial')} • ${t.turma_especial||'-'}${salaTxt}`;
+        chips.appendChild(div);
+      }
+    } else {
+      chips.style.display = 'none';
+    }
+
+    const img = $('foto');
+    const icon = $('avatarIcon');
+    img.style.display = 'none';
+    icon.style.display = '';
+    img.onload = () => { icon.style.display='none'; img.style.display='block'; };
+    img.onerror = () => { img.style.display='none'; icon.style.display=''; };
+    img.src = a.foto_url + '&_=' + Date.now();
+
+    const now = new Date();
+    currentYM = ymFromDate(now);
+
+    $('cardAluno').style.display = '';
+    setMsg('');
+
+    await carregarCalendario(currentYM);
+  }
+
+  async function carregarCalendario(ym){
+    if(!currentMatricula) return;
+
+    setMsg('Carregando calendário...');
+
+    try{
+      const [chamadas, eventosMap] = await Promise.all([
+        apiGet(`${API}aluno_calendario.php?matricula=${encodeURIComponent(currentMatricula)}&ym=${encodeURIComponent(ym)}`),
+        carregarEventos(ym)
+      ]);
+
+      const daysMap = {};
+      for(const d of (chamadas.dias || [])){
+        daysMap[d.data] = d.status;
+      }
+
+      const qt = Object.keys(daysMap).length;
+      if(qt === 0){
+        setMsg('⚠️ Sem aulas previstas nesse mês.');
+      } else {
+        setMsg('');
+      }
+
+      buildCalendarGrid(ym, daysMap, eventosMap);
+    }catch(e){
+      console.error(e);
+      setMsg('❌ Erro ao carregar presença: ' + (e.message || 'falha'));
+    }
+  }
+
+  // ====== MODO ALUNO: pega matrícula do token e carrega direto ======
+  async function iniciarModoAluno(){
+    try{
+      const me = await apiGet(`${API}auth_me.php`);
+
+      // Se for aluno, esconde busca
+      if(String(me.role || '').toLowerCase() === 'aluno'){
+        $('boxBusca').style.display = 'none';
+      }
+
+      // Só pra debug (opcional)
+      $('matricula').value = me.matricula || '';
+      if (window.M && M.updateTextFields) M.updateTextFields();
+
+      await carregarAluno(me.matricula);
+    }catch(e){
+      console.error(e);
+      setMsg('❌ Sessão expirada. Faça login novamente.');
+      setTimeout(()=> location.href = './index.html', 900);
+    }
+  }
+
+  // ====== Ainda mantém busca manual (se admin usar) ======
+  $('btnBuscar').addEventListener('click', async () => {
+    const m = $('matricula').value.trim();
+    if(!m){ setMsg('Informe a matrícula.'); return; }
+    try{
+      await carregarAluno(m);
+    }catch(e){
+      setMsg(e.message || 'Erro ao buscar');
+      console.error(e);
+    }
+  });
+
+  $('matricula').addEventListener('keydown', async (ev) => {
+    if(ev.key === 'Enter'){
+      ev.preventDefault();
+      $('btnBuscar').click();
+    }
+  });
+
+  $('prevMonth').addEventListener('click', async () => {
+    if(!currentYM) return;
+    const d = new Date(currentYM + '-01T00:00:00');
+    d.setMonth(d.getMonth()-1);
+    currentYM = ymFromDate(d);
+    try{ await carregarCalendario(currentYM); }catch(e){ setMsg(e.message); }
+  });
+
+  $('nextMonth').addEventListener('click', async () => {
+    if(!currentYM) return;
+    const d = new Date(currentYM + '-01T00:00:00');
+    d.setMonth(d.getMonth()+1);
+    currentYM = ymFromDate(d);
+    try{ await carregarCalendario(currentYM); }catch(e){ setMsg(e.message); }
+  });
+
+  window.addEventListener('load', iniciarModoAluno);
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
