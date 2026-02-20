@@ -186,6 +186,9 @@
 
     .hint{ color:var(--muted); font-size:.9rem; padding:12px 16px; }
 
+    /* ✅ MODO ALUNO: não existe busca */
+    #boxBusca{ display:none !important; }
+
     @media (max-width: 600px){
       body{ padding:16px; }
       header.topbar{ padding:0 14px; }
@@ -213,7 +216,7 @@
 
 <div class="wrap">
 
-  <!-- Busca (admin) - no modo aluno a gente esconde via JS -->
+  <!-- Busca (mantida só como fallback, mas escondida no modo aluno) -->
   <div id="boxBusca" class="panel-card" style="padding:16px; margin-bottom:16px;">
     <div class="row row-tight" style="margin-bottom:0;">
       <div class="input-field col s12 m6" style="margin:0;">
@@ -287,7 +290,10 @@
 
   const $ = (id) => document.getElementById(id);
 
-  function setMsg(t){ $('msg').textContent = t || ''; }
+  function setMsg(t){
+    const el = $('msg');
+    if (el) el.textContent = t || '';
+  }
 
   function fmtDT(v){
     if(!v) return '—';
@@ -328,6 +334,7 @@
     return `${y}-${m}-${day}`;
   }
 
+  // Páscoa (Meeus/Jones/Butcher)
   function easterDate(year){
     const a = year % 19;
     const b = Math.floor(year / 100);
@@ -341,7 +348,7 @@
     const k = c % 4;
     const l = (32 + 2*e + 2*i - h - k) % 7;
     const m = Math.floor((a + 11*h + 22*l) / 451);
-    const month = Math.floor((h + l - 7*m + 114) / 31);
+    const month = Math.floor((h + l - 7*m + 114) / 31); // 3=Mar, 4=Abr
     const day = ((h + l - 7*m + 114) % 31) + 1;
     return new Date(year, month-1, day);
   }
@@ -361,6 +368,7 @@
       if(name) names[ymd] = name;
     };
 
+    // Fixos nacionais
     add(`${year}-01-01`, 'Confraternização Universal');
     add(`${year}-04-21`, 'Tiradentes');
     add(`${year}-05-01`, 'Dia do Trabalho');
@@ -371,12 +379,14 @@
     add(`${year}-11-20`, 'Consciência Negra');
     add(`${year}-12-25`, 'Natal');
 
+    // Móveis
     const pascoa = easterDate(year);
     add(toYMD(addDays(pascoa, -2)),  'Sexta-feira Santa');
     add(toYMD(addDays(pascoa, -48)), 'Carnaval (Segunda)');
     add(toYMD(addDays(pascoa, -47)), 'Carnaval (Terça)');
     add(toYMD(addDays(pascoa, 60)),  'Corpus Christi');
 
+    // Extras
     for(const [ymd, nome] of Object.entries(EXTRA_HOLIDAYS || {})){
       if(String(ymd).startsWith(String(year) + '-')){
         add(ymd, nome || 'Feriado');
@@ -392,7 +402,8 @@
     const last  = new Date(y, m, 0);
     const daysInMonth = last.getDate();
 
-    const offset = first.getDay(); // domingo primeiro
+    // Começando no DOMINGO
+    const offset = first.getDay();
     const dows = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
 
     const grid = $('calGrid');
@@ -400,6 +411,7 @@
 
     const { set: holidaySet, names: holidayNames } = brHolidays(y);
 
+    // header
     for(let i=0;i<dows.length;i++){
       const el = document.createElement('div');
       el.className = 'dow' + (i===0 ? ' sun' : '');
@@ -407,6 +419,7 @@
       grid.appendChild(el);
     }
 
+    // fillers antes
     for(let i=0;i<offset;i++){
       const el = document.createElement('div');
       el.className = 'day muted';
@@ -414,6 +427,7 @@
       grid.appendChild(el);
     }
 
+    // dias do mês
     for(let d=1; d<=daysInMonth; d++){
       const el = document.createElement('div');
       el.className = 'day';
@@ -423,12 +437,15 @@
 
       el.innerHTML = `<div class="num">${d}</div>`;
 
+      // Domingo?
       const dow = new Date(y, m-1, d).getDay();
       if(dow === 0) el.classList.add('sunday');
 
+      // Feriado?
       const isHoliday = holidaySet.has(dateStr);
       if(isHoliday) el.classList.add('holiday');
 
+      // Aulas
       if(daysMap[dateStr]){
         const dot = document.createElement('div');
         dot.className = 'dot ' + statusClass(daysMap[dateStr]);
@@ -436,9 +453,11 @@
         el.title = `${dateStr} • ${daysMap[dateStr]}`;
       }
 
+      // Eventos
       const evs = (eventsByDate && eventsByDate[dateStr]) ? eventsByDate[dateStr] : [];
       if (evs.length){
         el.classList.add('has-event');
+
         const badge = document.createElement('div');
         badge.className = 'ev-badge';
         badge.textContent = `📌 ${evs.length}`;
@@ -451,9 +470,11 @@
 
         badge.title = linhas.join('\n');
         el.appendChild(badge);
+
         if(!el.title) el.title = badge.title;
       }
 
+      // Tooltip feriado
       if(isHoliday){
         const nomeFer = holidayNames[dateStr] || 'Feriado';
         if(!el.title) el.title = `${dateStr} • ${nomeFer}`;
@@ -463,6 +484,7 @@
       grid.appendChild(el);
     }
 
+    // fillers depois
     const totalCells = 7 + offset + daysInMonth;
     const remainder = totalCells % 7;
     if(remainder !== 0){
@@ -481,7 +503,7 @@
   async function apiGet(url){
     const r = await fetch(url, { credentials: 'include' });
     const j = await r.json().catch(()=>null);
-    if(!r.ok || !j) throw new Error((j && j.msg) ? j.msg : `Erro HTTP ${r.status}`);
+    if(!r.ok || !j) throw new Error((j && (j.msg || j.error)) ? (j.msg || j.error) : `Erro HTTP ${r.status}`);
     return j;
   }
 
@@ -499,6 +521,7 @@
     setMsg('Carregando seus dados...');
     $('cardAluno').style.display = 'none';
 
+    // ✅ no backend, se role=aluno, ele IGNORA essa querystring e usa a do token.
     const j = await apiGet(`${API}aluno_get.php?matricula=${encodeURIComponent(matricula)}`);
     const a = j.aluno;
 
@@ -509,6 +532,7 @@
     $('dtMat').textContent = fmtDT(a.data_matricula);
     $('dtCanc').textContent = fmtDT(a.data_cancelamento);
 
+    // chips turma especial
     const chips = $('chipsEspeciais');
     chips.innerHTML = '';
     if (a.turmas_especiais && a.turmas_especiais.length){
@@ -524,6 +548,7 @@
       chips.style.display = 'none';
     }
 
+    // foto
     const img = $('foto');
     const icon = $('avatarIcon');
     img.style.display = 'none';
@@ -532,8 +557,8 @@
     img.onerror = () => { img.style.display='none'; icon.style.display=''; };
     img.src = a.foto_url + '&_=' + Date.now();
 
-    const now = new Date();
-    currentYM = ymFromDate(now);
+    // mês atual
+    currentYM = ymFromDate(new Date());
 
     $('cardAluno').style.display = '';
     setMsg('');
@@ -558,11 +583,7 @@
       }
 
       const qt = Object.keys(daysMap).length;
-      if(qt === 0){
-        setMsg('⚠️ Sem aulas previstas nesse mês.');
-      } else {
-        setMsg('');
-      }
+      setMsg(qt === 0 ? '⚠️ Sem aulas previstas nesse mês.' : '');
 
       buildCalendarGrid(ym, daysMap, eventosMap);
     }catch(e){
@@ -576,16 +597,16 @@
     try{
       const me = await apiGet(`${API}auth_me.php`);
 
-      // Se for aluno, esconde busca
-      if(String(me.role || '').toLowerCase() === 'aluno'){
-        $('boxBusca').style.display = 'none';
-      }
+      const role = String(me.role ?? me.user?.role ?? '').toLowerCase();
+      const mat  = String(me.matricula ?? me.user?.matricula ?? '').trim();
 
-      // Só pra debug (opcional)
-      $('matricula').value = me.matricula || '';
-      if (window.M && M.updateTextFields) M.updateTextFields();
+      // ✅ sempre some com a busca (modo aluno)
+      const box = $('boxBusca');
+      if (box) box.style.display = 'none';
 
-      await carregarAluno(me.matricula);
+      if (!mat) throw new Error('Sessão inválida');
+
+      await carregarAluno(mat);
     }catch(e){
       console.error(e);
       setMsg('❌ Sessão expirada. Faça login novamente.');
@@ -593,25 +614,7 @@
     }
   }
 
-  // ====== Ainda mantém busca manual (se admin usar) ======
-  $('btnBuscar').addEventListener('click', async () => {
-    const m = $('matricula').value.trim();
-    if(!m){ setMsg('Informe a matrícula.'); return; }
-    try{
-      await carregarAluno(m);
-    }catch(e){
-      setMsg(e.message || 'Erro ao buscar');
-      console.error(e);
-    }
-  });
-
-  $('matricula').addEventListener('keydown', async (ev) => {
-    if(ev.key === 'Enter'){
-      ev.preventDefault();
-      $('btnBuscar').click();
-    }
-  });
-
+  // navegação de mês
   $('prevMonth').addEventListener('click', async () => {
     if(!currentYM) return;
     const d = new Date(currentYM + '-01T00:00:00');
