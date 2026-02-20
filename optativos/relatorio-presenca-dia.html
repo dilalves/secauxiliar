@@ -162,14 +162,116 @@
       .wrap{ margin-top:86px; }
     }
 
-    @media print{
-      header.topbar{ display:none !important; }
-      body{ background:#fff; padding:0; }
-      .wrap{ margin:0; max-width: 100%; }
-      .btn, .controls, .search { display:none !important; }
-      .panel-card{ box-shadow:none; border:none; }
-      table{ font-size: 12px; }
-    }
+        @media print{
+        /* some topo e elementos de UI */
+        header.topbar{ display:none !important; }
+        body{ background:#fff; padding:0; }
+        .wrap{ margin:0; max-width: 100%; }
+        .btn, .controls, .search { display:none !important; }
+        .panel-card{ box-shadow:none !important; border:none !important; }
+
+        /* força fundos/bordas no print (zebrado e chips) */
+        *{
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* =========================
+            KPI: 1 linha / 4 colunas
+            ========================= */
+        .kpis{
+            display:grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap:8px !important;
+        }
+        .kpi{
+            padding:8px 10px !important;
+            border:1px solid #d6dbe6 !important;
+            border-radius:10px !important;
+        }
+        .kpi .label{
+            font-size:10px !important;
+            gap:4px !important;
+        }
+        .kpi .label i{ font-size:14px !important; }
+        .kpi .val{
+            font-size:16px !important;
+            margin-top:0 !important;
+            line-height:1.1 !important;
+        }
+        .kpi .sub{ font-size:10px !important; margin-top:0 !important; }
+
+        /* =========================
+            Tabela: compacta + zebra
+            ========================= */
+        table{
+            width:100% !important;
+            font-size:11px !important;
+            border-collapse:collapse !important;
+        }
+        thead th{
+            font-size:10.5px !important;
+            padding:6px 8px !important;
+            border-bottom:2px solid #cfd6e6 !important;
+            white-space:nowrap !important;
+        }
+        tbody td{
+            padding:6px 8px !important;
+            vertical-align:middle !important;
+            border-bottom:1px solid #e5e9f2 !important;
+        }
+
+        /* zebra no print */
+        table.striped > tbody > tr:nth-child(odd){
+            background:#f4f6fb !important;
+        }
+
+        /* =========================
+            Evitar quebras ruins
+            ========================= */
+
+        /* matrícula nunca quebra */
+        tbody td:nth-child(2){
+            white-space:nowrap !important;
+        }
+
+        /* nome: não quebrar (e cortar com reticências) */
+        tbody td:nth-child(3){
+            white-space:nowrap !important;
+            overflow:hidden !important;
+            text-overflow:ellipsis !important;
+            max-width: 520px !important; /* ajuste se quiser */
+        }
+
+        /* Turma esp.: curta */
+        tbody td:nth-child(4){
+            white-space:nowrap !important;
+        }
+
+        /* Marcado em: não virar 2 linhas */
+        tbody td:nth-child(5){
+            white-space:nowrap !important;
+            font-size:10.5px !important;
+        }
+
+        /* Financeiro: compactar */
+        tbody td:nth-child(6) .muted{
+            font-size:10px !important;
+            margin-top:1px !important;
+        }
+
+        /* tags menores no print */
+        .tag{
+            padding:3px 7px !important;
+            font-size:9.5px !important;
+            gap:4px !important;
+        }
+        .tag i{ font-size:13px !important; }
+
+        /* quebra de página mais “limpa” */
+        tr{ break-inside:avoid !important; page-break-inside:avoid !important; }
+        }
+
   </style>
 </head>
 
