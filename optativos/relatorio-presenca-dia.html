@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Controle de Sala • Relatório de Presença</title>
+
+  <!-- Materialize -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- Ícones -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e9edf3;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --radius:14px;
+      --ok:#16a34a;
+      --bad:#ef4444;
+      --warn:#f59e0b;
+    }
+
+    body{
+      background:var(--bg);
+      font-family:system-ui, Arial;
+      padding:24px;
+    }
+
+    header.topbar{
+      position:fixed; top:0; left:0; right:0; height:64px;
+      background:var(--primary); color:#fff;
+      display:flex; align-items:center; z-index:10;
+      padding:0 24px;
+      box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+    header.topbar .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width:0;
+    }
+    header.topbar h5{
+      margin:0; font-weight:600;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-size:1.1rem;
+    }
+    header.topbar .right-actions{
+      margin-left:auto;
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn-top{
+      border-radius:999px;
+      background: rgba(255,255,255,.15);
+      box-shadow:none;
+    }
+    .btn-top:hover{ background: rgba(255,255,255,.22); }
+
+    .wrap{
+      max-width:1200px;
+      margin:96px auto 0;
+    }
+
+    .panel-card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
+      border:1px solid var(--line);
+    }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:var(--primary);
+      font-weight:700;
+      font-size:.85rem;
+    }
+
+    .controls{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+    }
+    .controls .field{
+      min-width: 190px;
+      flex: 1 1 220px;
+    }
+
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:12px;
+    }
+    .kpi{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      padding:12px 14px;
+    }
+    .kpi .label{
+      color:var(--muted);
+      font-size:.85rem;
+      font-weight:600;
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .kpi .val{
+      font-size:1.55rem;
+      font-weight:900;
+      color:#111827;
+      margin-top:2px;
+    }
+    .kpi .sub{
+      color:var(--muted);
+      font-size:.85rem;
+      margin-top:2px;
+    }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:.80rem;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#111827;
+    }
+    .tag.ok{ border-color: rgba(22,163,74,.25); background: rgba(22,163,74,.08); color: var(--ok); }
+    .tag.bad{ border-color: rgba(239,68,68,.25); background: rgba(239,68,68,.08); color: var(--bad); }
+    .tag.warn{ border-color: rgba(245,158,11,.25); background: rgba(245,158,11,.10); color: #b45309; }
+
+    table.striped > tbody > tr:nth-child(odd){ background:#fafbff; }
+    .muted{ color:var(--muted); }
+
+    .toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .search{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex: 1 1 340px;
+    }
+    .search input{
+      margin:0 !important;
+    }
+
+    .btn-round{
+      border-radius: 999px;
+      text-transform:none;
+      font-weight:800;
+    }
+
+    .skeleton{
+      display:none;
+      padding:14px;
+      border:1px dashed var(--line);
+      border-radius: 14px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 900px){
+      .kpis{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 600px){
+      body{ padding:16px; }
+      header.topbar{ padding:0 14px; }
+      .wrap{ margin-top:86px; }
+    }
+
+    @media print{
+      header.topbar{ display:none !important; }
+      body{ background:#fff; padding:0; }
+      .wrap{ margin:0; max-width: 100%; }
+      .btn, .controls, .search { display:none !important; }
+      .panel-card{ box-shadow:none; border:none; }
+      table{ font-size: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
+      <h5>Relatório de Presença</h5>
+    </div>
+
+    <div class="right-actions">
+      <a class="btn btn-small btn-top white-text" href="relatorios.html">
+        <i class="material-icons left">arrow_back</i>Voltar
+      </a>
+      <a class="btn btn-small btn-top white-text" href="https://apisec.secauxiliar.com.br/optativo/logout.php">
+        <i class="material-icons left">logout</i>Sair
+      </a>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- Cabeçalho / filtros -->
+    <div class="panel-card" style="padding:16px; margin-bottom:16px;">
+      <div class="toolbar">
+        <div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <span class="pill"><i class="material-icons" style="font-size:18px;">event</i><span id="lblData">—</span></span>
+            <span class="pill"><i class="material-icons" style="font-size:18px;">meeting_room</i><span id="lblSala">—</span></span>
+            <span class="pill"><i class="material-icons" style="font-size:18px;">school</i><span id="lblCurso">—</span></span>
+          </div>
+          <div class="muted" style="margin-top:8px; font-size:.92rem;">
+            Selecione a <b>data</b> e (se quiser) a <b>turma</b> da sala. Depois clique em <b>Atualizar</b>.
+          </div>
+        </div>
+
+        <div>
+          <a class="btn btn-round" style="background:var(--primary);" id="btnPrint">
+            <i class="material-icons left">print</i>Imprimir
+          </a>
+        </div>
+      </div>
+
+      <div class="controls" style="margin-top:14px;">
+        <div class="input-field field">
+          <input type="date" id="data" />
+          <label class="active" for="data">Data</label>
+        </div>
+
+        <div class="input-field field">
+          <select id="turma_id"></select>
+          <label>Turma</label>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+          <a class="btn btn-round" style="background:var(--accent);" id="btnLoad">
+            <i class="material-icons left">refresh</i>Atualizar
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="panel-card" style="padding:16px; margin-bottom:16px;">
+      <div class="kpis">
+        <div class="kpi">
+          <div class="label"><i class="material-icons" style="font-size:18px;">groups</i>Total</div>
+          <div class="val" id="kTotal">—</div>
+          <div class="sub">alunos na sala</div>
+        </div>
+        <div class="kpi">
+          <div class="label"><i class="material-icons" style="font-size:18px;">how_to_reg</i>Presentes</div>
+          <div class="val" id="kPres">—</div>
+          <div class="sub">marcados como presente</div>
+        </div>
+        <div class="kpi">
+          <div class="label"><i class="material-icons" style="font-size:18px;">person_off</i>Ausentes</div>
+          <div class="val" id="kAus">—</div>
+          <div class="sub">não marcados</div>
+        </div>
+        <div class="kpi">
+          <div class="label"><i class="material-icons" style="font-size:18px;">percent</i>Taxa</div>
+          <div class="val" id="kPct">—</div>
+          <div class="sub">presença do dia</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista -->
+    <div class="panel-card" style="padding:16px;">
+      <div class="toolbar" style="margin-bottom:10px;">
+        <div class="search">
+          <i class="material-icons" style="color:var(--muted);">search</i>
+          <input type="text" id="q" placeholder="Pesquisar por nome ou matrícula..." />
+          <span class="tag warn" id="tagRows">0 itens</span>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <span class="tag ok"><i class="material-icons" style="font-size:18px;">check_circle</i>PRESENTE</span>
+          <span class="tag bad"><i class="material-icons" style="font-size:18px;">cancel</i>AUSENTE</span>
+          <span class="tag warn"><i class="material-icons" style="font-size:18px;">lock</i>BLOQUEADO</span>
+        </div>
+      </div>
+
+      <div class="skeleton" id="loadingBox">
+        <i class="material-icons" style="vertical-align:middle;">hourglass_bottom</i>
+        Carregando dados…
+      </div>
+
+      <div class="red-text" id="errBox" style="display:none; font-weight:700; margin:10px 0;"></div>
+
+      <div style="overflow:auto;">
+        <table class="striped highlight">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Matrícula</th>
+              <th>Nome</th>
+              <th class="hide-on-small-only">Turma Esp.</th>
+              <th class="hide-on-small-only">Marcado em</th>
+              <th>Financeiro</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="muted" style="margin-top:10px; font-size:.9rem;">
+        Dica: para imprimir, clique em <b>Imprimir</b>. A tela já está com CSS “print-friendly”.
+      </div>
+    </div>
+
+    <div style="text-align:center; color:var(--muted); font-size:.9rem; padding:12px 0 18px;">
+      Controle de Sala • 3A Sistemas
+    </div>
+
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    // Ajuste para seu ambiente:
+    const API_BASE = '/optativo/'; // ou "https://apisec.secauxiliar.com.br/optativo/"
+    const ENDPOINT = API_BASE + 'relatorio_presenca_sala.php';
+
+    const elData   = document.getElementById('data');
+    const elTurma  = document.getElementById('turma_id');
+    const elBtn    = document.getElementById('btnLoad');
+    const elPrint  = document.getElementById('btnPrint');
+    const elQ      = document.getElementById('q');
+
+    const lblData = document.getElementById('lblData');
+    const lblSala = document.getElementById('lblSala');
+    const lblCurso= document.getElementById('lblCurso');
+
+    const kTotal = document.getElementById('kTotal');
+    const kPres  = document.getElementById('kPres');
+    const kAus   = document.getElementById('kAus');
+    const kPct   = document.getElementById('kPct');
+
+    const tbody  = document.getElementById('tbody');
+    const errBox = document.getElementById('errBox');
+    const loadingBox = document.getElementById('loadingBox');
+    const tagRows = document.getElementById('tagRows');
+
+    let ALL = [];
+
+    function fmtBR(iso){
+      // iso YYYY-MM-DD -> DD/MM/YYYY
+      if(!iso || iso.length < 10) return iso || '';
+      const [y,m,d] = iso.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    function escapeHtml(s){
+      return String(s ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
+
+    function setLoading(on){
+      loadingBox.style.display = on ? 'block' : 'none';
+      elBtn.classList.toggle('disabled', on);
+    }
+
+    function setError(msg){
+      errBox.style.display = msg ? 'block' : 'none';
+      errBox.textContent = msg || '';
+    }
+
+    function statusTag(row){
+      const st = (row.status || '').toUpperCase();
+      if(st === 'PRESENTE'){
+        return `<span class="tag ok"><i class="material-icons" style="font-size:18px;">check_circle</i>PRESENTE</span>`;
+      }
+      return `<span class="tag bad"><i class="material-icons" style="font-size:18px;">cancel</i>AUSENTE</span>`;
+    }
+
+    function financeiroTag(row){
+      if(Number(row.bloqueado) === 1){
+        const vd = row.vencido_desde ? `desde ${escapeHtml(fmtBR(row.vencido_desde))}` : '';
+        return `<span class="tag warn"><i class="material-icons" style="font-size:18px;">lock</i>BLOQUEADO</span>
+                <div class="muted" style="font-size:.82rem;">${vd}</div>`;
+      }
+      return `<span class="muted">OK</span>`;
+    }
+
+    function renderTable(rows){
+      tbody.innerHTML = rows.map(r => {
+        const turmaEsp = escapeHtml(r.turma_especial || '');
+        const marcado  = r.marcado_em ? escapeHtml(r.marcado_em) : '<span class="muted">—</span>';
+
+        return `
+          <tr>
+            <td>${statusTag(r)}</td>
+            <td style="font-weight:800;">${escapeHtml(r.matricula)}</td>
+            <td>${escapeHtml(r.nome)}</td>
+            <td class="hide-on-small-only">${turmaEsp || '<span class="muted">—</span>'}</td>
+            <td class="hide-on-small-only">${marcado}</td>
+            <td>${financeiroTag(r)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      tagRows.textContent = `${rows.length} itens`;
+    }
+
+    function renderKpis(resumo){
+      const total = Number(resumo?.total ?? 0);
+      const pres  = Number(resumo?.presentes ?? 0);
+      const aus   = Number(resumo?.ausentes ?? 0);
+      const pct   = total > 0 ? Math.round((pres/total)*100) : 0;
+
+      kTotal.textContent = total;
+      kPres.textContent  = pres;
+      kAus.textContent   = aus;
+      kPct.textContent   = pct + '%';
+    }
+
+    function fillTurmas(turmas, selectedId){
+      elTurma.innerHTML = turmas.map(t => {
+        const id = Number(t.id);
+        const label = `${t.curso_nome}` + (t.turma_especial_required ? ` • req: ${t.turma_especial_required}` : '');
+        return `<option value="${id}" ${id===Number(selectedId) ? 'selected':''}>${escapeHtml(label)}</option>`;
+      }).join('');
+
+      // re-init Materialize select
+      M.FormSelect.init(elTurma);
+    }
+
+    function applyHeader(data, sala, turma){
+      lblData.textContent = fmtBR(data);
+      lblSala.textContent = sala?.nome ? sala.nome : '—';
+      lblCurso.textContent = turma?.curso_nome ? turma.curso_nome : '—';
+    }
+
+    async function load(){
+      setError('');
+      setLoading(true);
+
+      try{
+        const data = elData.value;
+        const turmaId = elTurma.value || '';
+
+        const url = new URL(ENDPOINT, window.location.origin);
+        if(data) url.searchParams.set('data', data);
+        if(turmaId) url.searchParams.set('turma_id', turmaId);
+
+        const resp = await fetch(url.toString(), { credentials: 'include' });
+        const j = await resp.json();
+
+        if(!j.ok){
+          setError(j.msg || 'Erro ao carregar relatório.');
+          setLoading(false);
+          return;
+        }
+
+        // Header + turmas
+        applyHeader(j.data, j.sala, j.turma);
+
+        if(Array.isArray(j.turmas) && j.turmas.length){
+          // se turma selecionada não existe mais, usa a do retorno
+          fillTurmas(j.turmas, j.turma?.id || (j.turmas[0]?.id));
+        }
+
+        ALL = Array.isArray(j.rows) ? j.rows : [];
+
+        renderKpis(j.resumo || {total: ALL.length, presentes:0, ausentes:ALL.length});
+        renderTable(ALL);
+
+        // filtro atual (se já estava digitado)
+        filterNow();
+
+      } catch(e){
+        setError('Falha ao carregar. ' + (e?.message || e));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function filterNow(){
+      const q = (elQ.value || '').trim().toLowerCase();
+      if(!q){
+        renderTable(ALL);
+        return;
+      }
+      const rows = ALL.filter(r => {
+        return String(r.matricula||'').toLowerCase().includes(q)
+            || String(r.nome||'').toLowerCase().includes(q);
+      });
+      renderTable(rows);
+    }
+
+    function todayISO(){
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // init
+    document.addEventListener('DOMContentLoaded', () => {
+      // default data = hoje
+      elData.value = todayISO();
+      lblData.textContent = fmtBR(elData.value);
+
+      M.updateTextFields();
+
+      // init select vazio (Materialize precisa)
+      M.FormSelect.init(elTurma);
+
+      elBtn.addEventListener('click', load);
+      elPrint.addEventListener('click', () => window.print());
+      elQ.addEventListener('input', filterNow);
+
+      // auto-load
+      load();
+    });
+  </script>
+
+</body>
+</html>
