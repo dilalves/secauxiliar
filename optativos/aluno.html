@@ -218,6 +218,15 @@
       max-width: 1600px !important;
       border-radius:14px;
     }
+    /* Modal TESTES */
+    #modalNotasTestes{
+      width: 96% !important;
+      max-width: 1400px !important;
+      border-radius:14px;
+    }
+    @media (min-width: 1200px){
+      #modalNotasTestes{ width: 98% !important; max-width: 1600px !important; }
+    }
 
     @media (min-width: 1200px){
       #modalNotasEnem{ width: 98% !important; max-width: 1600px !important; }
@@ -342,7 +351,10 @@
         FUVESTÃO <span id="qtdFuvest" class="count"></span>
       </div>
 
-      <div id="btnNotasTestes" class="chip-soft btn-chip" style="display:none;">TESTES</div>
+      <div id="btnNotasTestes" class="chip-soft btn-chip" style="display:none;">
+        TESTES <span id="qtdTestes" class="count"></span>
+      </div>
+
       <div id="btnNotasDissert" class="chip-soft btn-chip" style="display:none;">DISSERTATIVOS</div>
       <div id="btnNotasRedacao" class="chip-soft btn-chip" style="display:none;">REDAÇÃO</div>
     </div>
@@ -365,6 +377,18 @@
         <h5 style="margin-top:0; font-weight:900;">Aberto FUVESTÃO</h5>
         <div class="grey-text" style="font-weight:700;">Registros do mais recente para o mais antigo.</div>
         <div id="areaNotasFuvestao" style="margin-top:14px;"></div>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-close btn-flat">Fechar</a>
+      </div>
+    </div>
+
+    <!-- Modal Notas TESTES -->
+    <div id="modalNotasTestes" class="modal">
+      <div class="modal-content">
+        <h5 style="margin-top:0; font-weight:900;">Testes</h5>
+        <div class="grey-text" style="font-weight:700;">Registros do mais recente para o mais antigo.</div>
+        <div id="areaNotasTestes" style="margin-top:14px;"></div>
       </div>
       <div class="modal-footer">
         <a href="#!" class="modal-close btn-flat">Fechar</a>
@@ -605,8 +629,15 @@
     const btnFuv  = $('btnNotasFuvest');
     const qtdFuv  = $('qtdFuvest');
 
+    const btnTestes = $('btnNotasTestes');
+    const qtdTestes = $('qtdTestes');
+
+    btnTestes.style.display = 'none';
+    qtdTestes.textContent = '';
+    btnTestes.onclick = null;
+
+
     // placeholders futuros
-    $('btnNotasTestes').style.display = 'none';
     $('btnNotasDissert').style.display = 'none';
     $('btnNotasRedacao').style.display = 'none';
 
@@ -635,6 +666,22 @@
       qtdFuv.textContent = '';
       btnFuv.onclick = null;
     }
+
+        // ===== TESTES (por matrícula) =====
+    if (j.tem_notas_testes) {
+      algumaNota = true;
+
+      btnTestes.style.display = '';
+      const regs = j.notas_testes_resumo || [];
+      qtdTestes.textContent = regs.length ? `(${regs.length})` : '';
+
+      btnTestes.onclick = async () => abrirModalNotasTestesTabela(a.matricula);
+    } else {
+      btnTestes.style.display = 'none';
+      qtdTestes.textContent = '';
+      btnTestes.onclick = null;
+    }
+
 
     bar.style.display = algumaNota ? 'flex' : 'none';
 
@@ -883,6 +930,61 @@
       </div>
     `;
   }
+
+  // ===== TESTES (tabela) =====
+  async function abrirModalNotasTestesTabela(matricula){
+    if(!matricula) throw new Error('Matrícula não encontrada.');
+    const modalEl = $('modalNotasTestes');
+    const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl);
+    await carregarNotasTestesTabela(matricula);
+    modal.open();
+  }
+
+  async function carregarNotasTestesTabela(matricula){
+    const area = $('areaNotasTestes');
+    area.innerHTML = '<div class="grey-text" style="font-weight:700;">Carregando...</div>';
+
+    // ajuste o nome do PHP aqui conforme você salvou no servidor:
+    const j = await apiGet(`${API}notas_testes_list.php?matricula=${encodeURIComponent(matricula)}`);
+    const rows = j.registros || [];
+
+    if(!rows.length){
+      area.innerHTML = '<div class="grey-text" style="font-weight:700;">Nenhuma nota encontrada.</div>';
+      return;
+    }
+
+    const htmlRows = rows.map(r => `
+      <tr>
+        <td style="font-weight:900;">${esc(r.letivo)}</td>
+        <td style="font-weight:900;">${esc(r.cod_prova)}</td>
+        <td>${esc(r.prova)}</td>
+        <td>${esc(r.unidade ?? '')}</td>
+        <td class="right-align">${fmtNum(r.total)}</td>
+        <td class="right-align">${fmtNum(r.aproveitamento)}</td>
+        <td>${fmtDT(r.dt_cadastro)}</td>
+      </tr>
+    `).join('');
+
+    area.innerHTML = `
+      <div style="overflow:auto; border:1px solid #e9edf3; border-radius:12px;">
+        <table class="highlight striped" style="width:100%; margin:0;">
+          <thead>
+            <tr>
+              <th>Letivo</th>
+              <th>Cód. Prova</th>
+              <th>Prova</th>
+              <th>Unidade</th>
+              <th class="right-align">Total</th>
+              <th class="right-align">Aproveitamento</th>
+              <th>Cadastro</th>
+            </tr>
+          </thead>
+          <tbody>${htmlRows}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
