@@ -119,7 +119,6 @@
       padding:8px;
       position:relative;
       cursor:default;
-      overflow:visible;
     }
     .day.muted{
       background:#fafafa;
@@ -136,13 +135,28 @@
       width:10px; height:10px;
       border-radius:99px;
       background:#cbd5e1;
-      z-index:3;
-      pointer-events:none;
     }
     .dot.previsto{ background:#2563eb; }
     .dot.presente{ background:#16a34a; }
     .dot.ausente{ background:#dc2626; }
     .dot.cancelado{ background:#6b7280; }
+
+    .day { overflow: visible; }
+    .dot { z-index: 3; pointer-events: none; }
+    .ev-badge { z-index: 4; }
+
+    @media (max-width: 600px){
+      .day{ min-height: 62px; padding: 8px; }
+      .dot{
+        width: 12px; height: 12px;
+        bottom: 10px; right: 10px;
+        box-shadow: 0 0 0 2px rgba(255,255,255,.9);
+      }
+      .ev-badge{
+        top: 8px; right: 8px;
+        font-size: .72rem;
+      }
+    }
 
     /* ===== Eventos (opt_eventos) ===== */
     .ev-badge{
@@ -175,59 +189,12 @@
     /* ✅ MODO ALUNO: não existe busca */
     #boxBusca{ display:none !important; }
 
-    /* ====== NOTAS (chips clicáveis) ====== */
-    .chip-soft.btn-chip{
-      cursor:pointer;
-      user-select:none;
-      transition: transform .04s ease, background .15s ease;
-    }
-    .chip-soft.btn-chip:hover{ background:#e6efff; }
-    .chip-soft.btn-chip:active{ transform: scale(.98); }
-    .chip-soft .count{
-      opacity:.85;
-      font-weight:900;
-      margin-left:2px;
-    }
-
-    /* Modais mais largos */
-    #modalNotasEnem{
-      width: 96% !important;
-      max-width: 1400px !important;
-      border-radius:14px;
-    }
-    #modalNotasFuvestao{
-      width: 96% !important;
-      max-width: 1600px !important;
-      border-radius:14px;
-    }
-    #modalNotasTestes{
-      width: 96% !important;
-      max-width: 1400px !important;
-      border-radius:14px;
-    }
-    @media (min-width: 1200px){
-      #modalNotasTestes{ width: 98% !important; max-width: 1600px !important; }
-      #modalNotasEnem{ width: 98% !important; max-width: 1600px !important; }
-      #modalNotasFuvestao{ width: 98% !important; max-width: 1800px !important; }
-    }
-
     @media (max-width: 600px){
       body{ padding:16px; }
       header.topbar{ padding:0 14px; }
       .wrap{ margin-top:86px; }
       .student{ flex-direction:row; }
       .kv{ grid-template-columns: 130px 1fr; }
-
-      .day{ min-height: 62px; padding: 8px; }
-      .dot{
-        width: 12px; height: 12px;
-        bottom: 10px; right: 10px;
-        box-shadow: 0 0 0 2px rgba(255,255,255,.9);
-      }
-      .ev-badge{
-        top: 8px; right: 8px;
-        font-size: .72rem;
-      }
     }
   </style>
 </head>
@@ -307,65 +274,6 @@
       &nbsp;&nbsp;• 📌 = Simulado
       &nbsp;&nbsp;• Domingo/feriado = vermelho
     </div>
-
-    <!-- ===== Barra compacta de Notas (chips) ===== -->
-    <div id="barNotas" class="chips" style="display:none; padding: 0 16px 16px;">
-      <div class="chip-soft" style="cursor:default;">
-        <i class="material-icons">insights</i>Notas
-      </div>
-
-      <div id="btnNotasEnem" class="chip-soft btn-chip" style="display:none;">
-        ENEM <span id="qtdEnem" class="count"></span>
-      </div>
-
-      <div id="btnNotasFuvest" class="chip-soft btn-chip" style="display:none;">
-        FUVESTÃO <span id="qtdFuvest" class="count"></span>
-      </div>
-
-      <div id="btnNotasTestes" class="chip-soft btn-chip" style="display:none;">
-        TESTES <span id="qtdTestes" class="count"></span>
-      </div>
-
-      <div id="btnNotasDissert" class="chip-soft btn-chip" style="display:none;">DISSERTATIVOS</div>
-      <div id="btnNotasRedacao" class="chip-soft btn-chip" style="display:none;">REDAÇÃO</div>
-    </div>
-
-    <!-- Modal Notas ENEM -->
-    <div id="modalNotasEnem" class="modal">
-      <div class="modal-content">
-        <h5 style="margin-top:0; font-weight:900;">Aberto ENEM</h5>
-        <div class="grey-text" style="font-weight:700;">Registros do mais recente para o mais antigo.</div>
-        <div id="areaNotasEnem" style="margin-top:14px;"></div>
-      </div>
-      <div class="modal-footer">
-        <a href="#!" class="modal-close btn-flat">Fechar</a>
-      </div>
-    </div>
-
-    <!-- Modal Notas FUVESTÃO -->
-    <div id="modalNotasFuvestao" class="modal">
-      <div class="modal-content">
-        <h5 style="margin-top:0; font-weight:900;">Aberto FUVESTÃO</h5>
-        <div class="grey-text" style="font-weight:700;">Registros do mais recente para o mais antigo.</div>
-        <div id="areaNotasFuvestao" style="margin-top:14px;"></div>
-      </div>
-      <div class="modal-footer">
-        <a href="#!" class="modal-close btn-flat">Fechar</a>
-      </div>
-    </div>
-
-    <!-- Modal Notas TESTES -->
-    <div id="modalNotasTestes" class="modal">
-      <div class="modal-content">
-        <h5 style="margin-top:0; font-weight:900;">Testes</h5>
-        <div class="grey-text" style="font-weight:700;">Registros do mais recente para o mais antigo.</div>
-        <div id="areaNotasTestes" style="margin-top:14px;"></div>
-      </div>
-      <div class="modal-footer">
-        <a href="#!" class="modal-close btn-flat">Fechar</a>
-      </div>
-    </div>
-
   </div>
 
 </div>
@@ -440,7 +348,7 @@
     const k = c % 4;
     const l = (32 + 2*e + 2*i - h - k) % 7;
     const m = Math.floor((a + 11*h + 22*l) / 451);
-    const month = Math.floor((h + l - 7*m + 114) / 31);
+    const month = Math.floor((h + l - 7*m + 114) / 31); // 3=Mar, 4=Abr
     const day = ((h + l - 7*m + 114) % 31) + 1;
     return new Date(year, month-1, day);
   }
@@ -460,6 +368,7 @@
       if(name) names[ymd] = name;
     };
 
+    // Fixos nacionais
     add(`${year}-01-01`, 'Confraternização Universal');
     add(`${year}-04-21`, 'Tiradentes');
     add(`${year}-05-01`, 'Dia do Trabalho');
@@ -470,12 +379,14 @@
     add(`${year}-11-20`, 'Consciência Negra');
     add(`${year}-12-25`, 'Natal');
 
+    // Móveis
     const pascoa = easterDate(year);
     add(toYMD(addDays(pascoa, -2)),  'Sexta-feira Santa');
     add(toYMD(addDays(pascoa, -48)), 'Carnaval (Segunda)');
     add(toYMD(addDays(pascoa, -47)), 'Carnaval (Terça)');
     add(toYMD(addDays(pascoa, 60)),  'Corpus Christi');
 
+    // Extras
     for(const [ymd, nome] of Object.entries(EXTRA_HOLIDAYS || {})){
       if(String(ymd).startsWith(String(year) + '-')){
         add(ymd, nome || 'Feriado');
@@ -491,14 +402,16 @@
     const last  = new Date(y, m, 0);
     const daysInMonth = last.getDate();
 
-    const offset = first.getDay(); // domingo
-
+    // Começando no DOMINGO
+    const offset = first.getDay();
     const dows = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+
     const grid = $('calGrid');
     grid.innerHTML = '';
 
     const { set: holidaySet, names: holidayNames } = brHolidays(y);
 
+    // header
     for(let i=0;i<dows.length;i++){
       const el = document.createElement('div');
       el.className = 'dow' + (i===0 ? ' sun' : '');
@@ -506,6 +419,7 @@
       grid.appendChild(el);
     }
 
+    // fillers antes
     for(let i=0;i<offset;i++){
       const el = document.createElement('div');
       el.className = 'day muted';
@@ -513,20 +427,25 @@
       grid.appendChild(el);
     }
 
+    // dias do mês
     for(let d=1; d<=daysInMonth; d++){
       const el = document.createElement('div');
       el.className = 'day';
 
       const dd = pad2(d);
       const dateStr = `${ym}-${dd}`;
+
       el.innerHTML = `<div class="num">${d}</div>`;
 
+      // Domingo?
       const dow = new Date(y, m-1, d).getDay();
       if(dow === 0) el.classList.add('sunday');
 
+      // Feriado?
       const isHoliday = holidaySet.has(dateStr);
       if(isHoliday) el.classList.add('holiday');
 
+      // Aulas
       if(daysMap[dateStr]){
         const dot = document.createElement('div');
         dot.className = 'dot ' + statusClass(daysMap[dateStr]);
@@ -534,6 +453,7 @@
         el.title = `${dateStr} • ${daysMap[dateStr]}`;
       }
 
+      // Eventos
       const evs = (eventsByDate && eventsByDate[dateStr]) ? eventsByDate[dateStr] : [];
       if (evs.length){
         el.classList.add('has-event');
@@ -554,6 +474,7 @@
         if(!el.title) el.title = badge.title;
       }
 
+      // Tooltip feriado
       if(isHoliday){
         const nomeFer = holidayNames[dateStr] || 'Feriado';
         if(!el.title) el.title = `${dateStr} • ${nomeFer}`;
@@ -563,6 +484,7 @@
       grid.appendChild(el);
     }
 
+    // fillers depois
     const totalCells = 7 + offset + daysInMonth;
     const remainder = totalCells % 7;
     if(remainder !== 0){
@@ -599,73 +521,10 @@
     setMsg('Carregando seus dados...');
     $('cardAluno').style.display = 'none';
 
+    // ✅ no backend, se role=aluno, ele IGNORA essa querystring e usa a do token.
     const j = await apiGet(`${API}aluno_get.php?matricula=${encodeURIComponent(matricula)}`);
     const a = j.aluno;
 
-    // ===== Barra de Notas (chips) =====
-    const bar = $('barNotas');
-
-    const btnEnem = $('btnNotasEnem');
-    const qtdEnem = $('qtdEnem');
-
-    const btnFuv  = $('btnNotasFuvest');
-    const qtdFuv  = $('qtdFuvest');
-
-    const btnTestes = $('btnNotasTestes');
-    const qtdTestes = $('qtdTestes');
-
-    // reset
-    btnTestes.style.display = 'none';
-    qtdTestes.textContent = '';
-    btnTestes.onclick = null;
-
-    // placeholders futuros
-    $('btnNotasDissert').style.display = 'none';
-    $('btnNotasRedacao').style.display = 'none';
-
-    let algumaNota = false;
-
-    if (j.tem_aberto_enem) {
-      algumaNota = true;
-      btnEnem.style.display = '';
-      const evs = j.eventos_aberto_enem || [];
-      qtdEnem.textContent = evs.length ? `(${evs.length})` : '';
-      btnEnem.onclick = async () => abrirModalNotasEnemTabela(a.cpf);
-    } else {
-      btnEnem.style.display = 'none';
-      qtdEnem.textContent = '';
-      btnEnem.onclick = null;
-    }
-
-    if (j.tem_aberto_fuvestao) {
-      algumaNota = true;
-      btnFuv.style.display = '';
-      const evsF = j.eventos_aberto_fuvestao || [];
-      qtdFuv.textContent = evsF.length ? `(${evsF.length})` : '';
-      btnFuv.onclick = async () => abrirModalNotasFuvestaoTabela(a.cpf);
-    } else {
-      btnFuv.style.display = 'none';
-      qtdFuv.textContent = '';
-      btnFuv.onclick = null;
-    }
-
-    if (j.tem_notas_testes) {
-      algumaNota = true;
-
-      btnTestes.style.display = '';
-      const regs = j.notas_testes_resumo || [];
-      qtdTestes.textContent = regs.length ? `(${regs.length})` : '';
-
-      btnTestes.onclick = async () => abrirModalNotasTestesTabela(a.matricula);
-    } else {
-      btnTestes.style.display = 'none';
-      qtdTestes.textContent = '';
-      btnTestes.onclick = null;
-    }
-
-    bar.style.display = algumaNota ? 'flex' : 'none';
-
-    // dados do aluno
     currentMatricula = a.matricula;
     $('nome').textContent = a.nome || '—';
     $('mat').textContent = `Matrícula: ${a.matricula || '—'}`;
@@ -738,8 +597,10 @@
     try{
       const me = await apiGet(`${API}auth_me.php`);
 
+      const role = String(me.role ?? me.user?.role ?? '').toLowerCase();
       const mat  = String(me.matricula ?? me.user?.matricula ?? '').trim();
 
+      // ✅ sempre some com a busca (modo aluno)
       const box = $('boxBusca');
       if (box) box.style.display = 'none';
 
@@ -770,202 +631,7 @@
     try{ await carregarCalendario(currentYM); }catch(e){ setMsg(e.message); }
   });
 
-  // init modais
-  document.addEventListener('DOMContentLoaded', () => {
-    M.Modal.init(document.querySelectorAll('.modal'));
-  });
-
   window.addEventListener('load', iniciarModoAluno);
-
-  function fmtNum(v){
-    if (v === null || v === undefined || v === '') return '—';
-    const n = Number(v);
-    if (Number.isNaN(n)) return String(v);
-    return n.toFixed(2).replace('.', ',');
-  }
-
-  function esc(s){
-    return String(s ?? '').replace(/[&<>"']/g, m => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
-    }[m]));
-  }
-
-  // ===== ENEM (tabela) =====
-  async function abrirModalNotasEnemTabela(cpf){
-    if(!cpf) throw new Error('CPF não encontrado para esse aluno.');
-    const modalEl = $('modalNotasEnem');
-    const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl);
-    await carregarNotasEnemTabela(cpf);
-    modal.open();
-  }
-
-  async function carregarNotasEnemTabela(cpf){
-    const area = $('areaNotasEnem');
-    area.innerHTML = '<div class="grey-text" style="font-weight:700;">Carregando...</div>';
-
-    const j = await apiGet(`${API}aberto_enem_list.php?cpf=${encodeURIComponent(cpf)}`);
-    const rows = j.registros || [];
-
-    if(!rows.length){
-      area.innerHTML = '<div class="grey-text" style="font-weight:700;">Nenhuma nota encontrada.</div>';
-      return;
-    }
-
-    const htmlRows = rows.map(r => `
-      <tr>
-        <td style="font-weight:900;">${esc(r.evento)}</td>
-        <td>${esc(r.unidade)}</td>
-        <td>${esc(r.inscricao)}</td>
-        <td class="right-align">${fmtNum(r.linguagem)}</td>
-        <td class="right-align">${fmtNum(r.humanas)}</td>
-        <td class="right-align">${fmtNum(r.natureza)}</td>
-        <td class="right-align">${fmtNum(r.matematica)}</td>
-        <td class="right-align">${fmtNum(r.redacao)}</td>
-        <td class="right-align">${fmtNum(r.media)}</td>
-      </tr>
-    `).join('');
-
-    area.innerHTML = `
-      <div style="overflow:auto; border:1px solid #e9edf3; border-radius:12px;">
-        <table class="highlight striped" style="width:100%; margin:0;">
-          <thead>
-            <tr>
-              <th>Evento</th>
-              <th>Unidade</th>
-              <th>Inscrição</th>
-              <th class="right-align">Linguagens</th>
-              <th class="right-align">Humanas</th>
-              <th class="right-align">Natureza</th>
-              <th class="right-align">Matemática</th>
-              <th class="right-align">Redação</th>
-              <th class="right-align">Média</th>
-            </tr>
-          </thead>
-          <tbody>${htmlRows}</tbody>
-        </table>
-      </div>
-    `;
-  }
-
-  // ===== FUVESTÃO (tabela) =====
-  async function abrirModalNotasFuvestaoTabela(cpf){
-    if(!cpf) throw new Error('CPF não encontrado para esse aluno.');
-    const modalEl = $('modalNotasFuvestao');
-    const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl);
-    await carregarNotasFuvestaoTabela(cpf);
-    modal.open();
-  }
-
-  async function carregarNotasFuvestaoTabela(cpf){
-    const area = $('areaNotasFuvestao');
-    area.innerHTML = '<div class="grey-text" style="font-weight:700;">Carregando...</div>';
-
-    const j = await apiGet(`${API}aberto_fuvestao_list.php?cpf=${encodeURIComponent(cpf)}`);
-    const rows = j.registros || [];
-
-    if(!rows.length){
-      area.innerHTML = '<div class="grey-text" style="font-weight:700;">Nenhuma nota encontrada.</div>';
-      return;
-    }
-
-    const htmlRows = rows.map(r => `
-      <tr>
-        <td style="font-weight:900;">${esc(r.evento)}</td>
-        <td>${esc(r.Nome_Unidade)}</td>
-        <td>${esc(r.INSCRICAO)}</td>
-        <td class="right-align">${fmtNum(r.POR)}</td>
-        <td class="right-align">${fmtNum(r.HIS)}</td>
-        <td class="right-align">${fmtNum(r.ING)}</td>
-        <td class="right-align">${fmtNum(r.SOC)}</td>
-        <td class="right-align">${fmtNum(r.BIO)}</td>
-        <td class="right-align">${fmtNum(r.QUI)}</td>
-        <td class="right-align">${fmtNum(r.FIL)}</td>
-        <td class="right-align">${fmtNum(r.FIS)}</td>
-        <td class="right-align">${fmtNum(r.MAT)}</td>
-        <td class="right-align">${fmtNum(r.GEO)}</td>
-        <td class="right-align" style="font-weight:900;">${fmtNum(r.TOTAL)}</td>
-      </tr>
-    `).join('');
-
-    area.innerHTML = `
-      <div style="overflow:auto; border:1px solid #e9edf3; border-radius:12px;">
-        <table class="highlight striped" style="width:100%; margin:0;">
-          <thead>
-            <tr>
-              <th>Evento</th>
-              <th>Unidade</th>
-              <th>Inscrição</th>
-              <th class="right-align">POR</th>
-              <th class="right-align">HIS</th>
-              <th class="right-align">ING</th>
-              <th class="right-align">SOC</th>
-              <th class="right-align">BIO</th>
-              <th class="right-align">QUI</th>
-              <th class="right-align">FIL</th>
-              <th class="right-align">FIS</th>
-              <th class="right-align">MAT</th>
-              <th class="right-align">GEO</th>
-              <th class="right-align">TOTAL</th>
-            </tr>
-          </thead>
-          <tbody>${htmlRows}</tbody>
-        </table>
-      </div>
-    `;
-  }
-
-  // ===== TESTES (tabela) =====
-  async function abrirModalNotasTestesTabela(matricula){
-    if(!matricula) throw new Error('Matrícula não encontrada.');
-    const modalEl = $('modalNotasTestes');
-    const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl);
-    await carregarNotasTestesTabela(matricula);
-    modal.open();
-  }
-
-  async function carregarNotasTestesTabela(matricula){
-    const area = $('areaNotasTestes');
-    area.innerHTML = '<div class="grey-text" style="font-weight:700;">Carregando...</div>';
-
-    const j = await apiGet(`${API}listar_notas_testes.php?matricula=${encodeURIComponent(matricula)}`);
-    const rows = j.registros || [];
-
-    if(!rows.length){
-      area.innerHTML = '<div class="grey-text" style="font-weight:700;">Nenhuma nota encontrada.</div>';
-      return;
-    }
-
-    const htmlRows = rows.map(r => `
-      <tr>
-        <td style="font-weight:900;">${esc(r.letivo)}</td>
-        <td style="font-weight:900;">${esc(r.cod_prova)}</td>
-        <td>${esc(r.prova)}</td>
-        <td>${esc(r.unidade ?? '')}</td>
-        <td class="right-align">${fmtNum(r.total)}</td>
-        <td class="right-align">${fmtNum(r.aproveitamento)}</td>
-        <td>${fmtDT(r.dt_cadastro)}</td>
-      </tr>
-    `).join('');
-
-    area.innerHTML = `
-      <div style="overflow:auto; border:1px solid #e9edf3; border-radius:12px;">
-        <table class="highlight striped" style="width:100%; margin:0;">
-          <thead>
-            <tr>
-              <th>Letivo</th>
-              <th>Cód. Prova</th>
-              <th>Prova</th>
-              <th>Unidade</th>
-              <th class="right-align">Total</th>
-              <th class="right-align">Aproveitamento</th>
-              <th>Cadastro</th>
-            </tr>
-          </thead>
-          <tbody>${htmlRows}</tbody>
-        </table>
-      </div>
-    `;
-  }
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
