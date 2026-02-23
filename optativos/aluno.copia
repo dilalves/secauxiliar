@@ -146,6 +146,41 @@
     .dot { z-index: 3; pointer-events: none; }
     .ev-badge { z-index: 4; }
 
+        
+    .note-grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:10px;
+    }
+    .note-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      background:#fff;
+    }
+    .note-k{ color:var(--muted); font-weight:700; font-size:.82rem; }
+    .note-v{ font-weight:900; font-size:1.05rem; color:#111827; }
+
+
+    /* Modal ENEM mais largo */
+    #modalNotasEnem{
+      width: 96% !important;        /* quase tela cheia */
+      max-width: 1400px !important; /* limite no desktop grande */
+    }
+
+    /* se quiser ainda mais: */
+    @media (min-width: 1200px){
+      #modalNotasEnem{
+        width: 98% !important;
+        max-width: 1600px !important;
+      }
+    }
+
+    @media (max-width:600px){
+      .note-grid{ grid-template-columns: 1fr; }
+    }
+
+
     @media (max-width: 600px){
       /* deixa o quadrinho um pouco mais “alto” no mobile */
       .day{ min-height: 62px; padding: 8px; }
@@ -283,6 +318,33 @@
       • Ponto azul = previsto • verde = presente • vermelho = ausente • cinza = cancelado
       &nbsp;&nbsp;• 📌 = Simulado
       &nbsp;&nbsp;• Domingo/feriado = vermelho
+    </div>
+  </div>
+
+  <!-- ===== Notas (Simulado Aberto) ===== -->
+  <div id="boxNotasAbertas" class="panel-card" style="display:none; margin:12px 16px 16px; padding:14px; border-left:6px solid #dc2626;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+      <div style="font-weight:900; color:#111827;">
+        ✅ Aberto ENEM
+        <span id="txtNotasQtd" class="grey-text text-darken-1" style="font-weight:700;"></span>
+      </div>
+
+      <a id="btnVerNotasEnem" class="btn waves-effect waves-light" style="background:#dc2626; border-radius:12px;">
+        <i class="material-icons left">assessment</i>Abrir
+      </a>
+    </div>
+  </div>
+
+  <!-- Modal Notas ENEM -->
+  <div id="modalNotasEnem" class="modal" style="border-radius:14px; width:92%; max-width:1100px;">
+    <div class="modal-content">
+      <h5 style="margin-top:0; font-weight:900;">Aberto ENEM</h5>
+      <div class="grey-text" style="font-weight:700;">Registros do mais recente para o mais antigo.</div>
+
+      <div id="areaNotasEnem" style="margin-top:14px;"></div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close btn-flat">Fechar</a>
     </div>
   </div>
 
@@ -543,6 +605,20 @@
     const j = await apiGet(`${API}aluno_get.php?matricula=${encodeURIComponent(matricula)}`);
     const a = j.aluno;
 
+    // ===== Link de notas ENEM abaixo do calendário =====
+    const box = document.getElementById('boxNotasAbertas');
+    const btn = document.getElementById('btnVerNotasEnem');
+    const txtQtd = document.getElementById('txtNotasQtd');
+    const txtEvs = document.getElementById('txtEventosEnem');
+
+    if (j.tem_aberto_enem) {
+      box.style.display = '';
+      const evs = j.eventos_aberto_enem || [];
+      txtQtd.textContent = evs.length ? `(${evs.length} evento(s))` : '';
+      btn.onclick = async () => abrirModalNotasEnemTabela(a.cpf);
+    } else {
+      box.style.display = 'none';
+    }
     currentMatricula = a.matricula;
     $('nome').textContent = a.nome || '—';
     $('mat').textContent = `Matrícula: ${a.matricula || '—'}`;
@@ -653,6 +729,155 @@
     currentYM = ymFromDate(d);
     try{ await carregarCalendario(currentYM); }catch(e){ setMsg(e.message); }
   });
+
+document.addEventListener('DOMContentLoaded', () => {
+  M.Modal.init(document.querySelectorAll('.modal'));
+  M.FormSelect.init(document.querySelectorAll('select'));
+});
+
+async function abrirModalNotasEnem(cpf, eventos) {
+  if (!cpf) throw new Error('CPF não encontrado para esse aluno.');
+
+  const modalEl = document.getElementById('modalNotasEnem');
+  const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl);
+
+  const sel = document.getElementById('selEventoEnem');
+  const area = document.getElementById('areaNotasEnem');
+
+  // popula select de eventos
+  sel.innerHTML = '';
+  (eventos || []).forEach((ev) => {
+    const opt = document.createElement('option');
+    opt.value = ev;
+    opt.textContent = ev;
+    sel.appendChild(opt);
+  });
+
+  // se não vier eventos (não deve, mas vai que), cria opção genérica
+  if (!sel.options.length) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = 'ENEM';
+    sel.appendChild(opt);
+  }
+
+  // re-init do select do Materialize
+  M.FormSelect.init(sel);
+
+  // carrega o primeiro evento automaticamente
+  const firstEvento = sel.value;
+  await carregarNotasEnem(cpf, firstEvento);
+
+  // quando trocar evento, recarrega
+  sel.onchange = async () => {
+    await carregarNotasEnem(cpf, sel.value);
+  };
+
+  modal.open();
+}
+
+async function carregarNotasEnem(cpf, evento) {
+  const area = document.getElementById('areaNotasEnem');
+  area.innerHTML = '<div class="grey-text" style="font-weight:700;">Carregando...</div>';
+
+  const url = `${API}aberto_enem_get.php?cpf=${encodeURIComponent(cpf)}&evento=${encodeURIComponent(evento||'')}`;
+  const j = await apiGet(url);
+
+  const r = j.registro;
+  if (!r) {
+    area.innerHTML = '<div class="grey-text" style="font-weight:700;">Nenhuma nota encontrada.</div>';
+    return;
+  }
+
+  area.innerHTML = `
+    <div style="margin-bottom:10px; font-weight:900; color:#111827;">
+      ${r.evento || evento || 'ENEM'} • ${r.unidade || ''} • Inscrição ${r.inscricao || ''}
+    </div>
+
+    <div class="note-grid">
+      <div class="note-card"><div class="note-k">Linguagens</div><div class="note-v">${fmtNum(r.linguagem)}</div></div>
+      <div class="note-card"><div class="note-k">Humanas</div><div class="note-v">${fmtNum(r.humanas)}</div></div>
+      <div class="note-card"><div class="note-k">Natureza</div><div class="note-v">${fmtNum(r.natureza)}</div></div>
+      <div class="note-card"><div class="note-k">Matemática</div><div class="note-v">${fmtNum(r.matematica)}</div></div>
+      <div class="note-card"><div class="note-k">Redação</div><div class="note-v">${fmtNum(r.redacao)}</div></div>
+      <div class="note-card"><div class="note-k">Média</div><div class="note-v">${fmtNum(r.media)}</div></div>
+    </div>
+  `;
+}
+
+function fmtNum(v){
+  if (v === null || v === undefined || v === '') return '—';
+  const n = Number(v);
+  if (Number.isNaN(n)) return String(v);
+  // tira casas decimais "feias" (suas notas são decimal(6,2))
+  return n.toFixed(2).replace('.', ',');
+}
+
+async function abrirModalNotasEnemTabela(cpf){
+  if(!cpf) throw new Error('CPF não encontrado para esse aluno.');
+
+  const modalEl = document.getElementById('modalNotasEnem');
+  const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl);
+
+  await carregarNotasEnemTabela(cpf);
+  modal.open();
+}
+
+async function carregarNotasEnemTabela(cpf){
+  const area = document.getElementById('areaNotasEnem');
+  area.innerHTML = '<div class="grey-text" style="font-weight:700;">Carregando...</div>';
+
+  const j = await apiGet(`${API}aberto_enem_list.php?cpf=${encodeURIComponent(cpf)}`);
+  const rows = j.registros || [];
+
+  if(!rows.length){
+    area.innerHTML = '<div class="grey-text" style="font-weight:700;">Nenhuma nota encontrada.</div>';
+    return;
+  }
+
+    const htmlRows = rows.map(r => `
+      <tr>
+        <td style="font-weight:900;">${esc(r.evento)}</td>
+        <td>${esc(r.unidade)}</td>
+        <td>${esc(r.inscricao)}</td>
+        <td class="right-align">${fmtNum(r.linguagem)}</td>
+        <td class="right-align">${fmtNum(r.humanas)}</td>
+        <td class="right-align">${fmtNum(r.natureza)}</td>
+        <td class="right-align">${fmtNum(r.matematica)}</td>
+        <td class="right-align">${fmtNum(r.redacao)}</td>
+        <td class="right-align">${fmtNum(r.media)}</td>
+      </tr>
+    `).join('');
+
+  area.innerHTML = `
+    <div style="overflow:auto; border:1px solid #e9edf3; border-radius:12px;">
+      <table class="highlight striped" style="width:100%; margin:0;">
+        <thead>
+          <tr>
+            <th>Evento</th>
+            <th>Unidade</th>
+            <th>Inscrição</th>
+            <th class="right-align">Linguagens</th>
+            <th class="right-align">Humanas</th>
+            <th class="right-align">Natureza</th>
+            <th class="right-align">Matemática</th>
+            <th class="right-align">Redação</th>
+            <th class="right-align">Média</th>
+          </tr>
+        </thead>
+        <tbody>${htmlRows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+// helpers
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+  }[m]));
+}
+
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
