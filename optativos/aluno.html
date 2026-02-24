@@ -230,6 +230,17 @@
       max-width: 1600px !important;
       border-radius:14px;
     }
+
+    #modalNotasRedacao{
+      width: 96% !important;
+      max-width: 1400px !important;
+      border-radius:14px;
+    }
+
+    @media (min-width: 1200px){
+      #modalNotasRedacao{ width: 98% !important; max-width: 1600px !important; }
+    }
+
     @media (min-width: 1200px){
       #modalNotasDissert{ width: 98% !important; max-width: 1800px !important; }
     }
@@ -414,6 +425,18 @@
         <h5 style="margin-top:0; font-weight:900;">Dissertativos</h5>
         <div class="grey-text" style="font-weight:700;">1 linha por simulado/data (referência cruzada).</div>
         <div id="areaNotasDissert" style="margin-top:14px;"></div>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-close btn-flat">Fechar</a>
+      </div>
+    </div>
+
+    <!-- Modal Notas REDAÇÃO -->
+    <div id="modalNotasRedacao" class="modal">
+      <div class="modal-content">
+        <h5 style="margin-top:0; font-weight:900;">Redação</h5>
+        <div class="grey-text" style="font-weight:700;">Registros do mais recente para o mais antigo.</div>
+        <div id="areaNotasRedacao" style="margin-top:14px;"></div>
       </div>
       <div class="modal-footer">
         <a href="#!" class="modal-close btn-flat">Fechar</a>
@@ -660,6 +683,11 @@
     const btnDissert = $('btnNotasDissert');
     const qtdDissert = $('qtdDissert');
 
+    const btnRed = $('btnNotasRedacao');
+
+    btnRed.style.display = 'none';
+    btnRed.onclick = null;
+
     btnDissert.style.display = 'none';
     qtdDissert.textContent = '';
     btnDissert.onclick = null;
@@ -668,9 +696,6 @@
     qtdTestes.textContent = '';
     btnTestes.onclick = null;
 
-
-    // placeholders futuros
-     $('btnNotasRedacao').style.display = 'none';
 
     let algumaNota = false;
 
@@ -727,6 +752,23 @@
       qtdDissert.textContent = '';
       btnDissert.onclick = null;
     }
+
+    // ===== REDAÇÃO (por matrícula) =====
+    if (j.tem_notas_redacao) {
+      algumaNota = true;
+
+      btnRed.style.display = '';
+      const regsR = j.notas_redacao_resumo || [];
+
+      // se você quiser contador, dá pra colocar um <span> igual os outros
+      // mas como seu chip "REDAÇÃO" não tem count, deixei sem.
+
+      btnRed.onclick = async () => abrirModalNotasRedacaoTabela(a.matricula);
+    } else {
+      btnRed.style.display = 'none';
+      btnRed.onclick = null;
+    } 
+
 
     bar.style.display = algumaNota ? 'flex' : 'none';
 
@@ -1078,6 +1120,59 @@ async function carregarNotasDissertTabela(matricula){
             ${ths}
           </tr>
         </thead>
+        <tbody>${htmlRows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ===== REDAÇÃO (tabela) =====
+async function abrirModalNotasRedacaoTabela(matricula){
+  if(!matricula) throw new Error('Matrícula não encontrada.');
+  const modalEl = $('modalNotasRedacao');
+  const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl);
+  await carregarNotasRedacaoTabela(matricula);
+  modal.open();
+}
+
+async function carregarNotasRedacaoTabela(matricula){
+  const area = $('areaNotasRedacao');
+  area.innerHTML = '<div class="grey-text" style="font-weight:700;">Carregando...</div>';
+
+  // 👇 aqui aponta para o PHP que você criou
+  const j = await apiGet(`${API}notas_redacao_list.php?matricula=${encodeURIComponent(matricula)}`);
+  const rows = j.registros || [];
+
+  if(!rows.length){
+    area.innerHTML = '<div class="grey-text" style="font-weight:700;">Nenhuma redação encontrada.</div>';
+    return;
+  }
+
+  // Monta colunas dinamicamente (porque sua tabela pode variar)
+  const keys = Object.keys(rows[0] || {});
+  const hide = new Set(['matricula']); // pode esconder outras se quiser
+  const cols = keys.filter(k => !hide.has(k));
+
+  const ths = cols.map(c => `<th>${esc(c)}</th>`).join('');
+
+  const htmlRows = rows.map(r => {
+    const tds = cols.map(c => {
+      const v = r[c];
+
+      // tenta formatar número quando fizer sentido
+      const isNum = (typeof v === 'number') || (v !== null && v !== '' && !isNaN(Number(v)));
+      const txt = isNum ? fmtNum(v) : esc(v);
+
+      return `<td>${txt}</td>`;
+    }).join('');
+
+    return `<tr>${tds}</tr>`;
+  }).join('');
+
+  area.innerHTML = `
+    <div style="overflow:auto; border:1px solid #e9edf3; border-radius:12px;">
+      <table class="highlight striped" style="width:100%; margin:0;">
+        <thead><tr>${ths}</tr></thead>
         <tbody>${htmlRows}</tbody>
       </table>
     </div>
