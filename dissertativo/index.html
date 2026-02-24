@@ -75,68 +75,73 @@ function getNivel(data){
 
   n = String(n).trim().toLowerCase();
 
-  // mapeia formatos comuns
-  if (n === 'fiscal' || n === '2' || n === 'f') return 'fiscal';
-  if (n === 'admin'  || n === '1' || n === 'a') return 'admin';
+  // mapeia formatos comuns (ajuste se seu backend usar outros valores)
+  if (n === 'plantonista' || n === 'p' || n === '3') return 'plantonista';
+  if (n === 'fiscal'      || n === 'f' || n === '2') return 'fiscal';
+  if (n === 'admin'       || n === 'a' || n === '1') return 'admin';
 
   return ''; // desconhecido
 }
 
+function setMsg(text){
+  const msg = document.getElementById('msg');
+  msg.textContent = text || '';
+}
+
 document.getElementById('btn').onclick = async () => {
+  const btn  = document.getElementById('btn');
   const login = document.getElementById('login').value.trim();
   const senha = document.getElementById('senha').value;
-  const msg = document.getElementById('msg');
-  msg.textContent = '';
+
+  setMsg('');
 
   if (!login || !senha) {
-    msg.textContent = 'Informe login e senha.';
+    setMsg('Informe login e senha.');
     return;
   }
+
+  btn.disabled = true;
 
   try {
     const r = await fetch(API + 'auth_login.php', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       credentials: 'include',
-      body: JSON.stringify({login, senha})    
+      body: JSON.stringify({login, senha})
     });
 
-    // se o PHP retornar HTML/erro, isso estoura aqui; por isso o try/catch
     const data = await r.json();
-
     console.log('LOGIN RESPONSE:', data);
 
     if (!r.ok || !data.ok) {
-      msg.textContent = data.error || 'Falha no login';
+      setMsg(data.error || 'Falha no login');
       return;
     }
 
-     if (data.token) {
+    // se vier token, salva (ok manter, mas não dá acesso)
+    if (data.token) {
       localStorage.setItem('PRESENCA_token', data.token);
     }
 
     const nivel = getNivel(data);
 
-    if (nivel === 'fiscal') {
-      location.href = './selecionar_sala.html';
-      return;
-    }
-
-    if (nivel === 'admin') {
+    // ✅ SOMENTE PLANTONISTA
+    if (nivel === 'plantonista') {
       location.href = './painel.html';
       return;
     }
 
-    // Não veio nível no retorno -> não chute "admin"
-    msg.textContent = 'Login OK, mas o servidor não informou o nível do usuário. Veja o console (F12).';
+    // ❌ qualquer outro nível (ou nível ausente)
+    setMsg('Você não tem acesso a este sistema. (Acesso permitido apenas para PLANTONISTA)');
 
   } catch (e) {
     console.error(e);
-    msg.textContent = 'Erro de rede ou servidor indisponível.';
+    setMsg('Erro de rede ou servidor indisponível.');
+  } finally {
+    btn.disabled = false;
   }
 };
 </script>
-
 
 
 </body>
