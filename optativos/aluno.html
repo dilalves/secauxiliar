@@ -670,8 +670,7 @@
 
 
     // placeholders futuros
-    $('btnNotasDissert').style.display = 'none';
-    $('btnNotasRedacao').style.display = 'none';
+     $('btnNotasRedacao').style.display = 'none';
 
     let algumaNota = false;
 
@@ -715,20 +714,19 @@
     }
 
     // ===== DISSERTATIVOS (por matrícula) =====
-      if (j.tem_notas_dissert) {
-        algumaNota = true;
+    if (j.tem_notas_dissertativas) {
+      algumaNota = true;
 
-        btnDissert.style.display = '';
-        const regsD = j.notas_dissert_resumo || [];
-        qtdDissert.textContent = regsD.length ? `(${regsD.length})` : '';
+      btnDissert.style.display = '';
+      const regsD = j.notas_dissertativas_resumo || [];
+      qtdDissert.textContent = regsD.length ? `(${regsD.length})` : '';
 
-        btnDissert.onclick = async () => abrirModalNotasDissertTabela(a.matricula);
-      } else {
-        btnDissert.style.display = 'none';
-        qtdDissert.textContent = '';
-        btnDissert.onclick = null;
-      }
-
+      btnDissert.onclick = async () => abrirModalNotasDissertTabela(a.matricula);
+    } else {
+      btnDissert.style.display = 'none';
+      qtdDissert.textContent = '';
+      btnDissert.onclick = null;
+    }
 
     bar.style.display = algumaNota ? 'flex' : 'none';
 
@@ -1047,6 +1045,7 @@ async function carregarNotasDissertTabela(matricula){
 
   // ajuste o nome do PHP conforme você salvar:
   const j = await apiGet(`${API}notas_dissertativas_list.php?matricula=${encodeURIComponent(matricula)}`);
+
   const rows = j.registros || [];
 
   if(!rows.length){
