@@ -656,9 +656,15 @@
       };
 
       try{
-        await apiPost(EP_UPSERT, payload);
           const resp = await apiPost(EP_UPSERT, payload);
-          setMsg('msgMat', resp.msg || 'Operação concluída.', true);
+
+          if (resp.action === 'already') {
+            const extra = (resp.nota_atual != null) ? ` (Nota atual: ${Number(resp.nota_atual).toFixed(2)})` : '';
+            setMsg('msgMat', (resp.msg || 'Nota já lançada.') + extra, false);
+            return; // não limpa campos, pra evitar perder a referência
+          }
+
+          setMsg('msgMat', resp.msg || 'Nota cadastrada com sucesso.', true);
 
         $('lastSave').textContent = `${payload.matricula} • ${payload.disciplina} • ${payload.nota.toFixed(2)} • ${payload.data_prova}`;
 
@@ -704,10 +710,19 @@
         nota: nota
       };
 
-      try{
-        await apiPost(EP_UPSERT, payload);
+
+          try{
           const resp = await apiPost(EP_UPSERT, payload);
-          setMsg('msgNome', resp.msg || 'Operação concluída.', true);
+
+          if (resp.action === 'already') {
+            const extra = (resp.nota_atual != null) ? ` (Nota atual: ${Number(resp.nota_atual).toFixed(2)})` : '';
+            setMsg('msgNome', (resp.msg || 'Nota já lançada.') + extra, false);
+            return; // não limpa campos, pra evitar perder a referência
+          }
+
+          setMsg('msgNome', resp.msg || 'Nota cadastrada com sucesso.', true);
+
+
 
         $('lastSave').textContent = `${payload.matricula} • ${payload.disciplina} • ${payload.nota.toFixed(2)} • ${payload.data_prova}`;
 
