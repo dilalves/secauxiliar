@@ -87,8 +87,23 @@
       color:var(--primary);
       font-weight:700;
       font-size:.85rem;
+      cursor:default;
     }
     .chip-soft i{ font-size:18px; }
+
+    /* chips clicáveis (notas) */
+    .chip-soft.btn-chip{
+      cursor:pointer;
+      user-select:none;
+      transition: transform .04s ease, background .15s ease;
+    }
+    .chip-soft.btn-chip:hover{ background:#e6efff; }
+    .chip-soft.btn-chip:active{ transform: scale(.98); }
+    .chip-soft .count{
+      opacity:.85;
+      font-weight:900;
+      margin-left:2px;
+    }
 
     /* Calendário */
     .cal-head{
@@ -183,11 +198,6 @@
     }
     .chip-soft.btn-chip:hover{ background:#e6efff; }
     .chip-soft.btn-chip:active{ transform: scale(.98); }
-    .chip-soft .count{
-      opacity:.85;
-      font-weight:900;
-      margin-left:2px;
-    }
 
     /* Modais mais largos */
     #modalNotasEnem{
@@ -205,10 +215,23 @@
       max-width: 1400px !important;
       border-radius:14px;
     }
+    #modalNotasDissert{
+      width: 96% !important;
+      max-width: 1800px !important;
+      border-radius:14px;
+    }
+    #modalNotasRedacao{
+      width: 96% !important;
+      max-width: 1600px !important;
+      border-radius:14px;
+    }
+
     @media (min-width: 1200px){
       #modalNotasTestes{ width: 98% !important; max-width: 1600px !important; }
       #modalNotasEnem{ width: 98% !important; max-width: 1600px !important; }
       #modalNotasFuvestao{ width: 98% !important; max-width: 1800px !important; }
+      #modalNotasDissert{ width: 98% !important; max-width: 1900px !important; }
+      #modalNotasRedacao{ width: 98% !important; max-width: 1800px !important; }
     }
 
     @media (max-width: 600px){
@@ -326,8 +349,13 @@
         TESTES <span id="qtdTestes" class="count"></span>
       </div>
 
-      <div id="btnNotasDissert" class="chip-soft btn-chip" style="display:none;">DISSERTATIVOS</div>
-      <div id="btnNotasRedacao" class="chip-soft btn-chip" style="display:none;">REDAÇÃO</div>
+      <div id="btnNotasDissert" class="chip-soft btn-chip" style="display:none;">
+        DISSERTATIVOS <span id="qtdDissert" class="count"></span>
+      </div>
+
+      <div id="btnNotasRedacao" class="chip-soft btn-chip" style="display:none;">
+        REDAÇÃO <span id="qtdRedacao" class="count"></span>
+      </div>
     </div>
 
     <!-- Modal Notas ENEM -->
@@ -366,11 +394,36 @@
       </div>
     </div>
 
+    <!-- Modal Notas DISSERTATIVAS -->
+    <div id="modalNotasDissert" class="modal">
+      <div class="modal-content">
+        <h5 style="margin-top:0; font-weight:900;">Dissertativos</h5>
+        <div class="grey-text" style="font-weight:700;">1 linha por simulado/data (PIVOT por disciplina).</div>
+        <div id="areaNotasDissert" style="margin-top:14px;"></div>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-close btn-flat">Fechar</a>
+      </div>
+    </div>
+
+    <!-- Modal Notas REDAÇÃO -->
+    <div id="modalNotasRedacao" class="modal">
+      <div class="modal-content">
+        <h5 style="margin-top:0; font-weight:900;">Redação</h5>
+        <div class="grey-text" style="font-weight:700;">Registros do mais recente para o mais antigo.</div>
+        <div id="areaNotasRedacao" style="margin-top:14px;"></div>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-close btn-flat">Fechar</a>
+      </div>
+    </div>
+
   </div>
 
 </div>
 
 <script>
+  // ✅ ALUNO: base /aluno/
   const API = 'https://apisec.secauxiliar.com.br/aluno/';
 
   const EXTRA_HOLIDAYS = {
@@ -595,10 +648,24 @@
     return map;
   }
 
+  function fmtNum(v){
+    if (v === null || v === undefined || v === '') return '—';
+    const n = Number(v);
+    if (Number.isNaN(n)) return String(v);
+    return n.toFixed(2).replace('.', ',');
+  }
+
+  function esc(s){
+    return String(s ?? '').replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+    }[m]));
+  }
+
   async function carregarAluno(matricula){
     setMsg('Carregando seus dados...');
     $('cardAluno').style.display = 'none';
 
+    // ✅ no modo aluno, este PHP vai ignorar ?matricula= e usar token
     const j = await apiGet(`${API}aluno_get.php?matricula=${encodeURIComponent(matricula)}`);
     const a = j.aluno;
 
@@ -614,14 +681,18 @@
     const btnTestes = $('btnNotasTestes');
     const qtdTestes = $('qtdTestes');
 
-    // reset
-    btnTestes.style.display = 'none';
-    qtdTestes.textContent = '';
-    btnTestes.onclick = null;
+    const btnDissert = $('btnNotasDissert');
+    const qtdDissert = $('qtdDissert');
 
-    // placeholders futuros
-    $('btnNotasDissert').style.display = 'none';
-    $('btnNotasRedacao').style.display = 'none';
+    const btnRedacao = $('btnNotasRedacao');
+    const qtdRedacao = $('qtdRedacao');
+
+    // reset
+    btnEnem.style.display = 'none'; qtdEnem.textContent = ''; btnEnem.onclick = null;
+    btnFuv.style.display  = 'none'; qtdFuv.textContent  = ''; btnFuv.onclick  = null;
+    btnTestes.style.display = 'none'; qtdTestes.textContent=''; btnTestes.onclick=null;
+    btnDissert.style.display = 'none'; qtdDissert.textContent=''; btnDissert.onclick=null;
+    btnRedacao.style.display = 'none'; qtdRedacao.textContent=''; btnRedacao.onclick=null;
 
     let algumaNota = false;
 
@@ -631,10 +702,6 @@
       const evs = j.eventos_aberto_enem || [];
       qtdEnem.textContent = evs.length ? `(${evs.length})` : '';
       btnEnem.onclick = async () => abrirModalNotasEnemTabela(a.cpf);
-    } else {
-      btnEnem.style.display = 'none';
-      qtdEnem.textContent = '';
-      btnEnem.onclick = null;
     }
 
     if (j.tem_aberto_fuvestao) {
@@ -643,24 +710,30 @@
       const evsF = j.eventos_aberto_fuvestao || [];
       qtdFuv.textContent = evsF.length ? `(${evsF.length})` : '';
       btnFuv.onclick = async () => abrirModalNotasFuvestaoTabela(a.cpf);
-    } else {
-      btnFuv.style.display = 'none';
-      qtdFuv.textContent = '';
-      btnFuv.onclick = null;
     }
 
     if (j.tem_notas_testes) {
       algumaNota = true;
-
       btnTestes.style.display = '';
       const regs = j.notas_testes_resumo || [];
       qtdTestes.textContent = regs.length ? `(${regs.length})` : '';
-
       btnTestes.onclick = async () => abrirModalNotasTestesTabela(a.matricula);
-    } else {
-      btnTestes.style.display = 'none';
-      qtdTestes.textContent = '';
-      btnTestes.onclick = null;
+    }
+
+    if (j.tem_notas_dissertativas) {
+      algumaNota = true;
+      btnDissert.style.display = '';
+      const regsD = j.notas_dissertativas_resumo || [];
+      qtdDissert.textContent = regsD.length ? `(${regsD.length})` : '';
+      btnDissert.onclick = async () => abrirModalNotasDissertTabela(a.matricula);
+    }
+
+    if (j.tem_notas_redacao) {
+      algumaNota = true;
+      btnRedacao.style.display = '';
+      const regsR = j.notas_redacao_resumo || [];
+      qtdRedacao.textContent = regsR.length ? `(${regsR.length})` : '';
+      btnRedacao.onclick = async () => abrirModalNotasRedacaoTabela(a.matricula);
     }
 
     bar.style.display = algumaNota ? 'flex' : 'none';
@@ -737,7 +810,6 @@
   async function iniciarModoAluno(){
     try{
       const me = await apiGet(`${API}auth_me.php`);
-
       const mat  = String(me.matricula ?? me.user?.matricula ?? '').trim();
 
       const box = $('boxBusca');
@@ -776,19 +848,6 @@
   });
 
   window.addEventListener('load', iniciarModoAluno);
-
-  function fmtNum(v){
-    if (v === null || v === undefined || v === '') return '—';
-    const n = Number(v);
-    if (Number.isNaN(n)) return String(v);
-    return n.toFixed(2).replace('.', ',');
-  }
-
-  function esc(s){
-    return String(s ?? '').replace(/[&<>"']/g, m => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
-    }[m]));
-  }
 
   // ===== ENEM (tabela) =====
   async function abrirModalNotasEnemTabela(cpf){
@@ -961,6 +1020,107 @@
               <th>Cadastro</th>
             </tr>
           </thead>
+          <tbody>${htmlRows}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // ===== DISSERTATIVOS (tabela/pivot) =====
+  async function abrirModalNotasDissertTabela(matricula){
+    if(!matricula) throw new Error('Matrícula não encontrada.');
+    const modalEl = $('modalNotasDissert');
+    const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl);
+    await carregarNotasDissertTabela(matricula);
+    modal.open();
+  }
+
+  async function carregarNotasDissertTabela(matricula){
+    const area = $('areaNotasDissert');
+    area.innerHTML = '<div class="grey-text" style="font-weight:700;">Carregando...</div>';
+
+    // ✅ endpoint aluno (mesmo PHP serve admin/aluno se você aplicou a regra do token)
+    const j = await apiGet(`${API}notas_dissertativas_list.php?matricula=${encodeURIComponent(matricula)}`);
+    const rows = j.registros || [];
+
+    if(!rows.length){
+      area.innerHTML = '<div class="grey-text" style="font-weight:700;">Nenhuma nota encontrada.</div>';
+      return;
+    }
+
+    const cols = ['PORTUGUES','MATEMATICA','HISTORIA','GEOGRAFIA','FISICA','QUIMICA','BIOLOGIA','INGLES','FILOSOFIA','SOCIOLOGIA','LINGUAGEM','HUMANAS','NATUREZA'];
+    const ths = cols.map(c => `<th class="right-align">${c}</th>`).join('');
+
+    const htmlRows = rows.map(r => {
+      const tds = cols.map(c => `<td class="right-align">${fmtNum(r[c])}</td>`).join('');
+      return `
+        <tr>
+          <td style="font-weight:900;">${esc(r.simulado)}</td>
+          <td>${esc(r.data_prova)}</td>
+          ${tds}
+        </tr>
+      `;
+    }).join('');
+
+    area.innerHTML = `
+      <div style="overflow:auto; border:1px solid #e9edf3; border-radius:12px;">
+        <table class="highlight striped" style="width:100%; margin:0;">
+          <thead>
+            <tr>
+              <th>Simulado</th>
+              <th>Data</th>
+              ${ths}
+            </tr>
+          </thead>
+          <tbody>${htmlRows}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // ===== REDAÇÃO (tabela) =====
+  async function abrirModalNotasRedacaoTabela(matricula){
+    if(!matricula) throw new Error('Matrícula não encontrada.');
+    const modalEl = $('modalNotasRedacao');
+    const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl);
+    await carregarNotasRedacaoTabela(matricula);
+    modal.open();
+  }
+
+  async function carregarNotasRedacaoTabela(matricula){
+    const area = $('areaNotasRedacao');
+    area.innerHTML = '<div class="grey-text" style="font-weight:700;">Carregando...</div>';
+
+    // ✅ endpoint aluno
+    const j = await apiGet(`${API}notas_redacao_list.php?matricula=${encodeURIComponent(matricula)}`);
+    const rows = j.registros || [];
+
+    if(!rows.length){
+      area.innerHTML = '<div class="grey-text" style="font-weight:700;">Nenhuma redação encontrada.</div>';
+      return;
+    }
+
+    // Colunas dinâmicas (mantém flexível com sua tabela variável)
+    const keys = Object.keys(rows[0] || {});
+    const hide = new Set(['matricula']); // pode esconder mais se quiser
+    const cols = keys.filter(k => !hide.has(k));
+
+    const ths = cols.map(c => `<th>${esc(c)}</th>`).join('');
+
+    const htmlRows = rows.map(r => {
+      const tds = cols.map(c => {
+        const v = r[c];
+        const isNum = (typeof v === 'number') || (v !== null && v !== '' && !isNaN(Number(v)));
+        const txt = isNum ? fmtNum(v) : esc(v);
+        return `<td>${txt}</td>`;
+      }).join('');
+      return `<tr>${tds}</tr>`;
+    }).join('');
+
+    area.innerHTML = `
+      <div style="overflow:auto; border:1px solid #e9edf3; border-radius:12px;">
+        <table class="highlight striped" style="width:100%; margin:0;">
+          <thead><tr>${ths}</tr></thead>
           <tbody>${htmlRows}</tbody>
         </table>
       </div>
