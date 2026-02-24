@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Dissertativo • Minhas Notas</title>
+
+  <!-- Materialize -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3; --ink:#0f172a;
+      --muted:#6b7280; --primary:#0b3b78; --accent:#2563eb; --radius:14px;
+    }
+    body{ background:var(--bg); font-family:system-ui, Arial; padding:24px; }
+
+    header.topbar{
+      position:fixed; top:0; left:0; right:0; height:64px;
+      background:var(--primary); color:#fff;
+      display:flex; align-items:center; z-index:10;
+      padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+    header.topbar .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
+    header.topbar h5{ margin:0; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:1.1rem; }
+    header.topbar .right-actions{ margin-left:auto; display:flex; align-items:center; gap:10px; }
+    .chipUser{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:999px;
+      background:rgba(255,255,255,.15);
+      font-weight:600;
+    }
+    .wrap{ max-width:1200px; margin:96px auto 0; }
+
+    .panel-card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
+      border:1px solid var(--line);
+      padding:16px;
+      margin-bottom:16px;
+    }
+
+    .msgline{ margin-top:8px; font-size:.95rem; }
+    .msg-ok{ color:#0a7a2f; }
+    .msg-bad{ color:#b00020; }
+
+    table.striped tbody tr.cancelada { opacity:.55; }
+    .btn-mini{
+      border-radius:999px;
+      padding:0 10px;
+    }
+
+    @media (max-width: 600px){
+      body{ padding:16px; }
+      header.topbar{ padding:0 14px; }
+      .wrap{ margin-top:86px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
+      <h5>Dissertativo • Minhas Notas</h5>
+    </div>
+
+    <div class="right-actions">
+      <a class="btn btn-small blue-grey lighten-5 black-text" href="./painel.html">
+        <i class="material-icons left">arrow_back</i>Painel
+      </a>
+
+      <span class="chipUser">
+        <i class="material-icons" style="font-size:18px;">person</i>
+        <span id="userName">—</span>
+      </span>
+
+      <a class="btn btn-small red lighten-1" href="https://apisec.secauxiliar.com.br/dissertativo/auth_logout.php">
+        <i class="material-icons left">logout</i>Sair
+      </a>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <div class="panel-card">
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+        <div style="flex:1 1 220px;">
+          <label>Simulado</label>
+          <select id="f_simulado" class="browser-default">
+            <option value="">(todos)</option>
+            <option>MEDICINA</option><option>BIOLOGICAS</option><option>EXATAS</option><option>HUMANAS</option>
+            <option>FUVEST</option><option>UNICAMP</option><option>UNESP</option><option>UNIFESP</option>
+          </select>
+        </div>
+
+        <div style="flex:1 1 220px;">
+          <label>Disciplina</label>
+          <select id="f_disciplina" class="browser-default">
+            <option value="">(todas)</option>
+            <option>PORTUGUES</option><option>MATEMATICA</option><option>HISTORIA</option><option>GEOGRAFIA</option>
+            <option>FISICA</option><option>QUIMICA</option><option>BIOLOGIA</option><option>INGLES</option>
+            <option>FILOSOFIA</option><option>SOCIOLOGIA</option>
+            <option>LINGUAGEM</option><option>HUMANAS</option><option>NATUREZA</option>
+          </select>
+        </div>
+
+        <div style="flex:0 0 160px;">
+          <label>Data (de)</label>
+          <input id="f_from" type="date">
+        </div>
+
+        <div style="flex:0 0 160px;">
+          <label>Data (até)</label>
+          <input id="f_to" type="date">
+        </div>
+
+        <div style="flex:0 0 auto;">
+          <button id="btnFiltrar" class="btn waves-effect">
+            <i class="material-icons left">filter_list</i>Filtrar
+          </button>
+        </div>
+      </div>
+
+      <div id="msgTop" class="msgline msg-ok"></div>
+    </div>
+
+    <div class="panel-card" style="overflow:auto;">
+      <table class="striped highlight">
+        <thead>
+          <tr>
+            <th>SIMULADO</th>
+            <th>DATA</th>
+            <th>DISCIPLINA</th>
+            <th>MATRÍCULA</th>
+            <th>NOME</th>
+            <th>UNIDADE</th>
+            <th style="text-align:right;">NOTA</th>
+            <th style="white-space:nowrap;">AÇÕES</th>
+          </tr>
+        </thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+
+    <div style="text-align:center; color:#6b7280; font-size:.9rem; padding:8px 0 18px;">
+      Dissertativo • 3A Sistemas
+    </div>
+  </div>
+
+  <!-- Modal editar -->
+  <div id="modalEdit" class="modal">
+    <div class="modal-content">
+      <h5>Alterar Nota</h5>
+      <p id="editInfo" style="color:#6b7280;margin-top:-6px;"></p>
+
+      <div class="row" style="margin-top:12px;">
+        <div class="input-field col s12 m4">
+          <input id="editNota" type="text" placeholder="Ex.: 7,50">
+          <label class="active">Nova nota</label>
+        </div>
+
+        <div class="input-field col s12 m8">
+          <input id="editObs" type="text" placeholder="(opcional)">
+          <label class="active">Obs</label>
+        </div>
+      </div>
+
+      <div id="msgEdit" class="msgline"></div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close btn-flat">Cancelar</a>
+      <a href="#!" id="btnSalvarEdit" class="btn waves-effect">
+        <i class="material-icons left">save</i>Salvar
+      </a>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/dissertativo/';
+    const EP_ME   = API + 'auth_me.php';
+    const EP_LIST = API + 'notas_dissertativas_user_list.php';
+    const EP_UPD  = API + 'notas_dissertativas_update.php';
+    const EP_DEL  = API + 'notas_dissertativas_cancel.php';
+
+    const $ = (id)=>document.getElementById(id);
+    let modalEdit;
+    let currentEditId = null;
+
+    function setTopMsg(text, ok=true){
+      const el = $('msgTop');
+      el.textContent = text || '';
+      el.className = 'msgline ' + (ok ? 'msg-ok' : 'msg-bad');
+    }
+    function setMsgEdit(text, ok=true){
+      const el = $('msgEdit');
+      el.textContent = text || '';
+      el.className = 'msgline ' + (ok ? 'msg-ok' : 'msg-bad');
+    }
+
+    async function apiGet(url){
+      const r = await fetch(url, { credentials:'include' });
+      const data = await r.json();
+      if(!r.ok || !data.ok) throw new Error(data.msg || data.error || 'Falha na requisição');
+      return data;
+    }
+    async function apiPost(url, body){
+      const r = await fetch(url, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        credentials:'include',
+        body: JSON.stringify(body)
+      });
+      const data = await r.json();
+      if(!r.ok || !data.ok) throw new Error(data.msg || data.error || 'Falha na requisição');
+      return data;
+    }
+
+    function esc(s){
+      return String(s ?? '')
+        .replaceAll('&','&amp;').replaceAll('<','&lt;')
+        .replaceAll('>','&gt;').replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
+
+    function fmtNota(n){
+      const x = Number(n);
+      return Number.isFinite(x) ? x.toFixed(2) : '';
+    }
+
+    function buildQuery(){
+      const p = new URLSearchParams();
+      const sim = $('f_simulado').value.trim();
+      const dis = $('f_disciplina').value.trim();
+      const df  = $('f_from').value.trim();
+      const dt  = $('f_to').value.trim();
+
+      if(sim) p.set('simulado', sim);
+      if(dis) p.set('disciplina', dis);
+      if(df)  p.set('date_from', df);
+      if(dt)  p.set('date_to', dt);
+
+      p.set('limit', '300');
+      p.set('offset', '0');
+      return p.toString();
+    }
+
+    async function boot(){
+      modalEdit = M.Modal.init($('modalEdit'), {dismissible:true});
+
+      try{
+        const me = await apiGet(EP_ME);
+        $('userName').textContent = me?.user?.nome || 'Usuário';
+      }catch(e){
+        setTopMsg('Sessão inválida. Faça login novamente.', false);
+        return;
+      }
+
+      $('btnFiltrar').addEventListener('click', loadList);
+      $('btnSalvarEdit').addEventListener('click', saveEdit);
+
+      await loadList();
+    }
+
+    async function loadList(){
+      setTopMsg('Carregando...', true);
+      $('tb').innerHTML = '';
+
+      try{
+        const qs = buildQuery();
+        const data = await apiGet(EP_LIST + '?' + qs);
+        const rows = data.rows || [];
+
+        if(!rows.length){
+          setTopMsg('Nenhuma nota encontrada para os filtros atuais.', true);
+          return;
+        }
+
+        $('tb').innerHTML = rows.map(r=>{
+          const cancel = String(r.status||'').toUpperCase() === 'CANCELADA';
+          return `
+            <tr class="${cancel ? 'cancelada' : ''}">
+              <td>${esc(r.simulado)}</td>
+              <td>${esc(r.data_prova)}</td>
+              <td>${esc(r.disciplina)}</td>
+              <td>${esc(r.matricula)}</td>
+              <td>${esc(r.nome)}</td>
+              <td>${esc(r.unidade)}</td>
+              <td style="text-align:right;">${esc(fmtNota(r.nota))}</td>
+              <td style="white-space:nowrap;">
+                <a class="btn btn-mini blue-grey lighten-1" href="#!" onclick="openEdit(${r.id}, '${esc(r.simulado)}', '${esc(r.data_prova)}', '${esc(r.disciplina)}', '${esc(r.matricula)}', '${esc(r.nome)}', ${Number(r.nota)})">
+                  <i class="material-icons">edit</i>
+                </a>
+                <a class="btn btn-mini red lighten-1" href="#!" onclick="doCancel(${r.id})">
+                  <i class="material-icons">delete</i>
+                </a>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        setTopMsg(`OK — ${rows.length} lançamento(s) encontrado(s).`, true);
+
+      }catch(e){
+        console.error(e);
+        setTopMsg(e.message || 'Erro ao carregar lista', false);
+      }
+    }
+
+    window.openEdit = function(id, sim, data, dis, mat, nome, nota){
+      currentEditId = id;
+      setMsgEdit('', true);
+      $('editInfo').textContent = `${mat} • ${nome} • ${sim} • ${dis} • ${data}`;
+      $('editNota').value = fmtNota(nota);
+      $('editObs').value = '';
+      M.updateTextFields();
+      modalEdit.open();
+    }
+
+    async function saveEdit(){
+      setMsgEdit('Salvando...', true);
+      const id = currentEditId;
+      if(!id) return;
+
+      const nota = $('editNota').value.trim().replace(',', '.');
+      if(!nota || !Number.isFinite(Number(nota))){
+        setMsgEdit('Informe uma nota válida.', false);
+        $('editNota').focus();
+        return;
+      }
+
+      try{
+        await apiPost(EP_UPD, { id, nota, obs: $('editObs').value.trim() });
+        setMsgEdit('Salvo. Atualizando lista...', true);
+        await loadList();
+        modalEdit.close();
+      }catch(e){
+        console.error(e);
+        setMsgEdit(e.message || 'Falha ao salvar', false);
+      }
+    }
+
+    window.doCancel = async function(id){
+      if(!confirm('Confirma cancelar (excluir) este lançamento?')) return;
+
+      try{
+        await apiPost(EP_DEL, { id });
+        setTopMsg('Lançamento cancelado. Atualizando lista...', true);
+        await loadList();
+      }catch(e){
+        console.error(e);
+        setTopMsg(e.message || 'Falha ao cancelar', false);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', boot);
+  </script>
+</body>
+</html>
