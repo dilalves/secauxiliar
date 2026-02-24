@@ -657,7 +657,8 @@
 
       try{
         await apiPost(EP_UPSERT, payload);
-        setMsg('msgMat', 'Nota salva com sucesso.', true);
+          const resp = await apiPost(EP_UPSERT, payload);
+          setMsg('msgMat', resp.msg || 'Operação concluída.', true);
 
         $('lastSave').textContent = `${payload.matricula} • ${payload.disciplina} • ${payload.nota.toFixed(2)} • ${payload.data_prova}`;
 
@@ -705,7 +706,8 @@
 
       try{
         await apiPost(EP_UPSERT, payload);
-        setMsg('msgNome', 'Nota salva com sucesso.', true);
+          const resp = await apiPost(EP_UPSERT, payload);
+          setMsg('msgNome', resp.msg || 'Operação concluída.', true);
 
         $('lastSave').textContent = `${payload.matricula} • ${payload.disciplina} • ${payload.nota.toFixed(2)} • ${payload.data_prova}`;
 
