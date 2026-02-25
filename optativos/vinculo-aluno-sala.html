@@ -65,8 +65,8 @@
     /* ===== Grid (form + painel lateral) ===== */
     .grid-ensalamento{
       display:grid;
-      grid-template-columns: 360px 1fr; /* ✅ inverte */
-      gap: 16px;
+      grid-template-columns: 360px 1fr; /* esquerda (pendentes) fixa, direita (principal) flex */
+      gap:16px;
       align-items:start;
     }
     @media (max-width: 992px){
@@ -162,7 +162,29 @@
   <div class="wrap">
     <div class="grid-ensalamento">
 
-      <!-- COLUNA ESQUERDA (seu card principal) -->
+      <!-- COLUNA ESQUERDA (painel pendentes) -->
+      <div class="card card-side">
+        <div class="card-content">
+          <div class="side-header">
+            <div>
+              <div class="side-title">Pendentes sem sala</div>
+              <div class="side-sub" id="pend_info">Selecione um curso…</div>
+            </div>
+
+            <a class="btn btn-small blue-grey lighten-5 black-text" id="btn_pend_refresh" title="Atualizar">
+              <i class="material-icons">refresh</i>
+            </a>
+          </div>
+
+          <div id="pend_status" class="badge-soft warn">Aguardando curso…</div>
+
+          <div class="pend-list" id="pend_list">
+            <div class="muted" style="padding:10px 6px;">—</div>
+          </div>
+        </div>
+      </div>        
+
+      <!-- COLUNA DIREITA (seu card principal) -->
       <div class="card">
         <div class="card-content">
           <span class="card-title">Ensalamento • Cadastro de Alunos na Sala</span>
@@ -275,28 +297,6 @@
               </div>
             </div>
 
-          </div>
-        </div>
-      </div>
-
-      <!-- COLUNA DIREITA (painel pendentes) -->
-      <div class="card card-side">
-        <div class="card-content">
-          <div class="side-header">
-            <div>
-              <div class="side-title">Pendentes sem sala</div>
-              <div class="side-sub" id="pend_info">Selecione um curso…</div>
-            </div>
-
-            <a class="btn btn-small blue-grey lighten-5 black-text" id="btn_pend_refresh" title="Atualizar">
-              <i class="material-icons">refresh</i>
-            </a>
-          </div>
-
-          <div id="pend_status" class="badge-soft warn">Aguardando curso…</div>
-
-          <div class="pend-list" id="pend_list">
-            <div class="muted" style="padding:10px 6px;">—</div>
           </div>
         </div>
       </div>
