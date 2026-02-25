@@ -46,7 +46,7 @@
     .btn-logout:hover{ background: rgba(255,255,255,.22); }
 
     /* ===== Layout ===== */
-    .wrap { max-width: 1200px; margin: 96px auto 24px; padding: 0 12px; }
+    .wrap { max-width: 980px; margin: 96px auto 24px; padding: 0 12px; }
     .card { border-radius: 14px; }
     .badge-soft { padding: 6px 10px; border-radius: 999px; font-weight: 600; display:inline-block; }
     .ok { background: #e8f5e9; color:#1b5e20; }
@@ -60,85 +60,6 @@
     @media (max-width: 600px){
       header.topbar{ padding:0 14px; }
       .wrap{ margin-top: 86px; }
-    }
-
-    /* ===== Grid (form + painel lateral) ===== */
-    .grid-ensalamento{
-      display:grid;
-      grid-template-columns: 1fr 360px;
-      gap: 16px;
-      align-items:start;
-    }
-    @media (max-width: 992px){
-      .grid-ensalamento{ grid-template-columns: 1fr; }
-    }
-
-    .card-side{
-      border-radius: 14px;
-      position: sticky;
-      top: 84px; /* abaixo da topbar */
-    }
-    .side-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom: 10px;
-    }
-    .side-title{
-      font-weight:700;
-      font-size:1rem;
-      margin:0;
-    }
-    .side-sub{
-      font-size:.85rem;
-      color:#6b7280;
-      margin-top:2px;
-    }
-    .pend-list{
-      max-height: 520px;
-      overflow:auto;
-      border-top:1px solid #eee;
-      margin-top:10px;
-    }
-    .pend-item{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      padding:10px 6px;
-      border-bottom:1px solid #f0f0f0;
-      cursor:pointer;
-    }
-    .pend-item:hover{ background:#fafafa; }
-    .pend-left{ min-width:0; }
-    .pend-mat{ font-weight:700; }
-    .pend-nome{
-      font-size:.92rem;
-      color:#374151;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 240px;
-    }
-    .pend-unit{
-      font-size:.82rem;
-      color:#6b7280;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 240px;
-    }
-    .chip-mini{
-      font-size:.78rem;
-      padding: 2px 8px;
-      border-radius:999px;
-      background:#eef2ff;
-      color:#1e3a8a;
-      font-weight:700;
-      height:auto;
-      line-height:1.6;
-      display:inline-block;
-      margin-top:4px;
     }
   </style>
 </head>
@@ -160,148 +81,121 @@
   </header>
 
   <div class="wrap">
-    <div class="grid-ensalamento">
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title">Ensalamento • Cadastro de Alunos na Sala</span>
+        <p class="small">Selecione <b>Curso</b> e <b>Sala</b>. Depois digite a <b>matrícula</b> para validar e ensalar.</p>
 
-      <!-- COLUNA ESQUERDA (seu card principal) -->
-      <div class="card">
-        <div class="card-content">
-          <span class="card-title">Ensalamento • Cadastro de Alunos na Sala</span>
-          <p class="small">Selecione <b>Curso</b> e <b>Sala</b>. Depois digite a <b>matrícula</b> para validar e ensalar.</p>
-
-          <!-- Seletores -->
-          <div class="row row-tight" style="margin-top:16px;">
-            <div class="input-field col s12 m6">
-              <select id="curso_id"></select>
-              <label>Curso</label>
-            </div>
-
-            <div class="input-field col s12 m6">
-              <select id="sala_id"></select>
-              <label>Sala</label>
-
-              <!-- ✅ Resumo de lotação das salas (P1: 134/140 • P2: 128/140) -->
-              <div id="salas_resumo" class="small muted" style="margin-top:6px; line-height:1.3;"></div>
-            </div>
+        <!-- Seletores -->
+        <div class="row row-tight" style="margin-top:16px;">
+          <div class="input-field col s12 m6">
+            <select id="curso_id"></select>
+            <label>Curso</label>
           </div>
 
-          <div class="row row-tight">
-            <div class="col s12">
-              <a class="btn blue" id="btn_travar">
-                Travar seleção (começar a inserir)
-              </a>
-              <a class="btn grey lighten-1 black-text" id="btn_destravar" style="display:none;">
-                Destravar
-              </a>
-            </div>
-          </div>
+          <div class="input-field col s12 m6">
+            <select id="sala_id"></select>
+            <label>Sala</label>
 
-          <div class="divider" style="margin:18px 0;"></div>
-
-          <!-- Matrícula -->
-          <div id="area_matricula" style="display:none;">
-            <div class="row row-tight">
-              <div class="input-field col s12 m6">
-                <input id="matricula" type="text" inputmode="numeric" class="mono" autocomplete="off">
-                <label for="matricula">Matrícula</label>
-              </div>
-
-              <div class="col s12 m6" style="margin-top:18px;">
-                <a class="btn green" id="btn_buscar">Buscar</a>
-                <!-- Materialize usa a classe "disabled" para bloquear <a class="btn"> -->
-                <a class="btn teal disabled" id="btn_ensalar">Ensalar</a>
-              </div>
-            </div>
-
-            <!-- Resultado -->
-            <div class="card" style="background:#fff; margin-top:10px;">
-              <div class="card-content">
-                <div class="row row-tight">
-                  <div class="col s12">
-                    <span id="status_badge" class="badge-soft warn">Aguardando busca…</span>
-                  </div>
-                </div>
-
-                <div class="row row-tight" style="margin-top:12px;">
-                  <div class="col s12 m8">
-                    <div><b>Aluno:</b> <span id="aluno_nome" class="muted">—</span></div>
-                    <div><b>E-mail:</b> <span id="aluno_email" class="muted">—</span></div>
-                    <div><b>CPF:</b> <span id="aluno_cpf" class="muted">—</span></div>
-                  </div>
-                  <div class="col s12 m4">
-                    <div><b>Turma especial:</b> <span id="aluno_turma_esp" class="muted">—</span></div>
-                    <div><b>Disciplina:</b> <span id="aluno_disc" class="muted">—</span></div>
-                    <div><b>Situação:</b> <span id="aluno_sit" class="muted">—</span></div>
-                  </div>
-                </div>
-
-                <div class="row row-tight" style="margin-top:10px;">
-                  <div class="col s12">
-                    <div class="small"><b>Motivo:</b> <span id="motivo" class="muted">—</span></div>
-                  </div>
-                </div>
-
-                <div class="row row-tight" style="margin-top:12px;">
-                  <div class="col s12">
-                    <div class="small">
-                      <b>Curso:</b> <span id="curso_nome" class="muted">—</span>
-                      &nbsp;•&nbsp;
-                      <b>Regra:</b> <span id="curso_regra" class="muted">—</span>
-                      &nbsp;•&nbsp;
-                      <b>Sala:</b> <span id="sala_nome" class="muted">—</span>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <!-- Log -->
-            <div class="card" style="margin-top:12px;">
-              <div class="card-content">
-                <span class="card-title" style="font-size:1.1rem;">Últimos ensalados</span>
-                <table class="striped responsive-table">
-                  <thead>
-                    <tr>
-                      <th>Matrícula</th>
-                      <th>Nome</th>
-                      <th>Status</th>
-                      <th>Calendário</th>
-                    </tr>
-                  </thead>
-                  <tbody id="log_body">
-                    <tr><td colspan="4" class="muted">Ainda sem registros…</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
+            <!-- ✅ Resumo de lotação das salas (P1: 134/140 • P2: 128/140) -->
+            <div id="salas_resumo" class="small muted" style="margin-top:6px; line-height:1.3;"></div>
           </div>
         </div>
-      </div>
 
-      <!-- COLUNA DIREITA (painel pendentes) -->
-      <div class="card card-side">
-        <div class="card-content">
-          <div class="side-header">
-            <div>
-              <div class="side-title">Pendentes sem sala</div>
-              <div class="side-sub" id="pend_info">Selecione um curso…</div>
-            </div>
-
-            <a class="btn btn-small blue-grey lighten-5 black-text" id="btn_pend_refresh" title="Atualizar">
-              <i class="material-icons">refresh</i>
+        <div class="row row-tight">
+          <div class="col s12">
+            <a class="btn blue" id="btn_travar">
+              Travar seleção (começar a inserir)
+            </a>
+            <a class="btn grey lighten-1 black-text" id="btn_destravar" style="display:none;">
+              Destravar
             </a>
           </div>
+        </div>
 
-          <div id="pend_status" class="badge-soft warn">Aguardando curso…</div>
+        <div class="divider" style="margin:18px 0;"></div>
 
-          <div class="pend-list" id="pend_list">
-            <div class="muted" style="padding:10px 6px;">—</div>
+        <!-- Matrícula -->
+        <div id="area_matricula" style="display:none;">
+          <div class="row row-tight">
+            <div class="input-field col s12 m6">
+              <input id="matricula" type="text" inputmode="numeric" class="mono" autocomplete="off">
+              <label for="matricula">Matrícula</label>
+            </div>
+
+            <div class="col s12 m6" style="margin-top:18px;">
+              <a class="btn green" id="btn_buscar">Buscar</a>
+              <!-- Materialize usa a classe "disabled" para bloquear <a class="btn"> -->
+              <a class="btn teal disabled" id="btn_ensalar">Ensalar</a>
+            </div>
           </div>
+
+          <!-- Resultado -->
+          <div class="card" style="background:#fff; margin-top:10px;">
+            <div class="card-content">
+              <div class="row row-tight">
+                <div class="col s12">
+                  <span id="status_badge" class="badge-soft warn">Aguardando busca…</span>
+                </div>
+              </div>
+
+              <div class="row row-tight" style="margin-top:12px;">
+                <div class="col s12 m8">
+                  <div><b>Aluno:</b> <span id="aluno_nome" class="muted">—</span></div>
+                  <div><b>E-mail:</b> <span id="aluno_email" class="muted">—</span></div>
+                  <div><b>CPF:</b> <span id="aluno_cpf" class="muted">—</span></div>
+                </div>
+                <div class="col s12 m4">
+                  <div><b>Turma especial:</b> <span id="aluno_turma_esp" class="muted">—</span></div>
+                  <div><b>Disciplina:</b> <span id="aluno_disc" class="muted">—</span></div>
+                  <div><b>Situação:</b> <span id="aluno_sit" class="muted">—</span></div>
+                </div>
+              </div>
+
+              <div class="row row-tight" style="margin-top:10px;">
+                <div class="col s12">
+                  <div class="small"><b>Motivo:</b> <span id="motivo" class="muted">—</span></div>
+                </div>
+              </div>
+
+              <div class="row row-tight" style="margin-top:12px;">
+                <div class="col s12">
+                  <div class="small">
+                    <b>Curso:</b> <span id="curso_nome" class="muted">—</span>
+                    &nbsp;•&nbsp;
+                    <b>Regra:</b> <span id="curso_regra" class="muted">—</span>
+                    &nbsp;•&nbsp;
+                    <b>Sala:</b> <span id="sala_nome" class="muted">—</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Log -->
+          <div class="card" style="margin-top:12px;">
+            <div class="card-content">
+              <span class="card-title" style="font-size:1.1rem;">Últimos ensalados</span>
+              <table class="striped responsive-table">
+                <thead>
+                  <tr>
+                    <th>Matrícula</th>
+                    <th>Nome</th>
+                    <th>Status</th>
+                    <th>Calendário</th>
+                  </tr>
+                </thead>
+                <tbody id="log_body">
+                  <tr><td colspan="4" class="muted">Ainda sem registros…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </div>
-
-    </div><!-- /grid-ensalamento -->
+    </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
@@ -320,12 +214,6 @@
   const inpMat = document.getElementById('matricula');
   const btnBuscar = document.getElementById('btn_buscar');
   const btnEnsal = document.getElementById('btn_ensalar');
-
-  // ===== Pendentes sem sala (painel lateral) =====
-  const elPendList   = document.getElementById('pend_list');
-  const elPendInfo   = document.getElementById('pend_info');
-  const elPendStatus = document.getElementById('pend_status');
-  const btnPendRefresh = document.getElementById('btn_pend_refresh');
 
   let cursoSel = null;
   let salaSel  = null;
@@ -524,102 +412,6 @@
     }
   }
 
-  // ===== Pendentes (painel lateral) =====
-  function pendStatus(type, text){
-    elPendStatus.className = 'badge-soft ' + (type || 'warn');
-    elPendStatus.textContent = text;
-  }
-
-  function clearPendList(msg='—'){
-    elPendList.innerHTML = `<div class="muted" style="padding:10px 6px;">${msg}</div>`;
-  }
-
-  function renderPendList(rows){
-    if(!rows || rows.length === 0){
-      clearPendList('Nenhum pendente 🎉');
-      return;
-    }
-
-    elPendList.innerHTML = rows.map(x => {
-      const mat = x.matricula || '';
-      const nome = x.nome || '';
-      const uni  = (x.nome_unidade || '').trim();
-      const te   = x.turma_especial || '';
-      return `
-        <div class="pend-item" data-mat="${mat}">
-          <div class="pend-left">
-            <div class="pend-mat mono">${mat}</div>
-            <div class="pend-nome">${nome}</div>
-            <div class="pend-unit">${uni || ''}</div>
-            ${te ? `<span class="chip-mini">${te}</span>` : ``}
-          </div>
-          <div style="display:flex;align-items:center;">
-            <i class="material-icons muted">chevron_right</i>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    elPendList.querySelectorAll('.pend-item').forEach(item=>{
-      item.addEventListener('click', async ()=>{
-        const mat = item.getAttribute('data-mat') || '';
-        if(!mat) return;
-
-        inpMat.value = mat;
-        M.updateTextFields();
-
-        if(cursoSel){
-          await lookup();
-        }else{
-          M.toast({html:'Agora trave Curso/Sala e clique Buscar 😉'});
-        }
-        inpMat.focus();
-      });
-    });
-  }
-
-  async function loadPendentes(cursoId){
-    if(!cursoId){
-      elPendInfo.textContent = 'Selecione um curso…';
-      pendStatus('warn','Aguardando curso…');
-      clearPendList('—');
-      return;
-    }
-
-    pendStatus('warn','Carregando…');
-    clearPendList('Carregando…');
-
-    try{
-      const url = API + 'pendentes_sem_sala.php?curso_id=' + encodeURIComponent(cursoId);
-
-      const r = await fetch(url, { credentials:'include' });
-      const j = await r.json();
-
-      if(!j || !j.ok){
-        pendStatus('bad', j?.msg || 'Erro ao carregar');
-        clearPendList('Erro ao carregar.');
-        return;
-      }
-
-      const cursoNome = j.curso?.nome || '';
-      const req = j.curso?.turma_especial_required || '';
-      elPendInfo.textContent = cursoNome ? `${cursoNome} • Exige: ${req || '—'}` : '—';
-
-      pendStatus(j.total ? 'warn' : 'ok', `Total: ${j.total || 0}`);
-
-      renderPendList(j.rows || []);
-    }catch(e){
-      console.error(e);
-      pendStatus('bad','Falha (console)');
-      clearPendList('Falha ao carregar. Veja console.');
-    }
-  }
-
-  btnPendRefresh.addEventListener('click', ()=>{
-    const cursoId = parseInt(elCurso.value || '0', 10) || 0;
-    loadPendentes(cursoId);
-  });
-
   btnTravar.addEventListener('click', async ()=>{
     const c = getSelectedOption(elCurso);
     const s = getSelectedOption(elSala);
@@ -750,8 +542,9 @@
     M.toast({html:'Ensalado com sucesso!'});
 
     await carregarUltimosEnsalados();
+
+    // ✅ atualiza o resumo de lotação logo após ensalar
     await loadTotaisPorSala(cursoSel.id);
-    await loadPendentes(cursoSel.id); // ✅ atualiza painel
 
     inpMat.value = '';
     M.updateTextFields();
@@ -762,14 +555,13 @@
 
   btnEnsal.addEventListener('click', ensalar);
 
-  // ✅ AO SELECIONAR CURSO: carrega salas + resumo de lotação + pendentes + log
+  // ✅ AO SELECIONAR CURSO: carrega salas + resumo de lotação + log
   elCurso.addEventListener('change', async ()=>{
     M.FormSelect.init(elCurso);
     try{
       const cursoId = parseInt(elCurso.value || '0', 10) || 0;
-      await loadSalasDoCurso(cursoId);
-      await loadTotaisPorSala(cursoId);
-      await loadPendentes(cursoId);      // ✅ NOVO
+      await loadSalasDoCurso(cursoId);      // popula select + cache
+      await loadTotaisPorSala(cursoId);     // atualiza resumo
       await carregarUltimosEnsalados();
     }catch(e){
       console.error(e);
@@ -790,7 +582,6 @@
       await loadSalasDoCurso(0); // limpa salas até escolher curso
       M.FormSelect.init(document.querySelectorAll('select'));
       resetAlunoUI();
-      await loadPendentes(0);
       await carregarUltimosEnsalados(); // carrega assim que entra na página
     } catch(e){
       console.error(e);
