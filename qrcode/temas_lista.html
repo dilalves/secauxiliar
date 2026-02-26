@@ -13,211 +13,241 @@
   <!-- SweetAlert -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
- <style>
-  :root {
-    --bg:#f7f8fb;
-    --card:#ffffff;
-    --line:#e9edf3;
-    --ink:#0f172a;
-    --muted:#6b7280;
-    --primary:#0b3b78;
-    --accent:#2563eb;
-    --radius:14px;
-  }
+  <style>
+    :root {
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e9edf3;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --radius:14px;
+    }
 
-  body{
-    background:var(--bg);
-    font-family:system-ui, Arial;
-    padding:24px;
-  }
+    body{
+      background:var(--bg);
+      font-family:system-ui, Arial;
+      padding:24px;
+      color: var(--ink);
+    }
 
-  /* ===== Topbar ===== */
-  header.topbar{
-    position:fixed; top:0; left:0; right:0; height:64px;
-    background:var(--primary); color:#fff;
-    display:flex; align-items:center; z-index:10;
-    padding:0 24px;
-    box-shadow:0 2px 10px rgba(16,24,40,.12);
-  }
-  header.topbar .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
-  header.topbar h5{
-    margin:0; font-weight:600;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    font-size:1.1rem;
-  }
-  header.topbar .right-actions{
-    margin-left:auto;
-    display:flex; align-items:center; gap:10px;
-  }
+    header.topbar{
+      position:fixed; top:0; left:0; right:0; height:64px;
+      background:var(--primary); color:#fff;
+      display:flex; align-items:center; z-index:10;
+      padding:0 24px;
+      box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+    header.topbar .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
+    header.topbar h5{
+      margin:0; font-weight:600;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-size:1.05rem;
+    }
+    header.topbar .right-actions{
+      margin-left:auto;
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn-ghost{
+      border-radius:999px;
+      background: rgba(255,255,255,.15);
+      box-shadow:none;
+    }
+    .btn-ghost:hover{ background: rgba(255,255,255,.22); }
 
-  .btn-ghost{
-    border-radius:999px;
-    background: rgba(255,255,255,.15);
-    box-shadow:none;
-  }
-  .btn-ghost:hover{ background: rgba(255,255,255,.22); }
+    .wrap{
+      width: min(1800px, calc(100vw - 32px));
+      margin:96px auto 0;
+    }
+    @media (min-width: 1600px){
+      .wrap{ width: min(2200px, calc(100vw - 48px)); }
+    }
 
-  /* ===== Layout ===== */
-  .wrap{
-    width: min(1800px, calc(100vw - 32px));
-    margin:96px auto 0;
-  }
-  @media (min-width: 1600px){
-    .wrap{ width: min(2200px, calc(100vw - 48px)); }
-  }
+    .panel-card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
+      border:1px solid var(--line);
+      overflow: hidden;
+    }
 
-  .panel-card{
-    background:var(--card);
-    border-radius:var(--radius);
-    box-shadow:0 10px 30px rgba(0,0,0,.06);
-    border:1px solid var(--line);
-  }
+    .pill{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:var(--primary);
+      font-weight:700;
+      font-size:.85rem;
+      white-space: nowrap;
+    }
 
-  .pill{
-    display:inline-flex; align-items:center; gap:6px;
-    padding:6px 10px;
-    border-radius:999px;
-    background:#eef2ff;
-    color:var(--primary);
-    font-weight:600;
-    font-size:.85rem;
-  }
+    .toolbar{
+      padding:14px 14px 6px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+      justify-content:space-between;
+    }
 
-  /* ===== Toolbar ===== */
-  .toolbar{
-    padding:14px 14px 6px;
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    align-items:flex-end;
-    justify-content:space-between;
-  }
+    .filters{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+    }
 
-  .filters{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    align-items:flex-end;
-  }
+    .field{ min-width: 220px; }
 
-  .field{ min-width: 220px; }
+    /* Materialize input (compacto e alinhado) */
+    .input-field{ margin:0; }
+    .input-field input{
+      height: 2.4rem !important;
+    }
+    .input-field label{
+      transform: translateY(-6px) scale(.92);
+      transform-origin: 0 0;
+    }
 
-  .btn-primary{
-    border-radius:999px;
-    background: linear-gradient(135deg, var(--accent), #1d4ed8);
-    box-shadow:0 10px 22px rgba(37,99,235,.18);
-    font-weight:800;
-  }
+    .btn-primary{
+      border-radius:999px;
+      background: linear-gradient(135deg, var(--accent), #1d4ed8);
+      box-shadow:0 10px 22px rgba(37,99,235,.18);
+      font-weight:800;
+    }
+    .btn-soft{
+      border-radius:999px;
+      background:#eef2ff;
+      color:var(--primary);
+      box-shadow:none;
+      font-weight:800;
+    }
 
-  .btn-soft{
-    border-radius:999px;
-    background:#eef2ff;
-    color:var(--primary);
-    box-shadow:none;
-    font-weight:700;
-  }
-
-  /* ===== Tabela (SEM barra horizontal) ===== */
-  .table-wrap{
-    padding: 0 14px 14px;
-    overflow-x: hidden;  /* mata a barra horizontal */
-    overflow-y: visible;
-  }
-
-  .table-wrap table{
-    width:100%;
-    table-layout: fixed; /* encaixa na tela e força quebra */
-  }
-
-  table.striped>thead>tr>th{
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    color:#0f172a;
-    font-weight:800;
-    font-size:.86rem;
-  }
-
-  table.striped>tbody>tr>td{
-    vertical-align: top;
-    font-size: .92rem;
-    color:#111827;
-
-    white-space: normal;      /* quebra */
-    word-break: break-word;
-    overflow-wrap: anywhere;
-  }
-
-  /* ===== Larguras por coluna (SEM ID) =====
-     1 codigo
-     2 identred
-     3 segmento
-     4 curso
-     5 serie
-     6 caderno
-     7 tipoprova
-     8 tema1
-     9 tema2
-     10 tema3
-     11 dt_registro
-  */
-  th:nth-child(1),  td:nth-child(1)  { width: 90px; }   /* CÓDIGO */
-  th:nth-child(2),  td:nth-child(2)  { width: 110px; }  /* IDENTRED */
-  th:nth-child(3),  td:nth-child(3)  { width: 110px; }  /* SEGMENTO */
-  th:nth-child(4),  td:nth-child(4)  { width: 130px; }  /* CURSO */
-  th:nth-child(5),  td:nth-child(5)  { width: 70px; }   /* SÉRIE */
-  th:nth-child(6),  td:nth-child(6)  { width: 230px; }  /* CADERNO */
-  th:nth-child(7),  td:nth-child(7)  { width: 110px; }  /* TIPOPROVA */
-  th:nth-child(11), td:nth-child(11) { width: 170px; }  /* DT_REGISTRO */
-
-  /* TEMA1/2/3 dividem o "miolo" restante igualmente */
-  th:nth-child(8),  td:nth-child(8),
-  th:nth-child(9),  td:nth-child(9),
-  th:nth-child(10), td:nth-child(10){
-    width: calc((100% - (90px + 110px + 110px + 130px + 70px + 230px + 110px + 170px)) / 3);
-  }
-
-  /* colunas curtas sem quebra */
-  td:nth-child(1),
-  td:nth-child(2),
-  td:nth-child(3),
-  td:nth-child(4),
-  td:nth-child(5),
-  td:nth-child(7),
-  td:nth-child(11){
-    white-space: nowrap;
-  }
-
-  .muted{ color: var(--muted); font-size:.92rem; }
-
-  .footer{
-    text-align:center;
-    color:var(--muted);
-    font-size:.9rem;
-    padding:8px 0 18px;
-  }
-
-  /* Mobile */
-  @media (max-width: 600px){
-    body{ padding:16px; }
-    header.topbar{ padding:0 14px; }
-    .wrap{ margin-top:86px; }
-    .field{ min-width: 100%; }
-
-    /* em telas muito estreitas, deixa a tabela respirar */
+    /* ===== TABLE ===== */
     .table-wrap{
-      overflow-x: auto; /* aqui pode ter scroll no celular, senão fica inviável */
-      -webkit-overflow-scrolling: touch;
+      padding: 0 14px 14px;
+      overflow-x: hidden; /* sem barra horizontal */
+      overflow-y: visible;
     }
-    .table-wrap table{
-      min-width: 980px; /* força scroll só no mobile */
-      table-layout: auto;
+
+    /* container de rolagem vertical + header fixo */
+    .table-scroll{
+      max-height: calc(100vh - 320px);  /* ajusta conforme tela */
+      overflow-y: auto;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
     }
-  }
-</style>
+
+    table.striped{
+      width:100%;
+      table-layout: fixed;
+      margin:0;
+    }
+
+    table.striped>thead>tr>th{
+      position: sticky;   /* fixa header */
+      top: 0;
+      z-index: 2;
+      background: #f3f6fb;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#0f172a;
+      font-weight:900;
+      font-size:.82rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    table.striped>tbody>tr>td{
+      vertical-align: top;
+      font-size: .92rem;
+      color:#111827;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* hover suave na linha */
+    table.striped>tbody>tr{
+      transition: background .12s ease;
+    }
+    table.striped>tbody>tr:hover{
+      background: #f6f8ff;
+    }
+
+    /* TEMA1 em destaque */
+    td:nth-child(8){
+      font-weight: 600;
+      color:#0f172a;
+    }
+
+    /* ===== Larguras (SEM ID) =====
+       1 codigo
+       2 identred
+       3 segmento
+       4 curso
+       5 serie
+       6 caderno
+       7 tipoprova
+       8 tema1
+       9 tema2
+       10 tema3
+       11 dt_registro
+    */
+    th:nth-child(1),  td:nth-child(1)  { width: 90px; }   /* CÓDIGO */
+    th:nth-child(2),  td:nth-child(2)  { width: 110px; }  /* IDENTRED */
+    th:nth-child(3),  td:nth-child(3)  { width: 110px; }  /* SEGMENTO */
+    th:nth-child(4),  td:nth-child(4)  { width: 130px; }  /* CURSO */
+    th:nth-child(5),  td:nth-child(5)  { width: 70px; }   /* SÉRIE */
+    th:nth-child(6),  td:nth-child(6)  { width: 230px; }  /* CADERNO */
+    th:nth-child(7),  td:nth-child(7)  { width: 110px; }  /* TIPOPROVA */
+    th:nth-child(11), td:nth-child(11) { width: 170px; }  /* DT_REGISTRO */
+
+    th:nth-child(8),  td:nth-child(8),
+    th:nth-child(9),  td:nth-child(9),
+    th:nth-child(10), td:nth-child(10){
+      width: calc((100% - (90px + 110px + 110px + 130px + 70px + 230px + 110px + 170px)) / 3);
+    }
+
+    td:nth-child(1),
+    td:nth-child(2),
+    td:nth-child(3),
+    td:nth-child(4),
+    td:nth-child(5),
+    td:nth-child(7),
+    td:nth-child(11){
+      white-space: nowrap;
+    }
+
+    .muted{ color: var(--muted); font-size:.92rem; }
+
+    .footer{
+      text-align:center;
+      color:var(--muted);
+      font-size:.9rem;
+      padding:8px 0 18px;
+    }
+
+    @media (max-width: 600px){
+      body{ padding:16px; }
+      header.topbar{ padding:0 14px; }
+      .wrap{ margin-top:86px; }
+      .field{ min-width: 100%; }
+
+      /* no mobile, scroll horizontal é aceitável pra não virar “sopa” */
+      .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling: touch; }
+      table.striped{ min-width: 980px; table-layout:auto; }
+      table.striped>thead>tr>th{ position: sticky; top:0; }
+    }
+  </style>
 </head>
 
 <body>
+
   <header class="topbar">
     <div class="brand">
       <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
@@ -225,10 +255,10 @@
     </div>
 
     <div class="right-actions">
-      <a class="btn btn-small btn-ghost white-text" href="painel.html">
-        <i class="material-icons left">dashboard</i>Painel
+      <a class="btn btn-small btn-ghost white-text" href="./painel.html">
+        <i class="material-icons left">grid_view</i>Painel
       </a>
-      <a class="btn btn-small btn-ghost white-text" href="temas_cadastro.html">
+      <a class="btn btn-small btn-ghost white-text" href="./temas_cadastro.html">
         <i class="material-icons left">add</i>Novo
       </a>
     </div>
@@ -236,141 +266,129 @@
 
   <div class="wrap">
 
-    <div class="panel-card" style="padding:16px 16px; margin-bottom:16px;">
-      <div style="display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap;">
-        <div style="display:flex; gap:10px; align-items:flex-start; flex:1 1 auto;">
-          <i class="material-icons" style="color:var(--primary); margin-top:2px;">list_alt</i>
+    <div class="panel-card">
+      <!-- cabeçalho do card -->
+      <div style="padding:14px 14px; display:flex; align-items:flex-start; gap:12px; justify-content:space-between; flex-wrap:wrap;">
+        <div style="display:flex; gap:10px; align-items:flex-start;">
+          <i class="material-icons" style="color:var(--primary); margin-top:2px;">view_list</i>
           <div>
-            <div style="font-weight:800; color:#111827;">Registros cadastrados</div>
-            <div class="muted">
-              Listagem do mais recente para o mais antigo (dt_registro desc).
-            </div>
+            <div style="font-weight:900; color:#111827;">Registros cadastrados</div>
+            <div class="muted">Listagem do mais recente para o mais antigo (dt_registro desc).</div>
           </div>
         </div>
-        <div style="flex:0 0 auto;">
-          <span class="pill" id="pillTotal">
-            <i class="material-icons" style="font-size:18px;">inventory_2</i>
-            0 registros
-          </span>
+
+        <div>
+          <span class="pill" id="pillCount"><i class="material-icons" style="font-size:18px;">dns</i> 0 registro(s)</span>
         </div>
       </div>
-    </div>
 
-    <div class="panel-card">
+      <!-- toolbar -->
       <div class="toolbar">
         <div class="filters">
-          <div class="input-field field" style="margin:0;">
-            <input id="q" type="text" placeholder="Buscar (tema, caderno, curso, prova...)">
-            <label for="q" class="active">Busca</label>
+          <div class="input-field field">
+            <input id="q" type="text" placeholder="Buscar (tema, caderno, curso, etc)">
+            <label for="q">Busca</label>
           </div>
 
-          <div class="input-field field" style="margin:0;">
-            <input id="codigo" type="number" placeholder="Ex: 123">
-            <label for="codigo" class="active">Código</label>
+          <div class="input-field field" style="min-width:140px;">
+            <input id="codigo" type="text" placeholder="Ex: 123">
+            <label for="codigo">Código</label>
           </div>
 
-          <div class="input-field" style="margin:0; min-width:140px;">
-            <input id="limit" type="number" value="500" min="1" max="2000">
-            <label for="limit" class="active">Limite</label>
+          <div class="input-field field" style="min-width:120px;">
+            <input id="limit" type="number" min="1" max="2000" value="500">
+            <label for="limit">Limite</label>
           </div>
 
-          <a class="btn btn-primary" href="javascript:void(0)" onclick="carregar()">
+          <button class="btn btn-primary" id="btnBuscar">
             <i class="material-icons left">search</i>Pesquisar
-          </a>
+          </button>
 
-          <a class="btn btn-soft" href="javascript:void(0)" onclick="limpar()">
+          <button class="btn btn-soft" id="btnLimpar">
             <i class="material-icons left">refresh</i>Limpar
-          </a>
+          </button>
         </div>
 
-        <div class="muted" id="status"></div>
+        <div class="muted" id="status">—</div>
       </div>
 
+      <!-- tabela -->
       <div class="table-wrap">
-        <table class="striped highlight responsive-table">
-          <thead>
-            <tr>
-              <th>CÓDIGO</th>
-              <th>IDENTRED</th>
-              <th>SEGMENTO</th>
-              <th>CURSO</th>
-              <th>SÉRIE</th>
-              <th>CADERNO</th>
-              <th>TIPOPROVA</th>
-              <th>TEMA1</th>
-              <th>TEMA2</th>
-              <th>TEMA3</th>
-              <th>DT_REGISTRO</th>
-            </tr>
-          </thead>
-          <tbody id="tbody">
-            <tr><td colspan="11" class="muted">Carregando...</td></tr>
-          </tbody>
-        </table>
+        <div class="table-scroll">
+          <table class="striped">
+            <thead>
+              <tr>
+                <th>CÓDIGO</th>
+                <th>IDENTRED</th>
+                <th>SEGMENTO</th>
+                <th>CURSO</th>
+                <th>SÉRIE</th>
+                <th>CADERNO</th>
+                <th>TIPOPROVA</th>
+                <th>TEMA1</th>
+                <th>TEMA2</th>
+                <th>TEMA3</th>
+                <th>DT_REGISTRO</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <tr><td colspan="11" class="muted">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <div class="footer">
-      QR Code • Redação • 3A Sistemas
-    </div>
-
+    <div class="footer">QR Code • Redação • 3A Sistemas</div>
   </div>
 
   <script>
-    const API_LIST = "https://apisec.secauxiliar.com.br/qrcode/redacao_temas_list.php";
+    const API_URL = 'https://apisec.secauxiliar.com.br/qrcode/redacao_temas_list.php';
+
+    const el = (id) => document.getElementById(id);
 
     function esc(s){
-      return String(s ?? "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
+      return String(s ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
         .replaceAll("'","&#039;");
     }
 
     function fmtDT(dt){
-      if (!dt) return "";
-      // vem do MySQL geralmente: "2026-02-26 10:09:28"
-      return dt;
-    }
-
-    function setStatus(msg){ document.getElementById("status").textContent = msg || ""; }
-
-    function limpar(){
-      document.getElementById("q").value = "";
-      document.getElementById("codigo").value = "";
-      document.getElementById("limit").value = "500";
-      carregar();
+      if(!dt) return '';
+      // aceita "YYYY-MM-DD HH:MM:SS" e mostra igual
+      return String(dt).replace('T',' ').replace('.000','');
     }
 
     async function carregar(){
-      const q = (document.getElementById("q").value || "").trim();
-      const codigo = (document.getElementById("codigo").value || "").trim();
-      const limit = (document.getElementById("limit").value || "500").trim();
+      const q = (el('q').value || '').trim();
+      const codigo = (el('codigo').value || '').trim();
+      const limit = Math.max(1, Math.min(2000, parseInt(el('limit').value || '500', 10)));
 
-      const url = new URL(API_LIST);
-      if (q) url.searchParams.set("q", q);
-      if (codigo) url.searchParams.set("codigo", codigo);
-      if (limit) url.searchParams.set("limit", limit);
+      el('status').textContent = 'Carregando...';
 
-      const tbody = document.getElementById("tbody");
+      const tbody = el('tbody');
       tbody.innerHTML = `<tr><td colspan="11" class="muted">Carregando...</td></tr>`;
-      setStatus("Consultando banco...");
 
       try{
-        const resp = await fetch(url.toString(), { method:"GET" });
+        const url = new URL(API_URL);
+        if(q) url.searchParams.set('q', q);
+        if(codigo) url.searchParams.set('codigo', codigo);
+        url.searchParams.set('limit', String(limit));
+
+        const resp = await fetch(url.toString(), { cache:'no-store' });
         const j = await resp.json();
-        if (!resp.ok || !j.ok) throw new Error(j.msg || "Falha ao listar");
+
+        if(!resp.ok || !j.ok) throw new Error(j.msg || 'Falha ao listar');
 
         const rows = j.rows || [];
-        document.getElementById("pillTotal").innerHTML = `
-          <i class="material-icons" style="font-size:18px;">inventory_2</i>
-          ${rows.length} registro(s)
-        `;
+        el('pillCount').innerHTML = `<i class="material-icons" style="font-size:18px;">dns</i> ${rows.length} registro(s)`;
+        el('status').textContent = `OK • ${rows.length} registro(s) carregado(s).`;
 
-        if (!rows.length){
+        if(rows.length === 0){
           tbody.innerHTML = `<tr><td colspan="11" class="muted">Nenhum registro encontrado.</td></tr>`;
-          setStatus("Nenhum registro.");
           return;
         }
 
@@ -388,28 +406,33 @@
             <td>${esc(r.tema3)}</td>
             <td>${esc(fmtDT(r.dt_registro))}</td>
           </tr>
-        `).join("");
+        `).join('');
 
-        setStatus(`OK • ${rows.length} registro(s) carregado(s).`);
-
-      } catch(e){
-        setStatus("");
-        Swal.fire({ icon:"error", title:"Erro", text: e.message || String(e) });
-        tbody.innerHTML = `<tr><td colspan="11" class="muted">Erro ao carregar.</td></tr>`;
+      }catch(e){
+        el('status').textContent = 'Erro ao carregar.';
+        tbody.innerHTML = `<tr><td colspan="11" class="muted">Erro: ${esc(e.message || String(e))}</td></tr>`;
       }
     }
 
-    // carregar ao abrir
-    document.addEventListener("DOMContentLoaded", () => {
+    function limpar(){
+      el('q').value = '';
+      el('codigo').value = '';
+      el('limit').value = '500';
+      M.updateTextFields();
       carregar();
+    }
 
-      // Enter para pesquisar
-      document.getElementById("q").addEventListener("keydown", (ev) => {
-        if (ev.key === "Enter") { ev.preventDefault(); carregar(); }
-      });
-      document.getElementById("codigo").addEventListener("keydown", (ev) => {
-        if (ev.key === "Enter") { ev.preventDefault(); carregar(); }
-      });
+    document.addEventListener('DOMContentLoaded', function(){
+      // materialize labels ok
+      M.updateTextFields();
+
+      el('btnBuscar').addEventListener('click', carregar);
+      el('btnLimpar').addEventListener('click', limpar);
+
+      el('q').addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); carregar(); } });
+      el('codigo').addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); carregar(); } });
+
+      carregar();
     });
   </script>
 
