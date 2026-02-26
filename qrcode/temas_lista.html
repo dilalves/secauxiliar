@@ -26,6 +26,7 @@
     }
 
     body{
+      overflow: hidden;              /* <- remove a barra de rolagem externa */
       background:var(--bg);
       font-family:system-ui, Arial;
       padding:24px;
@@ -59,17 +60,24 @@
     .wrap{
       width: min(1800px, calc(100vw - 32px));
       margin:96px auto 0;
+      height: calc(100vh - 96px);    /* <- “encaixa” no resto da tela */
+      display:flex;
+      flex-direction: column;
     }
     @media (min-width: 1600px){
       .wrap{ width: min(2200px, calc(100vw - 48px)); }
     }
 
+    /* card vira coluna e a tabela ganha o espaço */
     .panel-card{
       background:var(--card);
       border-radius:var(--radius);
       box-shadow:0 10px 30px rgba(0,0,0,.06);
       border:1px solid var(--line);
       overflow: hidden;
+      display:flex;
+      flex-direction: column;
+      flex: 1 1 auto;                /* <- ocupa tudo dentro do wrap */
     }
 
     .pill{
@@ -126,16 +134,18 @@
     }
 
     /* ===== TABLE ===== */
+    /* tabela: só ela rola */
     .table-wrap{
       padding: 0 14px 14px;
-      overflow-x: hidden; /* sem barra horizontal */
-      overflow-y: visible;
+      overflow: hidden;              /* <- sem scroll aqui */
+      flex: 1 1 auto;
     }
 
     /* container de rolagem vertical + header fixo */
     .table-scroll{
-      max-height: calc(100vh - 320px);  /* ajusta conforme tela */
-      overflow-y: auto;
+      height: 100%;                  /* <- ocupa o resto do card */
+      overflow-y: auto;              /* <- scroll único */
+      overflow-x: hidden;
       border-radius: 12px;
       border: 1px solid var(--line);
       background: #fff;
@@ -232,16 +242,21 @@
       padding:8px 0 18px;
     }
 
+    /* mobile: deixa o body rolar normalmente (scroll único externo) */
     @media (max-width: 600px){
-      body{ padding:16px; }
-      header.topbar{ padding:0 14px; }
-      .wrap{ margin-top:86px; }
-      .field{ min-width: 100%; }
-
-      /* no mobile, scroll horizontal é aceitável pra não virar “sopa” */
-      .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling: touch; }
-      table.striped{ min-width: 980px; table-layout:auto; }
-      table.striped>thead>tr>th{ position: sticky; top:0; }
+      body{ overflow:auto; }
+      .wrap{
+        height:auto;
+        display:block;
+      }
+      .panel-card{ display:block; }
+      .table-wrap{ overflow-x:auto; }
+      .table-scroll{
+        height:auto;
+        max-height:none;
+        overflow: visible;
+        border: 0;
+      }
     }
   </style>
 </head>
