@@ -307,8 +307,7 @@ td:nth-child(12){
   background: #fafbff;
 }
 
-/* ✅ NÃO mexe no transform das labels no modal (Materialize cuida)
-   só ajusta cor/tamanho pra ficar igual ao cadastro */
+/* ✅ NÃO mexe no transform das labels no modal (Materialize cuida) */
 #modalEditar .input-field{
   margin-top: 12px;
   margin-bottom: 10px;
@@ -507,7 +506,8 @@ td:nth-child(12){
                 <option value="FOLHETO">FOLHETO</option>
                 <option value="CADERNO">CADERNO</option>
               </select>
-              <label class="active" for="editIdentred">Identificação do Material</label>
+              <!-- ✅ REMOVIDO class="active" -->
+              <label for="editIdentred">Identificação do Material</label>
             </div>
           </div>
 
@@ -518,7 +518,8 @@ td:nth-child(12){
                 <option value="CURSO">CURSO</option>
                 <option value="COLÉGIO">COLÉGIO</option>
               </select>
-              <label class="active" for="editSegmento">Segmento</label>
+              <!-- ✅ REMOVIDO class="active" -->
+              <label for="editSegmento">Segmento</label>
             </div>
           </div>
 
@@ -532,7 +533,8 @@ td:nth-child(12){
                 <option value="INTENSIVO">INTENSIVO</option>
                 <option value="REDAÇÃO">REDAÇÃO</option>
               </select>
-              <label class="active" for="editCurso">Curso</label>
+              <!-- ✅ REMOVIDO class="active" -->
+              <label for="editCurso">Curso</label>
             </div>
           </div>
 
@@ -545,14 +547,16 @@ td:nth-child(12){
                 <option value="3">3ª</option>
                 <option value="4">4ª</option>
               </select>
-              <label class="active" for="editSerie">Série</label>
+              <!-- ✅ REMOVIDO class="active" -->
+              <label for="editSerie">Série</label>
             </div>
           </div>
 
           <div class="col s12 m6">
             <div class="input-field">
               <input id="editCaderno" type="text" required>
-              <label class="active" for="editCaderno">Caderno/Folheto</label>
+              <!-- ✅ REMOVIDO class="active" -->
+              <label for="editCaderno">Caderno/Folheto</label>
             </div>
           </div>
 
@@ -568,28 +572,32 @@ td:nth-child(12){
                 <option value="UNESP">UNESP</option>
                 <option value="UNICAMP">UNICAMP</option>
               </select>
-              <label class="active" for="editTipoprova">Tipo de Prova</label>
+              <!-- ✅ REMOVIDO class="active" -->
+              <label for="editTipoprova">Tipo de Prova</label>
             </div>
           </div>
 
           <div class="col s12">
             <div class="input-field">
               <input id="editTema1" type="text" required>
-              <label class="active" for="editTema1">Tema 1</label>
+              <!-- ✅ REMOVIDO class="active" -->
+              <label for="editTema1">Tema 1</label>
             </div>
           </div>
 
           <div class="col s12">
             <div class="input-field">
               <input id="editTema2" type="text">
-              <label class="active" for="editTema2">Tema 2</label>
+              <!-- ✅ REMOVIDO class="active" -->
+              <label for="editTema2">Tema 2</label>
             </div>
           </div>
 
           <div class="col s12">
             <div class="input-field">
               <input id="editTema3" type="text">
-              <label class="active" for="editTema3">Tema 3</label>
+              <!-- ✅ REMOVIDO class="active" -->
+              <label for="editTema3">Tema 3</label>
             </div>
           </div>
 
@@ -636,6 +644,16 @@ td:nth-child(12){
       return String(dt).replace('T',' ').replace('.000','');
     }
 
+    // 🔧 helper: re-init SOMENTE os selects do modal (evita label encavalada)
+    function reinitModalSelects(){
+      const selects = document.querySelectorAll('#modalEditar select');
+      selects.forEach(s=>{
+        const inst = M.FormSelect.getInstance(s);
+        if(inst) inst.destroy();
+      });
+      M.FormSelect.init(selects);
+    }
+
     // ===== EDIT MODAL HELPERS =====
     function atualizarCamposSegmentoEdit(){
       const seg = el('editSegmento').value;
@@ -657,7 +675,10 @@ td:nth-child(12){
         serie.value = '';
       }
 
-      M.FormSelect.init(document.querySelectorAll('select'));
+      // ✅ só reinit no modal
+      reinitModalSelects();
+      // ✅ atualiza labels
+      M.updateTextFields();
     }
 
     function validarEdicao(){
@@ -708,14 +729,16 @@ td:nth-child(12){
 
         atualizarCamposSegmentoEdit();
 
-        // atualiza inputs e selects
-        M.updateTextFields();
-        M.FormSelect.init(document.querySelectorAll('select'));
-
         Swal.close();
 
         const modal = M.Modal.getInstance(el('modalEditar'));
         modal.open();
+
+        // ✅ depois de abrir, re-init e update (Materialize calcula melhor com modal visível)
+        setTimeout(()=>{
+          reinitModalSelects();
+          M.updateTextFields();
+        }, 50);
 
       } catch(e){
         Swal.fire({ icon:'error', title:'Erro', text: e.message || String(e) });
