@@ -3,118 +3,343 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>QR Code • Temas de Redação</title>
+
+  <!-- Materialize -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- Ícones -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
-  <title>Temas de Redação - Cadastramento</title>
+  <!-- SweetAlert -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    body{ background:#f7f8fb; }
-    .container{ margin-top:24px; }
+    :root{
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e9edf3;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --radius:14px;
+    }
+
+    body{
+      background:var(--bg);
+      font-family:system-ui, Arial;
+      padding:24px;
+    }
+
+    /* ===== Topbar ===== */
+    header.topbar{
+      position:fixed; top:0; left:0; right:0; height:64px;
+      background:var(--primary); color:#fff;
+      display:flex; align-items:center; z-index:10;
+      padding:0 24px;
+      box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+    header.topbar .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width:0;
+    }
+    header.topbar h5{
+      margin:0; font-weight:600;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-size:1.1rem;
+    }
+    header.topbar .right-actions{
+      margin-left:auto;
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn-logout{
+      border-radius:999px;
+      background: rgba(255,255,255,.15);
+      box-shadow:none;
+    }
+    .btn-logout:hover{ background: rgba(255,255,255,.22); }
+
+    /* ===== Layout ===== */
+    .wrap{
+      max-width:1100px;
+      margin:96px auto 0; /* por causa da topbar fixa */
+    }
+
+    .panel-card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
+      border:1px solid var(--line);
+    }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:var(--primary);
+      font-weight:600;
+      font-size:.85rem;
+    }
+
+    /* ===== Form ===== */
+    .form-card{
+      padding:18px 18px 8px;
+    }
+    .form-title{
+      display:flex; align-items:center; gap:10px;
+      margin-bottom:10px;
+    }
+    .form-title .icon{
+      width:42px; height:42px;
+      display:flex; align-items:center; justify-content:center;
+      border-radius:12px;
+      background: rgba(11,59,120,.10);
+      color: var(--primary);
+    }
+    .form-title h6{
+      margin:0;
+      font-weight:800;
+      color:#111827;
+    }
+    .form-sub{
+      margin:0;
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    /* Materialize tweaks */
+    .input-field > label { color: var(--muted); }
+    .select-wrapper input.select-dropdown{
+      border-bottom:1px solid #d7dee8 !important;
+    }
+    input[type=text]:not(.browser-default){
+      border-bottom:1px solid #d7dee8 !important;
+    }
+    input[type=text]:not(.browser-default):focus:not([readonly]){
+      border-bottom:1px solid var(--accent) !important;
+      box-shadow:0 1px 0 0 var(--accent) !important;
+    }
+    .dropdown-content li>span{
+      color:#111827;
+    }
+
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:10px;
+      padding: 8px 0 6px;
+    }
+    .btn-soft{
+      border-radius:999px;
+      background:#eef2ff;
+      color:var(--primary);
+      box-shadow:none;
+      font-weight:700;
+    }
+    .btn-soft:hover{ background:#e0e7ff; }
+
+    .btn-primary{
+      border-radius:999px;
+      background: linear-gradient(135deg, var(--accent), #1d4ed8);
+      box-shadow:0 10px 22px rgba(37,99,235,.18);
+      font-weight:800;
+    }
+    .btn-primary:hover{
+      box-shadow:0 14px 28px rgba(37,99,235,.22);
+    }
+
+    /* modal */
+    .modal{
+      border-radius:16px;
+      max-width:520px;
+    }
+    .modal .modal-content h4{
+      font-size:1.3rem;
+      font-weight:800;
+      margin-top:0;
+      color:#111827;
+    }
+    .modal .modal-content p{
+      color:var(--muted);
+    }
+
+    /* footer */
+    .footer{
+      text-align:center;
+      color:var(--muted);
+      font-size:.9rem;
+      padding:12px 0 18px;
+    }
+
+    @media (max-width: 600px){
+      body{ padding:16px; }
+      header.topbar{ padding:0 14px; }
+      .wrap{ margin-top:86px; }
+    }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h5>Temas de Redação - Cadastramento</h5>
 
-    <form id="formAvaliacao">
-      <!-- IDENTRED -->
-      <div class="input-field">
-        <select id="identred" required>
-          <option value="" disabled selected>Selecione</option>
-          <option value="SIMULADO">SIMULADO</option>
-          <option value="FOLHETO">FOLHETO</option>
-          <option value="CADERNO">CADERNO</option>
-        </select>
-        <label for="identred">Identificação do Material</label>
+  <!-- Topo (padrão das outras páginas) -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
+      <h5>QR Code • Temas de Redação</h5>
+    </div>
+
+    <div class="right-actions">
+      <a class="btn btn-small btn-logout white-text" href="javascript:history.back()">
+        <i class="material-icons left">arrow_back</i>Voltar
+      </a>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- Aviso/status -->
+    <div class="panel-card" style="padding:16px 16px; margin-bottom:16px;">
+      <div style="display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="display:flex; gap:10px; align-items:flex-start; flex:1 1 auto;">
+          <i class="material-icons" style="color:var(--primary); margin-top:2px;">info</i>
+          <div>
+            <div style="font-weight:800; color:#111827;">Cadastro de temas</div>
+            <div style="color:var(--muted); font-size:.92rem;">
+              Preencha os dados do material e gere automaticamente o QR Code do tema.
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:0 0 auto;">
+          <span class="pill">
+            <i class="material-icons" style="font-size:18px;">qr_code_2</i>
+            Gerador de QR Code
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="panel-card form-card">
+      <div class="form-title">
+        <div class="icon"><i class="material-icons">edit_note</i></div>
+        <div>
+          <h6>Temas de Redação</h6>
+          <p class="form-sub">Os campos mudam automaticamente conforme o segmento (Curso ou Colégio).</p>
+        </div>
       </div>
 
-      <!-- SEGMENTO -->
-      <div class="input-field">
-        <select id="segmento" required onchange="atualizarCamposSegmento()">
-          <option value="" disabled selected>Selecione</option>
-          <option value="CURSO">CURSO</option>
-          <option value="COLÉGIO">COLÉGIO</option>
-        </select>
-        <label for="segmento">Segmento</label>
-      </div>
+      <form id="formAvaliacao">
+        <div class="row" style="margin-bottom:0;">
 
-      <!-- CURSO -->
-      <div class="input-field">
-        <select id="curso" disabled>
-          <option value="" disabled selected>Selecione</option>
-          <option value="EXTENSIVO">EXTENSIVO</option>
-          <option value="TURMAS DE MAIO">TURMAS DE MAIO</option>
-          <option value="SEMI DE AGOSTO">SEMI DE AGOSTO</option>
-          <option value="INTENSIVO">INTENSIVO</option>
-          <option value="REDAÇÃO">REDAÇÃO</option>
-        </select>
-        <label for="curso">Curso</label>
-      </div>
+          <!-- IDENTRED -->
+          <div class="input-field col s12 m6">
+            <select id="identred" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="SIMULADO">SIMULADO</option>
+              <option value="FOLHETO">FOLHETO</option>
+              <option value="CADERNO">CADERNO</option>
+            </select>
+            <label for="identred">Identificação do Material</label>
+          </div>
 
-      <!-- SÉRIE -->
-      <div class="input-field">
-        <select id="serie" disabled>
-          <option value="" disabled selected>Selecione</option>
-          <option value="1">1ª</option>
-          <option value="2">2ª</option>
-          <option value="3">3ª</option>
-        </select>
-        <label for="serie">Série</label>
-      </div>
+          <!-- SEGMENTO -->
+          <div class="input-field col s12 m6">
+            <select id="segmento" required onchange="atualizarCamposSegmento()">
+              <option value="" disabled selected>Selecione</option>
+              <option value="CURSO">CURSO</option>
+              <option value="COLÉGIO">COLÉGIO</option>
+            </select>
+            <label for="segmento">Segmento</label>
+          </div>
 
-      <!-- CADERNO/FOLHETO -->
-      <div class="input-field">
-        <input id="caderno" type="text" required>
-        <label for="caderno">Caderno/Folheto</label>
-      </div>
+          <!-- CURSO -->
+          <div class="input-field col s12 m6">
+            <select id="curso" disabled>
+              <option value="" disabled selected>Selecione</option>
+              <option value="EXTENSIVO">EXTENSIVO</option>
+              <option value="TURMAS DE MAIO">TURMAS DE MAIO</option>
+              <option value="SEMI DE AGOSTO">SEMI DE AGOSTO</option>
+              <option value="INTENSIVO">INTENSIVO</option>
+              <option value="REDAÇÃO">REDAÇÃO</option>
+            </select>
+            <label for="curso">Curso</label>
+          </div>
 
-      <!-- TIPOPROVA -->
-      <div class="input-field">
-        <select id="tipoprova" required>
-          <option value="" disabled selected>Selecione</option>
-          <option value="FUVEST">FUVEST</option>
-          <option value="ENEM">ENEM</option>
-          <option value="PARÁFRASE">PARÁFRASE</option>
-          <option value="UFPR">UFPR</option>
-          <option value="UNIFESP">UNIFESP</option>
-          <option value="UNESP">UNESP</option>
-          <option value="UNICAMP">UNICAMP</option>
-        </select>
-        <label for="tipoprova">Tipo de Prova</label>
-      </div>
+          <!-- SÉRIE -->
+          <div class="input-field col s12 m6">
+            <select id="serie" disabled>
+              <option value="" disabled selected>Selecione</option>
+              <option value="1">1ª</option>
+              <option value="2">2ª</option>
+              <option value="3">3ª</option>
+            </select>
+            <label for="serie">Série</label>
+          </div>
 
-      <!-- TEMAS -->
-      <div class="input-field">
-        <input id="tema1" type="text" required>
-        <label for="tema1">Tema 1</label>
-      </div>
-      <div class="input-field">
-        <input id="tema2" type="text">
-        <label for="tema2">Tema 2</label>
-      </div>
-      <div class="input-field">
-        <input id="tema3" type="text">
-        <label for="tema3">Tema 3</label>
-      </div>
+          <!-- CADERNO/FOLHETO -->
+          <div class="input-field col s12">
+            <input id="caderno" type="text" required maxlength="200">
+            <label for="caderno">Caderno/Folheto</label>
+          </div>
 
-      <button class="btn green" type="submit" id="btnSalvar">
-        <i class="material-icons left">save</i>Salvar
-      </button>
-    </form>
+          <!-- TIPOPROVA -->
+          <div class="input-field col s12 m6">
+            <select id="tipoprova" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="FUVEST">FUVEST</option>
+              <option value="ENEM">ENEM</option>
+              <option value="PARÁFRASE">PARÁFRASE</option>
+              <option value="UFPR">UFPR</option>
+              <option value="UNIFESP">UNIFESP</option>
+              <option value="UNESP">UNESP</option>
+              <option value="UNICAMP">UNICAMP</option>
+            </select>
+            <label for="tipoprova">Tipo de Prova</label>
+          </div>
 
-    <br>
-    <a class="btn grey" href="javascript:history.back()">
-      <i class="material-icons left">arrow_back</i>Voltar
-    </a>
+          <!-- TEMA 1 -->
+          <div class="input-field col s12">
+            <input id="tema1" type="text" required>
+            <label for="tema1">Tema 1</label>
+          </div>
+
+          <!-- TEMA 2 -->
+          <div class="input-field col s12">
+            <input id="tema2" type="text">
+            <label for="tema2">Tema 2</label>
+          </div>
+
+          <!-- TEMA 3 -->
+          <div class="input-field col s12">
+            <input id="tema3" type="text">
+            <label for="tema3">Tema 3</label>
+          </div>
+
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" type="submit" id="btnSalvar">
+            <i class="material-icons left">save</i>Salvar e gerar QR Code
+          </button>
+
+          <a class="btn btn-soft" href="javascript:history.back()">
+            <i class="material-icons left">arrow_back</i>Voltar
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <div class="footer">
+      QR Code • Temas de Redação • 3A Sistemas
+    </div>
   </div>
 
   <!-- Modal de carregamento -->
   <div id="loadingModal" class="modal">
     <div class="modal-content">
       <h4>Aguarde...</h4>
-      <p>Salvando os dados, por favor, aguarde.</p>
+      <p>Salvando os dados e gerando o QR Code…</p>
     </div>
   </div>
 
@@ -149,6 +374,8 @@
         curso.value = "";
         serie.value = "";
       }
+
+      // re-render selects
       M.FormSelect.init(document.querySelectorAll('select'));
     }
 
@@ -159,7 +386,6 @@
         if (!v) return false;
       }
 
-      // regra: se segmento=CURSO precisa curso; se COLÉGIO precisa série
       const seg = document.getElementById('segmento').value;
       if (seg === 'CURSO' && !document.getElementById('curso').value) return false;
       if (seg === 'COLÉGIO' && !document.getElementById('serie').value) return false;
@@ -171,7 +397,11 @@
       event.preventDefault();
 
       if (!validarCamposObrigatorios()) {
-        Swal.fire({ icon:'warning', title:'Atenção', text:'Por favor, preencha todos os campos obrigatórios.' });
+        Swal.fire({
+          icon: 'warning',
+          title: 'Atenção',
+          text: 'Por favor, preencha todos os campos obrigatórios.'
+        });
         return;
       }
 
@@ -207,7 +437,7 @@
 
         loadingModal.close();
 
-        Swal.fire({
+        await Swal.fire({
           title: 'Salvo com sucesso!',
           html: `
             Código gerado: <strong>${codigoGerado}</strong><br><br>
@@ -222,7 +452,7 @@
         // download automático do PNG na máquina do usuário
         await baixarQRCodePNG(codigoGerado);
 
-        // (opcional) limpar form
+        // opcional: reset
         // document.getElementById('formAvaliacao').reset();
         // atualizarCamposSegmento();
 
@@ -260,7 +490,7 @@
           resolve();
         };
 
-        img.onerror = () => resolve(); // não trava se falhar
+        img.onerror = () => resolve();
       });
     }
   </script>
