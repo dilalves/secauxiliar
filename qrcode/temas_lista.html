@@ -108,11 +108,12 @@ header.topbar .right-actions{
 
 .field{ min-width: 220px; }
 
-/* inputs do topo */
 .input-field{ margin:0; }
-.input-field input{ height: 2.4rem !important; }
+.input-field input{
+  height: 2.4rem !important;
+}
 
-/* ✅ Só no topo (não no modal) */
+/* ✅ regra do topo (toolbar) SEM afetar o modal */
 .wrap .toolbar .input-field label{
   transform: translateY(-6px) scale(.92);
   transform-origin: 0 0;
@@ -178,10 +179,17 @@ table.striped>tbody>tr>td{
   border-bottom: 1px solid #f1f5f9;
 }
 
-table.striped>tbody>tr{ transition: background .12s ease; }
-table.striped>tbody>tr:hover{ background: #f6f8ff; }
+table.striped>tbody>tr{
+  transition: background .12s ease;
+}
+table.striped>tbody>tr:hover{
+  background: #f6f8ff;
+}
 
-td:nth-child(9){ font-weight: 600; color:#0f172a; }
+td:nth-child(9){
+  font-weight: 600;
+  color:#0f172a;
+}
 
 th:nth-child(1),  td:nth-child(1)  { width: 64px; }
 th:nth-child(2),  td:nth-child(2)  { width: 90px; }
@@ -219,7 +227,9 @@ td:nth-child(12){
   background:#eef2ff;
   color: var(--primary);
 }
-.btn-edit:hover{ background:#e0e7ff; }
+.btn-edit:hover{
+  background:#e0e7ff;
+}
 .btn-edit i{ font-size: 18px; line-height: 32px; }
 
 .muted{ color: var(--muted); font-size:.92rem; }
@@ -232,8 +242,9 @@ td:nth-child(12){
 }
 
 /* =========================================
-   MODAL EDITAR (GRANDE + LABELS OK)
+   MODAL EDITAR (GRANDE + IGUAL AO CADASTRO)
    ========================================= */
+
 #modalEditar.modal{
   width: min(1100px, 92vw) !important;
   height: 88vh !important;
@@ -242,21 +253,22 @@ td:nth-child(12){
   overflow: hidden;
 }
 
-/* layout flex pra não depender de conta de vh */
-#modalEditar .modal-content{
-  height: 100%;
-  display:flex;
-  flex-direction: column;
+/* layout interno */
+#modalEditar.modal .modal-content{
   padding: 16px 18px 0;
+  height: calc(88vh - 68px); /* reserva footer */
   overflow: hidden;
 }
 
+/* header do modal */
 #modalEditar .modal-head{
-  flex: 0 0 auto;
-  background:#fff;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: #fff;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--line);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 #modalEditar .modal-title{
@@ -275,17 +287,15 @@ td:nth-child(12){
   font-size: .92rem;
 }
 
-/* só o corpo rola */
+/* área rolável do modal */
 #modalEditar .modal-body{
-  flex: 1 1 auto;
+  height: calc(88vh - 68px - 74px);
   overflow: auto;
   padding-right: 6px;
-  padding-bottom: 14px;
 }
 
-/* footer DENTRO do content */
-#modalEditar .modal-footer{
-  flex: 0 0 auto;
+/* footer fixo */
+#modalEditar.modal .modal-footer{
   height: 68px;
   display:flex;
   align-items:center;
@@ -297,34 +307,31 @@ td:nth-child(12){
   background: #fafbff;
 }
 
-/* 🔥 RESET total das labels dentro do modal (mata o “encavalado”) */
-#modalEditar .input-field{ margin: 12px 0 10px; }
+/* ✅ NÃO mexe no transform das labels no modal (Materialize cuida)
+   só ajusta cor/tamanho pra ficar igual ao cadastro */
+#modalEditar .input-field{
+  margin-top: 12px;
+  margin-bottom: 10px;
+}
+
 #modalEditar .input-field > label{
-  transform: none !important;
   font-size: .82rem;
   color: var(--muted);
 }
 
-/* e garante o comportamento padrão do Materialize quando ativo */
-#modalEditar .input-field > label.active{
-  transform: translateY(-14px) scale(0.8) !important;
-  transform-origin: 0 0;
-  color: var(--primary);
-}
-
-/* Select: melhora o espaçamento do valor */
+/* select do Materialize no modal */
 #modalEditar .select-wrapper input.select-dropdown{
   height: 2.7rem;
   line-height: 2.7rem;
   margin: 0 0 6px;
 }
 
-/* Inputs */
+/* inputs texto */
 #modalEditar input[type="text"]{
-  padding-top: .25rem;
   font-size: .95rem;
 }
 
+/* botão excluir */
 #modalEditar .btn-danger{
   border-radius: 999px;
   background: #fee2e2;
@@ -334,7 +341,7 @@ td:nth-child(12){
 }
 #modalEditar .btn-danger:hover{ background:#fecaca; }
 
-/* scrollbar interno (opcional) */
+/* scrollbar (opcional) */
 #modalEditar .modal-body::-webkit-scrollbar{ width: 10px; }
 #modalEditar .modal-body::-webkit-scrollbar-thumb{
   background: #dbe4f3;
@@ -349,12 +356,21 @@ td:nth-child(12){
     height: 92vh !important;
     max-height: 92vh !important;
   }
+  #modalEditar.modal .modal-content{
+    height: calc(92vh - 68px);
+  }
+  #modalEditar .modal-body{
+    height: calc(92vh - 68px - 74px);
+  }
 }
 
-/* mobile geral: deixa o body rolar normalmente */
+/* mobile geral */
 @media (max-width: 600px){
   body{ overflow:auto; }
-  .wrap{ height:auto; display:block; }
+  .wrap{
+    height:auto;
+    display:block;
+  }
   .panel-card{ display:block; }
   .table-wrap{ overflow-x:auto; }
   .table-scroll{
@@ -388,6 +404,7 @@ td:nth-child(12){
   <div class="wrap">
 
     <div class="panel-card">
+      <!-- cabeçalho do card -->
       <div style="padding:14px 14px; display:flex; align-items:flex-start; gap:12px; justify-content:space-between; flex-wrap:wrap;">
         <div style="display:flex; gap:10px; align-items:flex-start;">
           <i class="material-icons" style="color:var(--primary); margin-top:2px;">view_list</i>
@@ -402,6 +419,7 @@ td:nth-child(12){
         </div>
       </div>
 
+      <!-- toolbar -->
       <div class="toolbar">
         <div class="filters">
           <div class="input-field field">
@@ -431,6 +449,7 @@ td:nth-child(12){
         <div class="muted" id="status">—</div>
       </div>
 
+      <!-- tabela -->
       <div class="table-wrap">
         <div class="table-scroll">
           <table class="striped">
@@ -488,7 +507,7 @@ td:nth-child(12){
                 <option value="FOLHETO">FOLHETO</option>
                 <option value="CADERNO">CADERNO</option>
               </select>
-              <label for="editIdentred">Identificação do Material</label>
+              <label class="active" for="editIdentred">Identificação do Material</label>
             </div>
           </div>
 
@@ -499,7 +518,7 @@ td:nth-child(12){
                 <option value="CURSO">CURSO</option>
                 <option value="COLÉGIO">COLÉGIO</option>
               </select>
-              <label for="editSegmento">Segmento</label>
+              <label class="active" for="editSegmento">Segmento</label>
             </div>
           </div>
 
@@ -513,7 +532,7 @@ td:nth-child(12){
                 <option value="INTENSIVO">INTENSIVO</option>
                 <option value="REDAÇÃO">REDAÇÃO</option>
               </select>
-              <label for="editCurso">Curso</label>
+              <label class="active" for="editCurso">Curso</label>
             </div>
           </div>
 
@@ -526,14 +545,14 @@ td:nth-child(12){
                 <option value="3">3ª</option>
                 <option value="4">4ª</option>
               </select>
-              <label for="editSerie">Série</label>
+              <label class="active" for="editSerie">Série</label>
             </div>
           </div>
 
           <div class="col s12 m6">
             <div class="input-field">
               <input id="editCaderno" type="text" required>
-              <label for="editCaderno">Caderno/Folheto</label>
+              <label class="active" for="editCaderno">Caderno/Folheto</label>
             </div>
           </div>
 
@@ -549,50 +568,48 @@ td:nth-child(12){
                 <option value="UNESP">UNESP</option>
                 <option value="UNICAMP">UNICAMP</option>
               </select>
-              <label for="editTipoprova">Tipo de Prova</label>
+              <label class="active" for="editTipoprova">Tipo de Prova</label>
             </div>
           </div>
 
           <div class="col s12">
             <div class="input-field">
               <input id="editTema1" type="text" required>
-              <label for="editTema1">Tema 1</label>
+              <label class="active" for="editTema1">Tema 1</label>
             </div>
           </div>
 
           <div class="col s12">
             <div class="input-field">
               <input id="editTema2" type="text">
-              <label for="editTema2">Tema 2</label>
+              <label class="active" for="editTema2">Tema 2</label>
             </div>
           </div>
 
           <div class="col s12">
             <div class="input-field">
               <input id="editTema3" type="text">
-              <label for="editTema3">Tema 3</label>
+              <label class="active" for="editTema3">Tema 3</label>
             </div>
           </div>
 
         </div>
       </div>
+    </div>
 
-      <!-- footer dentro do modal-content (fica perfeito com o layout flex) -->
-      <div class="modal-footer">
-        <button class="btn btn-danger" id="btnExcluir">
-          <i class="material-icons left">delete</i>Excluir
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="btnExcluir">
+        <i class="material-icons left">delete</i>Excluir
+      </button>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+        <button class="btn btn-soft modal-close">
+          <i class="material-icons left">close</i>Cancelar
         </button>
-
-        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-          <button class="btn btn-soft modal-close">
-            <i class="material-icons left">close</i>Cancelar
-          </button>
-          <button class="btn btn-primary" id="btnSalvarEdicao">
-            <i class="material-icons left">save</i>Salvar
-          </button>
-        </div>
+        <button class="btn btn-primary" id="btnSalvarEdicao">
+          <i class="material-icons left">save</i>Salvar
+        </button>
       </div>
-
     </div>
   </div>
 
@@ -619,29 +636,6 @@ td:nth-child(12){
       return String(dt).replace('T',' ').replace('.000','');
     }
 
-    // ✅ garante labels corretas no modal (principalmente SELECTs)
-    function fixModalLabels(){
-      const root = el('modalEditar');
-      if(!root) return;
-
-      // labels de select: sempre "active" (senão encavala)
-      root.querySelectorAll('.input-field select').forEach(sel => {
-        const label = root.querySelector(`label[for="${sel.id}"]`);
-        if(label) label.classList.add('active');
-      });
-
-      // labels de input texto: active se tiver valor
-      root.querySelectorAll('.input-field input[type="text"]').forEach(inp => {
-        const label = root.querySelector(`label[for="${inp.id}"]`);
-        if(label){
-          if((inp.value || '').trim()) label.classList.add('active');
-        }
-      });
-
-      // Materialize também ajuda aqui
-      M.updateTextFields();
-    }
-
     // ===== EDIT MODAL HELPERS =====
     function atualizarCamposSegmentoEdit(){
       const seg = el('editSegmento').value;
@@ -664,7 +658,6 @@ td:nth-child(12){
       }
 
       M.FormSelect.init(document.querySelectorAll('select'));
-      fixModalLabels();
     }
 
     function validarEdicao(){
@@ -715,17 +708,14 @@ td:nth-child(12){
 
         atualizarCamposSegmentoEdit();
 
-        // reinit selects e labels
+        // atualiza inputs e selects
+        M.updateTextFields();
         M.FormSelect.init(document.querySelectorAll('select'));
-        fixModalLabels();
 
         Swal.close();
 
         const modal = M.Modal.getInstance(el('modalEditar'));
         modal.open();
-
-        // por segurança, dá mais um tick após abrir (alguns browsers)
-        setTimeout(fixModalLabels, 50);
 
       } catch(e){
         Swal.fire({ icon:'error', title:'Erro', text: e.message || String(e) });
@@ -783,11 +773,9 @@ td:nth-child(12){
         if(!resp.ok || !j.ok) throw new Error(j.msg || 'Falha ao salvar');
 
         Swal.close();
-
         M.Modal.getInstance(el('modalEditar')).close();
 
         Swal.fire({ icon:'success', title:'Salvo!', text:'Registro atualizado com sucesso.' });
-
         carregar();
 
       } catch(e){
@@ -839,11 +827,9 @@ td:nth-child(12){
         if(!resp.ok || !j.ok) throw new Error(j.msg || 'Falha ao excluir');
 
         Swal.close();
-
         M.Modal.getInstance(el('modalEditar')).close();
 
         Swal.fire({ icon:'success', title:'Excluído!', text:`Código ${codigo} removido.` });
-
         carregar();
 
       } catch(e){
