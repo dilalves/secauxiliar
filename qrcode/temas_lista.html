@@ -13,200 +13,208 @@
   <!-- SweetAlert -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <style>
-    :root {
-      --bg:#f7f8fb;
-      --card:#ffffff;
-      --line:#e9edf3;
-      --ink:#0f172a;
-      --muted:#6b7280;
-      --primary:#0b3b78;
-      --accent:#2563eb;
-      --radius:14px;
-    }
+ <style>
+  :root {
+    --bg:#f7f8fb;
+    --card:#ffffff;
+    --line:#e9edf3;
+    --ink:#0f172a;
+    --muted:#6b7280;
+    --primary:#0b3b78;
+    --accent:#2563eb;
+    --radius:14px;
+  }
 
-    body{
-      background:var(--bg);
-      font-family:system-ui, Arial;
-      padding:24px;
-    }
+  body{
+    background:var(--bg);
+    font-family:system-ui, Arial;
+    padding:24px;
+  }
 
-    header.topbar{
-      position:fixed; top:0; left:0; right:0; height:64px;
-      background:var(--primary); color:#fff;
-      display:flex; align-items:center; z-index:10;
-      padding:0 24px;
-      box-shadow:0 2px 10px rgba(16,24,40,.12);
-    }
-    header.topbar .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
-    header.topbar h5{
-      margin:0; font-weight:600;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-      font-size:1.1rem;
-    }
-    header.topbar .right-actions{
-      margin-left:auto;
-      display:flex; align-items:center; gap:10px;
-    }
-    .btn-ghost{
-      border-radius:999px;
-      background: rgba(255,255,255,.15);
-      box-shadow:none;
-    }
-    .btn-ghost:hover{ background: rgba(255,255,255,.22); }
+  /* ===== Topbar ===== */
+  header.topbar{
+    position:fixed; top:0; left:0; right:0; height:64px;
+    background:var(--primary); color:#fff;
+    display:flex; align-items:center; z-index:10;
+    padding:0 24px;
+    box-shadow:0 2px 10px rgba(16,24,40,.12);
+  }
+  header.topbar .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
+  header.topbar h5{
+    margin:0; font-weight:600;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    font-size:1.1rem;
+  }
+  header.topbar .right-actions{
+    margin-left:auto;
+    display:flex; align-items:center; gap:10px;
+  }
 
-    /* antes:
-    .wrap{ max-width:1200px; margin:96px auto 0; }
-    */
+  .btn-ghost{
+    border-radius:999px;
+    background: rgba(255,255,255,.15);
+    box-shadow:none;
+  }
+  .btn-ghost:hover{ background: rgba(255,255,255,.22); }
 
-    .wrap{
-      /* usa a tela inteira, mas com respiro */
-      width: min(1800px, calc(100vw - 32px));
-      margin:96px auto 0;
-    }
+  /* ===== Layout ===== */
+  .wrap{
+    width: min(1800px, calc(100vw - 32px));
+    margin:96px auto 0;
+  }
+  @media (min-width: 1600px){
+    .wrap{ width: min(2200px, calc(100vw - 48px)); }
+  }
 
-    /* em telas bem grandes (24"+), libera ainda mais */
-    @media (min-width: 1600px){
-      .wrap{
-        width: min(2200px, calc(100vw - 48px));
-      }
-    }
+  .panel-card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+    border:1px solid var(--line);
+  }
 
-    /* container da tabela: ocupa 100% e dá scroll horizontal quando precisar */
+  .pill{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    background:#eef2ff;
+    color:var(--primary);
+    font-weight:600;
+    font-size:.85rem;
+  }
+
+  /* ===== Toolbar ===== */
+  .toolbar{
+    padding:14px 14px 6px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    justify-content:space-between;
+  }
+
+  .filters{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+  }
+
+  .field{ min-width: 220px; }
+
+  .btn-primary{
+    border-radius:999px;
+    background: linear-gradient(135deg, var(--accent), #1d4ed8);
+    box-shadow:0 10px 22px rgba(37,99,235,.18);
+    font-weight:800;
+  }
+
+  .btn-soft{
+    border-radius:999px;
+    background:#eef2ff;
+    color:var(--primary);
+    box-shadow:none;
+    font-weight:700;
+  }
+
+  /* ===== Tabela (SEM barra horizontal) ===== */
+  .table-wrap{
+    padding: 0 14px 14px;
+    overflow-x: hidden;  /* mata a barra horizontal */
+    overflow-y: visible;
+  }
+
+  .table-wrap table{
+    width:100%;
+    table-layout: fixed; /* encaixa na tela e força quebra */
+  }
+
+  table.striped>thead>tr>th{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color:#0f172a;
+    font-weight:800;
+    font-size:.86rem;
+  }
+
+  table.striped>tbody>tr>td{
+    vertical-align: top;
+    font-size: .92rem;
+    color:#111827;
+
+    white-space: normal;      /* quebra */
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  /* ===== Larguras por coluna (SEM ID) =====
+     1 codigo
+     2 identred
+     3 segmento
+     4 curso
+     5 serie
+     6 caderno
+     7 tipoprova
+     8 tema1
+     9 tema2
+     10 tema3
+     11 dt_registro
+  */
+  th:nth-child(1),  td:nth-child(1)  { width: 90px; }   /* CÓDIGO */
+  th:nth-child(2),  td:nth-child(2)  { width: 110px; }  /* IDENTRED */
+  th:nth-child(3),  td:nth-child(3)  { width: 110px; }  /* SEGMENTO */
+  th:nth-child(4),  td:nth-child(4)  { width: 130px; }  /* CURSO */
+  th:nth-child(5),  td:nth-child(5)  { width: 70px; }   /* SÉRIE */
+  th:nth-child(6),  td:nth-child(6)  { width: 230px; }  /* CADERNO */
+  th:nth-child(7),  td:nth-child(7)  { width: 110px; }  /* TIPOPROVA */
+  th:nth-child(11), td:nth-child(11) { width: 170px; }  /* DT_REGISTRO */
+
+  /* TEMA1/2/3 dividem o "miolo" restante igualmente */
+  th:nth-child(8),  td:nth-child(8),
+  th:nth-child(9),  td:nth-child(9),
+  th:nth-child(10), td:nth-child(10){
+    width: calc((100% - (90px + 110px + 110px + 130px + 70px + 230px + 110px + 170px)) / 3);
+  }
+
+  /* colunas curtas sem quebra */
+  td:nth-child(1),
+  td:nth-child(2),
+  td:nth-child(3),
+  td:nth-child(4),
+  td:nth-child(5),
+  td:nth-child(7),
+  td:nth-child(11){
+    white-space: nowrap;
+  }
+
+  .muted{ color: var(--muted); font-size:.92rem; }
+
+  .footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:.9rem;
+    padding:8px 0 18px;
+  }
+
+  /* Mobile */
+  @media (max-width: 600px){
+    body{ padding:16px; }
+    header.topbar{ padding:0 14px; }
+    .wrap{ margin-top:86px; }
+    .field{ min-width: 100%; }
+
+    /* em telas muito estreitas, deixa a tabela respirar */
     .table-wrap{
-      padding: 0 14px 14px;
-      overflow-x: auto;
-      overflow-y: hidden;
+      overflow-x: auto; /* aqui pode ter scroll no celular, senão fica inviável */
       -webkit-overflow-scrolling: touch;
     }
-
-    /* garante que a tabela estique e não fique "apertada" */
     .table-wrap table{
-      width: 100%;
-      min-width: 1500px; /* evita esmagar colunas em telas médias */
+      min-width: 980px; /* força scroll só no mobile */
+      table-layout: auto;
     }
-
-    /* ===== Larguras inteligentes por coluna ===== */
-    /* mantém colunas "curtas" compactas */
-    th:nth-child(1), td:nth-child(1){ min-width: 70px; }   /* ID */
-    th:nth-child(2), td:nth-child(2){ min-width: 90px; }   /* CODIGO */
-    th:nth-child(3), td:nth-child(3){ min-width: 110px; }  /* IDENTRED */
-    th:nth-child(4), td:nth-child(4){ min-width: 110px; }  /* SEGMENTO */
-    th:nth-child(5), td:nth-child(5){ min-width: 130px; }  /* CURSO */
-    th:nth-child(6), td:nth-child(6){ min-width: 80px; }   /* SÉRIE */
-    th:nth-child(8), td:nth-child(8){ min-width: 110px; }  /* TIPOPROVA */
-    th:nth-child(12), td:nth-child(12){ min-width: 170px; }/* DT_REGISTRO */
-
-    /* colunas de texto "longas": dá espaço de verdade */
-    th:nth-child(7), td:nth-child(7){ min-width: 240px; }  /* CADERNO */
-    th:nth-child(9), td:nth-child(9){ min-width: 400px; }  /* TEMA1 */
-    th:nth-child(10), td:nth-child(10){ min-width: 400px; }/* TEMA2 */
-    th:nth-child(11), td:nth-child(11){ min-width: 400px; }/* TEMA3 */
-
-    /* deixa o texto quebrar bem e não estourar a altura */
-    td{
-      white-space: normal;
-      word-break: break-word;
-      overflow-wrap: anywhere;
-    }
-
-    /* só as colunas curtas ficam em uma linha (não quebram) */
-    td:nth-child(1),
-    td:nth-child(2),
-    td:nth-child(3),
-    td:nth-child(4),
-    td:nth-child(5),
-    td:nth-child(6),
-    td:nth-child(8),
-    td:nth-child(12){
-      white-space: nowrap;
-    }
-
-    .panel-card{
-      background:var(--card);
-      border-radius:var(--radius);
-      box-shadow:0 10px 30px rgba(0,0,0,.06);
-      border:1px solid var(--line);
-    }
-
-    .pill{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:6px 10px;
-      border-radius:999px;
-      background:#eef2ff;
-      color:var(--primary);
-      font-weight:600;
-      font-size:.85rem;
-    }
-
-    .toolbar{
-      padding:14px 14px 6px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:flex-end;
-      justify-content:space-between;
-    }
-
-    .filters{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:flex-end;
-    }
-
-    .field{
-      min-width: 220px;
-    }
-
-    .btn-primary{
-      border-radius:999px;
-      background: linear-gradient(135deg, var(--accent), #1d4ed8);
-      box-shadow:0 10px 22px rgba(37,99,235,.18);
-      font-weight:800;
-    }
-
-    .btn-soft{
-      border-radius:999px;
-      background:#eef2ff;
-      color:var(--primary);
-      box-shadow:none;
-      font-weight:700;
-    }
-
-    .table-wrap{
-      padding: 0 14px 14px;
-      overflow:auto;
-    }
-
-    table.striped>tbody>tr>td{
-      vertical-align: top;
-      font-size: .92rem;
-      color:#111827;
-    }
-    table.striped>thead>tr>th{
-      white-space:nowrap;
-      color:#0f172a;
-      font-weight:800;
-      font-size:.86rem;
-    }
-
-    .muted{ color: var(--muted); font-size:.92rem; }
-
-    .footer{
-      text-align:center;
-      color:var(--muted);
-      font-size:.9rem;
-      padding:8px 0 18px;
-    }
-
-    @media (max-width: 600px){
-      body{ padding:16px; }
-      header.topbar{ padding:0 14px; }
-      .wrap{ margin-top:86px; }
-      .field{ min-width: 100%; }
-    }
-  </style>
+  }
+</style>
 </head>
 
 <body>
@@ -282,7 +290,6 @@
         <table class="striped highlight responsive-table">
           <thead>
             <tr>
-              <th>ID</th>
               <th>CÓDIGO</th>
               <th>IDENTRED</th>
               <th>SEGMENTO</th>
@@ -297,7 +304,7 @@
             </tr>
           </thead>
           <tbody id="tbody">
-            <tr><td colspan="12" class="muted">Carregando...</td></tr>
+            <tr><td colspan="11" class="muted">Carregando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -347,7 +354,7 @@
       if (limit) url.searchParams.set("limit", limit);
 
       const tbody = document.getElementById("tbody");
-      tbody.innerHTML = `<tr><td colspan="12" class="muted">Carregando...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="11" class="muted">Carregando...</td></tr>`;
       setStatus("Consultando banco...");
 
       try{
@@ -362,14 +369,13 @@
         `;
 
         if (!rows.length){
-          tbody.innerHTML = `<tr><td colspan="12" class="muted">Nenhum registro encontrado.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="11" class="muted">Nenhum registro encontrado.</td></tr>`;
           setStatus("Nenhum registro.");
           return;
         }
 
         tbody.innerHTML = rows.map(r => `
           <tr>
-            <td>${esc(r.id)}</td>
             <td><strong>${esc(r.codigo)}</strong></td>
             <td>${esc(r.identred)}</td>
             <td>${esc(r.segmento)}</td>
@@ -389,7 +395,7 @@
       } catch(e){
         setStatus("");
         Swal.fire({ icon:"error", title:"Erro", text: e.message || String(e) });
-        tbody.innerHTML = `<tr><td colspan="12" class="muted">Erro ao carregar.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="muted">Erro ao carregar.</td></tr>`;
       }
     }
 
