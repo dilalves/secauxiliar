@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
+  <title>Temas de Redação - Cadastramento</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    body{ background:#f7f8fb; }
+    .container{ margin-top:24px; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h5>Temas de Redação - Cadastramento</h5>
+
+    <form id="formAvaliacao">
+      <!-- IDENTRED -->
+      <div class="input-field">
+        <select id="identred" required>
+          <option value="" disabled selected>Selecione</option>
+          <option value="SIMULADO">SIMULADO</option>
+          <option value="FOLHETO">FOLHETO</option>
+          <option value="CADERNO">CADERNO</option>
+        </select>
+        <label for="identred">Identificação do Material</label>
+      </div>
+
+      <!-- SEGMENTO -->
+      <div class="input-field">
+        <select id="segmento" required onchange="atualizarCamposSegmento()">
+          <option value="" disabled selected>Selecione</option>
+          <option value="CURSO">CURSO</option>
+          <option value="COLÉGIO">COLÉGIO</option>
+        </select>
+        <label for="segmento">Segmento</label>
+      </div>
+
+      <!-- CURSO -->
+      <div class="input-field">
+        <select id="curso" disabled>
+          <option value="" disabled selected>Selecione</option>
+          <option value="EXTENSIVO">EXTENSIVO</option>
+          <option value="TURMAS DE MAIO">TURMAS DE MAIO</option>
+          <option value="SEMI DE AGOSTO">SEMI DE AGOSTO</option>
+          <option value="INTENSIVO">INTENSIVO</option>
+          <option value="REDAÇÃO">REDAÇÃO</option>
+        </select>
+        <label for="curso">Curso</label>
+      </div>
+
+      <!-- SÉRIE -->
+      <div class="input-field">
+        <select id="serie" disabled>
+          <option value="" disabled selected>Selecione</option>
+          <option value="1">1ª</option>
+          <option value="2">2ª</option>
+          <option value="3">3ª</option>
+        </select>
+        <label for="serie">Série</label>
+      </div>
+
+      <!-- CADERNO/FOLHETO -->
+      <div class="input-field">
+        <input id="caderno" type="text" required>
+        <label for="caderno">Caderno/Folheto</label>
+      </div>
+
+      <!-- TIPOPROVA -->
+      <div class="input-field">
+        <select id="tipoprova" required>
+          <option value="" disabled selected>Selecione</option>
+          <option value="FUVEST">FUVEST</option>
+          <option value="ENEM">ENEM</option>
+          <option value="PARÁFRASE">PARÁFRASE</option>
+          <option value="UFPR">UFPR</option>
+          <option value="UNIFESP">UNIFESP</option>
+          <option value="UNESP">UNESP</option>
+          <option value="UNICAMP">UNICAMP</option>
+        </select>
+        <label for="tipoprova">Tipo de Prova</label>
+      </div>
+
+      <!-- TEMAS -->
+      <div class="input-field">
+        <input id="tema1" type="text" required>
+        <label for="tema1">Tema 1</label>
+      </div>
+      <div class="input-field">
+        <input id="tema2" type="text">
+        <label for="tema2">Tema 2</label>
+      </div>
+      <div class="input-field">
+        <input id="tema3" type="text">
+        <label for="tema3">Tema 3</label>
+      </div>
+
+      <button class="btn green" type="submit" id="btnSalvar">
+        <i class="material-icons left">save</i>Salvar
+      </button>
+    </form>
+
+    <br>
+    <a class="btn grey" href="javascript:history.back()">
+      <i class="material-icons left">arrow_back</i>Voltar
+    </a>
+  </div>
+
+  <!-- Modal de carregamento -->
+  <div id="loadingModal" class="modal">
+    <div class="modal-content">
+      <h4>Aguarde...</h4>
+      <p>Salvando os dados, por favor, aguarde.</p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/qrcode/redacao_temas_create.php';
+
+    document.addEventListener('DOMContentLoaded', function() {
+      M.Modal.init(document.querySelectorAll('.modal'));
+      M.FormSelect.init(document.querySelectorAll('select'));
+
+      document.getElementById('formAvaliacao').addEventListener('submit', salvarAvaliacao);
+    });
+
+    function atualizarCamposSegmento() {
+      const segmento = document.getElementById("segmento").value;
+      const curso = document.getElementById("curso");
+      const serie = document.getElementById("serie");
+
+      if (segmento === "CURSO") {
+        curso.disabled = false;
+        serie.disabled = true;
+        serie.value = "";
+      } else if (segmento === "COLÉGIO") {
+        serie.disabled = false;
+        curso.disabled = true;
+        curso.value = "";
+      } else {
+        curso.disabled = true;
+        serie.disabled = true;
+        curso.value = "";
+        serie.value = "";
+      }
+      M.FormSelect.init(document.querySelectorAll('select'));
+    }
+
+    function validarCamposObrigatorios() {
+      const obrig = ['identred','segmento','tipoprova','tema1','caderno'];
+      for (const id of obrig) {
+        const v = (document.getElementById(id).value || '').trim();
+        if (!v) return false;
+      }
+
+      // regra: se segmento=CURSO precisa curso; se COLÉGIO precisa série
+      const seg = document.getElementById('segmento').value;
+      if (seg === 'CURSO' && !document.getElementById('curso').value) return false;
+      if (seg === 'COLÉGIO' && !document.getElementById('serie').value) return false;
+
+      return true;
+    }
+
+    async function salvarAvaliacao(event) {
+      event.preventDefault();
+
+      if (!validarCamposObrigatorios()) {
+        Swal.fire({ icon:'warning', title:'Atenção', text:'Por favor, preencha todos os campos obrigatórios.' });
+        return;
+      }
+
+      const btn = document.getElementById('btnSalvar');
+      btn.disabled = true;
+
+      const dados = {
+        identred: document.getElementById("identred").value,
+        segmento: document.getElementById("segmento").value,
+        curso: document.getElementById("curso").value,
+        serie: document.getElementById("serie").value,
+        caderno: document.getElementById("caderno").value.trim(),
+        tipoprova: document.getElementById("tipoprova").value,
+        tema1: document.getElementById("tema1").value.trim(),
+        tema2: document.getElementById("tema2").value.trim(),
+        tema3: document.getElementById("tema3").value.trim()
+      };
+
+      const loadingModal = M.Modal.getInstance(document.getElementById('loadingModal'));
+      loadingModal.open();
+
+      try {
+        const resp = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify(dados)
+        });
+
+        const j = await resp.json();
+        if (!resp.ok || !j.ok) throw new Error(j.msg || "Falha ao salvar.");
+
+        const codigoGerado = j.codigo;
+
+        loadingModal.close();
+
+        Swal.fire({
+          title: 'Salvo com sucesso!',
+          html: `
+            Código gerado: <strong>${codigoGerado}</strong><br><br>
+            <div style="text-align:center;">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(codigoGerado)}&size=300x300" alt="QR Code"><br>
+              <strong style="display:block;margin-top:10px;">${codigoGerado}</strong>
+            </div>`,
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
+
+        // download automático do PNG na máquina do usuário
+        await baixarQRCodePNG(codigoGerado);
+
+        // (opcional) limpar form
+        // document.getElementById('formAvaliacao').reset();
+        // atualizarCamposSegmento();
+
+      } catch (e) {
+        loadingModal.close();
+        Swal.fire({ icon:'error', title:'Erro', text: e.message || String(e) });
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function baixarQRCodePNG(codigo) {
+      return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(codigo)}&size=600x600`;
+
+        img.onload = () => {
+          canvas.width = 600;
+          canvas.height = 650;
+          ctx.drawImage(img, 0, 0);
+          ctx.font = "bold 50px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText(codigo, 300, 640);
+
+          const link = document.createElement('a');
+          link.href = canvas.toDataURL("image/png");
+          link.download = `${codigo}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          resolve();
+        };
+
+        img.onerror = () => resolve(); // não trava se falhar
+      });
+    }
+  </script>
+</body>
+</html>
