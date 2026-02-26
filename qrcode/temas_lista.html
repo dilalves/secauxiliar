@@ -242,7 +242,7 @@ td:nth-child(12){
 }
 
 /* =========================================
-   MODAL EDITAR (GRANDE + IGUAL AO CADASTRO)
+   MODAL EDITAR
    ========================================= */
 
 #modalEditar.modal{
@@ -734,7 +734,7 @@ td:nth-child(12){
 
         const r = j.row || {};
 
-        // ✅ redundância de segurança (se o backend devolver dt_registro diferente)
+        // ✅ redundância de segurança
         const dtReg = r.dt_registro ?? dt_registro_from_row;
         if(!isWithinEditWindow(dtReg)){
           Swal.close();
@@ -842,7 +842,6 @@ td:nth-child(12){
       const codigo = (el('editCodigo').value || '').trim();
       if(!codigo) return;
 
-      // ✅ confirmação simples (sem redigitar código)
       const res = await Swal.fire({
         icon:'warning',
         title:'Excluir registro?',
@@ -918,26 +917,33 @@ td:nth-child(12){
           return;
         }
 
-        tbody.innerHTML = rows.map(r => `
-          <tr>
-            <td class="center">
-              <a class="btn btn-edit btn-small" title="Editar" onclick="abrirEditar(${Number(r.codigo)}, ${JSON.stringify(r.dt_registro || '')})">
-                <i class="material-icons">edit</i>
-              </a>
-            </td>
-            <td><strong>${esc(r.codigo)}</strong></td>
-            <td>${esc(r.identred)}</td>
-            <td>${esc(r.segmento)}</td>
-            <td>${esc(r.curso)}</td>
-            <td>${esc(r.serie)}</td>
-            <td>${esc(r.caderno)}</td>
-            <td>${esc(r.tipoprova)}</td>
-            <td>${esc(r.tema1)}</td>
-            <td>${esc(r.tema2)}</td>
-            <td>${esc(r.tema3)}</td>
-            <td>${esc(fmtDT(r.dt_registro))}</td>
-          </tr>
-        `).join('');
+        tbody.innerHTML = rows.map(r => {
+          const canEdit = isWithinEditWindow(r.dt_registro);
+          const btn = canEdit
+            ? `<a class="btn btn-edit btn-small js-edit" title="Editar"
+                 data-codigo="${esc(r.codigo)}"
+                 data-dt="${esc(r.dt_registro || '')}">
+                 <i class="material-icons">edit</i>
+               </a>`
+            : `<span class="muted" title="Prazo expirado">—</span>`;
+
+          return `
+            <tr>
+              <td class="center">${btn}</td>
+              <td><strong>${esc(r.codigo)}</strong></td>
+              <td>${esc(r.identred)}</td>
+              <td>${esc(r.segmento)}</td>
+              <td>${esc(r.curso)}</td>
+              <td>${esc(r.serie)}</td>
+              <td>${esc(r.caderno)}</td>
+              <td>${esc(r.tipoprova)}</td>
+              <td>${esc(r.tema1)}</td>
+              <td>${esc(r.tema2)}</td>
+              <td>${esc(r.tema3)}</td>
+              <td>${esc(fmtDT(r.dt_registro))}</td>
+            </tr>
+          `;
+        }).join('');
 
       }catch(e){
         el('status').textContent = 'Erro ao carregar.';
@@ -966,6 +972,16 @@ td:nth-child(12){
 
       el('btnSalvarEdicao').addEventListener('click', salvarEdicao);
       el('btnExcluir').addEventListener('click', excluirRegistro);
+
+      // ✅ clique do botão editar (sem onclick inline)
+      el('tbody').addEventListener('click', (ev)=>{
+        const a = ev.target.closest('.js-edit');
+        if(!a) return;
+        ev.preventDefault();
+        const codigo = a.getAttribute('data-codigo');
+        const dt = a.getAttribute('data-dt') || '';
+        abrirEditar(codigo, dt);
+      });
 
       carregar();
     });
