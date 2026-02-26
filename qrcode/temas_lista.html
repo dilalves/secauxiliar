@@ -312,6 +312,136 @@
         border: 0;
       }
     }
+
+    /* ===========================
+   MODAL EDITAR (GRANDE + LIMPO)
+   Cole no FINAL do <style>
+   =========================== */
+
+#modalEditar.modal{
+  width: min(1100px, 92vw) !important;   /* ocupa bastante a tela */
+  height: 88vh !important;               /* alto */
+  max-height: 88vh !important;           /* garante */
+  border-radius: 18px;
+  overflow: hidden;                       /* evita dupla rolagem */
+}
+
+/* transforma o modal em "layout" com header/conteúdo/footer */
+#modalEditar.modal .modal-content{
+  padding: 16px 18px 0;
+  height: calc(88vh - 68px);             /* reserva espaço pro footer */
+  overflow: hidden;                       /* rolagem vai no .modal-body */
+}
+
+/* “header” do modal: título + código */
+#modalEditar .modal-head{
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: #fff;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 12px;
+}
+
+/* área que realmente rola (somente ela) */
+#modalEditar .modal-body{
+  height: calc(88vh - 68px - 74px);      /* 68 footer + ~74 head */
+  overflow: auto;
+  padding-right: 6px;                    /* respiro pro scroll */
+}
+
+/* footer fixo */
+#modalEditar.modal .modal-footer{
+  height: 68px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  padding: 10px 16px;
+  border-top: 1px solid var(--line);
+  background: #fafbff;
+}
+
+/* título e “código” mais organizados */
+#modalEditar .modal-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin: 0;
+  font-weight: 900;
+  color: #0f172a;
+}
+#modalEditar .modal-title i{ color: var(--primary); }
+
+#modalEditar .modal-sub{
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: .92rem;
+}
+
+/* campos: mais espaço + labels menores */
+#modalEditar .row{ margin-bottom: 0; }
+#modalEditar .input-field{
+  margin-top: 14px;                       /* espaça */
+  margin-bottom: 6px;
+}
+#modalEditar .input-field label{
+  font-size: .85rem;
+  color: #6b7280;
+}
+#modalEditar .input-field input,
+#modalEditar .input-field textarea{
+  font-size: .95rem;
+}
+
+/* Materialize select deixa o label mais longe do valor */
+#modalEditar .select-wrapper input.select-dropdown{
+  margin-bottom: 6px;
+}
+
+/* Inputs de tema: deixa mais confortável */
+#modalEditar #editTema1,
+#modalEditar #editTema2,
+#modalEditar #editTema3{
+  font-size: .98rem;
+}
+
+/* botão excluir mais “baixo” e menos agressivo visualmente */
+#modalEditar .btn-danger{
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-weight: 900;
+  box-shadow: none;
+}
+#modalEditar .btn-danger:hover{ background:#fecaca; }
+
+/* melhora scroll interno (opcional, só Chrome/Edge) */
+#modalEditar .modal-body::-webkit-scrollbar{ width: 10px; }
+#modalEditar .modal-body::-webkit-scrollbar-thumb{
+  background: #dbe4f3;
+  border-radius: 999px;
+  border: 2px solid #fff;
+}
+#modalEditar .modal-body::-webkit-scrollbar-thumb:hover{ background:#cbd7ee; }
+
+/* responsivo: em telas pequenas, usa 96vw e altura menor */
+@media (max-width: 700px){
+  #modalEditar.modal{
+    width: 96vw !important;
+    height: 92vh !important;
+    max-height: 92vh !important;
+  }
+  #modalEditar.modal .modal-content{
+    height: calc(92vh - 68px);
+  }
+  #modalEditar .modal-body{
+    height: calc(92vh - 68px - 74px);
+  }
+}
+
   </style>
 </head>
 
@@ -413,8 +543,10 @@
   </div>
 
   <!-- ===== MODAL EDITAR ===== -->
-  <div id="modalEditar" class="modal">
-    <div class="modal-content">
+<div id="modalEditar" class="modal">
+  <div class="modal-content">
+
+    <div class="modal-head">
       <h6 class="modal-title">
         <i class="material-icons">edit</i>
         Editar Tema
@@ -422,10 +554,13 @@
       <div class="modal-sub">
         Código: <strong id="editCodigoLabel">—</strong>
       </div>
+    </div>
 
-      <input type="hidden" id="editCodigo" />
+    <input type="hidden" id="editCodigo" />
 
+    <div class="modal-body">
       <div class="row" style="margin-bottom:0;">
+
         <div class="col s12 m6">
           <div class="input-field">
             <select id="editIdentred" required>
@@ -519,24 +654,26 @@
             <label for="editTema3">Tema 3</label>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="modal-footer" style="display:flex; gap:10px; justify-content:space-between; flex-wrap:wrap;">
-      <button class="btn btn-danger" id="btnExcluir">
-        <i class="material-icons left">delete</i>Excluir
-      </button>
-
-      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-        <button class="btn btn-soft modal-close">
-          <i class="material-icons left">close</i>Cancelar
-        </button>
-        <button class="btn btn-primary" id="btnSalvarEdicao">
-          <i class="material-icons left">save</i>Salvar
-        </button>
       </div>
     </div>
   </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-danger" id="btnExcluir">
+      <i class="material-icons left">delete</i>Excluir
+    </button>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+      <button class="btn btn-soft modal-close">
+        <i class="material-icons left">close</i>Cancelar
+      </button>
+      <button class="btn btn-primary" id="btnSalvarEdicao">
+        <i class="material-icons left">save</i>Salvar
+      </button>
+    </div>
+  </div>
+</div>
 
   <script>
     // ===== ENDPOINTS =====
@@ -754,7 +891,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ codigo })
         });
-        
+
         const j = await resp.json();
         if(!resp.ok || !j.ok) throw new Error(j.msg || 'Falha ao excluir');
 
