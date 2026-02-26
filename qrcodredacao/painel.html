@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Controle de Sala • Painel</title>
+
+  <!-- Materialize -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- Ícones -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e9edf3;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --radius:14px;
+    }
+
+    body{
+      background:var(--bg);
+      font-family:system-ui, Arial;
+      padding:24px;
+    }
+
+    /* ===== Topbar igual login ===== */
+    header.topbar{
+      position:fixed; top:0; left:0; right:0; height:64px;
+      background:var(--primary); color:#fff;
+      display:flex; align-items:center; z-index:10;
+      padding:0 24px;
+      box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+    header.topbar .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width: 0;
+    }
+    header.topbar h5{
+      margin:0; font-weight:600;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-size:1.1rem;
+    }
+    header.topbar .right-actions{
+      margin-left:auto;
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn-logout{
+      border-radius:999px;
+      background: rgba(255,255,255,.15);
+      box-shadow:none;
+    }
+    .btn-logout:hover{ background: rgba(255,255,255,.22); }
+
+    /* ===== Layout ===== */
+    .wrap{
+      max-width:1100px;
+      margin:96px auto 0; /* por causa da topbar fixa */
+    }
+
+    .panel-card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
+      border:1px solid var(--line);
+    }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:var(--primary);
+      font-weight:600;
+      font-size:.85rem;
+    }
+
+    /* ===== Cards do menu (mantendo seu estilo) ===== */
+    .menu-card{
+      background:#fff;
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
+      border:1px solid var(--line);
+      overflow:hidden;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease;
+      height: 100%;
+    }
+    .menu-card:hover{
+      transform: translateY(-2px);
+      box-shadow:0 14px 34px rgba(15,23,42,.12);
+    }
+    .menu-card .head{
+      display:flex; align-items:center; gap:12px;
+      padding:16px 16px 10px;
+    }
+    .menu-card .icon{
+      width:42px; height:42px;
+      display:flex; align-items:center; justify-content:center;
+      border-radius:12px;
+      background: rgba(11,59,120,.10);
+      color: var(--primary);
+    }
+    .menu-card .name{
+      margin:0;
+      font-weight:700;
+      font-size: 1.05rem;
+      color:#111827;
+    }
+    .menu-card .desc{
+      padding: 0 16px 14px;
+      margin:0;
+      color: var(--muted);
+      font-size: .92rem;
+      min-height: 44px;
+    }
+    .menu-card .foot{
+      padding: 0 16px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      color: var(--primary);
+      font-weight:600;
+      font-size:.92rem;
+    }
+
+    /* mobile */
+    @media (max-width: 600px){
+      body{ padding:16px; }
+      header.topbar{ padding:0 14px; }
+      .wrap{ margin-top:86px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Topo (igual login) -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
+      <h5>Curso Optativo - Controle de Salas</h5>
+    </div>
+
+    <div class="right-actions">
+      <a class="btn btn-small btn-logout white-text" href="https://apisec.secauxiliar.com.br/optativo/logout.php">
+        <i class="material-icons left">logout</i>Sair
+      </a>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- Aviso/status -->
+    <div class="panel-card" style="padding:16px 16px; margin-bottom:16px;">
+      <div style="display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="display:flex; gap:10px; align-items:flex-start; flex:1 1 auto;">
+          <i class="material-icons" style="color:var(--primary); margin-top:2px;">info</i>
+          <div>
+            <div style="font-weight:800; color:#111827;">Acesso liberado</div>
+            <div style="color:var(--muted); font-size:.92rem;">
+              Use os atalhos abaixo para administrar salas, fiscais, vínculos e presenças.
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:0 0 auto;">
+          <span class="pill">
+            <i class="material-icons" style="font-size:18px;">shield</i>
+            Área restrita
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <div class="row">
+
+      <div class="col s12 m6 l4">
+        <div class="menu-card" onclick="go('salas.html')">
+          <div class="head">
+            <div class="icon"><i class="material-icons">meeting_room</i></div>
+            <p class="name">Salas</p>
+          </div>
+          <p class="desc">Cadastrar, editar e organizar salas e dias de aula.</p>
+          <div class="foot"><span>Acessar</span><i class="material-icons">chevron_right</i></div>
+        </div>
+      </div>
+
+      <div class="col s12 m6 l4">
+        <div class="menu-card" onclick="go('fiscais.html')">
+          <div class="head">
+            <div class="icon"><i class="material-icons">group</i></div>
+            <p class="name">Fiscais</p>
+          </div>
+          <p class="desc">Cadastro e gerenciamento de usuários fiscais.</p>
+          <div class="foot"><span>Acessar</span><i class="material-icons">chevron_right</i></div>
+        </div>
+      </div>
+
+      <div class="col s12 m6 l4">
+        <div class="menu-card" onclick="go('vinculo-aluno-sala.html')">
+          <div class="head">
+            <div class="icon"><i class="material-icons">how_to_reg</i></div>
+            <p class="name">Vínculo Aluno × Sala</p>
+          </div>
+          <p class="desc">Vincular alunos importados às salas (por turma/dia).</p>
+          <div class="foot"><span>Acessar</span><i class="material-icons">chevron_right</i></div>
+        </div>
+      </div>
+
+      <div class="col s12 m6 l4">
+        <div class="menu-card" onclick="go('aluno.html')">
+          <div class="head">
+            <div class="icon"><i class="material-icons">playlist_add_check</i></div>
+            <p class="name">Aluno</p>
+          </div>
+          <p class="desc">Agenda do aluno</p>
+          <div class="foot"><span>Acessar</span><i class="material-icons">chevron_right</i></div>
+        </div>
+      </div>
+
+      <div class="col s12 m6 l4">
+        <div class="menu-card" onclick="go('config.html')">
+          <div class="head">
+            <div class="icon"><i class="material-icons">settings</i></div>
+            <p class="name">Configurações</p>
+          </div>
+          <p class="desc">Parâmetros do sistema (ex.: tolerância, regras, etc.).</p>
+          <div class="foot"><span>Acessar</span><i class="material-icons">chevron_right</i></div>
+        </div>
+      </div>
+
+      <div class="col s12 m6 l4">
+        <div class="menu-card" onclick="go('relatorios.html')">
+          <div class="head">
+            <div class="icon"><i class="material-icons">print</i></div>
+            <p class="name">Relatórios</p>
+          </div>
+          <p class="desc">Imprimir lista geral e listas por sala (porta).</p>
+          <div class="foot"><span>Acessar</span><i class="material-icons">chevron_right</i></div>
+        </div>
+      </div>
+
+
+    </div>
+
+    <div style="text-align:center; color:var(--muted); font-size:.9rem; padding:8px 0 18px;">
+      Controle de Sala • 3A Sistemas
+    </div>
+
+  </div>
+
+  <script>
+    function go(url){ window.location.href = url; }
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
