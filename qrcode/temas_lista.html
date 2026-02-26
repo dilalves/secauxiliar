@@ -14,326 +14,261 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    :root {
-      --bg:#f7f8fb;
-      --card:#ffffff;
-      --line:#e9edf3;
-      --ink:#0f172a;
-      --muted:#6b7280;
-      --primary:#0b3b78;
-      --accent:#2563eb;
-      --radius:14px;
-    }
-
-    body{
-      overflow: hidden;              /* <- remove a barra de rolagem externa */
-      background:var(--bg);
-      font-family:system-ui, Arial;
-      padding:24px;
-      color: var(--ink);
-    }
-
-    header.topbar{
-      position:fixed; top:0; left:0; right:0; height:64px;
-      background:var(--primary); color:#fff;
-      display:flex; align-items:center; z-index:10;
-      padding:0 24px;
-      box-shadow:0 2px 10px rgba(16,24,40,.12);
-    }
-    header.topbar .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
-    header.topbar h5{
-      margin:0; font-weight:600;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-      font-size:1.05rem;
-    }
-    header.topbar .right-actions{
-      margin-left:auto;
-      display:flex; align-items:center; gap:10px;
-    }
-    .btn-ghost{
-      border-radius:999px;
-      background: rgba(255,255,255,.15);
-      box-shadow:none;
-    }
-    .btn-ghost:hover{ background: rgba(255,255,255,.22); }
-
-    .wrap{
-      width: min(1800px, calc(100vw - 32px));
-      margin:96px auto 0;
-      height: calc(100vh - 96px);    /* <- “encaixa” no resto da tela */
-      display:flex;
-      flex-direction: column;
-    }
-    @media (min-width: 1600px){
-      .wrap{ width: min(2200px, calc(100vw - 48px)); }
-    }
-
-    /* card vira coluna e a tabela ganha o espaço */
-    .panel-card{
-      background:var(--card);
-      border-radius:var(--radius);
-      box-shadow:0 10px 30px rgba(0,0,0,.06);
-      border:1px solid var(--line);
-      overflow: hidden;
-      display:flex;
-      flex-direction: column;
-      flex: 1 1 auto;                /* <- ocupa tudo dentro do wrap */
-    }
-
-    .pill{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:6px 10px;
-      border-radius:999px;
-      background:#eef2ff;
-      color:var(--primary);
-      font-weight:700;
-      font-size:.85rem;
-      white-space: nowrap;
-    }
-
-    .toolbar{
-      padding:14px 14px 6px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:flex-end;
-      justify-content:space-between;
-    }
-
-    .filters{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:flex-end;
-    }
-
-    .field{ min-width: 220px; }
-
-    /* Materialize input (compacto e alinhado) */
-    .input-field{ margin:0; }
-    .input-field input{
-      height: 2.4rem !important;
-    }
-    .input-field label{
-      transform: translateY(-6px) scale(.92);
-      transform-origin: 0 0;
-    }
-
-    .btn-primary{
-      border-radius:999px;
-      background: linear-gradient(135deg, var(--accent), #1d4ed8);
-      box-shadow:0 10px 22px rgba(37,99,235,.18);
-      font-weight:800;
-    }
-    .btn-soft{
-      border-radius:999px;
-      background:#eef2ff;
-      color:var(--primary);
-      box-shadow:none;
-      font-weight:800;
-    }
-
-    /* ===== TABLE ===== */
-    /* tabela: só ela rola */
-    .table-wrap{
-      padding: 0 14px 14px;
-      overflow: hidden;              /* <- sem scroll aqui */
-      flex: 1 1 auto;
-    }
-
-    /* container de rolagem vertical + header fixo */
-    .table-scroll{
-      height: 100%;                  /* <- ocupa o resto do card */
-      overflow-y: auto;              /* <- scroll único */
-      overflow-x: hidden;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: #fff;
-    }
-
-    table.striped{
-      width:100%;
-      table-layout: fixed;
-      margin:0;
-    }
-
-    table.striped>thead>tr>th{
-      position: sticky;   /* fixa header */
-      top: 0;
-      z-index: 2;
-      background: #f3f6fb;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      color:#0f172a;
-      font-weight:900;
-      font-size:.82rem;
-      border-bottom: 1px solid var(--line);
-    }
-
-    table.striped>tbody>tr>td{
-      vertical-align: top;
-      font-size: .92rem;
-      color:#111827;
-      white-space: normal;
-      word-break: break-word;
-      overflow-wrap: anywhere;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    /* hover suave na linha */
-    table.striped>tbody>tr{
-      transition: background .12s ease;
-    }
-    table.striped>tbody>tr:hover{
-      background: #f6f8ff;
-    }
-
-    /* TEMA1 em destaque (ajustado: agora é a 8ª coluna com ações na frente) */
-    td:nth-child(9){
-      font-weight: 600;
-      color:#0f172a;
-    }
-
-    /* ===== Larguras (com AÇÕES na 1ª coluna) =====
-       1 acoes
-       2 codigo
-       3 identred
-       4 segmento
-       5 curso
-       6 serie
-       7 caderno
-       8 tipoprova
-       9 tema1
-       10 tema2
-       11 tema3
-       12 dt_registro
-    */
-    th:nth-child(1),  td:nth-child(1)  { width: 64px; }   /* AÇÕES */
-    th:nth-child(2),  td:nth-child(2)  { width: 90px; }   /* CÓDIGO */
-    th:nth-child(3),  td:nth-child(3)  { width: 110px; }  /* IDENTRED */
-    th:nth-child(4),  td:nth-child(4)  { width: 110px; }  /* SEGMENTO */
-    th:nth-child(5),  td:nth-child(5)  { width: 130px; }  /* CURSO */
-    th:nth-child(6),  td:nth-child(6)  { width: 70px; }   /* SÉRIE */
-    th:nth-child(7),  td:nth-child(7)  { width: 230px; }  /* CADERNO */
-    th:nth-child(8),  td:nth-child(8)  { width: 110px; }  /* TIPOPROVA */
-    th:nth-child(12), td:nth-child(12) { width: 170px; }  /* DT_REGISTRO */
-
-    th:nth-child(9),  td:nth-child(9),
-    th:nth-child(10), td:nth-child(10),
-    th:nth-child(11), td:nth-child(11){
-      width: calc((100% - (64px + 90px + 110px + 110px + 130px + 70px + 230px + 110px + 170px)) / 3);
-    }
-
-    td:nth-child(1),
-    td:nth-child(2),
-    td:nth-child(3),
-    td:nth-child(4),
-    td:nth-child(5),
-    td:nth-child(6),
-    td:nth-child(8),
-    td:nth-child(12){
-      white-space: nowrap;
-    }
-
-    /* botão editar */
-    .btn-edit{
-      border-radius: 10px;
-      padding: 0 8px;
-      height: 32px;
-      line-height: 32px;
-      box-shadow:none;
-      background:#eef2ff;
-      color: var(--primary);
-    }
-    .btn-edit:hover{
-      background:#e0e7ff;
-    }
-    .btn-edit i{ font-size: 18px; line-height: 32px; }
-
-    .muted{ color: var(--muted); font-size:.92rem; }
-
-    .footer{
-      text-align:center;
-      color:var(--muted);
-      font-size:.9rem;
-      padding:8px 0 18px;
-    }
-
-    /* modal mais “limpo” */
-    .modal{
-      border-radius: 16px;
-    }
-    .modal .modal-content{
-      padding: 18px 20px 6px;
-    }
-    .modal .modal-footer{
-      padding: 10px 16px 14px;
-      border-top: 1px solid var(--line);
-      background: #fafbff;
-    }
-    .modal-title{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin:0 0 10px;
-      font-weight:900;
-      color:#0f172a;
-    }
-    .modal-title i{ color: var(--primary); }
-    .modal-sub{
-      margin:-6px 0 14px;
-      color: var(--muted);
-      font-size:.92rem;
-    }
-
-    .btn-danger{
-      border-radius:999px;
-      background: #fee2e2;
-      color:#991b1b;
-      font-weight:900;
-      box-shadow:none;
-    }
-    .btn-danger:hover{ background:#fecaca; }
-
-    /* mobile: deixa o body rolar normalmente (scroll único externo) */
-    @media (max-width: 600px){
-      body{ overflow:auto; }
-      .wrap{
-        height:auto;
-        display:block;
-      }
-      .panel-card{ display:block; }
-      .table-wrap{ overflow-x:auto; }
-      .table-scroll{
-        height:auto;
-        max-height:none;
-        overflow: visible;
-        border: 0;
-      }
-    }
-
-    /* ===========================
-   MODAL EDITAR (GRANDE + LIMPO)
-   Cole no FINAL do <style>
-   =========================== */
-
-#modalEditar.modal{
-  width: min(1100px, 92vw) !important;   /* ocupa bastante a tela */
-  height: 88vh !important;               /* alto */
-  max-height: 88vh !important;           /* garante */
-  border-radius: 18px;
-  overflow: hidden;                       /* evita dupla rolagem */
+:root {
+  --bg:#f7f8fb;
+  --card:#ffffff;
+  --line:#e9edf3;
+  --ink:#0f172a;
+  --muted:#6b7280;
+  --primary:#0b3b78;
+  --accent:#2563eb;
+  --radius:14px;
 }
 
-/* transforma o modal em "layout" com header/conteúdo/footer */
+body{
+  overflow: hidden;              /* <- remove a barra de rolagem externa */
+  background:var(--bg);
+  font-family:system-ui, Arial;
+  padding:24px;
+  color: var(--ink);
+}
+
+header.topbar{
+  position:fixed; top:0; left:0; right:0; height:64px;
+  background:var(--primary); color:#fff;
+  display:flex; align-items:center; z-index:10;
+  padding:0 24px;
+  box-shadow:0 2px 10px rgba(16,24,40,.12);
+}
+header.topbar .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
+header.topbar h5{
+  margin:0; font-weight:600;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font-size:1.05rem;
+}
+header.topbar .right-actions{
+  margin-left:auto;
+  display:flex; align-items:center; gap:10px;
+}
+.btn-ghost{
+  border-radius:999px;
+  background: rgba(255,255,255,.15);
+  box-shadow:none;
+}
+.btn-ghost:hover{ background: rgba(255,255,255,.22); }
+
+.wrap{
+  width: min(1800px, calc(100vw - 32px));
+  margin:96px auto 0;
+  height: calc(100vh - 96px);    /* <- “encaixa” no resto da tela */
+  display:flex;
+  flex-direction: column;
+}
+@media (min-width: 1600px){
+  .wrap{ width: min(2200px, calc(100vw - 48px)); }
+}
+
+/* card vira coluna e a tabela ganha o espaço */
+.panel-card{
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:0 10px 30px rgba(0,0,0,.06);
+  border:1px solid var(--line);
+  overflow: hidden;
+  display:flex;
+  flex-direction: column;
+  flex: 1 1 auto;                /* <- ocupa tudo dentro do wrap */
+}
+
+.pill{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#eef2ff;
+  color:var(--primary);
+  font-weight:700;
+  font-size:.85rem;
+  white-space: nowrap;
+}
+
+.toolbar{
+  padding:14px 14px 6px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:flex-end;
+  justify-content:space-between;
+}
+
+.filters{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:flex-end;
+}
+
+.field{ min-width: 220px; }
+
+/* Materialize input (compacto e alinhado) */
+.input-field{ margin:0; }
+.input-field input{
+  height: 2.4rem !important;
+}
+
+/* ✅ Mantém essa regra pro topo da página, mas sem afetar o modal */
+body > .wrap .input-field label,
+body > header + .wrap .input-field label,
+.wrap .toolbar .input-field label{
+  transform: translateY(-6px) scale(.92);
+  transform-origin: 0 0;
+}
+
+.btn-primary{
+  border-radius:999px;
+  background: linear-gradient(135deg, var(--accent), #1d4ed8);
+  box-shadow:0 10px 22px rgba(37,99,235,.18);
+  font-weight:800;
+}
+.btn-soft{
+  border-radius:999px;
+  background:#eef2ff;
+  color:var(--primary);
+  box-shadow:none;
+  font-weight:800;
+}
+
+/* ===== TABLE ===== */
+/* tabela: só ela rola */
+.table-wrap{
+  padding: 0 14px 14px;
+  overflow: hidden;              /* <- sem scroll aqui */
+  flex: 1 1 auto;
+}
+
+/* container de rolagem vertical + header fixo */
+.table-scroll{
+  height: 100%;                  /* <- ocupa o resto do card */
+  overflow-y: auto;              /* <- scroll único */
+  overflow-x: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+table.striped{
+  width:100%;
+  table-layout: fixed;
+  margin:0;
+}
+
+table.striped>thead>tr>th{
+  position: sticky;   /* fixa header */
+  top: 0;
+  z-index: 2;
+  background: #f3f6fb;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  color:#0f172a;
+  font-weight:900;
+  font-size:.82rem;
+  border-bottom: 1px solid var(--line);
+}
+
+table.striped>tbody>tr>td{
+  vertical-align: top;
+  font-size: .92rem;
+  color:#111827;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* hover suave na linha */
+table.striped>tbody>tr{
+  transition: background .12s ease;
+}
+table.striped>tbody>tr:hover{
+  background: #f6f8ff;
+}
+
+/* TEMA1 em destaque */
+td:nth-child(9){
+  font-weight: 600;
+  color:#0f172a;
+}
+
+/* ===== Larguras (com AÇÕES na 1ª coluna) ===== */
+th:nth-child(1),  td:nth-child(1)  { width: 64px; }   /* AÇÕES */
+th:nth-child(2),  td:nth-child(2)  { width: 90px; }   /* CÓDIGO */
+th:nth-child(3),  td:nth-child(3)  { width: 110px; }  /* IDENTRED */
+th:nth-child(4),  td:nth-child(4)  { width: 110px; }  /* SEGMENTO */
+th:nth-child(5),  td:nth-child(5)  { width: 130px; }  /* CURSO */
+th:nth-child(6),  td:nth-child(6)  { width: 70px; }   /* SÉRIE */
+th:nth-child(7),  td:nth-child(7)  { width: 230px; }  /* CADERNO */
+th:nth-child(8),  td:nth-child(8)  { width: 110px; }  /* TIPOPROVA */
+th:nth-child(12), td:nth-child(12) { width: 170px; }  /* DT_REGISTRO */
+
+th:nth-child(9),  td:nth-child(9),
+th:nth-child(10), td:nth-child(10),
+th:nth-child(11), td:nth-child(11){
+  width: calc((100% - (64px + 90px + 110px + 110px + 130px + 70px + 230px + 110px + 170px)) / 3);
+}
+
+td:nth-child(1),
+td:nth-child(2),
+td:nth-child(3),
+td:nth-child(4),
+td:nth-child(5),
+td:nth-child(6),
+td:nth-child(8),
+td:nth-child(12){
+  white-space: nowrap;
+}
+
+/* botão editar */
+.btn-edit{
+  border-radius: 10px;
+  padding: 0 8px;
+  height: 32px;
+  line-height: 32px;
+  box-shadow:none;
+  background:#eef2ff;
+  color: var(--primary);
+}
+.btn-edit:hover{
+  background:#e0e7ff;
+}
+.btn-edit i{ font-size: 18px; line-height: 32px; }
+
+.muted{ color: var(--muted); font-size:.92rem; }
+
+.footer{
+  text-align:center;
+  color:var(--muted);
+  font-size:.9rem;
+  padding:8px 0 18px;
+}
+
+/* =========================================
+   MODAL EDITAR (GRANDE + LABELS CERTINHOS)
+   ========================================= */
+#modalEditar.modal{
+  width: min(1100px, 92vw) !important;
+  height: 88vh !important;
+  max-height: 88vh !important;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
 #modalEditar.modal .modal-content{
   padding: 16px 18px 0;
-  height: calc(88vh - 68px);             /* reserva espaço pro footer */
-  overflow: hidden;                       /* rolagem vai no .modal-body */
+  height: calc(88vh - 68px);
+  overflow: hidden;
 }
 
-/* “header” do modal: título + código */
+/* header do modal */
 #modalEditar .modal-head{
   position: sticky;
   top: 0;
@@ -344,11 +279,11 @@
   margin-bottom: 12px;
 }
 
-/* área que realmente rola (somente ela) */
+/* área rolável do modal */
 #modalEditar .modal-body{
-  height: calc(88vh - 68px - 74px);      /* 68 footer + ~74 head */
+  height: calc(88vh - 68px - 74px);
   overflow: auto;
-  padding-right: 6px;                    /* respiro pro scroll */
+  padding-right: 6px;
 }
 
 /* footer fixo */
@@ -364,7 +299,7 @@
   background: #fafbff;
 }
 
-/* título e “código” mais organizados */
+/* título/código */
 #modalEditar .modal-title{
   display:flex;
   align-items:center;
@@ -381,34 +316,47 @@
   font-size: .92rem;
 }
 
-/* campos: mais espaço + labels menores */
-#modalEditar .row{ margin-bottom: 0; }
+/* ✅ Aqui é o “pulo do gato”: labels do modal NÃO usam a regra global */
 #modalEditar .input-field{
-  margin-top: 14px;                       /* espaça */
-  margin-bottom: 6px;
+  margin-top: 14px;
+  margin-bottom: 8px;
 }
-#modalEditar .input-field label{
-  font-size: .85rem;
-  color: #6b7280;
+#modalEditar .input-field > label{
+  left: .75rem;
+  font-size: .82rem;
+  color: var(--muted);
+  transform: translateY(-14px) scale(.9);
+  transform-origin: 0 0;
+  pointer-events: none;
 }
-#modalEditar .input-field input,
-#modalEditar .input-field textarea{
+
+/* quando ativo, fica levemente mais “primary” */
+#modalEditar .input-field > label.active{
+  color: var(--primary);
+}
+
+/* select do Materialize: empurra o valor e não “come” o label */
+#modalEditar .select-wrapper input.select-dropdown{
+  height: 2.7rem;
+  line-height: 2.7rem;
+  padding-top: .55rem;
+  margin: 0 0 6px;
+}
+
+/* inputs texto */
+#modalEditar input[type="text"]{
+  padding-top: .35rem;
   font-size: .95rem;
 }
 
-/* Materialize select deixa o label mais longe do valor */
-#modalEditar .select-wrapper input.select-dropdown{
-  margin-bottom: 6px;
-}
-
-/* Inputs de tema: deixa mais confortável */
+/* Inputs de tema */
 #modalEditar #editTema1,
 #modalEditar #editTema2,
 #modalEditar #editTema3{
   font-size: .98rem;
 }
 
-/* botão excluir mais “baixo” e menos agressivo visualmente */
+/* botão excluir */
 #modalEditar .btn-danger{
   border-radius: 999px;
   background: #fee2e2;
@@ -418,7 +366,7 @@
 }
 #modalEditar .btn-danger:hover{ background:#fecaca; }
 
-/* melhora scroll interno (opcional, só Chrome/Edge) */
+/* scrollbar interno (opcional) */
 #modalEditar .modal-body::-webkit-scrollbar{ width: 10px; }
 #modalEditar .modal-body::-webkit-scrollbar-thumb{
   background: #dbe4f3;
@@ -427,7 +375,6 @@
 }
 #modalEditar .modal-body::-webkit-scrollbar-thumb:hover{ background:#cbd7ee; }
 
-/* responsivo: em telas pequenas, usa 96vw e altura menor */
 @media (max-width: 700px){
   #modalEditar.modal{
     width: 96vw !important;
@@ -442,6 +389,22 @@
   }
 }
 
+/* mobile geral: deixa o body rolar normalmente */
+@media (max-width: 600px){
+  body{ overflow:auto; }
+  .wrap{
+    height:auto;
+    display:block;
+  }
+  .panel-card{ display:block; }
+  .table-wrap{ overflow-x:auto; }
+  .table-scroll{
+    height:auto;
+    max-height:none;
+    overflow: visible;
+    border: 0;
+  }
+}
   </style>
 </head>
 
