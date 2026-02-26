@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
-  <title>Controle de Sala • Painel</title>
+  <title>QR Code • Painel</title>
 
   <!-- Materialize -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -29,7 +29,7 @@
       padding:24px;
     }
 
-    /* ===== Topbar igual login ===== */
+    /* ===== Topbar ===== */
     header.topbar{
       position:fixed; top:0; left:0; right:0; height:64px;
       background:var(--primary); color:#fff;
@@ -80,7 +80,7 @@
       font-size:.85rem;
     }
 
-    /* ===== Cards do menu (mantendo seu estilo) ===== */
+    /* ===== Cards do menu ===== */
     .menu-card{
       background:#fff;
       border-radius:var(--radius);
@@ -140,15 +140,15 @@
 
 <body>
 
-  <!-- Topo (igual login) -->
+  <!-- Topo -->
   <header class="topbar">
     <div class="brand">
       <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
-      <h5>Curso Optativo - Controle de Salas</h5>
+      <h5>QR Code • Redação</h5>
     </div>
 
     <div class="right-actions">
-      <a class="btn btn-small btn-logout white-text" href="https://apisec.secauxiliar.com.br/optativo/logout.php">
+      <a class="btn btn-small btn-logout white-text" href="https://apisec.secauxiliar.com.br/qrcode/logout.php">
         <i class="material-icons left">logout</i>Sair
       </a>
     </div>
@@ -162,16 +162,16 @@
         <div style="display:flex; gap:10px; align-items:flex-start; flex:1 1 auto;">
           <i class="material-icons" style="color:var(--primary); margin-top:2px;">info</i>
           <div>
-            <div style="font-weight:800; color:#111827;">Acesso liberado</div>
+            <div style="font-weight:800; color:#111827;">Painel do QR Code</div>
             <div style="color:var(--muted); font-size:.92rem;">
-              Use os atalhos abaixo para administrar salas, fiscais, vínculos e presenças.
+              Cadastre temas de redação e consulte os registros já cadastrados no banco.
             </div>
           </div>
         </div>
 
         <div style="flex:0 0 auto;">
           <span class="pill">
-            <i class="material-icons" style="font-size:18px;">shield</i>
+            <i class="material-icons" style="font-size:18px;">qr_code_2</i>
             Área restrita
           </span>
         </div>
@@ -181,77 +181,34 @@
     <!-- Menu -->
     <div class="row">
 
-      <div class="col s12 m6 l4">
-        <div class="menu-card" onclick="go('salas.html')">
+      <!-- Botão 1: Cadastro -->
+      <div class="col s12 m6">
+        <div class="menu-card" onclick="go('temas_cadastro.html')">
           <div class="head">
-            <div class="icon"><i class="material-icons">meeting_room</i></div>
-            <p class="name">Salas</p>
+            <div class="icon"><i class="material-icons">edit_note</i></div>
+            <p class="name">Cadastrar Temas</p>
           </div>
-          <p class="desc">Cadastrar, editar e organizar salas e dias de aula.</p>
+          <p class="desc">Abrir o formulário de cadastramento e gerar QR Code automaticamente.</p>
           <div class="foot"><span>Acessar</span><i class="material-icons">chevron_right</i></div>
         </div>
       </div>
 
-      <div class="col s12 m6 l4">
-        <div class="menu-card" onclick="go('fiscais.html')">
+      <!-- Botão 2: Listagem -->
+      <div class="col s12 m6">
+        <div class="menu-card" onclick="go('temas_lista.html')">
           <div class="head">
-            <div class="icon"><i class="material-icons">group</i></div>
-            <p class="name">Fiscais</p>
+            <div class="icon"><i class="material-icons">list_alt</i></div>
+            <p class="name">Listar Temas</p>
           </div>
-          <p class="desc">Cadastro e gerenciamento de usuários fiscais.</p>
+          <p class="desc">Ver todos os temas cadastrados no banco de dados e pesquisar pelo código.</p>
           <div class="foot"><span>Acessar</span><i class="material-icons">chevron_right</i></div>
         </div>
       </div>
-
-      <div class="col s12 m6 l4">
-        <div class="menu-card" onclick="go('vinculo-aluno-sala.html')">
-          <div class="head">
-            <div class="icon"><i class="material-icons">how_to_reg</i></div>
-            <p class="name">Vínculo Aluno × Sala</p>
-          </div>
-          <p class="desc">Vincular alunos importados às salas (por turma/dia).</p>
-          <div class="foot"><span>Acessar</span><i class="material-icons">chevron_right</i></div>
-        </div>
-      </div>
-
-      <div class="col s12 m6 l4">
-        <div class="menu-card" onclick="go('aluno.html')">
-          <div class="head">
-            <div class="icon"><i class="material-icons">playlist_add_check</i></div>
-            <p class="name">Aluno</p>
-          </div>
-          <p class="desc">Agenda do aluno</p>
-          <div class="foot"><span>Acessar</span><i class="material-icons">chevron_right</i></div>
-        </div>
-      </div>
-
-      <div class="col s12 m6 l4">
-        <div class="menu-card" onclick="go('config.html')">
-          <div class="head">
-            <div class="icon"><i class="material-icons">settings</i></div>
-            <p class="name">Configurações</p>
-          </div>
-          <p class="desc">Parâmetros do sistema (ex.: tolerância, regras, etc.).</p>
-          <div class="foot"><span>Acessar</span><i class="material-icons">chevron_right</i></div>
-        </div>
-      </div>
-
-      <div class="col s12 m6 l4">
-        <div class="menu-card" onclick="go('relatorios.html')">
-          <div class="head">
-            <div class="icon"><i class="material-icons">print</i></div>
-            <p class="name">Relatórios</p>
-          </div>
-          <p class="desc">Imprimir lista geral e listas por sala (porta).</p>
-          <div class="foot"><span>Acessar</span><i class="material-icons">chevron_right</i></div>
-        </div>
-      </div>
-
 
     </div>
 
     <div style="text-align:center; color:var(--muted); font-size:.9rem; padding:8px 0 18px;">
-      Controle de Sala • 3A Sistemas
+      QR Code • Redação • 3A Sistemas
     </div>
 
   </div>
