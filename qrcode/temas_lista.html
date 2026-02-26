@@ -307,12 +307,10 @@ td:nth-child(12){
   background: #fafbff;
 }
 
-/* ✅ NÃO mexe no transform das labels no modal (Materialize cuida) */
 #modalEditar .input-field{
   margin-top: 12px;
   margin-bottom: 10px;
 }
-
 #modalEditar .input-field > label{
   font-size: .82rem;
   color: var(--muted);
@@ -506,7 +504,6 @@ td:nth-child(12){
                 <option value="FOLHETO">FOLHETO</option>
                 <option value="CADERNO">CADERNO</option>
               </select>
-              <!-- ✅ REMOVIDO class="active" -->
               <label for="editIdentred">Identificação do Material</label>
             </div>
           </div>
@@ -518,7 +515,6 @@ td:nth-child(12){
                 <option value="CURSO">CURSO</option>
                 <option value="COLÉGIO">COLÉGIO</option>
               </select>
-              <!-- ✅ REMOVIDO class="active" -->
               <label for="editSegmento">Segmento</label>
             </div>
           </div>
@@ -533,7 +529,6 @@ td:nth-child(12){
                 <option value="INTENSIVO">INTENSIVO</option>
                 <option value="REDAÇÃO">REDAÇÃO</option>
               </select>
-              <!-- ✅ REMOVIDO class="active" -->
               <label for="editCurso">Curso</label>
             </div>
           </div>
@@ -547,7 +542,6 @@ td:nth-child(12){
                 <option value="3">3ª</option>
                 <option value="4">4ª</option>
               </select>
-              <!-- ✅ REMOVIDO class="active" -->
               <label for="editSerie">Série</label>
             </div>
           </div>
@@ -555,7 +549,6 @@ td:nth-child(12){
           <div class="col s12 m6">
             <div class="input-field">
               <input id="editCaderno" type="text" required>
-              <!-- ✅ REMOVIDO class="active" -->
               <label for="editCaderno">Caderno/Folheto</label>
             </div>
           </div>
@@ -572,7 +565,6 @@ td:nth-child(12){
                 <option value="UNESP">UNESP</option>
                 <option value="UNICAMP">UNICAMP</option>
               </select>
-              <!-- ✅ REMOVIDO class="active" -->
               <label for="editTipoprova">Tipo de Prova</label>
             </div>
           </div>
@@ -580,7 +572,6 @@ td:nth-child(12){
           <div class="col s12">
             <div class="input-field">
               <input id="editTema1" type="text" required>
-              <!-- ✅ REMOVIDO class="active" -->
               <label for="editTema1">Tema 1</label>
             </div>
           </div>
@@ -588,7 +579,6 @@ td:nth-child(12){
           <div class="col s12">
             <div class="input-field">
               <input id="editTema2" type="text">
-              <!-- ✅ REMOVIDO class="active" -->
               <label for="editTema2">Tema 2</label>
             </div>
           </div>
@@ -596,7 +586,6 @@ td:nth-child(12){
           <div class="col s12">
             <div class="input-field">
               <input id="editTema3" type="text">
-              <!-- ✅ REMOVIDO class="active" -->
               <label for="editTema3">Tema 3</label>
             </div>
           </div>
@@ -628,6 +617,9 @@ td:nth-child(12){
     const API_URL_UPDATE = 'https://apisec.secauxiliar.com.br/qrcode/redacao_temas_update.php';
     const API_URL_DELETE = 'https://apisec.secauxiliar.com.br/qrcode/redacao_temas_delete.php';
 
+    // ✅ regra: só pode editar/excluir até 3 dias após DT_REGISTRO
+    const EDIT_WINDOW_DAYS = 3;
+
     const el = (id) => document.getElementById(id);
 
     function esc(s){
@@ -644,7 +636,26 @@ td:nth-child(12){
       return String(dt).replace('T',' ').replace('.000','');
     }
 
-    // 🔧 helper: re-init SOMENTE os selects do modal (evita label encavalada)
+    // ✅ parse robusto: "YYYY-MM-DD HH:MM:SS" / "YYYY-MM-DDTHH:MM:SS"
+    function parseDTRegistro(dt){
+      if(!dt) return null;
+      const s = String(dt).trim().replace('T', ' ');
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?/);
+      if(!m) return null;
+      const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
+      const hh = Number(m[4] ?? 0), mm = Number(m[5] ?? 0), ss = Number(m[6] ?? 0);
+      return new Date(y, mo, d, hh, mm, ss);
+    }
+
+    function isWithinEditWindow(dt){
+      const d = parseDTRegistro(dt);
+      if(!d) return false;
+      const now = new Date();
+      const diffMs = now.getTime() - d.getTime();
+      const diffDays = diffMs / (1000 * 60 * 60 * 24);
+      return diffDays <= EDIT_WINDOW_DAYS;
+    }
+
     function reinitModalSelects(){
       const selects = document.querySelectorAll('#modalEditar select');
       selects.forEach(s=>{
@@ -675,9 +686,7 @@ td:nth-child(12){
         serie.value = '';
       }
 
-      // ✅ só reinit no modal
       reinitModalSelects();
-      // ✅ atualiza labels
       M.updateTextFields();
     }
 
@@ -693,8 +702,19 @@ td:nth-child(12){
       return true;
     }
 
-    async function abrirEditar(codigo){
+    async function abrirEditar(codigo, dt_registro_from_row){
       try{
+        // ✅ BLOQUEIO: só abre modal se dt_registro <= 3 dias
+        if(!isWithinEditWindow(dt_registro_from_row)){
+          Swal.fire({
+            icon:'info',
+            title:'Edição bloqueada',
+            html:`Este registro só pode ser editado/excluído até <strong>${EDIT_WINDOW_DAYS} dias</strong> após o cadastro.<br><br>
+                  <span class="muted">DT_REGISTRO: <strong>${esc(fmtDT(dt_registro_from_row))}</strong></span>`
+          });
+          return;
+        }
+
         Swal.fire({
           title: 'Carregando...',
           text: 'Abrindo registro para edição',
@@ -713,6 +733,19 @@ td:nth-child(12){
         if(!resp.ok || !j.ok) throw new Error(j.msg || 'Falha ao carregar registro');
 
         const r = j.row || {};
+
+        // ✅ redundância de segurança (se o backend devolver dt_registro diferente)
+        const dtReg = r.dt_registro ?? dt_registro_from_row;
+        if(!isWithinEditWindow(dtReg)){
+          Swal.close();
+          Swal.fire({
+            icon:'info',
+            title:'Edição bloqueada',
+            html:`Este registro só pode ser editado/excluído até <strong>${EDIT_WINDOW_DAYS} dias</strong> após o cadastro.<br><br>
+                  <span class="muted">DT_REGISTRO: <strong>${esc(fmtDT(dtReg))}</strong></span>`
+          });
+          return;
+        }
 
         el('editCodigo').value = r.codigo ?? codigo;
         el('editCodigoLabel').textContent = r.codigo ?? codigo;
@@ -734,7 +767,6 @@ td:nth-child(12){
         const modal = M.Modal.getInstance(el('modalEditar'));
         modal.open();
 
-        // ✅ depois de abrir, re-init e update (Materialize calcula melhor com modal visível)
         setTimeout(()=>{
           reinitModalSelects();
           M.updateTextFields();
@@ -810,24 +842,16 @@ td:nth-child(12){
       const codigo = (el('editCodigo').value || '').trim();
       if(!codigo) return;
 
+      // ✅ confirmação simples (sem redigitar código)
       const res = await Swal.fire({
         icon:'warning',
         title:'Excluir registro?',
         html:`Você está prestes a excluir o código <strong>${esc(codigo)}</strong>.<br><br>
-              Digite <strong>${esc(codigo)}</strong> para confirmar:`,
-        input:'text',
-        inputPlaceholder:'Digite o código para confirmar',
+              Essa ação não pode ser desfeita.`,
         showCancelButton:true,
         confirmButtonText:'Excluir',
         cancelButtonText:'Cancelar',
         confirmButtonColor:'#d33',
-        preConfirm:(val)=>{
-          if(String(val || '').trim() !== String(codigo)) {
-            Swal.showValidationMessage('Confirmação incorreta. Digite exatamente o código.');
-            return false;
-          }
-          return true;
-        }
       });
 
       if(!res.isConfirmed) return;
@@ -897,7 +921,7 @@ td:nth-child(12){
         tbody.innerHTML = rows.map(r => `
           <tr>
             <td class="center">
-              <a class="btn btn-edit btn-small" title="Editar" onclick="abrirEditar(${Number(r.codigo)})">
+              <a class="btn btn-edit btn-small" title="Editar" onclick="abrirEditar(${Number(r.codigo)}, ${JSON.stringify(r.dt_registro || '')})">
                 <i class="material-icons">edit</i>
               </a>
             </td>
