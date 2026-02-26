@@ -55,7 +55,72 @@
     }
     .btn-ghost:hover{ background: rgba(255,255,255,.22); }
 
+    /* antes:
     .wrap{ max-width:1200px; margin:96px auto 0; }
+    */
+
+    .wrap{
+      /* usa a tela inteira, mas com respiro */
+      width: min(1800px, calc(100vw - 32px));
+      margin:96px auto 0;
+    }
+
+    /* em telas bem grandes (24"+), libera ainda mais */
+    @media (min-width: 1600px){
+      .wrap{
+        width: min(2200px, calc(100vw - 48px));
+      }
+    }
+
+    /* container da tabela: ocupa 100% e dá scroll horizontal quando precisar */
+    .table-wrap{
+      padding: 0 14px 14px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* garante que a tabela estique e não fique "apertada" */
+    .table-wrap table{
+      width: 100%;
+      min-width: 1500px; /* evita esmagar colunas em telas médias */
+    }
+
+    /* ===== Larguras inteligentes por coluna ===== */
+    /* mantém colunas "curtas" compactas */
+    th:nth-child(1), td:nth-child(1){ min-width: 70px; }   /* ID */
+    th:nth-child(2), td:nth-child(2){ min-width: 90px; }   /* CODIGO */
+    th:nth-child(3), td:nth-child(3){ min-width: 110px; }  /* IDENTRED */
+    th:nth-child(4), td:nth-child(4){ min-width: 110px; }  /* SEGMENTO */
+    th:nth-child(5), td:nth-child(5){ min-width: 130px; }  /* CURSO */
+    th:nth-child(6), td:nth-child(6){ min-width: 80px; }   /* SÉRIE */
+    th:nth-child(8), td:nth-child(8){ min-width: 110px; }  /* TIPOPROVA */
+    th:nth-child(12), td:nth-child(12){ min-width: 170px; }/* DT_REGISTRO */
+
+    /* colunas de texto "longas": dá espaço de verdade */
+    th:nth-child(7), td:nth-child(7){ min-width: 240px; }  /* CADERNO */
+    th:nth-child(9), td:nth-child(9){ min-width: 420px; }  /* TEMA1 */
+    th:nth-child(10), td:nth-child(10){ min-width: 420px; }/* TEMA2 */
+    th:nth-child(11), td:nth-child(11){ min-width: 420px; }/* TEMA3 */
+
+    /* deixa o texto quebrar bem e não estourar a altura */
+    td{
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    /* só as colunas curtas ficam em uma linha (não quebram) */
+    td:nth-child(1),
+    td:nth-child(2),
+    td:nth-child(3),
+    td:nth-child(4),
+    td:nth-child(5),
+    td:nth-child(6),
+    td:nth-child(8),
+    td:nth-child(12){
+      white-space: nowrap;
+    }
 
     .panel-card{
       background:var(--card);
