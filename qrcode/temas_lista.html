@@ -610,7 +610,10 @@
         const url = new URL(API_URL_GETONE);
         url.searchParams.set('codigo', String(codigo));
 
-        const resp = await fetch(url.toString(), { cache:'no-store' });
+        const resp = await fetch(url.toString(), {
+          cache: 'no-store',
+          credentials: 'include'
+        });
         const j = await resp.json();
         if(!resp.ok || !j.ok) throw new Error(j.msg || 'Falha ao carregar registro');
 
@@ -689,8 +692,9 @@
         });
 
         const resp = await fetch(API_URL_UPDATE, {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
@@ -745,11 +749,12 @@
         });
 
         const resp = await fetch(API_URL_DELETE, {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ codigo })
         });
-
+        
         const j = await resp.json();
         if(!resp.ok || !j.ok) throw new Error(j.msg || 'Falha ao excluir');
 
@@ -783,7 +788,10 @@
         if(codigo) url.searchParams.set('codigo', codigo);
         url.searchParams.set('limit', String(limit));
 
-        const resp = await fetch(url.toString(), { cache:'no-store' });
+        const resp = await fetch(url.toString(), {
+          cache: 'no-store',
+          credentials: 'include'
+        });
         const j = await resp.json();
 
         if(!resp.ok || !j.ok) throw new Error(j.msg || 'Falha ao listar');
