@@ -189,38 +189,40 @@
       background: #f6f8ff;
     }
 
-    /* TEMA1 em destaque */
-    td:nth-child(8){
+    /* TEMA1 em destaque (ajustado: agora é a 8ª coluna com ações na frente) */
+    td:nth-child(9){
       font-weight: 600;
       color:#0f172a;
     }
 
-    /* ===== Larguras (SEM ID) =====
-       1 codigo
-       2 identred
-       3 segmento
-       4 curso
-       5 serie
-       6 caderno
-       7 tipoprova
-       8 tema1
-       9 tema2
-       10 tema3
-       11 dt_registro
+    /* ===== Larguras (com AÇÕES na 1ª coluna) =====
+       1 acoes
+       2 codigo
+       3 identred
+       4 segmento
+       5 curso
+       6 serie
+       7 caderno
+       8 tipoprova
+       9 tema1
+       10 tema2
+       11 tema3
+       12 dt_registro
     */
-    th:nth-child(1),  td:nth-child(1)  { width: 90px; }   /* CÓDIGO */
-    th:nth-child(2),  td:nth-child(2)  { width: 110px; }  /* IDENTRED */
-    th:nth-child(3),  td:nth-child(3)  { width: 110px; }  /* SEGMENTO */
-    th:nth-child(4),  td:nth-child(4)  { width: 130px; }  /* CURSO */
-    th:nth-child(5),  td:nth-child(5)  { width: 70px; }   /* SÉRIE */
-    th:nth-child(6),  td:nth-child(6)  { width: 230px; }  /* CADERNO */
-    th:nth-child(7),  td:nth-child(7)  { width: 110px; }  /* TIPOPROVA */
-    th:nth-child(11), td:nth-child(11) { width: 170px; }  /* DT_REGISTRO */
+    th:nth-child(1),  td:nth-child(1)  { width: 64px; }   /* AÇÕES */
+    th:nth-child(2),  td:nth-child(2)  { width: 90px; }   /* CÓDIGO */
+    th:nth-child(3),  td:nth-child(3)  { width: 110px; }  /* IDENTRED */
+    th:nth-child(4),  td:nth-child(4)  { width: 110px; }  /* SEGMENTO */
+    th:nth-child(5),  td:nth-child(5)  { width: 130px; }  /* CURSO */
+    th:nth-child(6),  td:nth-child(6)  { width: 70px; }   /* SÉRIE */
+    th:nth-child(7),  td:nth-child(7)  { width: 230px; }  /* CADERNO */
+    th:nth-child(8),  td:nth-child(8)  { width: 110px; }  /* TIPOPROVA */
+    th:nth-child(12), td:nth-child(12) { width: 170px; }  /* DT_REGISTRO */
 
-    th:nth-child(8),  td:nth-child(8),
     th:nth-child(9),  td:nth-child(9),
-    th:nth-child(10), td:nth-child(10){
-      width: calc((100% - (90px + 110px + 110px + 130px + 70px + 230px + 110px + 170px)) / 3);
+    th:nth-child(10), td:nth-child(10),
+    th:nth-child(11), td:nth-child(11){
+      width: calc((100% - (64px + 90px + 110px + 110px + 130px + 70px + 230px + 110px + 170px)) / 3);
     }
 
     td:nth-child(1),
@@ -228,10 +230,26 @@
     td:nth-child(3),
     td:nth-child(4),
     td:nth-child(5),
-    td:nth-child(7),
-    td:nth-child(11){
+    td:nth-child(6),
+    td:nth-child(8),
+    td:nth-child(12){
       white-space: nowrap;
     }
+
+    /* botão editar */
+    .btn-edit{
+      border-radius: 10px;
+      padding: 0 8px;
+      height: 32px;
+      line-height: 32px;
+      box-shadow:none;
+      background:#eef2ff;
+      color: var(--primary);
+    }
+    .btn-edit:hover{
+      background:#e0e7ff;
+    }
+    .btn-edit i{ font-size: 18px; line-height: 32px; }
 
     .muted{ color: var(--muted); font-size:.92rem; }
 
@@ -241,6 +259,42 @@
       font-size:.9rem;
       padding:8px 0 18px;
     }
+
+    /* modal mais “limpo” */
+    .modal{
+      border-radius: 16px;
+    }
+    .modal .modal-content{
+      padding: 18px 20px 6px;
+    }
+    .modal .modal-footer{
+      padding: 10px 16px 14px;
+      border-top: 1px solid var(--line);
+      background: #fafbff;
+    }
+    .modal-title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin:0 0 10px;
+      font-weight:900;
+      color:#0f172a;
+    }
+    .modal-title i{ color: var(--primary); }
+    .modal-sub{
+      margin:-6px 0 14px;
+      color: var(--muted);
+      font-size:.92rem;
+    }
+
+    .btn-danger{
+      border-radius:999px;
+      background: #fee2e2;
+      color:#991b1b;
+      font-weight:900;
+      box-shadow:none;
+    }
+    .btn-danger:hover{ background:#fecaca; }
 
     /* mobile: deixa o body rolar normalmente (scroll único externo) */
     @media (max-width: 600px){
@@ -333,6 +387,7 @@
           <table class="striped">
             <thead>
               <tr>
+                <th class="center">AÇÕES</th>
                 <th>CÓDIGO</th>
                 <th>IDENTRED</th>
                 <th>SEGMENTO</th>
@@ -347,7 +402,7 @@
               </tr>
             </thead>
             <tbody id="tbody">
-              <tr><td colspan="11" class="muted">Carregando...</td></tr>
+              <tr><td colspan="12" class="muted">Carregando...</td></tr>
             </tbody>
           </table>
         </div>
@@ -357,8 +412,138 @@
     <div class="footer">QR Code • Redação • 3A Sistemas</div>
   </div>
 
+  <!-- ===== MODAL EDITAR ===== -->
+  <div id="modalEditar" class="modal">
+    <div class="modal-content">
+      <h6 class="modal-title">
+        <i class="material-icons">edit</i>
+        Editar Tema
+      </h6>
+      <div class="modal-sub">
+        Código: <strong id="editCodigoLabel">—</strong>
+      </div>
+
+      <input type="hidden" id="editCodigo" />
+
+      <div class="row" style="margin-bottom:0;">
+        <div class="col s12 m6">
+          <div class="input-field">
+            <select id="editIdentred" required>
+              <option value="" disabled>Selecione</option>
+              <option value="SIMULADO">SIMULADO</option>
+              <option value="FOLHETO">FOLHETO</option>
+              <option value="CADERNO">CADERNO</option>
+            </select>
+            <label for="editIdentred">Identificação do Material</label>
+          </div>
+        </div>
+
+        <div class="col s12 m6">
+          <div class="input-field">
+            <select id="editSegmento" required onchange="atualizarCamposSegmentoEdit()">
+              <option value="" disabled>Selecione</option>
+              <option value="CURSO">CURSO</option>
+              <option value="COLÉGIO">COLÉGIO</option>
+            </select>
+            <label for="editSegmento">Segmento</label>
+          </div>
+        </div>
+
+        <div class="col s12 m6">
+          <div class="input-field">
+            <select id="editCurso" disabled>
+              <option value="" disabled>Selecione</option>
+              <option value="EXTENSIVO">EXTENSIVO</option>
+              <option value="TURMAS DE MAIO">TURMAS DE MAIO</option>
+              <option value="SEMI DE AGOSTO">SEMI DE AGOSTO</option>
+              <option value="INTENSIVO">INTENSIVO</option>
+              <option value="REDAÇÃO">REDAÇÃO</option>
+            </select>
+            <label for="editCurso">Curso</label>
+          </div>
+        </div>
+
+        <div class="col s12 m6">
+          <div class="input-field">
+            <select id="editSerie" disabled>
+              <option value="" disabled>Selecione</option>
+              <option value="1">1ª</option>
+              <option value="2">2ª</option>
+              <option value="3">3ª</option>
+              <option value="4">4ª</option>
+            </select>
+            <label for="editSerie">Série</label>
+          </div>
+        </div>
+
+        <div class="col s12 m6">
+          <div class="input-field">
+            <input id="editCaderno" type="text" required>
+            <label for="editCaderno">Caderno/Folheto</label>
+          </div>
+        </div>
+
+        <div class="col s12 m6">
+          <div class="input-field">
+            <select id="editTipoprova" required>
+              <option value="" disabled>Selecione</option>
+              <option value="FUVEST">FUVEST</option>
+              <option value="ENEM">ENEM</option>
+              <option value="PARÁFRASE">PARÁFRASE</option>
+              <option value="UFPR">UFPR</option>
+              <option value="UNIFESP">UNIFESP</option>
+              <option value="UNESP">UNESP</option>
+              <option value="UNICAMP">UNICAMP</option>
+            </select>
+            <label for="editTipoprova">Tipo de Prova</label>
+          </div>
+        </div>
+
+        <div class="col s12">
+          <div class="input-field">
+            <input id="editTema1" type="text" required>
+            <label for="editTema1">Tema 1</label>
+          </div>
+        </div>
+
+        <div class="col s12">
+          <div class="input-field">
+            <input id="editTema2" type="text">
+            <label for="editTema2">Tema 2</label>
+          </div>
+        </div>
+
+        <div class="col s12">
+          <div class="input-field">
+            <input id="editTema3" type="text">
+            <label for="editTema3">Tema 3</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="display:flex; gap:10px; justify-content:space-between; flex-wrap:wrap;">
+      <button class="btn btn-danger" id="btnExcluir">
+        <i class="material-icons left">delete</i>Excluir
+      </button>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+        <button class="btn btn-soft modal-close">
+          <i class="material-icons left">close</i>Cancelar
+        </button>
+        <button class="btn btn-primary" id="btnSalvarEdicao">
+          <i class="material-icons left">save</i>Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const API_URL = 'https://apisec.secauxiliar.com.br/qrcode/redacao_temas_list.php';
+    // ===== ENDPOINTS =====
+    const API_URL_LIST   = 'https://apisec.secauxiliar.com.br/qrcode/redacao_temas_list.php';
+    const API_URL_GETONE = 'https://apisec.secauxiliar.com.br/qrcode/redacao_temas_get.php';     // criar
+    const API_URL_UPDATE = 'https://apisec.secauxiliar.com.br/qrcode/redacao_temas_update.php';  // criar
+    const API_URL_DELETE = 'https://apisec.secauxiliar.com.br/qrcode/redacao_temas_delete.php';  // criar
 
     const el = (id) => document.getElementById(id);
 
@@ -373,10 +558,215 @@
 
     function fmtDT(dt){
       if(!dt) return '';
-      // aceita "YYYY-MM-DD HH:MM:SS" e mostra igual
       return String(dt).replace('T',' ').replace('.000','');
     }
 
+    // ===== EDIT MODAL HELPERS =====
+    function atualizarCamposSegmentoEdit(){
+      const seg = el('editSegmento').value;
+      const curso = el('editCurso');
+      const serie = el('editSerie');
+
+      if(seg === 'CURSO'){
+        curso.disabled = false;
+        serie.disabled = true;
+        serie.value = '';
+      } else if(seg === 'COLÉGIO'){
+        serie.disabled = false;
+        curso.disabled = true;
+        curso.value = '';
+      } else {
+        curso.disabled = true;
+        serie.disabled = true;
+        curso.value = '';
+        serie.value = '';
+      }
+
+      M.FormSelect.init(document.querySelectorAll('select'));
+    }
+
+    function validarEdicao(){
+      const obrig = ['editIdentred','editSegmento','editCaderno','editTipoprova','editTema1'];
+      for(const id of obrig){
+        const v = (el(id).value || '').trim();
+        if(!v) return false;
+      }
+      const seg = el('editSegmento').value;
+      if(seg === 'CURSO' && !el('editCurso').value) return false;
+      if(seg === 'COLÉGIO' && !el('editSerie').value) return false;
+      return true;
+    }
+
+    async function abrirEditar(codigo){
+      try{
+        // loading rápido
+        Swal.fire({
+          title: 'Carregando...',
+          text: 'Abrindo registro para edição',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        const url = new URL(API_URL_GETONE);
+        url.searchParams.set('codigo', String(codigo));
+
+        const resp = await fetch(url.toString(), { cache:'no-store' });
+        const j = await resp.json();
+        if(!resp.ok || !j.ok) throw new Error(j.msg || 'Falha ao carregar registro');
+
+        const r = j.row || {};
+
+        // preencher modal
+        el('editCodigo').value = r.codigo ?? codigo;
+        el('editCodigoLabel').textContent = r.codigo ?? codigo;
+
+        el('editIdentred').value = r.identred ?? '';
+        el('editSegmento').value = r.segmento ?? '';
+        el('editCurso').value    = r.curso ?? '';
+        el('editSerie').value    = (r.serie ?? '') === null ? '' : String(r.serie ?? '');
+        el('editCaderno').value  = r.caderno ?? '';
+        el('editTipoprova').value= r.tipoprova ?? '';
+        el('editTema1').value    = r.tema1 ?? '';
+        el('editTema2').value    = r.tema2 ?? '';
+        el('editTema3').value    = r.tema3 ?? '';
+
+        // ajustar regra segmento (habilita/limpa)
+        atualizarCamposSegmentoEdit();
+
+        // labels e selects
+        M.updateTextFields();
+        M.FormSelect.init(document.querySelectorAll('select'));
+
+        Swal.close();
+
+        const modal = M.Modal.getInstance(el('modalEditar'));
+        modal.open();
+
+      } catch(e){
+        Swal.fire({ icon:'error', title:'Erro', text: e.message || String(e) });
+      }
+    }
+
+    async function salvarEdicao(){
+      if(!validarEdicao()){
+        Swal.fire({ icon:'warning', title:'Atenção', text:'Preencha os campos obrigatórios do registro.' });
+        return;
+      }
+
+      const payload = {
+        codigo:   (el('editCodigo').value || '').trim(),
+        identred: (el('editIdentred').value || '').trim(),
+        segmento: (el('editSegmento').value || '').trim(),
+        curso:    (el('editCurso').value || '').trim(),
+        serie:    (el('editSerie').value || '').trim(),
+        caderno:  (el('editCaderno').value || '').trim(),
+        tipoprova:(el('editTipoprova').value || '').trim(),
+        tema1:    (el('editTema1').value || '').trim(),
+        tema2:    (el('editTema2').value || '').trim(),
+        tema3:    (el('editTema3').value || '').trim()
+      };
+
+      // regra segmento igual ao create
+      if(payload.segmento === 'CURSO'){
+        if(!payload.curso){
+          Swal.fire({ icon:'warning', title:'Atenção', text:'Segmento CURSO exige o campo Curso.' });
+          return;
+        }
+        payload.serie = '';
+      } else if(payload.segmento === 'COLÉGIO'){
+        if(!payload.serie){
+          Swal.fire({ icon:'warning', title:'Atenção', text:'Segmento COLÉGIO exige o campo Série.' });
+          return;
+        }
+        payload.curso = '';
+      }
+
+      try{
+        Swal.fire({
+          title:'Salvando...',
+          allowOutsideClick:false,
+          didOpen:()=>Swal.showLoading()
+        });
+
+        const resp = await fetch(API_URL_UPDATE, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const j = await resp.json();
+        if(!resp.ok || !j.ok) throw new Error(j.msg || 'Falha ao salvar');
+
+        Swal.close();
+
+        M.Modal.getInstance(el('modalEditar')).close();
+
+        Swal.fire({ icon:'success', title:'Salvo!', text:'Registro atualizado com sucesso.' });
+
+        // recarrega tabela mantendo filtros
+        carregar();
+
+      } catch(e){
+        Swal.fire({ icon:'error', title:'Erro', text: e.message || String(e) });
+      }
+    }
+
+    async function excluirRegistro(){
+      const codigo = (el('editCodigo').value || '').trim();
+      if(!codigo) return;
+
+      const res = await Swal.fire({
+        icon:'warning',
+        title:'Excluir registro?',
+        html:`Você está prestes a excluir o código <strong>${esc(codigo)}</strong>.<br><br>
+              Digite <strong>${esc(codigo)}</strong> para confirmar:`,
+        input:'text',
+        inputPlaceholder:'Digite o código para confirmar',
+        showCancelButton:true,
+        confirmButtonText:'Excluir',
+        cancelButtonText:'Cancelar',
+        confirmButtonColor:'#d33',
+        preConfirm:(val)=>{
+          if(String(val || '').trim() !== String(codigo)) {
+            Swal.showValidationMessage('Confirmação incorreta. Digite exatamente o código.');
+            return false;
+          }
+          return true;
+        }
+      });
+
+      if(!res.isConfirmed) return;
+
+      try{
+        Swal.fire({
+          title:'Excluindo...',
+          allowOutsideClick:false,
+          didOpen:()=>Swal.showLoading()
+        });
+
+        const resp = await fetch(API_URL_DELETE, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ codigo })
+        });
+
+        const j = await resp.json();
+        if(!resp.ok || !j.ok) throw new Error(j.msg || 'Falha ao excluir');
+
+        Swal.close();
+
+        M.Modal.getInstance(el('modalEditar')).close();
+
+        Swal.fire({ icon:'success', title:'Excluído!', text:`Código ${codigo} removido.` });
+
+        carregar();
+
+      } catch(e){
+        Swal.fire({ icon:'error', title:'Erro', text: e.message || String(e) });
+      }
+    }
+
+    // ===== LIST =====
     async function carregar(){
       const q = (el('q').value || '').trim();
       const codigo = (el('codigo').value || '').trim();
@@ -385,10 +775,10 @@
       el('status').textContent = 'Carregando...';
 
       const tbody = el('tbody');
-      tbody.innerHTML = `<tr><td colspan="11" class="muted">Carregando...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="12" class="muted">Carregando...</td></tr>`;
 
       try{
-        const url = new URL(API_URL);
+        const url = new URL(API_URL_LIST);
         if(q) url.searchParams.set('q', q);
         if(codigo) url.searchParams.set('codigo', codigo);
         url.searchParams.set('limit', String(limit));
@@ -403,12 +793,17 @@
         el('status').textContent = `OK • ${rows.length} registro(s) carregado(s).`;
 
         if(rows.length === 0){
-          tbody.innerHTML = `<tr><td colspan="11" class="muted">Nenhum registro encontrado.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="12" class="muted">Nenhum registro encontrado.</td></tr>`;
           return;
         }
 
         tbody.innerHTML = rows.map(r => `
           <tr>
+            <td class="center">
+              <a class="btn btn-edit btn-small" title="Editar" onclick="abrirEditar(${Number(r.codigo)})">
+                <i class="material-icons">edit</i>
+              </a>
+            </td>
             <td><strong>${esc(r.codigo)}</strong></td>
             <td>${esc(r.identred)}</td>
             <td>${esc(r.segmento)}</td>
@@ -425,7 +820,7 @@
 
       }catch(e){
         el('status').textContent = 'Erro ao carregar.';
-        tbody.innerHTML = `<tr><td colspan="11" class="muted">Erro: ${esc(e.message || String(e))}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="12" class="muted">Erro: ${esc(e.message || String(e))}</td></tr>`;
       }
     }
 
@@ -438,7 +833,9 @@
     }
 
     document.addEventListener('DOMContentLoaded', function(){
-      // materialize labels ok
+      // materialize
+      M.Modal.init(document.querySelectorAll('.modal'), { dismissible: true });
+      M.FormSelect.init(document.querySelectorAll('select'));
       M.updateTextFields();
 
       el('btnBuscar').addEventListener('click', carregar);
@@ -446,6 +843,9 @@
 
       el('q').addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); carregar(); } });
       el('codigo').addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); carregar(); } });
+
+      el('btnSalvarEdicao').addEventListener('click', salvarEdicao);
+      el('btnExcluir').addEventListener('click', excluirRegistro);
 
       carregar();
     });
