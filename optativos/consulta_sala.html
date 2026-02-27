@@ -38,12 +38,8 @@
       box-shadow:0 10px 28px rgba(2,6,23,.06);
       overflow:hidden;
     }
-    .cardx .head{
-      padding:18px 18px 0 18px;
-    }
-    .cardx .body{
-      padding:14px 18px 18px 18px;
-    }
+    .cardx .head{ padding:18px 18px 0 18px; }
+    .cardx .body{ padding:14px 18px 18px 18px; }
     .muted{ color:var(--muted); }
     .result{
       margin-top:14px;
@@ -61,12 +57,11 @@
       font-weight:700;
     }
     .sala-big{
-      font-size:42px;
+      font-size:48px;
       font-weight:900;
       letter-spacing:.5px;
-      margin:6px 0 2px;
+      margin:8px 0 2px;
     }
-    .row-tight{ margin-bottom:0; }
     .btn-primary{
       background:var(--primary) !important;
       border-radius:12px;
@@ -99,7 +94,7 @@
       </div>
 
       <div class="body">
-        <div class="row row-tight">
+        <div class="row">
           <div class="input-field col s12 m8">
             <i class="material-icons prefix">badge</i>
             <input id="matricula" type="text" inputmode="numeric" autocomplete="off">
@@ -116,27 +111,37 @@
 
         <div id="boxResult" class="result hide">
           <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-            <div class="pill"><i class="material-icons" style="font-size:18px;">event</i> <span id="txtData"></span></div>
-            <div class="pill"><i class="material-icons" style="font-size:18px;">schedule</i> <span id="txtHorario"></span></div>
+            <div class="pill">
+              <i class="material-icons" style="font-size:18px;">event</i>
+              <span id="txtData"></span>
+            </div>
+            <div class="pill">
+              <i class="material-icons" style="font-size:18px;">schedule</i>
+              <span id="txtHorario"></span>
+            </div>
           </div>
 
-          <div style="margin-top:10px;">
-            <div class="muted" id="txtCurso"></div>
+          <div style="margin-top:14px;">
+            <div style="font-weight:600; font-size:18px;">
+              Olá, <span id="txtNome">—</span> 👋
+            </div>
+
+            <div class="muted" id="txtCurso" style="margin-top:4px;"></div>
+
             <div class="sala-big" id="txtSala">—</div>
-            <div class="muted" id="txtUnidade"></div>
           </div>
 
           <div class="helper" style="margin-top:10px;">
             Se não aparecer nada procure a secretaria da unidade.
           </div>
         </div>
+
       </div>
     </div>
   </div>
 
   <script>
-    // Ajuste a URL conforme seu deploy
-    const API_URL = "https://apisec.secauxiliar.com.br/optativo/aluno_sala_hoje.php";
+    const API_URL = "https://apisec.secauxiliar.com.br/optativos/aluno_sala_hoje.php";
 
     const $ = (id) => document.getElementById(id);
 
@@ -185,15 +190,15 @@
           return;
         }
 
-        // Preenche
+        $("txtNome").textContent = j.nome || "";
         $("txtData").textContent = j.data_br || fmtHojeBR();
         $("txtHorario").textContent = j.horario || "—";
         $("txtSala").textContent = j.sala || "—";
-        $("txtCurso").textContent = j.curso_turma || "";
-        $("txtUnidade").textContent = j.unidade ? `Unidade: ${j.unidade}` : "";
+        $("txtCurso").textContent = j.curso || "";
 
         setMsg("");
         showResult(true);
+
       }catch(e){
         setMsg("Erro de rede ao consultar.", true);
       }finally{
