@@ -122,7 +122,7 @@
           </div>
         </div>
 
-        <!-- mantém msg para erros reais (rede/servidor) -->
+        <!-- mantém msg para erros reais (rede/servidor) e também "matrícula não encontrada" -->
         <div id="msg" class="helper"></div>
 
         <div id="boxResult" class="result hide">
@@ -197,6 +197,15 @@
       return `${dd}/${mm}/${yy}`;
     }
 
+    function focusAndSelectMat(){
+      const el = $("matricula");
+      el.focus();
+      // pequeno delay ajuda em alguns browsers
+      setTimeout(()=> {
+        try { el.select(); } catch(e) {}
+      }, 0);
+    }
+
     async function buscar(){
       const mat = $("matricula").value.trim();
       showResult(false);
@@ -204,6 +213,7 @@
 
       if(!mat){
         setMsg("Informe a matrícula.", true);
+        focusAndSelectMat();
         return;
       }
 
@@ -217,11 +227,23 @@
 
         if(!j){
           setMsg("Falha ao consultar. Tente novamente.", true);
+          focusAndSelectMat();
           return;
         }
 
-        // ✅ caso “normal”: sem aula hoje (j.ok=false com msg)
         if(!j.ok){
+          const msgLower = String(j.msg || "").toLowerCase();
+
+          // 🚫 Matrícula não encontrada / inativa -> mostra msg fora do card
+          if (msgLower.includes("não encontrada") || msgLower.includes("nao encontrada") || msgLower.includes("inativa")) {
+            setMsg("Ops! Matrícula não encontrada. Confira e tente novamente.", true);
+            showResult(false);
+            hideNotice();
+            focusAndSelectMat();
+            return;
+          }
+
+          // ✅ Sem aula hoje -> mostra card e aviso dentro dele (bonito)
           $("txtNome").textContent = (j.nome || "—");
           $("txtData").textContent = j.data_br || fmtHojeBR();
           $("txtHorario").textContent = "—";
@@ -230,7 +252,7 @@
 
           showResult(true);
           showNotice(j.msg || "Hoje não há aula agendada para esta matrícula.");
-          setMsg(""); // não mostra erro embaixo
+          setMsg("");
           return;
         }
 
@@ -241,11 +263,13 @@
         $("txtSala").textContent = j.sala || "—";
         $("txtCurso").textContent = j.curso || "";
 
+        hideNotice();
         setMsg("");
         showResult(true);
 
       }catch(e){
         setMsg("Erro de rede ao consultar.", true);
+        focusAndSelectMat();
       }finally{
         $("btnBuscar").disabled = false;
       }
@@ -257,6 +281,9 @@
       $("matricula").addEventListener("keydown", (e)=>{
         if(e.key === "Enter"){ e.preventDefault(); buscar(); }
       });
+
+      // foco inicial facilita uso na unidade
+      focusAndSelectMat();
     });
   </script>
 </body>
