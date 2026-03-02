@@ -60,11 +60,14 @@
 
 <script>
 const API = 'https://apisec.secauxiliar.com.br/enem0526/';
+const EVENTO_FIXO = 'ENEM0526'; // ✅ fixo neste site/pasta
 
 document.getElementById('btn').onclick = async () => {
   const login = document.getElementById('login').value.trim();
   const senha = document.getElementById('senha').value;
   const msg = document.getElementById('msg');
+  const btn = document.getElementById('btn');
+
   msg.textContent = '';
 
   if (!login || !senha) {
@@ -72,27 +75,35 @@ document.getElementById('btn').onclick = async () => {
     return;
   }
 
+  btn.disabled = true;
+
   try {
     const r = await fetch(API + 'auth_login.php', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({login, senha}),
-      credentials: 'include' // 🔥 importante para enviar/receber cookie
+      body: JSON.stringify({ login, senha, evento: EVENTO_FIXO }), // ✅ manda evento fixo
+      credentials: 'include'
     });
 
-    const data = await r.json();
+    const data = await r.json().catch(() => ({}));
+
     if (!r.ok || !data.ok) {
       msg.textContent = data.error || 'Falha no login';
       return;
     }
 
-    // O cookie foi criado no servidor (HttpOnly)
-    // Agora só redireciona para o painel protegido
-    location.href = './painel.html';
+    // ✅ gate: se já tem adesão vai painel, senão vai adesão
+    if (data.hasAdesao) {
+      location.href = './painel.html';
+    } else {
+      location.href = './adesao.html';
+    }
 
   } catch (e) {
     console.error(e);
     msg.textContent = 'Erro de rede ou servidor indisponível.';
+  } finally {
+    btn.disabled = false;
   }
 };
 </script>
