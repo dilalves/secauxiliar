@@ -10,7 +10,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
-  <!-- Material Icons (corrige aparecer "search", "person" etc) -->
+  <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <!-- SweetAlert -->
@@ -29,48 +29,44 @@
     body {color:var(--ink);}
     .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
 
-    /* ===== TOPBAR ===== */
-    header.topbar {
+    header.topbar{
       position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
       background:var(--primary); color:#fff; display:flex; align-items:center;
       padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
     }
-    #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
+    #unitLabel{font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
 
-    /* ===== SIDEBAR ===== */
-    aside {
+    aside{
       background:#fff; border-right:1px solid var(--line);
       position:sticky; top:var(--topbar-h);
       height:calc(100vh - var(--topbar-h)); overflow:auto; z-index:6;
       padding-bottom:20px;
     }
 
-    .menu {list-style:none; margin:0; padding:0 0 12px;}
-    .menu a {
+    .menu{list-style:none; margin:0; padding:0 0 12px;}
+    .menu a{
       display:block; padding:10px 22px; color:#111827; text-decoration:none;
       font-size:15px; transition:0.25s;
     }
-    .menu a:hover {background:#f4f6fb; color:var(--primary);}
-    .menu .active > a {background:#eef3ff; font-weight:600; color:var(--primary);}
-    .menu-group {margin-bottom:12px;}
-    .group-title {
+    .menu a:hover{background:#f4f6fb; color:var(--primary);}
+    .menu .active > a{background:#eef3ff; font-weight:600; color:var(--primary);}
+    .menu-group{margin-bottom:12px;}
+    .group-title{
       font-weight:700; color:#0b3b78; text-transform:uppercase;
       font-size:13px; letter-spacing:0.5px;
       padding:10px 20px 6px; border-top:1px solid #eef2f8;
     }
 
-    /* ===== MAIN CONTENT ===== */
-    main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
-    .page {padding:24px;}
-    .card {border-radius:14px; box-shadow:0 6px 18px rgba(16,24,40,.06);}
-    .value {font-size:22px; font-weight:800;}
-    .label {color:var(--muted); font-size:13px;}
-    footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
+    main{display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
+    .page{padding:24px;}
+    .card{border-radius:14px; box-shadow:0 6px 18px rgba(16,24,40,.06);}
+    .value{font-size:22px; font-weight:800;}
+    .label{color:var(--muted); font-size:13px;}
+    footer{text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
 
     .section-title{font-weight:800; color:#0b3b78; margin:0 0 10px;}
     .subtle{color:var(--muted);}
 
-    /* ===== TABELA "zebrada" azul ===== */
     .tbl-wrap{
       background:#fff;
       border:1px solid var(--line);
@@ -78,23 +74,16 @@
       overflow:hidden;
       box-shadow:0 6px 18px rgba(16,24,40,.06);
     }
-    table.striped{
-      margin:0;
-    }
+    table.striped{margin:0;}
     table.striped thead th{
       background:var(--primary);
       color:#fff;
       font-weight:800;
     }
-    table.striped tbody tr:nth-child(odd){
-      background:var(--blue-50);
-    }
-    table.striped tbody tr:nth-child(even){
-      background:#fff;
-    }
-    table.striped tbody tr:hover{
-      background:var(--blue-100);
-    }
+    table.striped tbody tr:nth-child(odd){background:var(--blue-50);}
+    table.striped tbody tr:nth-child(even){background:#fff;}
+    table.striped tbody tr:hover{background:var(--blue-100);}
+
     .pill{
       display:inline-flex; align-items:center; gap:6px;
       padding:6px 10px;
@@ -103,6 +92,7 @@
       color:#0b3b78;
       font-weight:800;
       font-size:12px;
+      white-space:nowrap;
     }
 
     @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
@@ -111,7 +101,7 @@
 
 <body>
 <div class="app">
-  <!-- ===== SIDEBAR ===== -->
+  <!-- SIDEBAR -->
   <aside>
     <div class="center" style="padding:18px 0 8px;">
       <span class="title" style="font-weight:700; color:#0b3b78">Aprove</span>
@@ -155,7 +145,7 @@
     </ul>
   </aside>
 
-  <!-- ===== MAIN ===== -->
+  <!-- MAIN -->
   <main>
     <header class="topbar">
       <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
@@ -216,76 +206,78 @@
         </div>
       </div>
 
-      <!-- Tabela -->
-        <div class="row">
-        <!-- ESQUERDA: geral -->
+      <!-- GRID: ESQUERDA + DIREITA -->
+      <div class="row">
+        <!-- ESQUERDA: tabela geral -->
         <div class="col s12 l7">
-            <div class="tbl-wrap">
+          <div class="tbl-wrap">
             <table class="striped">
-                <thead>
+              <thead>
                 <tr>
-                    <th>Grupo</th>
-                    <th class="right-align" style="width:200px;">Quantidade</th>
+                  <th>Grupo</th>
+                  <th class="right-align" style="width:200px;">Quantidade</th>
                 </tr>
-                </thead>
-                <tbody id="tbody">
+              </thead>
+              <tbody id="tbody">
                 <tr><td colspan="2" class="subtle" style="padding:14px;">Carregando…</td></tr>
-                </tbody>
+              </tbody>
             </table>
-            </div>
+          </div>
         </div>
 
-        <!-- DIREITA: destaques + filtro -->
-        <div class="card z-depth-0" style="border-radius:14px;">
+        <!-- DIREITA: card (fixos + filtro embaixo) -->
+        <div class="col s12 l5">
+          <div class="card z-depth-0" style="border-radius:14px;">
             <div class="card-content">
-                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
                 <div style="font-weight:900; color:#0b3b78;">Grupos em destaque</div>
                 <span class="pill"><i class="material-icons" style="font-size:18px;">star</i>fixos</span>
-                </div>
+              </div>
 
-                <!-- LISTA FIXA -->
-                <div class="tbl-wrap" style="border-radius:12px; margin-top:10px;">
+              <!-- LISTA FIXA -->
+              <div class="tbl-wrap" style="border-radius:12px; margin-top:10px;">
                 <table class="striped">
-                    <thead>
+                  <thead>
                     <tr>
-                        <th>Grupo</th>
-                        <th class="right-align" style="width:140px;">Qtd</th>
+                      <th>Grupo</th>
+                      <th class="right-align" style="width:140px;">Qtd</th>
                     </tr>
-                    </thead>
-                    <tbody id="tbodyFav">
+                  </thead>
+                  <tbody id="tbodyFav">
                     <tr><td colspan="2" class="subtle" style="padding:12px;">Carregando…</td></tr>
-                    </tbody>
+                  </tbody>
                 </table>
-                </div>
+              </div>
 
-                <!-- FILTRO -->
-                <div class="input-field" style="margin-top:14px;">
+              <!-- FILTRO -->
+              <div class="input-field" style="margin-top:14px;">
                 <i class="material-icons prefix">filter_alt</i>
                 <input id="qRight" type="text" placeholder="Digite para filtrar grupos (ex: Med, Eng...)">
                 <label for="qRight">Filtrar grupo</label>
-                </div>
+              </div>
 
-                <!-- RESULTADO DO FILTRO -->
-                <div class="tbl-wrap" style="border-radius:12px; margin-top:8px;">
+              <!-- RESULTADO DO FILTRO -->
+              <div class="tbl-wrap" style="border-radius:12px; margin-top:8px;">
                 <table class="striped">
-                    <thead>
+                  <thead>
                     <tr>
-                        <th>Grupo</th>
-                        <th class="right-align" style="width:140px;">Qtd</th>
+                      <th>Grupo</th>
+                      <th class="right-align" style="width:140px;">Qtd</th>
                     </tr>
-                    </thead>
-                    <tbody id="tbodyRight">
+                  </thead>
+                  <tbody id="tbodyRight">
                     <tr><td colspan="2" class="subtle" style="padding:12px;">Digite um filtro para listar.</td></tr>
-                    </tbody>
+                  </tbody>
                 </table>
-                </div>
+              </div>
 
-                <div class="subtle" style="margin-top:10px;">
-                Dica: você pode deixar seus “fixos” no código e só trocar quando quiser.
-                </div>
+              <div class="subtle" style="margin-top:10px;">
+                Dica: edite os “fixos” no código quando quiser.
+              </div>
             </div>
-            </div>
+          </div>
         </div>
+      </div>
 
     </section>
 
@@ -299,13 +291,16 @@ const LOGIN_URL = '/aprove/index.html';
 
 let CACHE_ROWS = [];
 
+// seus grupos fixos (edite aqui)
+const FAVORITOS = ['Adm.', 'Dir.', 'Eng.', 'Med.'];
+
 /* ===== Logout ===== */
 async function logout(){
   try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); } catch(_) {}
   location.replace(LOGIN_URL);
 }
 
-/* ===== Checa sessão (cookie no apisec) ===== */
+/* ===== Checa sessão ===== */
 async function requireAuth(){
   const res = await fetch(API + 'auth_me.php', { credentials:'include' });
   const data = await res.json();
@@ -328,8 +323,11 @@ function esc(s){
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
   }[m]));
 }
+function normalize(s){
+  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
 
-/* ===== Busca dados base (por curso) e agrega por grupo no front ===== */
+/* ===== Busca dados ===== */
 async function fetchRowsBase(){
   const res = await fetch(API + 'totais_curso.php', {
     credentials:'include',
@@ -337,11 +335,10 @@ async function fetchRowsBase(){
   });
   const data = await res.json();
   if (!data.ok) throw new Error(data.msg || data.error || 'Falha ao carregar');
-
   CACHE_ROWS = data.rows || [];
 }
 
-/* ===== Agrega: GRUPO => SOMA(total) ===== */
+/* ===== Agrega GRUPO => SOMA(total) ===== */
 function aggregateByGroup(rows){
   const map = new Map();
   for (const r of rows){
@@ -349,18 +346,15 @@ function aggregateByGroup(rows){
     const v = Number(r.total || 0);
     map.set(g, (map.get(g) || 0) + v);
   }
-
-  // vira array e ordena alfabeticamente pelo grupo
   const arr = Array.from(map.entries()).map(([grupo, total]) => ({ grupo, total }));
   arr.sort((a,b) => a.grupo.localeCompare(b.grupo, 'pt-BR', { sensitivity:'base' }));
   return arr;
 }
 
-/* ===== Render ===== */
+/* ===== Render geral (esquerda) ===== */
 function render(){
   const nf = new Intl.NumberFormat('pt-BR');
   const tbody = document.getElementById('tbody');
-
   const grupos = aggregateByGroup(CACHE_ROWS);
 
   const totalGeral = grupos.reduce((acc, r) => acc + Number(r.total||0), 0);
@@ -380,109 +374,18 @@ function render(){
   `).join('');
 }
 
-/* ===== Ações ===== */
-async function reloadData(){
-  try {
-    const tbody = document.getElementById('tbody');
-    tbody.innerHTML = `<tr><td colspan="2" class="subtle" style="padding:14px;">Carregando…</td></tr>`;
-    await requireAuth();
-    await fetchRowsBase();
-    renderFav();
-    renderRight(); // se já tiver algo digitado
-    render();
-  } catch (e) {
-    console.warn(e);
-    Swal.fire('Erro', String(e.message || e), 'error');
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  reloadData();
-  const el = document.getElementById('qRight');
-  if (el) el.addEventListener('input', renderRight);
-});
-
-function normalize(s){
-  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-}
-
-function renderRight(query){
-  const q = normalize(query).trim();
-  const tbody = document.getElementById('tbodyRight');
-  const nf = new Intl.NumberFormat('pt-BR');
-
-  if (!q){
-    tbody.innerHTML = `<tr><td colspan="2" class="subtle" style="padding:12px;">Digite um filtro ou clique em um destaque.</td></tr>`;
-    return;
-  }
-
-  // filtra por "contém"
-  let list = aggregateByGroup(CACHE_ROWS)
-    .filter(r => normalize(r.grupo).includes(q));
-
-  // se houver vários, ordenar por qtd desc pra ajudar
-  list.sort((a,b) => Number(b.total||0) - Number(a.total||0));
-
-  // limita pra não ficar gigante
-  list = list.slice(0, 15);
-
-  if (!list.length){
-    tbody.innerHTML = `<tr><td colspan="2" class="subtle" style="padding:12px;">Nada encontrado.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = list.map(r => `
-    <tr>
-      <td>${esc(r.grupo)}</td>
-      <td class="right-align"><b>${nf.format(Number(r.total||0))}</b></td>
-    </tr>
-  `).join('');
-}
-
-function quickPick(prefix){
-  const el = document.getElementById('qRight');
-  el.value = prefix;
-  M.updateTextFields();
-  renderRight(prefix);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const el = document.getElementById('qRight');
-  if (el){
-    el.addEventListener('input', () => renderRight(el.value));
-  }
-});
-
-// === seus grupos fixos (edite aqui) ===
-const FAVORITOS = [
-  'Adm.',
-  'Dir.',
-  'Eng.',
-  'Med.'
-  // coloque outros: 'Odonto.', 'Direito', etc
-];
-
-function normalize(s){
-  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-}
-
-function mapTotalsByGroup(){
-  // usa o agregado (grupo -> total)
-  const arr = aggregateByGroup(CACHE_ROWS); // [{grupo,total}]
-  const mp = new Map();
-  for (const r of arr) mp.set(normalize(r.grupo), { grupo: r.grupo, total: Number(r.total||0) });
-  return mp;
-}
-
+/* ===== Render favoritos (direita) ===== */
 function renderFav(){
   const tbody = document.getElementById('tbodyFav');
   const nf = new Intl.NumberFormat('pt-BR');
-  const mp = mapTotalsByGroup();
+
+  const mp = new Map();
+  for (const r of aggregateByGroup(CACHE_ROWS)) {
+    mp.set(normalize(r.grupo), { grupo: r.grupo, total: Number(r.total||0) });
+  }
 
   tbody.innerHTML = FAVORITOS.map(name => {
-    const key = normalize(name);
-    const found = mp.get(key);
-
+    const found = mp.get(normalize(name));
     const label = found ? found.grupo : name;
     const total = found ? found.total : 0;
 
@@ -495,6 +398,7 @@ function renderFav(){
   }).join('');
 }
 
+/* ===== Render filtro (direita embaixo) ===== */
 function renderRight(){
   const input = document.getElementById('qRight');
   const q = normalize(input.value).trim();
@@ -506,14 +410,8 @@ function renderRight(){
     return;
   }
 
-  // lista todos os grupos que "contém" o termo
-  let list = aggregateByGroup(CACHE_ROWS)
-    .filter(r => normalize(r.grupo).includes(q));
-
-  // ordenar por qtd desc pra facilitar
+  let list = aggregateByGroup(CACHE_ROWS).filter(r => normalize(r.grupo).includes(q));
   list.sort((a,b) => Number(b.total||0) - Number(a.total||0));
-
-  // limitar
   list = list.slice(0, 20);
 
   if (!list.length){
@@ -529,6 +427,30 @@ function renderRight(){
   `).join('');
 }
 
+/* ===== Reload ===== */
+async function reloadData(){
+  try {
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = `<tr><td colspan="2" class="subtle" style="padding:14px;">Carregando…</td></tr>`;
+
+    await requireAuth();
+    await fetchRowsBase();
+
+    render();
+    renderFav();
+    renderRight();
+
+  } catch (e) {
+    console.warn(e);
+    Swal.fire('Erro', String(e.message || e), 'error');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  reloadData();
+  const el = document.getElementById('qRight');
+  if (el) el.addEventListener('input', renderRight);
+});
 </script>
 </body>
 </html>
