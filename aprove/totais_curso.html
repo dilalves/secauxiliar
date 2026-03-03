@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Aprove • Totais por Curso</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    :root{
+      --blue:#0b3b78;
+      --bg:#f6f7fb;
+      --card:#fff;
+      --muted:#6b7280;
+    }
+    body{ background:var(--bg); }
+    .topbar{
+      background:var(--blue);
+      color:#fff;
+      padding:14px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      box-shadow:0 2px 12px rgba(0,0,0,.15);
+    }
+    .topbar .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:700;
+    }
+    .wrap{ max-width:1100px; margin:18px auto; padding:0 12px; }
+    .cardx{
+      background:var(--card);
+      border-radius:16px;
+      box-shadow:0 8px 24px rgba(15,23,42,.06);
+      padding:14px 14px;
+    }
+    .muted{ color:var(--muted); }
+    .grp{
+      margin-top:16px;
+      font-weight:800;
+      color:#111827;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#eef2ff;
+    }
+    table.striped tbody tr:hover{ background:#f3f4f6; }
+    .kpi{
+      display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;
+    }
+    .kpi .box{
+      flex:1;
+      min-width:220px;
+      background:#fff;
+      border-radius:14px;
+      padding:12px 14px;
+      box-shadow:0 8px 24px rgba(15,23,42,.06);
+    }
+    .kpi .big{ font-size:26px; font-weight:900; color:#111827; }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <i class="material-icons">bar_chart</i>
+      <div>
+        <div style="font-size:16px;line-height:1">Aprove</div>
+        <div style="font-size:12px;opacity:.9">Totais por Curso</div>
+      </div>
+    </div>
+    <div>
+      <a class="btn blue-grey lighten-5 black-text" href="./index.html">
+        <i class="material-icons left">arrow_back</i>Voltar
+      </a>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <div class="kpi">
+      <div class="box">
+        <div class="muted">Total de aprovações (somando todos os cursos)</div>
+        <div class="big" id="kpiTotal">—</div>
+      </div>
+      <div class="box">
+        <div class="muted">Cursos no relatório</div>
+        <div class="big" id="kpiCursos">—</div>
+      </div>
+    </div>
+
+    <div class="cardx">
+      <div class="row" style="margin-bottom:0">
+        <div class="input-field col s12 m6">
+          <i class="material-icons prefix">search</i>
+          <input id="q" type="text" placeholder="Filtrar por curso ou grupo...">
+          <label for="q">Filtro</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <i class="material-icons prefix">person</i>
+          <input id="user" type="text" placeholder="(opcional) login do usuário">
+          <label for="user">Filtrar por usuário</label>
+        </div>
+      </div>
+
+      <div id="conteudo"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // Ajuste aqui o caminho do endpoint
+    const ENDPOINT = './totais_curso.php';
+
+    function getToken(){
+      // ajuste conforme seu padrão real (localStorage/sessionStorage/cookie)
+      return localStorage.getItem('token') || '';
+    }
+
+    function esc(s){
+      return String(s ?? '').replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+      }[m]));
+    }
+
+    async function load(){
+      const token = getToken();
+      const user = document.getElementById('user').value.trim();
+
+      const url = new URL(ENDPOINT, window.location.href);
+      if (user) url.searchParams.set('user', user);
+
+      const r = await fetch(url.toString(), {
+        headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+      });
+
+      const j = await r.json();
+      if (!j.ok) {
+        Swal.fire('Erro', j.msg || 'Falha ao carregar', 'error');
+        return;
+      }
+
+      render(j.rows || []);
+    }
+
+    function render(rows){
+      const q = document.getElementById('q').value.trim().toLowerCase();
+      const filtered = rows.filter(r => {
+        const g = String(r.grupo||'').toLowerCase();
+        const c = String(r.curso||'').toLowerCase();
+        return !q || g.includes(q) || c.includes(q);
+      });
+
+      const totalGeral = filtered.reduce((acc, r) => acc + Number(r.total||0), 0);
+      document.getElementById('kpiTotal').textContent = totalGeral.toLocaleString('pt-BR');
+      document.getElementById('kpiCursos').textContent = filtered.length.toLocaleString('pt-BR');
+
+      // agrupar por grupo
+      const byGroup = new Map();
+      for (const r of filtered){
+        const g = r.grupo || 'SEM GRUPO';
+        if (!byGroup.has(g)) byGroup.set(g, []);
+        byGroup.get(g).push(r);
+      }
+
+      let html = '';
+      for (const [grupo, list] of byGroup.entries()){
+        const subtotal = list.reduce((acc, r) => acc + Number(r.total||0), 0);
+
+        html += `
+          <div class="grp">
+            <div>${esc(grupo)}</div>
+            <div class="muted">Subtotal: <b>${subtotal.toLocaleString('pt-BR')}</b></div>
+          </div>
+
+          <table class="striped">
+            <thead>
+              <tr>
+                <th>Curso</th>
+                <th class="right-align">Aprovados</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${list.map(r => `
+                <tr>
+                  <td>${esc(r.curso)}</td>
+                  <td class="right-align"><b>${Number(r.total||0).toLocaleString('pt-BR')}</b></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      document.getElementById('conteudo').innerHTML = html || `<p class="muted" style="margin:0">Nenhum dado.</p>`;
+    }
+
+    document.getElementById('q').addEventListener('input', () => load());
+    document.getElementById('user').addEventListener('change', () => load());
+
+    load().catch(err => Swal.fire('Erro', String(err), 'error'));
+  </script>
+
+</body>
+</html>
