@@ -236,28 +236,36 @@
         </div>
 
         <!-- DIREITA: destaques + filtro -->
-        <div class="col s12 l5">
-            <div class="card z-depth-0" style="border-radius:14px;">
+        <div class="card z-depth-0" style="border-radius:14px;">
             <div class="card-content">
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                <div style="font-weight:900; color:#0b3b78;">Destaques</div>
-                <span class="pill"><i class="material-icons" style="font-size:18px;">bolt</i>Consulta rápida</span>
+                <div style="font-weight:900; color:#0b3b78;">Grupos em destaque</div>
+                <span class="pill"><i class="material-icons" style="font-size:18px;">star</i>fixos</span>
                 </div>
 
-                <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
-                <a class="btn-small blue lighten-5 blue-text text-darken-4" href="#!" onclick="quickPick('Adm')">Adm.</a>
-                <a class="btn-small blue lighten-5 blue-text text-darken-4" href="#!" onclick="quickPick('Dir')">Dir.</a>
-                <a class="btn-small blue lighten-5 blue-text text-darken-4" href="#!" onclick="quickPick('Eng')">Eng.</a>
-                <a class="btn-small blue lighten-5 blue-text text-darken-4" href="#!" onclick="quickPick('Med')">Med.</a>
-
+                <!-- LISTA FIXA -->
+                <div class="tbl-wrap" style="border-radius:12px; margin-top:10px;">
+                <table class="striped">
+                    <thead>
+                    <tr>
+                        <th>Grupo</th>
+                        <th class="right-align" style="width:140px;">Qtd</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tbodyFav">
+                    <tr><td colspan="2" class="subtle" style="padding:12px;">Carregando…</td></tr>
+                    </tbody>
+                </table>
                 </div>
 
-                <div class="input-field" style="margin-top:10px;">
+                <!-- FILTRO -->
+                <div class="input-field" style="margin-top:14px;">
                 <i class="material-icons prefix">filter_alt</i>
                 <input id="qRight" type="text" placeholder="Digite para filtrar grupos (ex: Med, Eng...)">
                 <label for="qRight">Filtrar grupo</label>
                 </div>
 
+                <!-- RESULTADO DO FILTRO -->
                 <div class="tbl-wrap" style="border-radius:12px; margin-top:8px;">
                 <table class="striped">
                     <thead>
@@ -267,14 +275,16 @@
                     </tr>
                     </thead>
                     <tbody id="tbodyRight">
-                    <tr><td colspan="2" class="subtle" style="padding:12px;">Digite um filtro ou clique em um destaque.</td></tr>
+                    <tr><td colspan="2" class="subtle" style="padding:12px;">Digite um filtro para listar.</td></tr>
                     </tbody>
                 </table>
                 </div>
 
+                <div class="subtle" style="margin-top:10px;">
+                Dica: você pode deixar seus “fixos” no código e só trocar quando quiser.
+                </div>
             </div>
             </div>
-        </div>
         </div>
 
     </section>
@@ -377,6 +387,8 @@ async function reloadData(){
     tbody.innerHTML = `<tr><td colspan="2" class="subtle" style="padding:14px;">Carregando…</td></tr>`;
     await requireAuth();
     await fetchRowsBase();
+    renderFav();
+    renderRight(); // se já tiver algo digitado
     render();
   } catch (e) {
     console.warn(e);
@@ -386,6 +398,8 @@ async function reloadData(){
 
 document.addEventListener('DOMContentLoaded', () => {
   reloadData();
+  const el = document.getElementById('qRight');
+  if (el) el.addEventListener('input', renderRight);
 });
 
 function normalize(s){
@@ -438,6 +452,82 @@ document.addEventListener('DOMContentLoaded', () => {
     el.addEventListener('input', () => renderRight(el.value));
   }
 });
+
+// === seus grupos fixos (edite aqui) ===
+const FAVORITOS = [
+  'Adm.',
+  'Dir.',
+  'Eng.',
+  'Med.'
+  // coloque outros: 'Odonto.', 'Direito', etc
+];
+
+function normalize(s){
+  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+function mapTotalsByGroup(){
+  // usa o agregado (grupo -> total)
+  const arr = aggregateByGroup(CACHE_ROWS); // [{grupo,total}]
+  const mp = new Map();
+  for (const r of arr) mp.set(normalize(r.grupo), { grupo: r.grupo, total: Number(r.total||0) });
+  return mp;
+}
+
+function renderFav(){
+  const tbody = document.getElementById('tbodyFav');
+  const nf = new Intl.NumberFormat('pt-BR');
+  const mp = mapTotalsByGroup();
+
+  tbody.innerHTML = FAVORITOS.map(name => {
+    const key = normalize(name);
+    const found = mp.get(key);
+
+    const label = found ? found.grupo : name;
+    const total = found ? found.total : 0;
+
+    return `
+      <tr>
+        <td>${esc(label)}</td>
+        <td class="right-align"><b>${nf.format(total)}</b></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderRight(){
+  const input = document.getElementById('qRight');
+  const q = normalize(input.value).trim();
+  const tbody = document.getElementById('tbodyRight');
+  const nf = new Intl.NumberFormat('pt-BR');
+
+  if (!q){
+    tbody.innerHTML = `<tr><td colspan="2" class="subtle" style="padding:12px;">Digite um filtro para listar.</td></tr>`;
+    return;
+  }
+
+  // lista todos os grupos que "contém" o termo
+  let list = aggregateByGroup(CACHE_ROWS)
+    .filter(r => normalize(r.grupo).includes(q));
+
+  // ordenar por qtd desc pra facilitar
+  list.sort((a,b) => Number(b.total||0) - Number(a.total||0));
+
+  // limitar
+  list = list.slice(0, 20);
+
+  if (!list.length){
+    tbody.innerHTML = `<tr><td colspan="2" class="subtle" style="padding:12px;">Nada encontrado.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(r => `
+    <tr>
+      <td>${esc(r.grupo)}</td>
+      <td class="right-align"><b>${nf.format(Number(r.total||0))}</b></td>
+    </tr>
+  `).join('');
+}
 
 </script>
 </body>
