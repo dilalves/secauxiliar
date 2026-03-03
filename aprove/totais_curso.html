@@ -4,11 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
-  <title>Relatórios • Aprove — Totais por Curso</title>
+  <title>Relatórios • Aprove — Totais por Curso (Grupo)</title>
 
   <!-- Materialize -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <!-- Material Icons (corrige aparecer "search", "person" etc) -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <!-- SweetAlert -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -19,18 +22,22 @@
       --ink:#0f172a; --muted:#6b7280;
       --primary:#0b3b78; --accent:#2563eb;
       --aside-w:260px; --topbar-h:64px;
+      --blue-50:#eff6ff; --blue-100:#dbeafe; --blue-200:#bfdbfe;
     }
 
     html, body {height:100%; margin:0; font-family:'Roboto', sans-serif; background:var(--bg);}
     body {color:var(--ink);}
     .app {display:grid; grid-template-columns: var(--aside-w) 1fr; min-height:100vh;}
 
+    /* ===== TOPBAR ===== */
     header.topbar {
       position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:20;
       background:var(--primary); color:#fff; display:flex; align-items:center;
       padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
     }
+    #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
 
+    /* ===== SIDEBAR ===== */
     aside {
       background:#fff; border-right:1px solid var(--line);
       position:sticky; top:var(--topbar-h);
@@ -52,31 +59,51 @@
       padding:10px 20px 6px; border-top:1px solid #eef2f8;
     }
 
+    /* ===== MAIN CONTENT ===== */
     main {display:flex; flex-direction:column; padding-top:calc(var(--topbar-h) + 8px);}
     .page {padding:24px;}
     .card {border-radius:14px; box-shadow:0 6px 18px rgba(16,24,40,.06);}
-    .value {font-size:22px; font-weight:700;}
+    .value {font-size:22px; font-weight:800;}
     .label {color:var(--muted); font-size:13px;}
-    #unitLabel {font-size:14px; font-weight:500; color:#fff; opacity:0.9;}
     footer {text-align:center; font-size:13px; color:var(--muted); padding:16px 0 10px;}
 
-    /* relatório */
-    .section-title{font-weight:800; color:#0b3b78; margin:0 0 12px;}
+    .section-title{font-weight:800; color:#0b3b78; margin:0 0 10px;}
     .subtle{color:var(--muted);}
-    .grp {
-      margin-top:14px;
-      padding:10px 14px;
-      border-radius:12px;
-      background:#eef3ff;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      font-weight:800;
-      color:#0b3b78;
+
+    /* ===== TABELA "zebrada" azul ===== */
+    .tbl-wrap{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      box-shadow:0 6px 18px rgba(16,24,40,.06);
     }
-    .tbl-wrap{background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden;}
-    table.striped tbody tr:hover{background:#f3f4f6;}
-    .right-align b{font-weight:800;}
+    table.striped{
+      margin:0;
+    }
+    table.striped thead th{
+      background:var(--primary);
+      color:#fff;
+      font-weight:800;
+    }
+    table.striped tbody tr:nth-child(odd){
+      background:var(--blue-50);
+    }
+    table.striped tbody tr:nth-child(even){
+      background:#fff;
+    }
+    table.striped tbody tr:hover{
+      background:var(--blue-100);
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--blue-100);
+      color:#0b3b78;
+      font-weight:800;
+      font-size:12px;
+    }
 
     @media (max-width:992px){.app{grid-template-columns:1fr;} aside{display:none;}}
   </style>
@@ -138,15 +165,20 @@
             Aprove — Totais por Curso — <span id="unitLabel">—</span>
           </h5>
         </div>
-        <div style="display:flex; align-items:center;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <a class="btn-flat waves-effect white-text" href="#!" onclick="reloadData()">
+            <i class="material-icons left">refresh</i>Atualizar
+          </a>
           <a class="btn-flat waves-effect white-text" href="#!" onclick="logout()">Sair</a>
         </div>
       </div>
     </header>
 
     <section class="page">
-      <h5 class="section-title">Totais por Curso</h5>
-      <div class="subtle" style="margin-bottom:14px">Cursos agrupados por <b>GRUPO</b> e total de aprovações cadastradas.</div>
+      <h5 class="section-title">GRUPO — QUANTIDADE</h5>
+      <div class="subtle" style="margin-bottom:14px">
+        Relatório simples com o total de aprovações somado por <b>GRUPO</b>.
+      </div>
 
       <!-- KPIs -->
       <div class="row" style="margin-bottom:10px">
@@ -158,33 +190,47 @@
             </div>
           </div>
         </div>
+
         <div class="col s12 m6 l3">
           <div class="card z-depth-0">
             <div class="card-content center">
-              <div class="value" id="kpiCursos">—</div>
-              <div class="label">Cursos no relatório</div>
+              <div class="value" id="kpiGrupos">—</div>
+              <div class="label">Grupos no relatório</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m12 l6">
+          <div class="card z-depth-0">
+            <div class="card-content" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+              <div>
+                <div style="font-weight:800; color:#0b3b78;">Ordem</div>
+                <div class="subtle">Alfabética por grupo</div>
+              </div>
+              <div class="pill">
+                <i class="material-icons" style="font-size:18px;">sort_by_alpha</i>
+                GRUPO A → Z
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Filtros -->
-      <div class="row" style="margin-bottom:0">
-        <div class="input-field col s12 m6">
-          <i class="material-icons prefix">search</i>
-          <input id="q" type="text" placeholder="Filtrar por curso ou grupo...">
-          <label for="q">Filtro</label>
-        </div>
-        <div class="input-field col s12 m6">
-          <i class="material-icons prefix">person</i>
-          <input id="user" type="text" placeholder="(opcional) login do usuário">
-          <label for="user">Filtrar por usuário</label>
-        </div>
-      </div>
-
-      <!-- Conteúdo -->
-      <div id="conteudo" class="tbl-wrap" style="padding:12px;">
-        <div class="subtle">Carregando…</div>
+      <!-- Tabela -->
+      <div class="tbl-wrap">
+        <table class="striped">
+          <thead>
+            <tr>
+              <th>Grupo</th>
+              <th class="right-align" style="width:200px;">Quantidade</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr>
+              <td colspan="2" class="subtle" style="padding:14px;">Carregando…</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
     </section>
@@ -209,119 +255,93 @@ async function logout(){
 async function requireAuth(){
   const res = await fetch(API + 'auth_me.php', { credentials:'include' });
   const data = await res.json();
+
   if (!data.ok) {
     location.replace(LOGIN_URL);
     throw new Error('Sessão expirada');
   }
-  // label no topo
+
   if (data.user) {
     const nome  = data.user.nome  ?? 'Usuário';
     const login = data.user.login ?? '';
     document.getElementById('unitLabel').textContent = `${login} — ${nome}`;
   }
-  return data;
 }
 
+/* ===== Util ===== */
 function esc(s){
   return String(s ?? '').replace(/[&<>"']/g, m => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
   }[m]));
 }
 
-/* ===== Busca relatório (usa cookie do apisec) ===== */
-async function carregarTotais(){
-  const user = document.getElementById('user').value.trim();
-
-  const url = new URL(API + 'totais_curso.php');
-  if (user) url.searchParams.set('user', user);
-
-  const res = await fetch(url.toString(), {
+/* ===== Busca dados base (por curso) e agrega por grupo no front ===== */
+async function fetchRowsBase(){
+  const res = await fetch(API + 'totais_curso.php', {
     credentials:'include',
-    headers: { 'Accept': 'application/json' }
+    headers: { 'Accept':'application/json' }
   });
-
   const data = await res.json();
   if (!data.ok) throw new Error(data.msg || data.error || 'Falha ao carregar');
 
   CACHE_ROWS = data.rows || [];
-  render();
 }
 
-function render(){
-  const q = document.getElementById('q').value.trim().toLowerCase();
-  const rows = (CACHE_ROWS || []).filter(r => {
-    const g = String(r.grupo||'').toLowerCase();
-    const c = String(r.curso||'').toLowerCase();
-    return !q || g.includes(q) || c.includes(q);
-  });
-
-  const nf = new Intl.NumberFormat('pt-BR');
-
-  const total = rows.reduce((acc, r) => acc + Number(r.total || 0), 0);
-  document.getElementById('kpiTotal').textContent  = nf.format(total);
-  document.getElementById('kpiCursos').textContent = nf.format(rows.length);
-
-  // agrupa por grupo
+/* ===== Agrega: GRUPO => SOMA(total) ===== */
+function aggregateByGroup(rows){
   const map = new Map();
   for (const r of rows){
-    const g = r.grupo || 'SEM GRUPO';
-    if (!map.has(g)) map.set(g, []);
-    map.get(g).push(r);
+    const g = (r.grupo && String(r.grupo).trim()) ? String(r.grupo).trim() : 'SEM GRUPO';
+    const v = Number(r.total || 0);
+    map.set(g, (map.get(g) || 0) + v);
   }
 
-  let html = '';
-  if (rows.length === 0) {
-    html = `<div class="subtle">Nenhum registro encontrado.</div>`;
-    document.getElementById('conteudo').innerHTML = html;
+  // vira array e ordena alfabeticamente pelo grupo
+  const arr = Array.from(map.entries()).map(([grupo, total]) => ({ grupo, total }));
+  arr.sort((a,b) => a.grupo.localeCompare(b.grupo, 'pt-BR', { sensitivity:'base' }));
+  return arr;
+}
+
+/* ===== Render ===== */
+function render(){
+  const nf = new Intl.NumberFormat('pt-BR');
+  const tbody = document.getElementById('tbody');
+
+  const grupos = aggregateByGroup(CACHE_ROWS);
+
+  const totalGeral = grupos.reduce((acc, r) => acc + Number(r.total||0), 0);
+  document.getElementById('kpiTotal').textContent  = nf.format(totalGeral);
+  document.getElementById('kpiGrupos').textContent = nf.format(grupos.length);
+
+  if (!grupos.length){
+    tbody.innerHTML = `<tr><td colspan="2" class="subtle" style="padding:14px;">Nenhum dado.</td></tr>`;
     return;
   }
 
-  for (const [grupo, list] of map.entries()){
-    const subtotal = list.reduce((acc, r) => acc + Number(r.total||0), 0);
-
-    html += `
-      <div class="grp">
-        <div>${esc(grupo)}</div>
-        <div class="subtle">Subtotal: <b>${nf.format(subtotal)}</b></div>
-      </div>
-
-      <table class="striped" style="margin-top:6px;">
-        <thead>
-          <tr>
-            <th>Curso</th>
-            <th class="right-align">Aprovados</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${list.map(r => `
-            <tr>
-              <td>${esc(r.curso)}</td>
-              <td class="right-align"><b>${nf.format(Number(r.total||0))}</b></td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-  }
-
-  document.getElementById('conteudo').innerHTML = html;
+  tbody.innerHTML = grupos.map(r => `
+    <tr>
+      <td>${esc(r.grupo)}</td>
+      <td class="right-align"><b>${nf.format(Number(r.total||0))}</b></td>
+    </tr>
+  `).join('');
 }
 
-/* ===== Eventos ===== */
-document.addEventListener('DOMContentLoaded', async () => {
+/* ===== Ações ===== */
+async function reloadData(){
   try {
-    await requireAuth();          // <- garante cookie válido
-    await carregarTotais();       // <- fetch com credentials:'include'
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = `<tr><td colspan="2" class="subtle" style="padding:14px;">Carregando…</td></tr>`;
+    await requireAuth();
+    await fetchRowsBase();
+    render();
   } catch (e) {
     console.warn(e);
     Swal.fire('Erro', String(e.message || e), 'error');
   }
+}
 
-  document.getElementById('q').addEventListener('input', render);
-  document.getElementById('user').addEventListener('change', async () => {
-    try { await carregarTotais(); }
-    catch(e){ Swal.fire('Erro', String(e.message||e), 'error'); }
-  });
+document.addEventListener('DOMContentLoaded', () => {
+  reloadData();
 });
 </script>
 </body>
