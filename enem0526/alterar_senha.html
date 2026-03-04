@@ -92,6 +92,13 @@ btn.addEventListener('click', async (ev) => {
   const nova_senha  = document.getElementById('nova_senha').value || '';
   const confirmar   = document.getElementById('confirmar').value || '';
 
+  // ✅ DEBUG: mostra o tamanho REAL que o JS está lendo
+  console.log('LEN', {
+    senha_atual: senha_atual.length,
+    nova_senha: nova_senha.length,
+    confirmar: confirmar.length
+  });
+
   setMsg('');
 
   if(!senha_atual.trim() || !nova_senha.trim() || !confirmar.trim()){
@@ -99,8 +106,8 @@ btn.addEventListener('click', async (ev) => {
     return;
   }
 
-  if(nova_senha.length < 8){
-    setMsg('A nova senha deve ter pelo menos 8 caracteres.');
+  if(nova_senha.trim().length < 8){
+    setMsg(`A nova senha deve ter pelo menos 8 caracteres. (digitado: ${nova_senha.trim().length})`);
     return;
   }
 
@@ -122,7 +129,7 @@ btn.addEventListener('click', async (ev) => {
       body: JSON.stringify({ senha_atual, nova_senha, confirmar })
     });
 
-    const text = await r.text();        // 👈 pega cru pra depurar
+    const text = await r.text();
     console.log('HTTP', r.status, text);
 
     let data = {};
@@ -144,6 +151,5 @@ btn.addEventListener('click', async (ev) => {
   }
 });
 </script>
-
 </body>
 </html>
