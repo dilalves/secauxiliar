@@ -86,9 +86,20 @@ function setMsg(text, ok=false){
 }
 
 function getToken(){
-  // ajuste o nome conforme você salva no login/painel:
-  // exemplos comuns: 'token', 'jwt', 'auth_token'
-  return localStorage.getItem('token') || '';
+  const keys = [
+    'token','jwt','auth_token','authToken','access_token',
+    'token_enem','token_sim','sim_token'
+  ];
+
+  for (const k of keys){
+    const v = localStorage.getItem(k);
+    if (v && v.length > 20) return v;
+  }
+  for (const k of keys){
+    const v = sessionStorage.getItem(k);
+    if (v && v.length > 20) return v;
+  }
+  return '';
 }
 
 btn.addEventListener('click', async (ev) => {
@@ -116,6 +127,8 @@ btn.addEventListener('click', async (ev) => {
   }
 
   const token = getToken();
+  console.log('token found?', !!token, token ? token.slice(0,20)+'...' : '(none)');
+
   if(!token){
     setMsg('Não autenticado. Faça login novamente.');
     return;
