@@ -85,29 +85,28 @@ function setMsg(text, ok=false){
   msg.textContent = text;
 }
 
+function getToken(){
+  // ajuste o nome conforme você salva no login/painel:
+  // exemplos comuns: 'token', 'jwt', 'auth_token'
+  return localStorage.getItem('token') || '';
+}
+
 btn.addEventListener('click', async (ev) => {
   ev.preventDefault();
 
-  const senha_atual = document.getElementById('senha_atual').value || '';
-  const nova_senha  = document.getElementById('nova_senha').value || '';
-  const confirmar   = document.getElementById('confirmar').value || '';
-
-  // ✅ DEBUG: mostra o tamanho REAL que o JS está lendo
-  console.log('LEN', {
-    senha_atual: senha_atual.length,
-    nova_senha: nova_senha.length,
-    confirmar: confirmar.length
-  });
+  const senha_atual = (document.getElementById('senha_atual').value || '').trim();
+  const nova_senha  = (document.getElementById('nova_senha').value || '').trim();
+  const confirmar   = (document.getElementById('confirmar').value || '').trim();
 
   setMsg('');
 
-  if(!senha_atual.trim() || !nova_senha.trim() || !confirmar.trim()){
+  if(!senha_atual || !nova_senha || !confirmar){
     setMsg('Preencha todos os campos.');
     return;
   }
 
-  if(nova_senha.trim().length < 8){
-    setMsg(`A nova senha deve ter pelo menos 8 caracteres. (digitado: ${nova_senha.trim().length})`);
+  if(nova_senha.length < 8){
+    setMsg('A nova senha deve ter pelo menos 8 caracteres.');
     return;
   }
 
@@ -116,22 +115,27 @@ btn.addEventListener('click', async (ev) => {
     return;
   }
 
+  const token = getToken();
+  if(!token){
+    setMsg('Não autenticado. Faça login novamente.');
+    return;
+  }
+
   btn.disabled = true;
   setMsg('Salvando...', true);
 
   try{
-    console.log('POST ->', API + 'auth_change_password.php');
-
     const r = await fetch(API + 'auth_change_password.php', {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization': 'Bearer ' + token
+      },
       credentials:'include',
       body: JSON.stringify({ senha_atual, nova_senha, confirmar })
     });
 
     const text = await r.text();
-    console.log('HTTP', r.status, text);
-
     let data = {};
     try { data = JSON.parse(text); } catch(e){}
 
@@ -141,7 +145,7 @@ btn.addEventListener('click', async (ev) => {
     }
 
     setMsg('Senha alterada com sucesso!', true);
-    setTimeout(()=> location.href='./painel.html', 1200);
+    setTimeout(()=> location.href='./painel.html', 900);
 
   }catch(e){
     console.error(e);
