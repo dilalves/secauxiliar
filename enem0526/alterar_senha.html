@@ -66,7 +66,7 @@
       </div>
     </div>
 
-    <button id="btn">Salvar nova senha</button>
+    <button id="btn" type="button">Salvar nova senha</button>
     <div id="msg" class="msg"></div>
 
     <div style="text-align:center; margin-top:14px;">
@@ -85,37 +85,48 @@ function setMsg(text, ok=false){
   msg.textContent = text;
 }
 
-btn.onclick = async () => {
-  const senha_atual = document.getElementById('senha_atual').value;
-  const nova_senha  = document.getElementById('nova_senha').value;
-  const confirmar   = document.getElementById('confirmar').value;
+btn.addEventListener('click', async (ev) => {
+  ev.preventDefault();
+
+  const senha_atual = document.getElementById('senha_atual').value || '';
+  const nova_senha  = document.getElementById('nova_senha').value || '';
+  const confirmar   = document.getElementById('confirmar').value || '';
 
   setMsg('');
 
-  if(!senha_atual || !nova_senha || !confirmar){
+  if(!senha_atual.trim() || !nova_senha.trim() || !confirmar.trim()){
     setMsg('Preencha todos os campos.');
     return;
   }
+
   if(nova_senha.length < 8){
     setMsg('A nova senha deve ter pelo menos 8 caracteres.');
     return;
   }
+
   if(nova_senha !== confirmar){
     setMsg('A confirmação não confere.');
     return;
   }
 
   btn.disabled = true;
+  setMsg('Salvando...', true);
 
   try{
+    console.log('POST ->', API + 'auth_change_password.php');
+
     const r = await fetch(API + 'auth_change_password.php', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ senha_atual, nova_senha, confirmar }),
-      credentials:'include'
+      credentials:'include',
+      body: JSON.stringify({ senha_atual, nova_senha, confirmar })
     });
 
-    const data = await r.json().catch(()=> ({}));
+    const text = await r.text();        // 👈 pega cru pra depurar
+    console.log('HTTP', r.status, text);
+
+    let data = {};
+    try { data = JSON.parse(text); } catch(e){}
 
     if(!r.ok || !data.ok){
       setMsg(data.error || 'Não foi possível alterar a senha.');
@@ -123,8 +134,6 @@ btn.onclick = async () => {
     }
 
     setMsg('Senha alterada com sucesso!', true);
-
-    // opcional: volta pro painel após 1.2s
     setTimeout(()=> location.href='./painel.html', 1200);
 
   }catch(e){
@@ -133,7 +142,7 @@ btn.onclick = async () => {
   }finally{
     btn.disabled = false;
   }
-};
+});
 </script>
 </body>
 </html>
