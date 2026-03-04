@@ -55,6 +55,13 @@
     <input id="login" placeholder="Login da unidade (ex.: 1501)" inputmode="numeric">
     <input id="senha" type="password" placeholder="Senha">
     <button id="btn">Entrar</button>
+
+    <div style="text-align:center; margin-top:10px;">
+      <a href="#" id="forgot" style="color:#2563eb; text-decoration:none; font-weight:600;">
+        Esqueci minha senha
+      </a>
+    </div>    
+
     <div id="msg" class="msg"></div>
   </div>
 
@@ -68,6 +75,7 @@ document.getElementById('btn').onclick = async () => {
   const msg = document.getElementById('msg');
   const btn = document.getElementById('btn');
 
+  msg.style.color = '#b00';
   msg.textContent = '';
 
   if (!login || !senha) {
@@ -81,7 +89,7 @@ document.getElementById('btn').onclick = async () => {
     const r = await fetch(API + 'auth_login.php', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ login, senha, evento: EVENTO_FIXO }), // ✅ manda evento fixo
+      body: JSON.stringify({ login, senha, evento: EVENTO_FIXO }),
       credentials: 'include'
     });
 
@@ -92,7 +100,6 @@ document.getElementById('btn').onclick = async () => {
       return;
     }
 
-    // ✅ gate: se já tem adesão vai painel, senão vai adesão
     if (data.hasAdesao) {
       location.href = './painel.html';
     } else {
@@ -104,6 +111,43 @@ document.getElementById('btn').onclick = async () => {
     msg.textContent = 'Erro de rede ou servidor indisponível.';
   } finally {
     btn.disabled = false;
+  }
+};
+
+// ✅ NOVO: Esqueci minha senha
+document.getElementById('forgot').onclick = async (ev) => {
+  ev.preventDefault();
+
+  const login = document.getElementById('login').value.trim();
+  const msg = document.getElementById('msg');
+
+  msg.style.color = '#b00';
+  msg.textContent = '';
+
+  if (!login) {
+    msg.textContent = 'Informe o login da unidade para enviar o link de redefinição.';
+    return;
+  }
+
+  try {
+    const r = await fetch(API + 'auth_forgot.php', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ login, evento: EVENTO_FIXO }),
+      credentials: 'include'
+    });
+
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || !data.ok) {
+      msg.textContent = data.error || 'Não foi possível enviar o link.';
+      return;
+    }
+
+    msg.style.color = '#137333';
+    msg.textContent = 'Se o login existir, enviamos um link para o e-mail institucional da unidade.';
+  } catch (e) {
+    console.error(e);
+    msg.textContent = 'Erro de rede ou servidor indisponível.';
   }
 };
 </script>
