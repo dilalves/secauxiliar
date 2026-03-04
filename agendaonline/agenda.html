@@ -307,6 +307,10 @@
           <div class="k">Cancelamento</div><div class="v" id="dtCanc">—</div>
         </div>
 
+        <!-- ✅ Opcionais (chips curtos: PAEEM1 / PAEEM2) -->
+        <div class="chips" id="chipsOpcionais" style="display:none;"></div>
+
+        <!-- (opcional) chips detalhados de turmas especiais (se quiser manter) -->
         <div class="chips" id="chipsEspeciais" style="display:none;"></div>
       </div>
     </div>
@@ -746,21 +750,41 @@
     $('dtMat').textContent = fmtDT(a.data_matricula);
     $('dtCanc').textContent = fmtDT(a.data_cancelamento);
 
-    // chips turma especial
-    const chips = $('chipsEspeciais');
-    chips.innerHTML = '';
-    if (a.turmas_especiais && a.turmas_especiais.length){
-      chips.style.display = '';
-      for(const t of a.turmas_especiais){
-        const div = document.createElement('div');
-        div.className = 'chip-soft';
-        const salaTxt = t.sala ? ` - (${t.sala})` : '';
-        div.innerHTML = `<i class="material-icons">star</i>${(t.nome_disciplina||'Especial')} • ${t.turma_especial||'-'}${salaTxt}`;
-        chips.appendChild(div);
+    // ✅ chips OPCIONAIS (PAEEM1/PAEEM2...) vindos do PHP (j.cursos_optativos)
+    const chipsOpc = $('chipsOpcionais');
+    chipsOpc.innerHTML = '';
+
+    const opt = (j.cursos_optativos || []);
+    if (opt.length) {
+      chipsOpc.style.display = '';
+
+      for (const c of opt) {
+        const turma = String(c.turma || '').trim(); // PAEEM1, PAEEM2...
+        if (!turma) continue;
+
+        const el = document.createElement('div');
+        el.className = 'chip-soft';  // reutiliza seu estilo
+        el.innerHTML = `<i class="material-icons">star</i>${turma}`;
+
+        // Se um dia você preencher material_url no PHP, já fica clicável:
+        const url = c.material_url ? String(c.material_url) : '';
+        if (url) {
+          el.classList.add('btn-chip');
+          el.style.cursor = 'pointer';
+          el.title = 'Abrir material';
+          el.addEventListener('click', () => window.open(url, '_blank', 'noopener'));
+        } else {
+          el.style.cursor = 'default';
+        }
+
+        chipsOpc.appendChild(el);
       }
     } else {
-      chips.style.display = 'none';
+      chipsOpc.style.display = 'none';
     }
+
+    // ✅ Agenda limpa: não mostrar chips detalhados
+    $('chipsEspeciais').style.display = 'none'; 
 
     // foto
     const img = $('foto');
