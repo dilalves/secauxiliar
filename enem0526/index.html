@@ -125,7 +125,7 @@ document.getElementById('forgot').onclick = async (ev) => {
   msg.textContent = '';
 
   if (!login) {
-    msg.textContent = 'Informe o login da unidade para enviar o link de redefinição.';
+    msg.textContent = 'Informe o login da unidade para enviar a redefinição.';
     return;
   }
 
@@ -139,12 +139,20 @@ document.getElementById('forgot').onclick = async (ev) => {
 
     const data = await r.json().catch(() => ({}));
     if (!r.ok || !data.ok) {
-      msg.textContent = data.error || 'Não foi possível enviar o link.';
+      msg.textContent = data.error || 'Não foi possível enviar.';
       return;
     }
 
     msg.style.color = '#137333';
-    msg.textContent = 'Se o login existir, enviamos um link para o e-mail institucional da unidade.';
+
+    // ✅ aqui é o que você quer:
+    if (data.email_mask) {
+      msg.textContent = `E-mail enviado para ${data.email_mask}`;
+    } else {
+      // fallback (caso o backend não mande a máscara)
+      msg.textContent = 'Se o login existir, enviamos a redefinição para o e-mail institucional da unidade.';
+    }
+
   } catch (e) {
     console.error(e);
     msg.textContent = 'Erro de rede ou servidor indisponível.';
