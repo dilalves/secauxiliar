@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-br">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+<title>Alterar Senha de acesso</title>
+
+<style>
+  :root{
+    --bg:#f7f8fb; --card:#ffffff; --ink:#0f172a; --muted:#6b7280;
+    --primary:#0b3b78; --accent:#2563eb;
+  }
+  body{font-family:system-ui,Arial; padding:24px; background:var(--bg);}
+  header.topbar{
+    position:fixed; top:0; left:0; right:0; height:64px;
+    background:var(--primary); color:#fff;
+    display:flex; align-items:center; z-index:10;
+    padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+  }
+  header.topbar h5{margin:0; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .card{
+    max-width:520px; margin:96px auto 0;
+    background:#fff; border-radius:12px; padding:24px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+  }
+  label{display:block; margin-top:14px; color:var(--muted); font-size:13px;}
+  input{
+    width:96%; padding:12px; border-radius:8px;
+    border:1px solid #ddd; margin-top:8px;
+  }
+  .row{display:flex; gap:12px; flex-wrap:wrap;}
+  .row .col{flex:1; min-width:220px;}
+  #btn{
+    width:200px; padding:12px 16px; border-radius:8px;
+    display:block; margin:18px auto 0;
+    border:none; background:var(--accent); color:#fff; cursor:pointer;
+  }
+  #btn:hover{filter:brightness(1.05);}
+  #btn:disabled{opacity:.6; cursor:default;}
+  .msg{margin-top:12px; text-align:center;}
+</style>
+
+<body>
+  <header class="topbar">
+    <img src="/aprovados/logo-mini.png" alt="Logo" style="height:28px; margin-right:12px;">
+    <h5>Simulado Aberto ENEM - Maio/2026</h5>
+  </header>
+
+  <div class="card">
+    <h2 style="margin-top:0;">Alterar senha</h2>
+    <p style="margin-top:0; color:var(--muted);">
+      Para sua segurança, escolha uma nova senha e guarde com cuidado.
+    </p>
+
+    <label>Senha atual</label>
+    <input id="senha_atual" type="password" placeholder="Digite a senha atual">
+
+    <div class="row">
+      <div class="col">
+        <label>Nova senha</label>
+        <input id="nova_senha" type="password" placeholder="Mínimo 8 caracteres">
+      </div>
+      <div class="col">
+        <label>Confirmar nova senha</label>
+        <input id="confirmar" type="password" placeholder="Repita a nova senha">
+      </div>
+    </div>
+
+    <button id="btn">Salvar nova senha</button>
+    <div id="msg" class="msg"></div>
+
+    <div style="text-align:center; margin-top:14px;">
+      <a href="./painel.html" style="color:#2563eb; text-decoration:none; font-weight:600;">Voltar ao painel</a>
+    </div>
+  </div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/enem0526/';
+
+const msg = document.getElementById('msg');
+const btn = document.getElementById('btn');
+
+function setMsg(text, ok=false){
+  msg.style.color = ok ? '#137333' : '#b00';
+  msg.textContent = text;
+}
+
+btn.onclick = async () => {
+  const senha_atual = document.getElementById('senha_atual').value;
+  const nova_senha  = document.getElementById('nova_senha').value;
+  const confirmar   = document.getElementById('confirmar').value;
+
+  setMsg('');
+
+  if(!senha_atual || !nova_senha || !confirmar){
+    setMsg('Preencha todos os campos.');
+    return;
+  }
+  if(nova_senha.length < 8){
+    setMsg('A nova senha deve ter pelo menos 8 caracteres.');
+    return;
+  }
+  if(nova_senha !== confirmar){
+    setMsg('A confirmação não confere.');
+    return;
+  }
+
+  btn.disabled = true;
+
+  try{
+    const r = await fetch(API + 'auth_change_password.php', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ senha_atual, nova_senha, confirmar }),
+      credentials:'include'
+    });
+
+    const data = await r.json().catch(()=> ({}));
+
+    if(!r.ok || !data.ok){
+      setMsg(data.error || 'Não foi possível alterar a senha.');
+      return;
+    }
+
+    setMsg('Senha alterada com sucesso!', true);
+
+    // opcional: volta pro painel após 1.2s
+    setTimeout(()=> location.href='./painel.html', 1200);
+
+  }catch(e){
+    console.error(e);
+    setMsg('Erro de rede ou servidor indisponível.');
+  }finally{
+    btn.disabled = false;
+  }
+};
+</script>
+</body>
+</html>
