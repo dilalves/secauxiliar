@@ -239,6 +239,39 @@ document.getElementById('forgot').onclick = async (ev) => {
     msg.textContent = 'Erro de rede ou servidor indisponível.';
   }
 };
+
+(async function autoCheckSession(){
+  try{
+    const r = await fetch(API + 'auth_me_unidade.php', { credentials:'include' });
+    const data = await r.json().catch(()=> ({}));
+    if(!r.ok || !data.ok) return;
+
+    const st = String(data?.adesao?.status ?? '').trim().toUpperCase();
+
+    if (st === 'ATIVA') {
+      location.replace('./painel.html');
+      return;
+    }
+
+    if (st === 'AGUARDANDO') {
+      await Swal.fire({
+        title: 'Adesão já registrada ✅',
+        html: `
+          <div style="text-align:left; line-height:1.5;">
+            <p>Sua unidade já realizou a adesão para este evento.</p>
+            <p>Status atual: <b>AGUARDANDO</b></p>
+            <p>⏳ A adesão está em fila para <b>conferência e liberação</b>.</p>
+          </div>
+        `,
+        icon: 'info',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#0b3b78'
+      });
+      // fica no login mesmo
+    }
+  } catch(e){}
+})();
+
 </script>
 </body>
 </html>
