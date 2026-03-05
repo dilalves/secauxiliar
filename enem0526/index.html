@@ -103,14 +103,18 @@ document.getElementById('btn').onclick = async () => {
       return;
     }
 
-    if (data.hasAdesao) {
-      location.href = './painel.html';
-    } else {
+    // ✅ novo: status da adesão vem do backend
+    const adesaoExists = !!(data.adesao && data.adesao.exists);
+    const adesaoStatus = (data.adesao && data.adesao.status) ? String(data.adesao.status).toUpperCase() : '';
+
+    // 1) não existe adesão -> manda para adesão
+    if (!adesaoExists) {
+      // (se ainda quiser manter o limite de data, aplica aqui)
       const hoje = new Date(); hoje.setHours(0,0,0,0);
       const deadline = new Date(2026, 3, 22); deadline.setHours(0,0,0,0);
 
       if (hoje <= deadline) {
-        Swal.fire({
+        const rr = await Swal.fire({
           title: 'Bem-vindo! 👋',
           html: `
             <div style="text-align:left; line-height:1.5;">
@@ -123,49 +127,65 @@ document.getElementById('btn').onclick = async () => {
           confirmButtonText: 'Ir para adesão',
           showCancelButton: true,
           cancelButtonText: 'Agora não',
-          confirmButtonColor: '#0b3b78', // seu azul padrão
+          confirmButtonColor: '#0b3b78',
           cancelButtonColor: '#9e9e9e',
           background: '#fff',
-          backdrop: true,
-          showClass: { popup: 'animate__animated animate__fadeInDown animate__faster' },
-          hideClass: { popup: 'animate__animated animate__fadeOutUp animate__faster' }
-        }).then(async (r) => {
-          if (!r.isConfirmed) return;
-
-          await Swal.fire({
-            title: 'Redirecionando...',
-            html: 'Aguarde um instante.',
-            timer: 900,
-            timerProgressBar: true,
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            didOpen: () => Swal.showLoading(),
-            showConfirmButton: false,
-            showClass: { popup: 'animate__animated animate__fadeIn animate__faster' },
-            hideClass: { popup: 'animate__animated animate__fadeOut animate__faster' }
-          });
-
-          location.href = './adesao.html';
+          backdrop: true
         });
 
+        if (rr.isConfirmed) location.href = './adesao.html';
       } else {
-        Swal.fire({
+        await Swal.fire({
           title: 'Adesão encerrada',
           html: `
             <div style="text-align:left; line-height:1.5;">
               <p>Não é possível realizar a adesão, pois o prazo máximo foi <b>22/04/2026</b>.</p>
-              <p>Você será direcionado para a tela de login.</p>
             </div>
           `,
           icon: 'warning',
           confirmButtonText: 'OK',
-          confirmButtonColor: '#0b3b78',
-          showClass: { popup: 'animate__animated animate__headShake animate__faster' }
-        }).then(() => {
-          location.href = './login.html';
+          confirmButtonColor: '#0b3b78'
         });
+        location.href = './login.html';
       }
+
+      return;
     }
+
+    // 2) existe adesão: decide pelo status
+    if (adesaoStatus === 'ATIVA') {
+      location.href = './painel.html';
+      return;
+    }
+
+    if (adesaoStatus === 'AGUARDANDO') {
+      await Swal.fire({
+        title: 'Adesão já registrada ✅',
+        html: `
+          <div style="text-align:left; line-height:1.5;">
+            <p>Sua unidade já realizou a adesão para este evento.</p>
+            <p>Status atual: <b>AGUARDANDO</b></p>
+            <p>⏳ A adesão está em fila para <b>conferência e liberação</b>.</p>
+            <p>Assim que liberarmos, o painel ficará disponível automaticamente.</p>
+          </div>
+        `,
+        icon: 'info',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#0b3b78'
+      });
+
+      // fica na tela ou redireciona para uma página "status"
+      // location.href = './status.html';
+      return;
+    }
+
+    // 3) fallback: status desconhecido
+    await Swal.fire({
+      title: 'Atenção',
+      text: `Adesão encontrada, mas status inesperado: ${adesaoStatus || '(vazio)'}`,
+      icon: 'warning',
+      confirmButtonColor: '#0b3b78'
+    });
 
   } catch (e) {
     console.error(e);
