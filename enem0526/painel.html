@@ -188,11 +188,9 @@
 
     /* Responsive */
     @media (max-width: 860px){
-      .card-action{ grid-column: span 12; }
-      .side{ grid-column: span 12; }
-      .kpis{ grid-template-columns:repeat(2,1fr); }
-      .chip-user{ display:none; }
+      .chip-user{ max-width:260px; }
     }
+
     @media (max-width: 420px){
       .kpis{ grid-template-columns:1fr; }
     }
@@ -207,6 +205,43 @@
     @keyframes sk { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     .sk-line{ height:12px; width:220px; }
     .sk-mini{ height:10px; width:180px; opacity:.85; }
+
+    /* User dropdown */
+    .user-menu{ position:relative; }
+    .btn-user{
+      cursor:pointer;
+      border:none;
+    }
+    .btn-user .caret{
+      font-size:22px;
+      opacity:.95;
+    }
+    .dropdown{
+      position:absolute;
+      right:0;
+      top:54px;
+      min-width:220px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      box-shadow:0 14px 34px rgba(0,0,0,.14);
+      padding:8px;
+      display:none;
+      z-index:9999;
+    }
+    .dropdown.open{ display:block; }
+    .dd-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:10px;
+      color:var(--ink);
+    }
+    .dd-item i{ color:var(--accent); font-size:18px; }
+    .dd-item:hover{
+      background:#f0f4ff;
+    }
   </style>
 </head>
 
@@ -222,18 +257,26 @@
     </div>
 
     <div class="actions">
-      <div class="chip-user" id="chipUser" title="Unidade logada">
-        <i class="material-icons mat">account_circle</i>
-        <div class="txt">
-          <b id="uLogin" class="skeleton sk-line"></b>
-          <span id="uNome" class="skeleton sk-mini"></span>
+      <div class="user-menu" id="userMenu">
+        <button class="chip-user btn-user waves-effect" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <i class="material-icons mat">account_circle</i>
+          <div class="txt">
+            <b id="uLogin" class="skeleton sk-line"></b>
+            <span id="uNome" class="skeleton sk-mini"></span>
+          </div>
+          <i class="material-icons caret">arrow_drop_down</i>
+        </button>
+
+        <div class="dropdown" id="userDropdown" role="menu" aria-label="Menu do usuário">
+          <a href="./alterar_senha.html" class="dd-item" role="menuitem">
+            <i class="material-icons">lock</i> Alterar senha
+          </a>
+          <a href="#" class="dd-item" role="menuitem" onclick="logout(); return false;">
+            <i class="material-icons">logout</i> Sair
+          </a>
         </div>
       </div>
-
-      <button class="btn-flat waves-effect btn-logout" onclick="logout()">
-        <i class="material-icons left">logout</i>Sair
-      </button>
-    </div>
+    </div>  
   </div>
 </header>
 
@@ -450,6 +493,38 @@
   }
 
   document.addEventListener('DOMContentLoaded', carregarUsuario);
+
+  function setupUserMenu(){
+  const btn = document.getElementById('userBtn');
+  const dd  = document.getElementById('userDropdown');
+  if(!btn || !dd) return;
+
+  function close(){
+    dd.classList.remove('open');
+    btn.setAttribute('aria-expanded','false');
+  }
+  function toggle(){
+    const isOpen = dd.classList.toggle('open');
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggle();
+  });
+
+  document.addEventListener('click', close);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') close();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  carregarUsuario();
+  setupUserMenu();
+});
+
+
 </script>
 </body>
 </html>
