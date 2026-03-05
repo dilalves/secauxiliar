@@ -103,7 +103,29 @@ document.getElementById('btn').onclick = async () => {
     if (data.hasAdesao) {
       location.href = './painel.html';
     } else {
-      location.href = './adesao.html';
+      // trava por data (deadline: 22/04/2026 inclusive)
+      const hoje = new Date();
+      hoje.setHours(0,0,0,0);
+
+      const deadline = new Date(2026, 3, 22); // mês 3 = Abril
+      deadline.setHours(0,0,0,0);
+
+      if (hoje <= deadline) {
+        alert(
+          "Bem-vindo!\n\n" +
+          "Você será direcionado para a adesão ao evento.\n\n" +
+          "⚠️ A adesão deve ser feita até 22/04/2026.\n" +
+          "Preencha TODOS os campos obrigatórios para concluir."
+        );
+        location.href = './adesao.html';
+      } else {
+        alert(
+          "Adesão encerrada.\n\n" +
+          "Não é possível realizar a adesão, pois a data máxima foi 22/04/2026.\n\n" +
+          "Você será direcionado para a tela de login."
+        );
+        location.href = './login.html';
+      }
     }
 
   } catch (e) {
