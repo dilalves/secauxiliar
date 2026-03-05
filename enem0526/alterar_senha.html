@@ -85,23 +85,6 @@ function setMsg(text, ok=false){
   msg.textContent = text;
 }
 
-function getToken(){
-  const keys = [
-    'token','jwt','auth_token','authToken','access_token',
-    'token_enem','token_sim','sim_token'
-  ];
-
-  for (const k of keys){
-    const v = localStorage.getItem(k);
-    if (v && v.length > 20) return v;
-  }
-  for (const k of keys){
-    const v = sessionStorage.getItem(k);
-    if (v && v.length > 20) return v;
-  }
-  return '';
-}
-
 btn.addEventListener('click', async (ev) => {
   ev.preventDefault();
 
@@ -116,21 +99,14 @@ btn.addEventListener('click', async (ev) => {
     return;
   }
 
-  if(nova_senha.length < 6){
-    setMsg('A nova senha deve ter pelo menos 6 caracteres.');
+  // ✅ mantém 8 se você quiser (recomendo)
+  if(nova_senha.length < 8){
+    setMsg('A nova senha deve ter pelo menos 8 caracteres.');
     return;
   }
 
   if(nova_senha !== confirmar){
     setMsg('A confirmação não confere.');
-    return;
-  }
-
-  const token = getToken();
-  console.log('token found?', !!token, token ? token.slice(0,20)+'...' : '(none)');
-
-  if(!token){
-    setMsg('Não autenticado. Faça login novamente.');
     return;
   }
 
@@ -140,15 +116,14 @@ btn.addEventListener('click', async (ev) => {
   try{
     const r = await fetch(API + 'auth_change_password.php', {
       method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization': 'Bearer ' + token
-      },
-      credentials:'include',
+      headers:{ 'Content-Type':'application/json' },
+      credentials:'include', // ✅ envia o cookie enem_unidade_jwt automaticamente
       body: JSON.stringify({ senha_atual, nova_senha, confirmar })
     });
 
     const text = await r.text();
+    console.log('auth_change_password -> HTTP', r.status, text);
+
     let data = {};
     try { data = JSON.parse(text); } catch(e){}
 
