@@ -140,6 +140,7 @@
       <div class="h1"><i class="material-icons" style="color:#163a77;">domain</i> Dados da unidade</div>
       <p class="sub">Confira os dados cadastrados. Esses campos não podem ser alterados aqui.</p>
 
+      <!-- ✅ agora só os campos essenciais (sem endereço/cidade/uf/cep/ddd/telefone) -->
       <div class="row readonly">
         <div class="input-field col s12 m3">
           <input id="u_login" type="text" readonly>
@@ -153,33 +154,7 @@
           <input id="u_cnpj" type="text" readonly>
           <label for="u_cnpj" class="active">CNPJ</label>
         </div>
-
         <div class="input-field col s12 m6">
-          <input id="u_endereco" type="text" readonly>
-          <label for="u_endereco" class="active">Endereço</label>
-        </div>
-        <div class="input-field col s12 m4">
-          <input id="u_cidade" type="text" readonly>
-          <label for="u_cidade" class="active">Cidade</label>
-        </div>
-        <div class="input-field col s12 m2">
-          <input id="u_uf" type="text" readonly>
-          <label for="u_uf" class="active">UF</label>
-        </div>
-
-        <div class="input-field col s12 m3">
-          <input id="u_cep" type="text" readonly>
-          <label for="u_cep" class="active">CEP</label>
-        </div>
-        <div class="input-field col s12 m2">
-          <input id="u_ddd" type="text" readonly>
-          <label for="u_ddd" class="active">DDD</label>
-        </div>
-        <div class="input-field col s12 m3">
-          <input id="u_telefone" type="text" readonly>
-          <label for="u_telefone" class="active">Telefone</label>
-        </div>
-        <div class="input-field col s12 m4">
           <input id="u_email_institucional" type="text" readonly>
           <label for="u_email_institucional" class="active">Email institucional</label>
         </div>
@@ -187,21 +162,13 @@
 
       <div class="dividerx"></div>
 
+      <!-- ✅ Local de prova sempre visível e editável -->
       <div class="section-title"><i class="material-icons">place</i> Local de prova</div>
       <p class="hint">
-        O endereço acima é o <b>local de prova</b>? Se precisar, você pode ajustar o endereço do local de prova (somente para esta adesão).
+        Informe o endereço do <b>local de prova</b> para esta adesão (pode ser igual ao endereço da unidade).
       </p>
 
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 12px;">
-        <button class="btn btn-primary" id="btnLocalOk">
-          <i class="material-icons left">check</i> Sim, é esse
-        </button>
-        <button class="btn btn-soft" id="btnLocalEditar">
-          <i class="material-icons left">edit</i> Precisa alterar
-        </button>
-      </div>
-
-      <div class="row" id="boxLocalProva" style="display:none;">
+      <div class="row" id="boxLocalProva">
         <div class="input-field col s12 m6">
           <input id="p_endereco" type="text">
           <label for="p_endereco" class="active">Endereço (local de prova)</label>
@@ -232,7 +199,6 @@
           <label for="email_resp_adesao" class="active">Email para confirmação da adesão</label>
         </div>
       </div>
-
     </div>
 
     <!-- Responsáveis e vagas -->
@@ -323,20 +289,6 @@
   let unidadeLogin = '';
   let evento = 'ENEM_MAIO_2026'; // fallback
 
-  function setReadonlyLocal(flag) {
-    ['p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone'].forEach(k => $(k).readOnly = flag);
-  }
-
-  function fillLocalFromUnidade() {
-    $('p_endereco').value = $('u_endereco').value || '';
-    $('p_cidade').value   = $('u_cidade').value || '';
-    $('p_uf').value       = ($('u_uf').value || '').toUpperCase();
-    $('p_cep').value      = $('u_cep').value || '';
-    $('p_ddd').value      = $('u_ddd').value || '';
-    $('p_telefone').value = $('u_telefone').value || '';
-    M.updateTextFields();
-  }
-
   async function apiGet(path) {
     const r = await fetch(API_BASE + path, { credentials: 'include' });
 
@@ -376,6 +328,17 @@
     return j;
   }
 
+  function fillLocalFromUnidade(d) {
+    $('p_endereco').value = d.endereco || '';
+    $('p_cidade').value   = d.cidade || '';
+    $('p_uf').value       = (d.uf || '').toUpperCase();
+    $('p_cep').value      = d.cep || '';
+    $('p_ddd').value      = d.ddd || '';
+    $('p_telefone').value = d.telefone || '';
+    $('email_resp_adesao').value = d.email_institucional || '';
+    M.updateTextFields();
+  }
+
   function validarCampos() {
     const requiredLocal = ['p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone','email_resp_adesao'];
     for (const k of requiredLocal) {
@@ -409,7 +372,6 @@
       // 1) quem é a unidade logada?
       const me = await apiGet('/auth_me_unidade.php');
 
-      // ✅ seu auth_me retorna login/unidade/evento na raiz
       unidadeLogin = (me.login || '').trim();
       if (!unidadeLogin) throw new Error('Sessão inválida. Faça login novamente.');
 
@@ -420,54 +382,16 @@
 
       // 2) carregar dados da tabela UNIDADES
       const u = await apiGet('/unidades_get.php?login=' + encodeURIComponent(unidadeLogin));
-      const d = u.data || {}; // unidades_get retorna {ok:true,data:{...}}
+      const d = u.data || {};
 
+      // ✅ campos essenciais (somente)
       $('u_login').value = d.login || unidadeLogin;
       $('u_unidade_internet').value = d.unidade_internet || '';
       $('u_cnpj').value = d.cnpj || '';
-      $('u_endereco').value = d.endereco || '';
-      $('u_cidade').value = d.cidade || '';
-      $('u_uf').value = (d.uf || '').toUpperCase();
-      $('u_cep').value = d.cep || '';
-      $('u_ddd').value = d.ddd || '';
-      $('u_telefone').value = d.telefone || '';
       $('u_email_institucional').value = d.email_institucional || '';
 
-      // e-mail default de confirmação
-      $('email_resp_adesao').value = d.email_institucional || '';
-
-      // default: assume "é esse mesmo" e já abre o box preenchido travado
-      $('boxLocalProva').style.display = '';
-      fillLocalFromUnidade();
-      setReadonlyLocal(true);
-      M.updateTextFields();
-
-      // listeners
-      $('btnLocalOk').addEventListener('click', () => {
-        $('boxLocalProva').style.display = '';
-        fillLocalFromUnidade();
-        setReadonlyLocal(true);
-        Swal.fire({
-          icon:'success',
-          title:'Local confirmado',
-          text:'Perfeito! Usaremos o endereço cadastrado como local de prova.',
-          confirmButtonColor:'#0b3b78'
-        });
-        atualizarSalvarEnabled();
-      });
-
-      $('btnLocalEditar').addEventListener('click', () => {
-        $('boxLocalProva').style.display = '';
-        fillLocalFromUnidade();
-        setReadonlyLocal(false);
-        Swal.fire({
-          icon:'info',
-          title:'Editar local de prova',
-          text:'Ajuste os campos abaixo (válidos apenas para esta adesão).',
-          confirmButtonColor:'#0b3b78'
-        });
-        atualizarSalvarEnabled();
-      });
+      // ✅ local de prova vem preenchido pela unidade, mas continua editável
+      fillLocalFromUnidade(d);
 
       [
         'p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone','email_resp_adesao',
@@ -569,13 +493,6 @@
 
   document.addEventListener('DOMContentLoaded', boot);
 })();
-
 </script>
 </body>
 </html>
-
-
-
-
-
-
