@@ -527,13 +527,21 @@
       atualizarSalvarEnabled();
 
     } catch (e) {
-      Swal.fire({
-        icon:'warning',
-        title:'Sessão inválida',
-        text: String(e.message || e),
-        confirmButtonText:'Voltar ao login',
+    const msg = String(e.message || e);
+
+    // só manda pro login se for realmente sessão/auth
+    const isAuth = /401|Sessão|token|login|unauthorized/i.test(msg);
+
+    Swal.fire({
+        icon: isAuth ? 'warning' : 'error',
+        title: isAuth ? 'Sessão inválida' : 'Erro ao carregar',
+        text: msg,
+        confirmButtonText: isAuth ? 'Voltar ao login' : 'Tentar novamente',
         confirmButtonColor:'#0b3b78'
-      }).then(() => location.href = './index.html');
+    }).then(() => {
+        if (isAuth) location.href = './index.html';
+        else location.reload();
+    });
     }
   }
 
