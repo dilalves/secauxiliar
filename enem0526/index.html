@@ -3,6 +3,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
 <title>Login — Simulado ENEM Maio/2026</title>
 
 <style>
@@ -103,28 +106,64 @@ document.getElementById('btn').onclick = async () => {
     if (data.hasAdesao) {
       location.href = './painel.html';
     } else {
-      // trava por data (deadline: 22/04/2026 inclusive)
-      const hoje = new Date();
-      hoje.setHours(0,0,0,0);
-
-      const deadline = new Date(2026, 3, 22); // mês 3 = Abril
-      deadline.setHours(0,0,0,0);
+      const hoje = new Date(); hoje.setHours(0,0,0,0);
+      const deadline = new Date(2026, 3, 22); deadline.setHours(0,0,0,0);
 
       if (hoje <= deadline) {
-        alert(
-          "Bem-vindo!\n\n" +
-          "Você será direcionado para a adesão ao evento.\n\n" +
-          "⚠️ A adesão deve ser feita até 22/04/2026.\n" +
-          "Preencha TODOS os campos obrigatórios para concluir."
-        );
-        location.href = './adesao.html';
+        Swal.fire({
+          title: 'Bem-vindo! 👋',
+          html: `
+            <div style="text-align:left; line-height:1.5;">
+              <p>Você será direcionado para a <b>adesão ao evento</b>.</p>
+              <p>⏳ Prazo final: <b>22/04/2026</b>.</p>
+              <p>⚠️ Preencha <b>TODOS</b> os campos obrigatórios para concluir.</p>
+            </div>
+          `,
+          icon: 'info',
+          confirmButtonText: 'Ir para adesão',
+          showCancelButton: true,
+          cancelButtonText: 'Agora não',
+          confirmButtonColor: '#0b3b78', // seu azul padrão
+          cancelButtonColor: '#9e9e9e',
+          background: '#fff',
+          backdrop: true,
+          showClass: { popup: 'animate__animated animate__fadeInDown animate__faster' },
+          hideClass: { popup: 'animate__animated animate__fadeOutUp animate__faster' }
+        }).then(async (r) => {
+          if (!r.isConfirmed) return;
+
+          await Swal.fire({
+            title: 'Redirecionando...',
+            html: 'Aguarde um instante.',
+            timer: 900,
+            timerProgressBar: true,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => Swal.showLoading(),
+            showConfirmButton: false,
+            showClass: { popup: 'animate__animated animate__fadeIn animate__faster' },
+            hideClass: { popup: 'animate__animated animate__fadeOut animate__faster' }
+          });
+
+          location.href = './adesao.html';
+        });
+
       } else {
-        alert(
-          "Adesão encerrada.\n\n" +
-          "Não é possível realizar a adesão, pois a data máxima foi 22/04/2026.\n\n" +
-          "Você será direcionado para a tela de login."
-        );
-        location.href = './login.html';
+        Swal.fire({
+          title: 'Adesão encerrada',
+          html: `
+            <div style="text-align:left; line-height:1.5;">
+              <p>Não é possível realizar a adesão, pois o prazo máximo foi <b>22/04/2026</b>.</p>
+              <p>Você será direcionado para a tela de login.</p>
+            </div>
+          `,
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#0b3b78',
+          showClass: { popup: 'animate__animated animate__headShake animate__faster' }
+        }).then(() => {
+          location.href = './login.html';
+        });
       }
     }
 
