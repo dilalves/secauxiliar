@@ -9,6 +9,7 @@
   <!-- Materialize (só pro toast/ícones; layout é no CSS mesmo) -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <style>
@@ -508,7 +509,7 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', carregarUsuario);
+  // document.addEventListener('DOMContentLoaded', carregarUsuario);
 
   function setupUserMenu(){
   const btn = document.getElementById('userBtn');
@@ -535,11 +536,46 @@
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  carregarUsuario();
+async function gatePainel() {
+  const r = await fetch(API + 'auth_me_unidade.php', { credentials: 'include' });
+  const data = await r.json().catch(()=> ({}));
+
+  if (!r.ok || !data.ok) {
+    location.replace('./index.html');
+    return false;
+  }
+
+  const st = (data.adesao?.status || '').toUpperCase();
+
+  // se NÃO está ATIVA, expulsa do painel
+  if (st !== 'ATIVA') {
+    await Swal.fire({
+      title: 'Acesso indisponível',
+      html: `
+        <div style="text-align:left;line-height:1.5">
+          <p>Sua adesão ainda não foi liberada.</p>
+          <p>Status atual: <b>${st || 'SEM ADESÃO'}</b></p>
+          <p>⏳ Aguarde a conferência e liberação.</p>
+        </div>
+      `,
+      icon: 'info',
+      confirmButtonColor: '#0b3b78',
+      confirmButtonText: 'OK'
+    });
+    location.replace('./index.html');
+    return false;
+  }
+
+  return true;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const ok = await gatePainel();
+  if (!ok) return;
+
+  await carregarUsuario();
   setupUserMenu();
 });
-
 
 </script>
 </body>
