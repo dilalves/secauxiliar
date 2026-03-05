@@ -315,14 +315,13 @@
     </div>
   </div>
 
-<script>
+  <script>
 (() => {
   const API_BASE = 'https://apisec.secauxiliar.com.br/enem0526';
-
   const $ = (id) => document.getElementById(id);
 
   let unidadeLogin = '';
-  let evento = 'ENEM_MAIO_2026'; // se você já retorna isso no backend, pode sobrescrever
+  let evento = 'ENEM_MAIO_2026'; // fallback
 
   function setReadonlyLocal(flag) {
     ['p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone'].forEach(k => $(k).readOnly = flag);
@@ -340,8 +339,18 @@
 
   async function apiGet(path) {
     const r = await fetch(API_BASE + path, { credentials: 'include' });
-    const j = await r.json();
-    if (!r.ok || !j.ok) throw new Error(j.msg || 'Erro na requisição');
+
+    let j = null;
+    try { j = await r.json(); } catch { j = null; }
+
+    if (!r.ok) {
+      console.log('apiGet HTTP fail', { path, status: r.status, j });
+      throw new Error((j && (j.msg || j.error)) || `HTTP ${r.status}`);
+    }
+    if (!j || j.ok !== true) {
+      console.log('apiGet app fail', { path, j });
+      throw new Error((j && (j.msg || j.error)) || 'Resposta inválida do servidor');
+    }
     return j;
   }
 
@@ -352,23 +361,35 @@
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(body)
     });
-    const j = await r.json();
-    if (!r.ok || !j.ok) throw new Error(j.msg || 'Erro ao salvar');
+
+    let j = null;
+    try { j = await r.json(); } catch { j = null; }
+
+    if (!r.ok) {
+      console.log('apiPost HTTP fail', { path, status: r.status, j });
+      throw new Error((j && (j.msg || j.error)) || `HTTP ${r.status}`);
+    }
+    if (!j || j.ok !== true) {
+      console.log('apiPost app fail', { path, j });
+      throw new Error((j && (j.msg || j.error)) || 'Resposta inválida do servidor');
+    }
     return j;
   }
 
   function validarCampos() {
-    // local prova precisa existir
     const requiredLocal = ['p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone','email_resp_adesao'];
     for (const k of requiredLocal) {
       if (!($(k).value || '').trim()) return { ok:false, msg:'Preencha os dados do local de prova e o e-mail de confirmação.' };
     }
 
-    // responsaveis / vagas
     const vagas = parseInt(($('vagas').value || '0'), 10);
     if (!Number.isFinite(vagas) || vagas < 0) return { ok:false, msg:'Informe a quantidade de vagas.' };
 
-    const requiredResp = ['resp_dia1_nome','resp_dia1_ddd','resp_dia1_celular','resp_dia2_nome','resp_dia2_ddd','resp_dia2_celular','resp_adesao'];
+    const requiredResp = [
+      'resp_dia1_nome','resp_dia1_ddd','resp_dia1_celular',
+      'resp_dia2_nome','resp_dia2_ddd','resp_dia2_celular',
+      'resp_adesao'
+    ];
     for (const k of requiredResp) {
       if (!($(k).value || '').trim()) return { ok:false, msg:'Preencha os responsáveis dos dias e o responsável pela adesão.' };
     }
@@ -386,33 +407,34 @@
   async function boot() {
     try {
       // 1) quem é a unidade logada?
-      // -> você já tem auth_me_unidade.php
       const me = await apiGet('/auth_me_unidade.php');
 
-      unidadeLogin = me.unidade_login || me.login || '';
+      // ✅ seu auth_me retorna login/unidade/evento na raiz
+      unidadeLogin = (me.login || '').trim();
       if (!unidadeLogin) throw new Error('Sessão inválida. Faça login novamente.');
 
-      // opcional: se o backend devolver o evento
       if (me.evento) evento = me.evento;
 
-      $('pillUnidade').innerHTML = `<i class="material-icons" style="font-size:18px;">apartment</i> Unidade ${unidadeLogin}`;
+      $('pillUnidade').innerHTML =
+        `<i class="material-icons" style="font-size:18px;">apartment</i> Unidade ${unidadeLogin}`;
 
       // 2) carregar dados da tabela UNIDADES
       const u = await apiGet('/unidades_get.php?login=' + encodeURIComponent(unidadeLogin));
+      const d = u.data || {}; // unidades_get retorna {ok:true,data:{...}}
 
-      $('u_login').value = u.data.login || unidadeLogin;
-      $('u_unidade_internet').value = u.data.unidade_internet || '';
-      $('u_cnpj').value = u.data.cnpj || '';
-      $('u_endereco').value = u.data.endereco || '';
-      $('u_cidade').value = u.data.cidade || '';
-      $('u_uf').value = (u.data.uf || '').toUpperCase();
-      $('u_cep').value = u.data.cep || '';
-      $('u_ddd').value = u.data.ddd || '';
-      $('u_telefone').value = u.data.telefone || '';
-      $('u_email_institucional').value = u.data.email_institucional || '';
+      $('u_login').value = d.login || unidadeLogin;
+      $('u_unidade_internet').value = d.unidade_internet || '';
+      $('u_cnpj').value = d.cnpj || '';
+      $('u_endereco').value = d.endereco || '';
+      $('u_cidade').value = d.cidade || '';
+      $('u_uf').value = (d.uf || '').toUpperCase();
+      $('u_cep').value = d.cep || '';
+      $('u_ddd').value = d.ddd || '';
+      $('u_telefone').value = d.telefone || '';
+      $('u_email_institucional').value = d.email_institucional || '';
 
-      // e-mail default de confirmação (se quiser, pré-preenche com o institucional)
-      $('email_resp_adesao').value = u.data.email_institucional || '';
+      // e-mail default de confirmação
+      $('email_resp_adesao').value = d.email_institucional || '';
 
       // default: assume "é esse mesmo" e já abre o box preenchido travado
       $('boxLocalProva').style.display = '';
@@ -447,9 +469,11 @@
         atualizarSalvarEnabled();
       });
 
-      ['p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone','email_resp_adesao',
-       'vagas','resp_dia1_nome','resp_dia1_ddd','resp_dia1_celular','resp_dia2_nome','resp_dia2_ddd','resp_dia2_celular','resp_adesao',
-       'chkAceite'
+      [
+        'p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone','email_resp_adesao',
+        'vagas','resp_dia1_nome','resp_dia1_ddd','resp_dia1_celular',
+        'resp_dia2_nome','resp_dia2_ddd','resp_dia2_celular',
+        'resp_adesao','chkAceite'
       ].forEach(id => $(id).addEventListener('input', atualizarSalvarEnabled));
 
       $('chkAceite').addEventListener('change', atualizarSalvarEnabled);
@@ -479,7 +503,7 @@
         const payload = {
           unidade_login: unidadeLogin,
           evento,
-          // local de prova -> vai para adesoes_simulados
+
           endereco: $('p_endereco').value.trim(),
           cidade: $('p_cidade').value.trim(),
           uf: $('p_uf').value.trim().toUpperCase(),
@@ -527,26 +551,25 @@
       atualizarSalvarEnabled();
 
     } catch (e) {
-    const msg = String(e.message || e);
+      const msg = String(e.message || e);
+      const isAuth = /401|Sessão|token|unauthorized|login/i.test(msg);
 
-    // só manda pro login se for realmente sessão/auth
-    const isAuth = /401|Sessão|token|login|unauthorized/i.test(msg);
-
-    Swal.fire({
+      Swal.fire({
         icon: isAuth ? 'warning' : 'error',
         title: isAuth ? 'Sessão inválida' : 'Erro ao carregar',
         text: msg,
         confirmButtonText: isAuth ? 'Voltar ao login' : 'Tentar novamente',
         confirmButtonColor:'#0b3b78'
-    }).then(() => {
+      }).then(() => {
         if (isAuth) location.href = './index.html';
         else location.reload();
-    });
+      });
     }
   }
 
   document.addEventListener('DOMContentLoaded', boot);
 })();
 </script>
+
 </body>
 </html>
