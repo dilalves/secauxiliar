@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Simulado Aberto ENEM • Adesão</title>
+
+  <!-- Materialize -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <!-- Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    :root{
+      --primary:#0b3b78;
+      --bg:#f4f6fb;
+      --card:#ffffff;
+      --text:#102a43;
+      --muted:#6b7c93;
+      --radius:16px;
+    }
+    body{ background:var(--bg); color:var(--text); }
+    .topbar{
+      background:linear-gradient(90deg,var(--primary),#072a55);
+      color:#fff;
+      height:58px;
+      display:flex;
+      align-items:center;
+      padding:0 18px;
+      box-shadow:0 6px 18px rgba(0,0,0,.12);
+    }
+    .topbar .brand{
+      display:flex; gap:12px; align-items:center;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .topbar .brand img{ height:26px; }
+    .topbar .rightinfo{
+      margin-left:auto;
+      font-weight:600;
+      opacity:.95;
+      display:flex; align-items:center; gap:10px;
+    }
+
+    .wrap{ max-width:1100px; margin:22px auto; padding:0 14px; }
+    .cardx{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(16,42,67,.08);
+      padding:18px 18px 10px;
+      margin-bottom:16px;
+    }
+    .h1{
+      font-size:20px;
+      font-weight:800;
+      margin:0 0 6px 0;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .sub{ color:var(--muted); margin:0 0 14px 0; }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#eef3ff;
+      color:#163a77;
+      font-weight:700;
+      font-size:13px;
+    }
+
+    /* Readonly look */
+    .readonly input{
+      background:#f7f9ff !important;
+      border-bottom:1px solid #dfe7ff !important;
+      color:#234 !important;
+    }
+    .section-title{
+      margin-top:4px;
+      font-weight:800;
+      color:#163a77;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .btn-primary{
+      background:var(--primary) !important;
+      border-radius:12px;
+      box-shadow:0 8px 18px rgba(11,59,120,.18);
+    }
+    .btn-soft{
+      background:#e9eef7 !important;
+      color:#102a43 !important;
+      border-radius:12px;
+    }
+    .dividerx{ height:1px; background:#edf1f7; margin:14px 0; }
+    .hint{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .accept-box{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:12px 12px;
+      border-radius:14px;
+      background:#f7fbff;
+      border:1px solid #e6efff;
+    }
+    .accept-box .txt{ font-size:13.5px; color:#1b2b40; line-height:1.45; }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <img src="https://www.curso-objetivo.br/assets/img/logo-objetivo-white.png" alt="Objetivo" onerror="this.style.display='none'">
+      <div>Simulado Aberto ENEM • Maio/2026</div>
+    </div>
+    <div class="rightinfo">
+      <span class="pill" id="pillUnidade"><i class="material-icons" style="font-size:18px;">apartment</i> Carregando…</span>
+      <a class="btn btn-small btn-soft" href="./painel.html" style="display:flex;align-items:center;gap:6px;">
+        <i class="material-icons">arrow_back</i> Voltar
+      </a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- Dados da unidade -->
+    <div class="cardx">
+      <div class="h1"><i class="material-icons" style="color:#163a77;">domain</i> Dados da unidade</div>
+      <p class="sub">Confira os dados cadastrados. Esses campos não podem ser alterados aqui.</p>
+
+      <div class="row readonly">
+        <div class="input-field col s12 m3">
+          <input id="u_login" type="text" readonly>
+          <label for="u_login" class="active">Login</label>
+        </div>
+        <div class="input-field col s12 m5">
+          <input id="u_unidade_internet" type="text" readonly>
+          <label for="u_unidade_internet" class="active">Unidade (internet)</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="u_cnpj" type="text" readonly>
+          <label for="u_cnpj" class="active">CNPJ</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="u_endereco" type="text" readonly>
+          <label for="u_endereco" class="active">Endereço</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="u_cidade" type="text" readonly>
+          <label for="u_cidade" class="active">Cidade</label>
+        </div>
+        <div class="input-field col s12 m2">
+          <input id="u_uf" type="text" readonly>
+          <label for="u_uf" class="active">UF</label>
+        </div>
+
+        <div class="input-field col s12 m3">
+          <input id="u_cep" type="text" readonly>
+          <label for="u_cep" class="active">CEP</label>
+        </div>
+        <div class="input-field col s12 m2">
+          <input id="u_ddd" type="text" readonly>
+          <label for="u_ddd" class="active">DDD</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="u_telefone" type="text" readonly>
+          <label for="u_telefone" class="active">Telefone</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="u_email_institucional" type="text" readonly>
+          <label for="u_email_institucional" class="active">Email institucional</label>
+        </div>
+      </div>
+
+      <div class="dividerx"></div>
+
+      <div class="section-title"><i class="material-icons">place</i> Local de prova</div>
+      <p class="hint">
+        O endereço acima é o <b>local de prova</b>? Se precisar, você pode ajustar o endereço do local de prova (somente para esta adesão).
+      </p>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 12px;">
+        <button class="btn btn-primary" id="btnLocalOk">
+          <i class="material-icons left">check</i> Sim, é esse
+        </button>
+        <button class="btn btn-soft" id="btnLocalEditar">
+          <i class="material-icons left">edit</i> Precisa alterar
+        </button>
+      </div>
+
+      <div class="row" id="boxLocalProva" style="display:none;">
+        <div class="input-field col s12 m6">
+          <input id="p_endereco" type="text">
+          <label for="p_endereco" class="active">Endereço (local de prova)</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="p_cidade" type="text">
+          <label for="p_cidade" class="active">Cidade</label>
+        </div>
+        <div class="input-field col s12 m2">
+          <input id="p_uf" type="text" maxlength="2">
+          <label for="p_uf" class="active">UF</label>
+        </div>
+
+        <div class="input-field col s12 m3">
+          <input id="p_cep" type="text">
+          <label for="p_cep" class="active">CEP</label>
+        </div>
+        <div class="input-field col s12 m2">
+          <input id="p_ddd" type="text">
+          <label for="p_ddd" class="active">DDD</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="p_telefone" type="text">
+          <label for="p_telefone" class="active">Telefone</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="email_resp_adesao" type="email">
+          <label for="email_resp_adesao" class="active">Email para confirmação da adesão</label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Responsáveis e vagas -->
+    <div class="cardx">
+      <div class="h1"><i class="material-icons" style="color:#163a77;">groups</i> Responsáveis e vagas</div>
+      <p class="sub">Informe quem estará na unidade nos dias dos simulados e a quantidade de vagas.</p>
+
+      <div class="row">
+        <div class="input-field col s12 m3">
+          <input id="vagas" type="number" min="0">
+          <label for="vagas" class="active">Vagas</label>
+        </div>
+      </div>
+
+      <div class="section-title"><i class="material-icons">event</i> Dia 1</div>
+      <div class="row">
+        <div class="input-field col s12 m6">
+          <input id="resp_dia1_nome" type="text">
+          <label for="resp_dia1_nome" class="active">Responsável (nome)</label>
+        </div>
+        <div class="input-field col s12 m2">
+          <input id="resp_dia1_ddd" type="text">
+          <label for="resp_dia1_ddd" class="active">DDD</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="resp_dia1_celular" type="text">
+          <label for="resp_dia1_celular" class="active">Celular</label>
+        </div>
+      </div>
+
+      <div class="section-title"><i class="material-icons">event</i> Dia 2</div>
+      <div class="row">
+        <div class="input-field col s12 m6">
+          <input id="resp_dia2_nome" type="text">
+          <label for="resp_dia2_nome" class="active">Responsável (nome)</label>
+        </div>
+        <div class="input-field col s12 m2">
+          <input id="resp_dia2_ddd" type="text">
+          <label for="resp_dia2_ddd" class="active">DDD</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="resp_dia2_celular" type="text">
+          <label for="resp_dia2_celular" class="active">Celular</label>
+        </div>
+      </div>
+
+      <div class="section-title"><i class="material-icons">how_to_reg</i> Responsável pela adesão</div>
+      <div class="row">
+        <div class="input-field col s12 m6">
+          <input id="resp_adesao" type="text">
+          <label for="resp_adesao" class="active">Nome</label>
+        </div>
+      </div>
+
+      <div class="dividerx"></div>
+
+      <div class="accept-box">
+        <label style="margin-top:2px;">
+          <input type="checkbox" id="chkAceite" />
+          <span></span>
+        </label>
+        <div class="txt">
+          Declaro que as informações acima foram conferidas e serão inseridas no sistema para <b>conferência e liberação</b>.
+          Após o envio, a adesão ficará com status <b>AGUARDANDO</b> até validação.
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 8px;">
+        <button class="btn btn-soft" id="btnConferi">
+          <i class="material-icons left">task_alt</i> Conferi os dados
+        </button>
+        <button class="btn btn-primary" id="btnSalvar" disabled>
+          <i class="material-icons left">save</i> Concluir adesão
+        </button>
+      </div>
+
+      <p class="hint" style="margin-top:6px;">
+        Dica: você pode voltar ao painel depois. Se a adesão já existir, o login te leva direto ao painel.
+      </p>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const API_BASE = 'https://apisec.secauxiliar.com.br/enem0526/';
+
+  const $ = (id) => document.getElementById(id);
+
+  let unidadeLogin = '';
+  let evento = 'ENEM_MAIO_2026'; // se você já retorna isso no backend, pode sobrescrever
+
+  function setReadonlyLocal(flag) {
+    ['p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone'].forEach(k => $(k).readOnly = flag);
+  }
+
+  function fillLocalFromUnidade() {
+    $('p_endereco').value = $('u_endereco').value || '';
+    $('p_cidade').value   = $('u_cidade').value || '';
+    $('p_uf').value       = ($('u_uf').value || '').toUpperCase();
+    $('p_cep').value      = $('u_cep').value || '';
+    $('p_ddd').value      = $('u_ddd').value || '';
+    $('p_telefone').value = $('u_telefone').value || '';
+    M.updateTextFields();
+  }
+
+  async function apiGet(path) {
+    const r = await fetch(API_BASE + path, { credentials: 'include' });
+    const j = await r.json();
+    if (!r.ok || !j.ok) throw new Error(j.msg || 'Erro na requisição');
+    return j;
+  }
+
+  async function apiPost(path, body) {
+    const r = await fetch(API_BASE + path, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const j = await r.json();
+    if (!r.ok || !j.ok) throw new Error(j.msg || 'Erro ao salvar');
+    return j;
+  }
+
+  function validarCampos() {
+    // local prova precisa existir
+    const requiredLocal = ['p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone','email_resp_adesao'];
+    for (const k of requiredLocal) {
+      if (!($(k).value || '').trim()) return { ok:false, msg:'Preencha os dados do local de prova e o e-mail de confirmação.' };
+    }
+
+    // responsaveis / vagas
+    const vagas = parseInt(($('vagas').value || '0'), 10);
+    if (!Number.isFinite(vagas) || vagas < 0) return { ok:false, msg:'Informe a quantidade de vagas.' };
+
+    const requiredResp = ['resp_dia1_nome','resp_dia1_ddd','resp_dia1_celular','resp_dia2_nome','resp_dia2_ddd','resp_dia2_celular','resp_adesao'];
+    for (const k of requiredResp) {
+      if (!($(k).value || '').trim()) return { ok:false, msg:'Preencha os responsáveis dos dias e o responsável pela adesão.' };
+    }
+
+    if (!$('chkAceite').checked) return { ok:false, msg:'Marque o aceite para liberar o botão de concluir.' };
+
+    return { ok:true };
+  }
+
+  function atualizarSalvarEnabled() {
+    const v = validarCampos();
+    $('btnSalvar').disabled = !v.ok;
+  }
+
+  async function boot() {
+    try {
+      // 1) quem é a unidade logada?
+      // -> você já tem auth_me_unidade.php
+      const me = await apiGet('/auth_me_unidade.php');
+
+      unidadeLogin = me.unidade_login || me.login || '';
+      if (!unidadeLogin) throw new Error('Sessão inválida. Faça login novamente.');
+
+      // opcional: se o backend devolver o evento
+      if (me.evento) evento = me.evento;
+
+      $('pillUnidade').innerHTML = `<i class="material-icons" style="font-size:18px;">apartment</i> Unidade ${unidadeLogin}`;
+
+      // 2) carregar dados da tabela UNIDADES
+      const u = await apiGet('/unidades_get.php?login=' + encodeURIComponent(unidadeLogin));
+
+      $('u_login').value = u.data.login || unidadeLogin;
+      $('u_unidade_internet').value = u.data.unidade_internet || '';
+      $('u_cnpj').value = u.data.cnpj || '';
+      $('u_endereco').value = u.data.endereco || '';
+      $('u_cidade').value = u.data.cidade || '';
+      $('u_uf').value = (u.data.uf || '').toUpperCase();
+      $('u_cep').value = u.data.cep || '';
+      $('u_ddd').value = u.data.ddd || '';
+      $('u_telefone').value = u.data.telefone || '';
+      $('u_email_institucional').value = u.data.email_institucional || '';
+
+      // e-mail default de confirmação (se quiser, pré-preenche com o institucional)
+      $('email_resp_adesao').value = u.data.email_institucional || '';
+
+      // default: assume "é esse mesmo" e já abre o box preenchido travado
+      $('boxLocalProva').style.display = '';
+      fillLocalFromUnidade();
+      setReadonlyLocal(true);
+      M.updateTextFields();
+
+      // listeners
+      $('btnLocalOk').addEventListener('click', () => {
+        $('boxLocalProva').style.display = '';
+        fillLocalFromUnidade();
+        setReadonlyLocal(true);
+        Swal.fire({
+          icon:'success',
+          title:'Local confirmado',
+          text:'Perfeito! Usaremos o endereço cadastrado como local de prova.',
+          confirmButtonColor:'#0b3b78'
+        });
+        atualizarSalvarEnabled();
+      });
+
+      $('btnLocalEditar').addEventListener('click', () => {
+        $('boxLocalProva').style.display = '';
+        fillLocalFromUnidade();
+        setReadonlyLocal(false);
+        Swal.fire({
+          icon:'info',
+          title:'Editar local de prova',
+          text:'Ajuste os campos abaixo (válidos apenas para esta adesão).',
+          confirmButtonColor:'#0b3b78'
+        });
+        atualizarSalvarEnabled();
+      });
+
+      ['p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone','email_resp_adesao',
+       'vagas','resp_dia1_nome','resp_dia1_ddd','resp_dia1_celular','resp_dia2_nome','resp_dia2_ddd','resp_dia2_celular','resp_adesao',
+       'chkAceite'
+      ].forEach(id => $(id).addEventListener('input', atualizarSalvarEnabled));
+
+      $('chkAceite').addEventListener('change', atualizarSalvarEnabled);
+
+      $('btnConferi').addEventListener('click', () => {
+        const v = validarCampos();
+        if (!v.ok) {
+          Swal.fire({ icon:'warning', title:'Faltou algo', text:v.msg, confirmButtonColor:'#0b3b78' });
+          return;
+        }
+        Swal.fire({
+          icon:'success',
+          title:'Tudo certo!',
+          text:'Agora você já pode concluir a adesão.',
+          confirmButtonColor:'#0b3b78'
+        });
+        atualizarSalvarEnabled();
+      });
+
+      $('btnSalvar').addEventListener('click', async () => {
+        const v = validarCampos();
+        if (!v.ok) {
+          Swal.fire({ icon:'warning', title:'Faltou algo', text:v.msg, confirmButtonColor:'#0b3b78' });
+          return;
+        }
+
+        const payload = {
+          unidade_login: unidadeLogin,
+          evento,
+          // local de prova -> vai para adesoes_simulados
+          endereco: $('p_endereco').value.trim(),
+          cidade: $('p_cidade').value.trim(),
+          uf: $('p_uf').value.trim().toUpperCase(),
+          cep: $('p_cep').value.trim(),
+          ddd: $('p_ddd').value.trim(),
+          telefone: $('p_telefone').value.trim(),
+
+          vagas: parseInt($('vagas').value || '0', 10),
+
+          resp_dia1_nome: $('resp_dia1_nome').value.trim(),
+          resp_dia1_ddd: $('resp_dia1_ddd').value.trim(),
+          resp_dia1_celular: $('resp_dia1_celular').value.trim(),
+
+          resp_dia2_nome: $('resp_dia2_nome').value.trim(),
+          resp_dia2_ddd: $('resp_dia2_ddd').value.trim(),
+          resp_dia2_celular: $('resp_dia2_celular').value.trim(),
+
+          resp_adesao: $('resp_adesao').value.trim(),
+          email_resp_adesao: $('email_resp_adesao').value.trim()
+        };
+
+        Swal.fire({
+          title:'Salvando adesão…',
+          allowOutsideClick:false,
+          allowEscapeKey:false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        try {
+          await apiPost('/adesao_save.php', payload);
+
+          Swal.fire({
+            icon:'success',
+            title:'Adesão concluída com sucesso!',
+            html:'Sua adesão foi registrada e ficará com status <b>AGUARDANDO</b> para conferência e liberação.',
+            confirmButtonText:'Ir para o painel',
+            confirmButtonColor:'#0b3b78'
+          }).then(() => location.href = './painel.html');
+
+        } catch (e) {
+          Swal.fire({ icon:'error', title:'Erro', text: String(e.message || e), confirmButtonColor:'#0b3b78' });
+        }
+      });
+
+      atualizarSalvarEnabled();
+
+    } catch (e) {
+      Swal.fire({
+        icon:'warning',
+        title:'Sessão inválida',
+        text: String(e.message || e),
+        confirmButtonText:'Voltar ao login',
+        confirmButtonColor:'#0b3b78'
+      }).then(() => location.href = './index.html');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', boot);
+})();
+</script>
+</body>
+</html>
