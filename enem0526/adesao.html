@@ -3,417 +3,579 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Simulado Aberto ENEM • Adesão</title>
+
+  <!-- Materialize -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <!-- Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    .loading-overlay{
-      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,.5); z-index:9999; justify-content:center; align-items:center;
-      color:#fff; font-size:20px; flex-direction:column;
+    :root{
+      --primary:#0b3b78;
+      --bg:#f4f6fb;
+      --card:#ffffff;
+      --text:#102a43;
+      --muted:#6b7c93;
+      --radius:16px;
     }
-    .loading-overlay.show{ display:flex; }
-    .loading-overlay p{ margin-bottom:20px; }
-
-    .input-field { margin-top: 2px; margin-bottom: 2px; }
-    .row { margin-bottom: 6px; }
-
-    input[disabled]{
-      color:#0b3b78 !important;
-      background-color:#e3f2fd !important;
-      border-bottom:1px solid #0b3b78 !important;
+    body{ background:var(--bg); color:var(--text); }
+    .topbar{
+      background:linear-gradient(90deg,var(--primary),#072a55);
+      color:#fff;
+      height:58px;
+      display:flex;
+      align-items:center;
+      padding:0 18px;
+      box-shadow:0 6px 18px rgba(0,0,0,.12);
     }
+    .topbar .brand{
+      display:flex; gap:12px; align-items:center;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .topbar .brand img{ height:26px; }
+    .topbar .rightinfo{
+      margin-left:auto;
+      font-weight:600;
+      opacity:.95;
+      display:flex; align-items:center; gap:10px;
+    }
+
+    .wrap{ max-width:1100px; margin:22px auto; padding:0 14px; }
+    .cardx{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(16,42,67,.08);
+      padding:18px 18px 10px;
+      margin-bottom:16px;
+    }
+    .h1{
+      font-size:20px;
+      font-weight:800;
+      margin:0 0 6px 0;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .sub{ color:var(--muted); margin:0 0 14px 0; }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#eef3ff;
+      color:#163a77;
+      font-weight:700;
+      font-size:13px;
+    }
+
+    /* Readonly look */
+    .readonly input{
+      background:#f7f9ff !important;
+      border-bottom:1px solid #dfe7ff !important;
+      color:#234 !important;
+    }
+    .section-title{
+      margin-top:4px;
+      font-weight:800;
+      color:#163a77;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .btn-primary{
+      background:var(--primary) !important;
+      border-radius:12px;
+      box-shadow:0 8px 18px rgba(11,59,120,.18);
+    }
+    .btn-soft{
+      background:#e9eef7 !important;
+      color:#102a43 !important;
+      border-radius:12px;
+    }
+    .dividerx{ height:1px; background:#edf1f7; margin:14px 0; }
+    .hint{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .accept-box{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:12px 12px;
+      border-radius:14px;
+      background:#f7fbff;
+      border:1px solid #e6efff;
+    }
+    .accept-box .txt{ font-size:13.5px; color:#1b2b40; line-height:1.45; }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h5>Adesão ao Simulado Aberto ENEM — Maio/2026</h5>
+  <div class="topbar">
+    <div class="brand">
+      <img src="https://www.curso-objetivo.br/assets/img/logo-objetivo-white.png" alt="Objetivo" onerror="this.style.display='none'">
+      <div>Simulado Aberto ENEM • Maio/2026</div>
+    </div>
+    <div class="rightinfo">
+      <span class="pill" id="pillUnidade"><i class="material-icons" style="font-size:18px;">apartment</i> Carregando…</span>
+      <a class="btn btn-small btn-soft" href="./painel.html" style="display:flex;align-items:center;gap:6px;">
+        <i class="material-icons">arrow_back</i> Voltar
+      </a>
+    </div>
+  </div>
 
-    <form onsubmit="return false;">
+  <div class="wrap">
+    <!-- Dados da unidade -->
+    <div class="cardx">
+      <div class="h1"><i class="material-icons" style="color:#163a77;">domain</i> Dados da unidade</div>
+      <p class="sub">Confira os dados cadastrados. Esses campos não podem ser alterados aqui.</p>
 
-      <p>Dados da Unidade</p>
-      <div class="row">
-        <div class="input-field col s1">
-          <input id="login" type="text" class="validate" disabled>
-          <label for="login">Login</label>
+      <div class="row readonly">
+        <div class="input-field col s12 m3">
+          <input id="u_login" type="text" readonly>
+          <label for="u_login" class="active">Login</label>
         </div>
-        <div class="input-field col s5">
-          <input id="unidade" type="text" class="validate" disabled>
-          <label for="unidade">Unidade (internet)</label>
+        <div class="input-field col s12 m5">
+          <input id="u_unidade_internet" type="text" readonly>
+          <label for="u_unidade_internet" class="active">Unidade (internet)</label>
         </div>
-        <div class="input-field col s6">
-          <input id="cnpj" type="text" class="validate" disabled>
-          <label for="cnpj">CNPJ</label>
+        <div class="input-field col s12 m4">
+          <input id="u_cnpj" type="text" readonly>
+          <label for="u_cnpj" class="active">CNPJ</label>
+        </div>
+
+        <div class="input-field col s12 m6">
+          <input id="u_endereco" type="text" readonly>
+          <label for="u_endereco" class="active">Endereço</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="u_cidade" type="text" readonly>
+          <label for="u_cidade" class="active">Cidade</label>
+        </div>
+        <div class="input-field col s12 m2">
+          <input id="u_uf" type="text" readonly>
+          <label for="u_uf" class="active">UF</label>
+        </div>
+
+        <div class="input-field col s12 m3">
+          <input id="u_cep" type="text" readonly>
+          <label for="u_cep" class="active">CEP</label>
+        </div>
+        <div class="input-field col s12 m2">
+          <input id="u_ddd" type="text" readonly>
+          <label for="u_ddd" class="active">DDD</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="u_telefone" type="text" readonly>
+          <label for="u_telefone" class="active">Telefone</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="u_email_institucional" type="text" readonly>
+          <label for="u_email_institucional" class="active">Email institucional</label>
         </div>
       </div>
 
-      <div class="row">
-        <div class="input-field col s12">
-          <input id="endereco" type="text" class="validate" disabled>
-          <label for="endereco">Endereço</label>
-        </div>
-      </div>
+      <div class="dividerx"></div>
 
-      <div class="row">
-        <div class="input-field col s8">
-          <input id="cidade" type="text" class="validate" disabled>
-          <label for="cidade">Cidade</label>
-        </div>
-        <div class="input-field col s1">
-          <input id="uf" type="text" class="validate" disabled>
-          <label for="uf">UF</label>
-        </div>
-        <div class="input-field col s3">
-          <input id="cep" type="text" class="validate" disabled>
-          <label for="cep">CEP</label>
-        </div>
-      </div>
+      <div class="section-title"><i class="material-icons">place</i> Local de prova</div>
+      <p class="hint">
+        O endereço acima é o <b>local de prova</b>? Se precisar, você pode ajustar o endereço do local de prova (somente para esta adesão).
+      </p>
 
-      <div class="row">
-        <div class="input-field col s2">
-          <input id="ddd" type="text" class="validate" disabled>
-          <label for="ddd">DDD</label>
-        </div>
-        <div class="input-field col s5">
-          <input id="telefone" type="text" class="validate" disabled>
-          <label for="telefone">Telefone</label>
-        </div>
-        <div class="input-field col s5">
-          <input id="email_institucional" type="text" class="validate" disabled>
-          <label for="email_institucional">E-mail Institucional</label>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col s12">
-          <span style="font-size:14px;color:#546e7a;">
-            O endereço acima é o <b>local de prova</b>? Se precisar, você pode ajustar os dados abaixo (válidos apenas para esta adesão).
-          </span>
-          <div style="margin-top:8px;">
-            <button class="btn waves-effect waves-light blue darken-4" type="button" onclick="usarLocalCadastro()">
-              SIM, É ESSE <i class="material-icons right">check</i>
-            </button>
-            <button class="btn waves-effect waves-light grey lighten-1 black-text" type="button" onclick="editarLocal()">
-              PRECISA ALTERAR <i class="material-icons right">edit</i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <p>Dados do local de prova</p>
-      <div class="row">
-        <div class="input-field col s12">
-          <input id="p_endereco" type="text" class="validate">
-          <label for="p_endereco">Endereço (local de prova)</label>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="input-field col s8">
-          <input id="p_cidade" type="text" class="validate">
-          <label for="p_cidade">Cidade</label>
-        </div>
-        <div class="input-field col s1">
-          <input id="p_uf" type="text" class="validate">
-          <label for="p_uf">UF</label>
-        </div>
-        <div class="input-field col s3">
-          <input id="p_cep" type="text" class="validate">
-          <label for="p_cep">CEP</label>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="input-field col s2">
-          <input id="p_ddd" type="text" class="validate">
-          <label for="p_ddd">DDD</label>
-        </div>
-        <div class="input-field col s5">
-          <input id="p_telefone" type="text" class="validate">
-          <label for="p_telefone">Telefone</label>
-        </div>
-        <div class="input-field col s5">
-          <input id="email_resp_adesao" type="email" class="validate" required>
-          <label for="email_resp_adesao">E-mail para confirmação da adesão</label>
-        </div>
-      </div>
-
-      <p>Responsáveis e vagas</p>
-      <div class="row">
-        <div class="input-field col s2">
-          <input id="vagas" type="number" class="validate" required>
-          <label for="vagas">Vagas</label>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="input-field col s7">
-          <input id="resp_dia1_nome" type="text" class="validate" required>
-          <label for="resp_dia1_nome">Responsável — Dia 1</label>
-        </div>
-        <div class="input-field col s1">
-          <input id="resp_dia1_ddd" type="text" class="validate" required>
-          <label for="resp_dia1_ddd">DDD</label>
-        </div>
-        <div class="input-field col s4">
-          <input id="resp_dia1_celular" type="text" class="validate" required>
-          <label for="resp_dia1_celular">Celular</label>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="input-field col s7">
-          <input id="resp_dia2_nome" type="text" class="validate" required>
-          <label for="resp_dia2_nome">Responsável — Dia 2</label>
-        </div>
-        <div class="input-field col s1">
-          <input id="resp_dia2_ddd" type="text" class="validate" required>
-          <label for="resp_dia2_ddd">DDD</label>
-        </div>
-        <div class="input-field col s4">
-          <input id="resp_dia2_celular" type="text" class="validate" required>
-          <label for="resp_dia2_celular">Celular</label>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="input-field col s5">
-          <input id="resp_adesao" type="text" class="validate" required>
-          <label for="resp_adesao">Responsável pela adesão</label>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col s12" style="font-size:14px;color:#546e7a;">
-          Ao concluir, os dados serão inseridos no sistema para <b>conferência e liberação</b> (status <b>AGUARDANDO</b>).
-        </div>
-      </div>
-
-      <div class="input-field center-align">
-        <button id="btnConcluir" class="btn waves-effect waves-light blue darken-4" onclick="concluirAdesao()">
-          Concluir <i class="material-icons right">send</i>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 12px;">
+        <button class="btn btn-primary" id="btnLocalOk">
+          <i class="material-icons left">check</i> Sim, é esse
+        </button>
+        <button class="btn btn-soft" id="btnLocalEditar">
+          <i class="material-icons left">edit</i> Precisa alterar
         </button>
       </div>
 
-      <!-- Overlay -->
-      <div class="loading-overlay" id="loadingOverlay">
-        <p>Processando informação...</p>
-        <div class="preloader-wrapper active">
-          <div class="spinner-layer spinner-blue-only">
-            <div class="circle-clipper left"><div class="circle"></div></div>
-            <div class="gap-patch"><div class="circle"></div></div>
-            <div class="circle-clipper right"><div class="circle"></div></div>
-          </div>
+      <div class="row" id="boxLocalProva" style="display:none;">
+        <div class="input-field col s12 m6">
+          <input id="p_endereco" type="text">
+          <label for="p_endereco" class="active">Endereço (local de prova)</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="p_cidade" type="text">
+          <label for="p_cidade" class="active">Cidade</label>
+        </div>
+        <div class="input-field col s12 m2">
+          <input id="p_uf" type="text" maxlength="2">
+          <label for="p_uf" class="active">UF</label>
+        </div>
+
+        <div class="input-field col s12 m3">
+          <input id="p_cep" type="text">
+          <label for="p_cep" class="active">CEP</label>
+        </div>
+        <div class="input-field col s12 m2">
+          <input id="p_ddd" type="text">
+          <label for="p_ddd" class="active">DDD</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="p_telefone" type="text">
+          <label for="p_telefone" class="active">Telefone</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="email_resp_adesao" type="email">
+          <label for="email_resp_adesao" class="active">Email para confirmação da adesão</label>
         </div>
       </div>
 
-    </form>
+    </div>
+
+    <!-- Responsáveis e vagas -->
+    <div class="cardx">
+      <div class="h1"><i class="material-icons" style="color:#163a77;">groups</i> Responsáveis e vagas</div>
+      <p class="sub">Informe quem estará na unidade nos dias dos simulados e a quantidade de vagas.</p>
+
+      <div class="row">
+        <div class="input-field col s12 m3">
+          <input id="vagas" type="number" min="0">
+          <label for="vagas" class="active">Vagas</label>
+        </div>
+      </div>
+
+      <div class="section-title"><i class="material-icons">event</i> Dia 1</div>
+      <div class="row">
+        <div class="input-field col s12 m6">
+          <input id="resp_dia1_nome" type="text">
+          <label for="resp_dia1_nome" class="active">Responsável (nome)</label>
+        </div>
+        <div class="input-field col s12 m2">
+          <input id="resp_dia1_ddd" type="text">
+          <label for="resp_dia1_ddd" class="active">DDD</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="resp_dia1_celular" type="text">
+          <label for="resp_dia1_celular" class="active">Celular</label>
+        </div>
+      </div>
+
+      <div class="section-title"><i class="material-icons">event</i> Dia 2</div>
+      <div class="row">
+        <div class="input-field col s12 m6">
+          <input id="resp_dia2_nome" type="text">
+          <label for="resp_dia2_nome" class="active">Responsável (nome)</label>
+        </div>
+        <div class="input-field col s12 m2">
+          <input id="resp_dia2_ddd" type="text">
+          <label for="resp_dia2_ddd" class="active">DDD</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input id="resp_dia2_celular" type="text">
+          <label for="resp_dia2_celular" class="active">Celular</label>
+        </div>
+      </div>
+
+      <div class="section-title"><i class="material-icons">how_to_reg</i> Responsável pela adesão</div>
+      <div class="row">
+        <div class="input-field col s12 m6">
+          <input id="resp_adesao" type="text">
+          <label for="resp_adesao" class="active">Nome</label>
+        </div>
+      </div>
+
+      <div class="dividerx"></div>
+
+      <div class="accept-box">
+        <label style="margin-top:2px;">
+          <input type="checkbox" id="chkAceite" />
+          <span></span>
+        </label>
+        <div class="txt">
+          Declaro que as informações acima foram conferidas e serão inseridas no sistema para <b>conferência e liberação</b>.
+          Após o envio, a adesão ficará com status <b>AGUARDANDO</b> até validação.
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 8px;">
+        <button class="btn btn-soft" id="btnConferi">
+          <i class="material-icons left">task_alt</i> Conferi os dados
+        </button>
+        <button class="btn btn-primary" id="btnSalvar" disabled>
+          <i class="material-icons left">save</i> Concluir adesão
+        </button>
+      </div>
+
+      <p class="hint" style="margin-top:6px;">
+        Dica: você pode voltar ao painel depois. Se a adesão já existir, o login te leva direto ao painel.
+      </p>
+    </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script>
+(() => {
+  const API_BASE = 'https://apisec.secauxiliar.com.br/enem0526';
+  const $ = (id) => document.getElementById(id);
 
-  <script>
-    const API_BASE = 'https://apisec.secauxiliar.com.br/enem0526';
-    let unidadeLogin = '';
-    let evento = 'ENEM_MAIO_2026';
+  let unidadeLogin = '';
+  let evento = 'ENEM_MAIO_2026'; // fallback
 
-    function showLoad(on){
-      const el = document.getElementById('loadingOverlay');
-      el.classList.toggle('show', !!on);
+  function setReadonlyLocal(flag) {
+    ['p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone'].forEach(k => $(k).readOnly = flag);
+  }
+
+  function fillLocalFromUnidade() {
+    $('p_endereco').value = $('u_endereco').value || '';
+    $('p_cidade').value   = $('u_cidade').value || '';
+    $('p_uf').value       = ($('u_uf').value || '').toUpperCase();
+    $('p_cep').value      = $('u_cep').value || '';
+    $('p_ddd').value      = $('u_ddd').value || '';
+    $('p_telefone').value = $('u_telefone').value || '';
+    M.updateTextFields();
+  }
+
+  async function apiGet(path) {
+    const r = await fetch(API_BASE + path, { credentials: 'include' });
+
+    let j = null;
+    try { j = await r.json(); } catch { j = null; }
+
+    if (!r.ok) {
+      console.log('apiGet HTTP fail', { path, status: r.status, j });
+      throw new Error((j && (j.msg || j.error)) || `HTTP ${r.status}`);
+    }
+    if (!j || j.ok !== true) {
+      console.log('apiGet app fail', { path, j });
+      throw new Error((j && (j.msg || j.error)) || 'Resposta inválida do servidor');
+    }
+    return j;
+  }
+
+  async function apiPost(path, body) {
+    const r = await fetch(API_BASE + path, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+
+    let j = null;
+    try { j = await r.json(); } catch { j = null; }
+
+    if (!r.ok) {
+      console.log('apiPost HTTP fail', { path, status: r.status, j });
+      throw new Error((j && (j.msg || j.error)) || `HTTP ${r.status}`);
+    }
+    if (!j || j.ok !== true) {
+      console.log('apiPost app fail', { path, j });
+      throw new Error((j && (j.msg || j.error)) || 'Resposta inválida do servidor');
+    }
+    return j;
+  }
+
+  function validarCampos() {
+    const requiredLocal = ['p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone','email_resp_adesao'];
+    for (const k of requiredLocal) {
+      if (!($(k).value || '').trim()) return { ok:false, msg:'Preencha os dados do local de prova e o e-mail de confirmação.' };
     }
 
-    function setLocalReadonly(flag){
-      ['p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone'].forEach(id => {
-        document.getElementById(id).readOnly = !!flag;
-      });
+    const vagas = parseInt(($('vagas').value || '0'), 10);
+    if (!Number.isFinite(vagas) || vagas < 0) return { ok:false, msg:'Informe a quantidade de vagas.' };
+
+    const requiredResp = [
+      'resp_dia1_nome','resp_dia1_ddd','resp_dia1_celular',
+      'resp_dia2_nome','resp_dia2_ddd','resp_dia2_celular',
+      'resp_adesao'
+    ];
+    for (const k of requiredResp) {
+      if (!($(k).value || '').trim()) return { ok:false, msg:'Preencha os responsáveis dos dias e o responsável pela adesão.' };
     }
 
-    function fillLocalFromCadastro(){
-      document.getElementById('p_endereco').value = document.getElementById('endereco').value || '';
-      document.getElementById('p_cidade').value   = document.getElementById('cidade').value || '';
-      document.getElementById('p_uf').value       = (document.getElementById('uf').value || '').toUpperCase();
-      document.getElementById('p_cep').value      = document.getElementById('cep').value || '';
-      document.getElementById('p_ddd').value      = document.getElementById('ddd').value || '';
-      document.getElementById('p_telefone').value = document.getElementById('telefone').value || '';
+    if (!$('chkAceite').checked) return { ok:false, msg:'Marque o aceite para liberar o botão de concluir.' };
+
+    return { ok:true };
+  }
+
+  function atualizarSalvarEnabled() {
+    const v = validarCampos();
+    $('btnSalvar').disabled = !v.ok;
+  }
+
+  async function boot() {
+    try {
+      // 1) quem é a unidade logada?
+      const me = await apiGet('/auth_me_unidade.php');
+
+      // ✅ seu auth_me retorna login/unidade/evento na raiz
+      unidadeLogin = (me.login || '').trim();
+      if (!unidadeLogin) throw new Error('Sessão inválida. Faça login novamente.');
+
+      if (me.evento) evento = me.evento;
+
+      $('pillUnidade').innerHTML =
+        `<i class="material-icons" style="font-size:18px;">apartment</i> Unidade ${unidadeLogin}`;
+
+      // 2) carregar dados da tabela UNIDADES
+      const u = await apiGet('/unidades_get.php?login=' + encodeURIComponent(unidadeLogin));
+      const d = u.data || {}; // unidades_get retorna {ok:true,data:{...}}
+
+      $('u_login').value = d.login || unidadeLogin;
+      $('u_unidade_internet').value = d.unidade_internet || '';
+      $('u_cnpj').value = d.cnpj || '';
+      $('u_endereco').value = d.endereco || '';
+      $('u_cidade').value = d.cidade || '';
+      $('u_uf').value = (d.uf || '').toUpperCase();
+      $('u_cep').value = d.cep || '';
+      $('u_ddd').value = d.ddd || '';
+      $('u_telefone').value = d.telefone || '';
+      $('u_email_institucional').value = d.email_institucional || '';
+
+      // e-mail default de confirmação
+      $('email_resp_adesao').value = d.email_institucional || '';
+
+      // default: assume "é esse mesmo" e já abre o box preenchido travado
+      $('boxLocalProva').style.display = '';
+      fillLocalFromUnidade();
+      setReadonlyLocal(true);
       M.updateTextFields();
-    }
 
-    async function apiGet(path){
-      const r = await fetch(API_BASE + path, { credentials:'include' });
-      const j = await r.json().catch(()=> ({}));
-      if (!r.ok || !j.ok) throw new Error(j.msg || 'Erro na requisição');
-      return j;
-    }
-
-    async function apiPost(path, body){
-      const r = await fetch(API_BASE + path, {
-        method:'POST',
-        credentials:'include',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(body)
-      });
-      const j = await r.json().catch(()=> ({}));
-      if (!r.ok || !j.ok) throw new Error(j.msg || 'Erro ao salvar');
-      return j;
-    }
-
-    function usarLocalCadastro(){
-      fillLocalFromCadastro();
-      setLocalReadonly(true);
-      Swal.fire({
-        icon:'success',
-        title:'Local confirmado',
-        text:'Perfeito! Usaremos o endereço cadastrado como local de prova.',
-        confirmButtonColor:'#0b3b78'
-      });
-    }
-
-    function editarLocal(){
-      fillLocalFromCadastro();
-      setLocalReadonly(false);
-      Swal.fire({
-        icon:'info',
-        title:'Editar local de prova',
-        text:'Ajuste os campos abaixo (válidos apenas para esta adesão).',
-        confirmButtonColor:'#0b3b78'
-      });
-    }
-
-    function validarObrigatorios(){
-      const required = [
-        'p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone','email_resp_adesao',
-        'vagas',
-        'resp_dia1_nome','resp_dia1_ddd','resp_dia1_celular',
-        'resp_dia2_nome','resp_dia2_ddd','resp_dia2_celular',
-        'resp_adesao'
-      ];
-
-      for (const id of required){
-        const v = (document.getElementById(id).value || '').trim();
-        if (!v) return { ok:false, msg:'Preencha todos os campos obrigatórios antes de concluir.' };
-      }
-
-      const vagas = parseInt(document.getElementById('vagas').value || '0', 10);
-      if (!Number.isFinite(vagas) || vagas < 0) return { ok:false, msg:'Informe a quantidade de vagas.' };
-
-      return { ok:true };
-    }
-
-    async function concluirAdesao(){
-      const btn = document.getElementById('btnConcluir');
-      const v = validarObrigatorios();
-      if (!v.ok){
-        Swal.fire({ icon:'warning', title:'Campos obrigatórios!', text:v.msg, confirmButtonColor:'#0b3b78' });
-        return;
-      }
-
-      btn.disabled = true;
-      showLoad(true);
-
-      try{
-        const payload = {
-          unidade_login: unidadeLogin,
-          evento: evento,
-
-          endereco: document.getElementById('p_endereco').value.trim(),
-          cidade: document.getElementById('p_cidade').value.trim(),
-          uf: document.getElementById('p_uf').value.trim().toUpperCase(),
-          cep: document.getElementById('p_cep').value.trim(),
-          ddd: document.getElementById('p_ddd').value.trim(),
-          telefone: document.getElementById('p_telefone').value.trim(),
-
-          vagas: parseInt(document.getElementById('vagas').value || '0', 10),
-
-          resp_dia1_nome: document.getElementById('resp_dia1_nome').value.trim(),
-          resp_dia1_ddd: document.getElementById('resp_dia1_ddd').value.trim(),
-          resp_dia1_celular: document.getElementById('resp_dia1_celular').value.trim(),
-
-          resp_dia2_nome: document.getElementById('resp_dia2_nome').value.trim(),
-          resp_dia2_ddd: document.getElementById('resp_dia2_ddd').value.trim(),
-          resp_dia2_celular: document.getElementById('resp_dia2_celular').value.trim(),
-
-          resp_adesao: document.getElementById('resp_adesao').value.trim(),
-          email_resp_adesao: document.getElementById('email_resp_adesao').value.trim()
-        };
-
-        await apiPost('/adesao_save.php', payload);
-
-        showLoad(false);
+      // listeners
+      $('btnLocalOk').addEventListener('click', () => {
+        $('boxLocalProva').style.display = '';
+        fillLocalFromUnidade();
+        setReadonlyLocal(true);
         Swal.fire({
           icon:'success',
-          title:'Adesão Cadastrada!',
-          text:'Adesão cadastrada com sucesso! (Status: AGUARDANDO)',
-          confirmButtonText:'OK',
+          title:'Local confirmado',
+          text:'Perfeito! Usaremos o endereço cadastrado como local de prova.',
           confirmButtonColor:'#0b3b78'
-        }).then(()=> location.href = './painel.html');
+        });
+        atualizarSalvarEnabled();
+      });
 
-      }catch(e){
-        showLoad(false);
-        btn.disabled = false;
-        Swal.fire({ icon:'error', title:'Erro ao Cadastrar!', text:String(e.message||e), confirmButtonColor:'#0b3b78' });
-      }
-    }
+      $('btnLocalEditar').addEventListener('click', () => {
+        $('boxLocalProva').style.display = '';
+        fillLocalFromUnidade();
+        setReadonlyLocal(false);
+        Swal.fire({
+          icon:'info',
+          title:'Editar local de prova',
+          text:'Ajuste os campos abaixo (válidos apenas para esta adesão).',
+          confirmButtonColor:'#0b3b78'
+        });
+        atualizarSalvarEnabled();
+      });
 
-    async function boot(){
-      try{
-        showLoad(true);
+      [
+        'p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone','email_resp_adesao',
+        'vagas','resp_dia1_nome','resp_dia1_ddd','resp_dia1_celular',
+        'resp_dia2_nome','resp_dia2_ddd','resp_dia2_celular',
+        'resp_adesao','chkAceite'
+      ].forEach(id => $(id).addEventListener('input', atualizarSalvarEnabled));
 
-        // 1) pega sessão (login)
-        const me = await apiGet('/auth_me_unidade.php');
-        unidadeLogin = (me.login || '').trim();
-        if (!unidadeLogin) throw new Error('Sessão inválida. Faça login novamente.');
-        if (me.evento) evento = me.evento;
+      $('chkAceite').addEventListener('change', atualizarSalvarEnabled);
 
-        // 2) carrega unidade
-        const u = await apiGet('/unidades_get.php?login=' + encodeURIComponent(unidadeLogin));
-        const d = u.data || {};
+      $('btnConferi').addEventListener('click', () => {
+        const v = validarCampos();
+        if (!v.ok) {
+          Swal.fire({ icon:'warning', title:'Faltou algo', text:v.msg, confirmButtonColor:'#0b3b78' });
+          return;
+        }
+        Swal.fire({
+          icon:'success',
+          title:'Tudo certo!',
+          text:'Agora você já pode concluir a adesão.',
+          confirmButtonColor:'#0b3b78'
+        });
+        atualizarSalvarEnabled();
+      });
 
-        document.getElementById('login').value = d.login || unidadeLogin;
-        document.getElementById('unidade').value = d.unidade_internet || '';
-        document.getElementById('cnpj').value = d.cnpj || '';
+      $('btnSalvar').addEventListener('click', async () => {
+        const v = validarCampos();
+        if (!v.ok) {
+          Swal.fire({ icon:'warning', title:'Faltou algo', text:v.msg, confirmButtonColor:'#0b3b78' });
+          return;
+        }
 
-        document.getElementById('endereco').value = d.endereco || '';
-        document.getElementById('cidade').value = d.cidade || '';
-        document.getElementById('uf').value = (d.uf || '').toUpperCase();
-        document.getElementById('cep').value = d.cep || '';
-        document.getElementById('ddd').value = d.ddd || '';
-        document.getElementById('telefone').value = d.telefone || '';
-        document.getElementById('email_institucional').value = d.email_institucional || '';
+        const payload = {
+          unidade_login: unidadeLogin,
+          evento,
 
-        // default: usa cadastro como local e trava (como “SIM, É ESSE”)
-        document.getElementById('email_resp_adesao').value = d.email_institucional || '';
-        fillLocalFromCadastro();
-        setLocalReadonly(true);
+          endereco: $('p_endereco').value.trim(),
+          cidade: $('p_cidade').value.trim(),
+          uf: $('p_uf').value.trim().toUpperCase(),
+          cep: $('p_cep').value.trim(),
+          ddd: $('p_ddd').value.trim(),
+          telefone: $('p_telefone').value.trim(),
 
-        M.updateTextFields();
-        showLoad(false);
+          vagas: parseInt($('vagas').value || '0', 10),
 
-      }catch(e){
-        showLoad(false);
-        const msg = String(e.message || e);
-        const isAuth = /401|Sessão|token|login|unauthorized/i.test(msg);
+          resp_dia1_nome: $('resp_dia1_nome').value.trim(),
+          resp_dia1_ddd: $('resp_dia1_ddd').value.trim(),
+          resp_dia1_celular: $('resp_dia1_celular').value.trim(),
+
+          resp_dia2_nome: $('resp_dia2_nome').value.trim(),
+          resp_dia2_ddd: $('resp_dia2_ddd').value.trim(),
+          resp_dia2_celular: $('resp_dia2_celular').value.trim(),
+
+          resp_adesao: $('resp_adesao').value.trim(),
+          email_resp_adesao: $('email_resp_adesao').value.trim()
+        };
 
         Swal.fire({
-          icon: isAuth ? 'warning' : 'error',
-          title: isAuth ? 'Sessão inválida' : 'Erro ao carregar',
-          text: msg,
-          confirmButtonText: isAuth ? 'Voltar ao login' : 'Tentar novamente',
-          confirmButtonColor:'#0b3b78'
-        }).then(()=>{
-          if (isAuth) location.href = './index.html';
-          else location.reload();
+          title:'Salvando adesão…',
+          allowOutsideClick:false,
+          allowEscapeKey:false,
+          didOpen: () => Swal.showLoading()
         });
-      }
-    }
 
-    $(document).ready(function(){
-      $("#cep").mask("99999-999");
-      boot();
-    });
-  </script>
+        try {
+          await apiPost('/adesao_save.php', payload);
+
+          Swal.fire({
+            icon:'success',
+            title:'Adesão concluída com sucesso!',
+            html:'Sua adesão foi registrada e ficará com status <b>AGUARDANDO</b> para conferência e liberação.',
+            confirmButtonText:'Ir para o painel',
+            confirmButtonColor:'#0b3b78'
+          }).then(() => location.href = './painel.html');
+
+        } catch (e) {
+          Swal.fire({ icon:'error', title:'Erro', text: String(e.message || e), confirmButtonColor:'#0b3b78' });
+        }
+      });
+
+      atualizarSalvarEnabled();
+
+    } catch (e) {
+      const msg = String(e.message || e);
+      const isAuth = /401|Sessão|token|unauthorized|login/i.test(msg);
+
+      Swal.fire({
+        icon: isAuth ? 'warning' : 'error',
+        title: isAuth ? 'Sessão inválida' : 'Erro ao carregar',
+        text: msg,
+        confirmButtonText: isAuth ? 'Voltar ao login' : 'Tentar novamente',
+        confirmButtonColor:'#0b3b78'
+      }).then(() => {
+        if (isAuth) location.href = './index.html';
+        else location.reload();
+      });
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', boot);
+})();
+
+</script>
 </body>
 </html>
+
+
+
+
+
+
