@@ -210,62 +210,78 @@
   </div>
 
   <script>
-    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
+  const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
 
-    function abrir(pagina){
-      document.getElementById('frame').src = pagina;
+  function marcarAtivo(botao){
+    document.querySelectorAll('.menu button').forEach(btn => {
+      btn.classList.remove('ativo');
+    });
+
+    if (botao) {
+      botao.classList.add('ativo');
     }
+  }
 
-    async function verificarSessao(){
-      try{
-        const r = await fetch(API + 'auth_me.php', {
-          method: 'GET',
-          credentials: 'include',
-          cache: 'no-store'
-        });
+  function abrir(pagina, botao = null){
+    document.getElementById('frame').src = pagina;
+    marcarAtivo(botao);
+  }
 
-        const data = await r.json();
+  async function verificarSessao(){
+    try{
+      const r = await fetch(API + 'auth_me.php', {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store'
+      });
 
-        if (!r.ok || !data.ok) {
-          throw new Error(data.msg || data.error || 'Sessão inválida');
-        }
+      const data = await r.json();
 
-        const user = data.user || {};
-        const nivel = String(user.nivel || '').trim().toLowerCase();
-
-        if (nivel !== 'admin') {
-          throw new Error('Sem permissão');
-        }
-
-        document.getElementById('userbox').textContent =
-          (user.nome || user.login || 'Usuário') + ' • ' + nivel;
-
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
-
-      } catch (e) {
-        console.error('Falha ao validar sessão:', e);
-        location.replace('./index.html');
-      }
-    }
-
-    async function logout(){
-      try{
-        await fetch(API + 'auth_logout.php', {
-          method:'POST',
-          credentials:'include',
-          cache:'no-store'
-        });
-      } catch(e){
-        console.warn('Falha ao chamar logout da API');
+      if (!r.ok || !data.ok) {
+        throw new Error(data.msg || data.error || 'Sessão inválida');
       }
 
-      localStorage.removeItem('PRESENCA_token');
-      sessionStorage.clear();
+      const user = data.user || {};
+      const nivel = String(user.nivel || '').trim().toLowerCase();
+
+      if (nivel !== 'admin') {
+        throw new Error('Sem permissão');
+      }
+
+      document.getElementById('userbox').textContent =
+        (user.nome || user.login || 'Usuário') + ' • ' + nivel;
+
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+
+      const primeiroBotao = document.querySelector('.menu button[data-page]');
+      if (primeiroBotao) {
+        abrir(primeiroBotao.dataset.page, primeiroBotao);
+      }
+
+    } catch (e) {
+      console.error('Falha ao validar sessão:', e);
       location.replace('./index.html');
     }
+  }
 
-    verificarSessao();
-  </script>
+  async function logout(){
+    try{
+      await fetch(API + 'auth_logout.php', {
+        method:'POST',
+        credentials:'include',
+        cache:'no-store'
+      });
+    } catch(e){
+      console.warn('Falha ao chamar logout da API');
+    }
+
+    localStorage.removeItem('PRESENCA_token');
+    sessionStorage.clear();
+    location.replace('./index.html');
+  }
+
+  verificarSessao();
+</script>
 </body>
 </html>
