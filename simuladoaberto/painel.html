@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="pt-br">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -28,7 +27,7 @@
 
     .topbar{
       height:64px;
-      background:var(--primary);
+      background:#0b3b78;
       color:#fff;
       display:flex;
       align-items:center;
@@ -132,12 +131,11 @@
       <button onclick="abrir('paginas/conferencia.html')">Conferência</button>
       <button onclick="abrir('paginas/unidades.html')">Unidades</button>
       <button onclick="abrir('paginas/resultados.html')">Resultados</button>
-
       <button onclick="logout()" style="margin-left:auto;background:#ffe2e2">Sair</button>
     </div>
 
     <div id="conteudo">
-      <iframe id="frame" src="paginas/dashboard.html"></iframe>
+      <iframe id="frame" src="about:blank"></iframe>
     </div>
   </div>
 
@@ -150,17 +148,10 @@
 
     async function verificarSessao(){
       try{
-        const token = localStorage.getItem('PRESENCA_token') || '';
-
-        const headers = {};
-        if (token) {
-          headers['Authorization'] = 'Bearer ' + token;
-        }
-
         const r = await fetch(API + 'auth_me.php', {
           method: 'GET',
           credentials: 'include',
-          headers
+          cache: 'no-store'
         });
 
         const data = await r.json();
@@ -169,40 +160,45 @@
           throw new Error(data.msg || data.error || 'Sessão inválida');
         }
 
-        const user = data.user || data.usuario || data;
+        const user = data.user || {};
         const nivel = String(user.nivel || '').trim().toLowerCase();
 
-        if (nivel !== 'admin' && nivel !== '1' && nivel !== 'a') {
-          location.href = './index.html';
-          return;
+        if (nivel !== 'admin') {
+          throw new Error('Sem permissão');
         }
 
         document.getElementById('userbox').textContent =
-          (user.nome || user.login || 'Usuário') + ' • ' + (user.nivel || 'admin');
+          (user.nome || user.login || 'Usuário') + ' • ' + nivel;
 
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
 
+        abrir('paginas/dashboard.html');
+
       } catch (e) {
         console.error('Falha ao validar sessão:', e);
-        localStorage.removeItem('PRESENCA_token');
-        location.href = './index.html';
+        location.replace('./index.html');
       }
     }
 
     async function logout(){
-      localStorage.removeItem('PRESENCA_token');
-
       try{
         await fetch(API + 'auth_logout.php', {
-          method:'GET',
-          credentials:'include'
+          method:'POST',
+          credentials:'include',
+          cache:'no-store'
         });
       } catch(e){
-        console.warn('Logout com falha na API, redirecionando mesmo assim.');
+        console.warn('Falha ao chamar logout da API');
       }
 
-      location.href = './index.html';
+      localStorage.removeItem('PRESENCA_token');
+      sessionStorage.clear();
+
+      document.getElementById('app').classList.add('hidden');
+      document.getElementById('loading').classList.remove('hidden');
+
+      location.replace('./index.html');
     }
 
     verificarSessao();
