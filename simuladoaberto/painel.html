@@ -222,11 +222,11 @@
     }
   }
 
-  function abrir(pagina, botao = null){
-    document.getElementById('frame').src = pagina;
-    marcarAtivo(botao);
-  }
-
+function abrir(pagina, botao = null){
+  const frame = document.getElementById('frame');
+  frame.src = pagina + '?v=' + Date.now();
+  marcarAtivo(botao);
+}
   async function verificarSessao(){
     try{
       const r = await fetch(API + 'auth_me.php', {
