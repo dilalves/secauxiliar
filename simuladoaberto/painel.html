@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Simulados Abertos - Painel</title>
+
+  <style>
+    :root{
+      --bg:#f7f8fb;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --line:#e6e9f0;
+      --text:#0f172a;
+      --muted:#64748b;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:system-ui,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .topbar{
+      height:64px;
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 24px;
+      box-shadow:0 2px 10px rgba(0,0,0,.12);
+    }
+
+    .topbar-left{
+      display:flex;
+      align-items:center;
+      min-width:0;
+    }
+
+    .topbar img{
+      height:28px;
+      margin-right:12px;
+    }
+
+    .topbar h5{
+      margin:0;
+      font-weight:600;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .userbox{
+      font-size:14px;
+      opacity:.95;
+      white-space:nowrap;
+      margin-left:16px;
+    }
+
+    .menu{
+      background:#fff;
+      border-bottom:1px solid var(--line);
+      padding:10px 20px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .menu button{
+      border:none;
+      background:#eef2f8;
+      padding:10px 16px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:500;
+      transition:.15s ease;
+    }
+
+    .menu button:hover{
+      background:#e0e7ff;
+    }
+
+    #conteudo{
+      padding:24px;
+    }
+
+    iframe{
+      width:100%;
+      height:calc(100vh - 140px);
+      border:none;
+      background:#fff;
+      border-radius:10px;
+      box-shadow:0 5px 20px rgba(0,0,0,.05);
+    }
+
+    #loading{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+      color:var(--muted);
+      font-size:16px;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loading">Verificando acesso...</div>
+
+  <div id="app" class="hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <img src="/optativos/logo-mini.png" alt="Logo">
+        <h5>Simulados Abertos - Painel Administrativo</h5>
+      </div>
+      <div class="userbox" id="userbox"></div>
+    </header>
+
+    <div class="menu">
+      <button onclick="abrir('paginas/dashboard.html')">Dashboard</button>
+      <button onclick="abrir('paginas/contagem.html')">Contagem</button>
+      <button onclick="abrir('paginas/conferencia.html')">Conferência</button>
+      <button onclick="abrir('paginas/unidades.html')">Unidades</button>
+      <button onclick="abrir('paginas/resultados.html')">Resultados</button>
+
+      <button onclick="logout()" style="margin-left:auto;background:#ffe2e2">Sair</button>
+    </div>
+
+    <div id="conteudo">
+      <iframe id="frame" src="paginas/dashboard.html"></iframe>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
+
+    function abrir(pagina){
+      document.getElementById('frame').src = pagina;
+    }
+
+    async function verificarSessao(){
+      try{
+        const token = localStorage.getItem('PRESENCA_token') || '';
+
+        const headers = {};
+        if (token) {
+          headers['Authorization'] = 'Bearer ' + token;
+        }
+
+        const r = await fetch(API + 'auth_me.php', {
+          method: 'GET',
+          credentials: 'include',
+          headers
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.msg || data.error || 'Sessão inválida');
+        }
+
+        const user = data.user || data.usuario || data;
+        const nivel = String(user.nivel || '').trim().toLowerCase();
+
+        if (nivel !== 'admin' && nivel !== '1' && nivel !== 'a') {
+          location.href = './index.html';
+          return;
+        }
+
+        document.getElementById('userbox').textContent =
+          (user.nome || user.login || 'Usuário') + ' • ' + (user.nivel || 'admin');
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+
+      } catch (e) {
+        console.error('Falha ao validar sessão:', e);
+        localStorage.removeItem('PRESENCA_token');
+        location.href = './index.html';
+      }
+    }
+
+    async function logout(){
+      localStorage.removeItem('PRESENCA_token');
+
+      try{
+        await fetch(API + 'auth_logout.php', {
+          method:'GET',
+          credentials:'include'
+        });
+      } catch(e){
+        console.warn('Logout com falha na API, redirecionando mesmo assim.');
+      }
+
+      location.href = './index.html';
+    }
+
+    verificarSessao();
+  </script>
+</body>
+</html>
