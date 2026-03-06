@@ -100,10 +100,64 @@
       border:1px solid #cfe0f5;
     }
 
+    .btn-mini{
+      height:30px;
+      padding:0 10px;
+      border-radius:8px;
+      font-size:12px;
+      font-weight:700;
+      margin-right:6px;
+    }
+
+    .btn-ok{
+      background:#166534;
+      color:#fff;
+    }
+
+    .btn-warn{
+      background:#92400e;
+      color:#fff;
+    }
+
+    .btn-cancel{
+      background:#991b1b;
+      color:#fff;
+    }
+
     .info-bar{
       margin-bottom:12px;
       color:var(--muted);
       font-size:14px;
+    }
+
+    .resumo{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .resumo-card{
+      min-width:220px;
+      background:#f4f8fe;
+      border:1px solid #dce7f6;
+      border-radius:12px;
+      padding:12px 14px;
+    }
+
+    .resumo-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    .resumo-valor{
+      margin-top:6px;
+      font-size:26px;
+      font-weight:800;
+      color:var(--primary);
     }
 
     .tabela-wrap{
@@ -116,7 +170,7 @@
     table{
       width:100%;
       border-collapse:collapse;
-      min-width:1200px;
+      min-width:1360px;
     }
 
     th, td{
@@ -140,17 +194,13 @@
       background:#fafcff;
     }
 
-    .muted{
-      color:var(--muted);
-    }
-
     .chip{
       display:inline-block;
       padding:4px 10px;
       border-radius:999px;
       font-size:12px;
       font-weight:700;
-      background:var(--chip);
+      background:#e8f0fb;
       color:#17406e;
       white-space:nowrap;
     }
@@ -174,6 +224,10 @@
       padding:26px;
       text-align:center;
       color:var(--muted);
+    }
+
+    .acoes{
+      white-space:nowrap;
     }
   </style>
 </head>
@@ -199,6 +253,18 @@
       <button id="btnLimpar" class="btn-sec">Limpar filtro</button>
     </div>
 
+    <div class="resumo">
+      <div class="resumo-card">
+        <div class="resumo-label">Total de adesões</div>
+        <div class="resumo-valor" id="totalAdesoes">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Total de vagas</div>
+        <div class="resumo-valor" id="totalVagas">0</div>
+      </div>
+    </div>
+
     <div class="info-bar" id="infoBar">Carregando...</div>
 
     <div class="tabela-wrap">
@@ -218,10 +284,11 @@
             <th>CEP</th>
             <th>Status</th>
             <th>Criado em</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody id="tbody">
-          <tr><td colspan="13" class="vazio">Carregando dados...</td></tr>
+          <tr><td colspan="14" class="vazio">Carregando dados...</td></tr>
         </tbody>
       </table>
     </div>
@@ -232,6 +299,8 @@
     const tbody = document.getElementById('tbody');
     const evento = document.getElementById('evento');
     const infoBar = document.getElementById('infoBar');
+    const totalAdesoes = document.getElementById('totalAdesoes');
+    const totalVagas = document.getElementById('totalVagas');
 
     function esc(v){
       return String(v ?? '')
@@ -275,9 +344,57 @@
       });
     }
 
+    async function alterarStatus(id, status){
+      const ok = confirm(`Deseja alterar o status para "${status}"?`);
+      if (!ok) return;
+
+      try{
+        const r = await fetch(API + 'api_adesoes_status.php', {
+          method:'POST',
+          credentials:'include',
+          cache:'no-store',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ id, status })
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.error || 'Falha ao atualizar status');
+        }
+
+        await carregarAdesoes();
+
+      } catch(e){
+        alert(e.message || 'Erro ao atualizar status.');
+      }
+    }
+
+    function botoesAcoes(r){
+      const st = String(r.status || '').toUpperCase();
+
+      let html = '';
+
+      if (st !== 'ATIVA') {
+        html += `<button class="btn-mini btn-ok" onclick="alterarStatus(${Number(r.id)}, 'ATIVA')">LIBERAR</button>`;
+      }
+
+      if (st !== 'AGUARDANDO') {
+        html += `<button class="btn-mini btn-warn" onclick="alterarStatus(${Number(r.id)}, 'AGUARDANDO')">AGUARDAR</button>`;
+      }
+
+      if (st !== 'CANCELADA') {
+        html += `<button class="btn-mini btn-cancel" onclick="alterarStatus(${Number(r.id)}, 'CANCELADA')">CANCELAR</button>`;
+      }
+
+      return html || '-';
+    }
+
     async function carregarAdesoes(){
-      tbody.innerHTML = `<tr><td colspan="13" class="vazio">Carregando...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="14" class="vazio">Carregando...</td></tr>`;
       infoBar.textContent = 'Carregando...';
+      totalAdesoes.textContent = '0';
+      totalVagas.textContent = '0';
 
       const qs = new URLSearchParams();
       if (evento.value) qs.set('evento', evento.value);
@@ -293,10 +410,15 @@
       }
 
       const rows = data.rows || [];
+      const resumo = data.resumo || {};
+
+      totalAdesoes.textContent = Number(resumo.total_adesoes || 0).toLocaleString('pt-BR');
+      totalVagas.textContent   = Number(resumo.total_vagas || 0).toLocaleString('pt-BR');
+
       infoBar.textContent = `${rows.length} adesão(ões) encontrada(s).`;
 
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="13" class="vazio">Nenhuma adesão encontrada para o filtro selecionado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="14" class="vazio">Nenhuma adesão encontrada para o filtro selecionado.</td></tr>`;
         return;
       }
 
@@ -315,6 +437,7 @@
           <td>${esc(r.cep)}</td>
           <td>${chipStatus(r.status)}</td>
           <td>${esc(fmtData(r.criado_em))}</td>
+          <td class="acoes">${botoesAcoes(r)}</td>
         </tr>
       `).join('');
     }
@@ -326,6 +449,8 @@
       await carregarAdesoes();
     });
 
+    window.alterarStatus = alterarStatus;
+
     (async function init(){
       try{
         await carregarEventos();
@@ -333,7 +458,7 @@
       } catch(e){
         console.error(e);
         infoBar.textContent = 'Erro ao carregar dados.';
-        tbody.innerHTML = `<tr><td colspan="13" class="vazio">Erro ao carregar dados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="14" class="vazio">Erro ao carregar dados.</td></tr>`;
       }
     })();
   </script>
