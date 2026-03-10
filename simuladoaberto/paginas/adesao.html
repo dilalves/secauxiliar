@@ -510,45 +510,62 @@
       }
     })();
 
-    function renderVagas(r){
-    const vagasPainel = Number(r.vagas ?? 0);
-    const vagasRelatorio = r.vagas_relatorio;
-    const removidaRelatorio = Number(r.removida_relatorio ?? 0);
-    const vagasDivergentes = Number(r.vagas_divergentes ?? 0) === 1;
+  function renderVagas(r){
+  const vagas = Number(r.vagas ?? 0);
+  const vagasRel = r.vagas_relatorio;
+  const removidaRelatorio = Number(r.removida_relatorio ?? 0);
+  const vagasDivergentes = Number(r.vagas_divergentes ?? 0) === 1;
+  const status = String(r.status || '').toUpperCase();
 
-    let html = `<span>${esc(vagasPainel)}</span>`;
+  let html = `<span>${esc(vagas)}</span>`;
 
-    if (vagasRelatorio === null || vagasRelatorio === undefined || vagasRelatorio === '') {
-      html += `
-        <span class="vaga-tag vaga-tag-miss"
-              title="Unidade não localizada no relatório para este evento.">
-          rel?
-        </span>
-      `;
-      return `<span class="vaga-wrap">${html}</span>`;
-    }
-
-    if (removidaRelatorio === 1) {
-      html += `
-        <span class="vaga-tag vaga-tag-cancel"
-              title="Unidade marcada como removida/cancelada no relatório. Vagas no relatório: ${esc(vagasRelatorio)}">
-          cancel
-        </span>
-      `;
-      return `<span class="vaga-wrap">${html}</span>`;
-    }
-
+  // Se estiver aguardando, não marca "rel?"
+  if (status === 'AGUARDANDO') {
     if (vagasDivergentes) {
       html += `
         <span class="vaga-tag vaga-tag-dif"
-              title="Vagas no relatório: ${esc(vagasRelatorio)}">
-          dif
+              title="Vagas no relatório: ${esc(vagasRel)}">
+          ⚠️
         </span>
       `;
     }
-
     return `<span class="vaga-wrap">${html}</span>`;
   }
+
+  // Se não achou no relatório e não está aguardando, aí sim marca
+  if (vagasRel === null || vagasRel === undefined || vagasRel === '') {
+    html += `
+      <span class="vaga-tag vaga-tag-miss"
+            title="Unidade não localizada no relatório para este evento.">
+        ?
+      </span>
+    `;
+    return `<span class="vaga-wrap">${html}</span>`;
+  }
+
+  // Se a unidade estiver removida/cancelada no relatório
+  if (removidaRelatorio === 1) {
+    html += `
+      <span class="vaga-tag vaga-tag-cancel"
+            title="Unidade marcada como removida/cancelada no relatório. Vagas no relatório: ${esc(vagasRel)}">
+        ⚠️
+      </span>
+    `;
+    return `<span class="vaga-wrap">${html}</span>`;
+  }
+
+  // Divergência de vagas
+  if (vagasDivergentes) {
+    html += `
+      <span class="vaga-tag vaga-tag-dif"
+            title="Vagas no relatório: ${esc(vagasRel)}">
+        ⚠️
+      </span>
+    `;
+  }
+
+  return `<span class="vaga-wrap">${html}</span>`;
+}
   </script>
 </body>
 </html>
