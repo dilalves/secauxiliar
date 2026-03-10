@@ -265,13 +265,18 @@
 
     <div class="resumo">
       <div class="resumo-card">
-        <div class="resumo-label">Total de adesões</div>
+        <div class="resumo-label">Unidades</div>
         <div class="resumo-valor" id="totalAdesoes">0</div>
       </div>
 
       <div class="resumo-card">
         <div class="resumo-label">Total de vagas</div>
         <div class="resumo-valor" id="totalVagas">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Total de inscritos</div>
+        <div class="resumo-valor" id="totalInscritos">0</div>
       </div>
 
       <div class="resumo-card">
@@ -319,6 +324,7 @@
     const infoBar = document.getElementById('infoBar');
     const totalAdesoes = document.getElementById('totalAdesoes');
     const totalVagas = document.getElementById('totalVagas');
+    const totalInscritos = document.getElementById('totalInscritos');
     const totalEstados = document.getElementById('totalEstados');
     const totalCidades = document.getElementById('totalCidades');
 
@@ -369,6 +375,7 @@
       infoBar.textContent = 'Carregando...';
       totalAdesoes.textContent = '0';
       totalVagas.textContent = '0';
+      totalInscritos.textContent = '0';
 
       const qs = new URLSearchParams();
       if (evento.value) qs.set('evento', evento.value);
@@ -388,6 +395,7 @@
 
       totalAdesoes.textContent = Number(resumo.total_adesoes || 0).toLocaleString('pt-BR');
       totalVagas.textContent   = Number(resumo.total_vagas || 0).toLocaleString('pt-BR');
+      totalInscritos.textContent = Number(resumo.total_inscritos || 0).toLocaleString('pt-BR');
       totalEstados.textContent = Number(resumo.total_estados || 0).toLocaleString('pt-BR');
       totalCidades.textContent = Number(resumo.total_cidades || 0).toLocaleString('pt-BR');
 
