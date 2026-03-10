@@ -282,8 +282,8 @@
       <table>
         <thead>
           <tr>
-            <th>Unidade Login</th>
-            <th>Unidade Internet</th>
+            <th>Código</th>
+            <th>Unidade</th>
             <th>Metrics</th>
             <th>Razão Social</th>            
             <th>Vagas</th>
@@ -441,7 +441,7 @@
           <td>${esc(r.unidade_internet)}</td>
           <td>${esc(r.metrics)}</td>
           <td>${esc(r.razao_social)}</td>
-          <td>${esc(r.vagas)}</td>
+          <td>${renderVagas(r)}</td>
           <td>${esc(r.endereco)}</td>
           <td>${esc(r.cidade)}</td>
           <td>${esc(r.uf)}</td>
@@ -472,6 +472,46 @@
         tbody.innerHTML = `<tr><td colspan="14" class="vazio">Erro ao carregar dados.</td></tr>`;
       }
     })();
+
+    function renderVagas(r){
+    const vagasPainel = Number(r.vagas ?? 0);
+    const vagasRelatorio = r.vagas_relatorio;
+    const removidaRelatorio = Number(r.removida_relatorio ?? 0);
+    const vagasDivergentes = Number(r.vagas_divergentes ?? 0) === 1;
+
+    let html = `<span>${esc(vagasPainel)}</span>`;
+
+    if (vagasRelatorio === null || vagasRelatorio === undefined || vagasRelatorio === '') {
+      html += `
+        <span class="vaga-tag vaga-tag-miss"
+              title="Unidade não localizada no relatório para este evento.">
+          rel?
+        </span>
+      `;
+      return `<span class="vaga-wrap">${html}</span>`;
+    }
+
+    if (removidaRelatorio === 1) {
+      html += `
+        <span class="vaga-tag vaga-tag-cancel"
+              title="Unidade marcada como removida/cancelada no relatório. Vagas no relatório: ${esc(vagasRelatorio)}">
+          cancel
+        </span>
+      `;
+      return `<span class="vaga-wrap">${html}</span>`;
+    }
+
+    if (vagasDivergentes) {
+      html += `
+        <span class="vaga-tag vaga-tag-dif"
+              title="Vagas no relatório: ${esc(vagasRelatorio)}">
+          dif
+        </span>
+      `;
+    }
+
+    return `<span class="vaga-wrap">${html}</span>`;
+  }
   </script>
 </body>
 </html>
