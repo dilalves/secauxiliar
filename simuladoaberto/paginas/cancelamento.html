@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root{
+      --bg:#f8fbff;
+      --card:#ffffff;
+      --line:#d9e5f2;
+      --text:#10233f;
+      --muted:#64748b;
+      --primary:#0b3b78;
+      --chip:#e8f0fb;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      padding:18px;
+      font-family:system-ui, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+
+    h2{
+      margin:0;
+      font-size:24px;
+      color:var(--primary);
+    }
+
+    .sub{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      box-shadow:0 8px 24px rgba(11,59,120,.05);
+    }
+
+    .filtros{
+      display:flex;
+      gap:12px;
+      align-items:end;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .campo{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:240px;
+    }
+
+    label{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    select, button, textarea{
+      border:1px solid var(--line);
+      font-size:14px;
+      font-family:inherit;
+    }
+
+    select, button{
+      height:40px;
+      border-radius:10px;
+      padding:0 12px;
+    }
+
+    button{
+      background:var(--primary);
+      color:#fff;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    button:hover{
+      filter:brightness(1.05);
+    }
+
+    .btn-sec{
+      background:#e8f0fb;
+      color:var(--primary);
+      border:1px solid #cfe0f5;
+    }
+
+    .btn-mini{
+      height:34px;
+      padding:0 12px;
+      border-radius:8px;
+      font-size:12px;
+      font-weight:700;
+      background:#166534;
+      color:#fff;
+    }
+
+    .info-bar{
+      margin-bottom:12px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .tabela-wrap{
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1100px;
+    }
+
+    th, td{
+      padding:10px 12px;
+      border-bottom:1px solid #edf2f7;
+      text-align:left;
+      vertical-align:top;
+      font-size:14px;
+    }
+
+    th{
+      position:sticky;
+      top:0;
+      background:#f2f7fd;
+      color:#17345d;
+      z-index:1;
+      white-space:nowrap;
+    }
+
+    tr:hover td{
+      background:#fafcff;
+    }
+
+    .chip{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      background:#fee2e2;
+      color:#991b1b;
+      white-space:nowrap;
+    }
+
+    .vazio{
+      padding:26px;
+      text-align:center;
+      color:var(--muted);
+    }
+
+    .obs-box{
+      width:100%;
+      min-width:260px;
+      min-height:70px;
+      resize:vertical;
+      border-radius:10px;
+      padding:10px 12px;
+      background:#fff;
+      color:var(--text);
+    }
+
+    .acoes{
+      white-space:nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top">
+    <div>
+      <h2>Cancelamento de Adesões</h2>
+      <div class="sub">Unidades canceladas e registro do motivo do cancelamento</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="filtros">
+      <div class="campo">
+        <label for="evento">Evento</label>
+        <select id="evento">
+          <option value="">Todos os eventos</option>
+        </select>
+      </div>
+
+      <button id="btnBuscar">Buscar</button>
+      <button id="btnLimpar" class="btn-sec">Limpar filtro</button>
+    </div>
+
+    <div class="info-bar" id="infoBar">Carregando...</div>
+
+    <div class="tabela-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Unidade</th>
+            <th>Vagas</th>
+            <th>Status</th>
+            <th>Cancelado em</th>
+            <th>Observações</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="7" class="vazio">Carregando dados...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
+    const tbody = document.getElementById('tbody');
+    const evento = document.getElementById('evento');
+    const infoBar = document.getElementById('infoBar');
+
+    function esc(v){
+      return String(v ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;');
+    }
+
+    function fmtData(v){
+      if (!v) return '';
+      const d = new Date(String(v).replace(' ', 'T'));
+      if (isNaN(d)) return v;
+      return d.toLocaleString('pt-BR');
+    }
+
+    function chipStatus(v){
+      return `<span class="chip">${esc(v || 'CANCELADA')}</span>`;
+    }
+
+    async function carregarEventos(){
+      const r = await fetch(API + 'api_adesoes_eventos.php', {
+        credentials:'include',
+        cache:'no-store'
+      });
+      const data = await r.json();
+
+      if (!r.ok || !data.ok) {
+        throw new Error(data.error || 'Falha ao carregar eventos');
+      }
+
+      evento.innerHTML = `<option value="">Todos os eventos</option>`;
+
+      (data.eventos || []).forEach(ev => {
+        const opt = document.createElement('option');
+        opt.value = ev;
+        opt.textContent = ev;
+        evento.appendChild(opt);
+      });
+    }
+
+    async function salvarObservacao(id){
+      const textarea = document.getElementById(`obs_${id}`);
+      const observacoes = textarea ? textarea.value.trim() : '';
+
+      try{
+        const r = await fetch(API + 'api_adesoes_observacao.php', {
+          method:'POST',
+          credentials:'include',
+          cache:'no-store',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ id, observacoes })
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.error || 'Falha ao salvar observação');
+        }
+
+        alert('Observação salva com sucesso.');
+      } catch(e){
+        alert(e.message || 'Erro ao salvar observação.');
+      }
+    }
+
+    async function carregarCanceladas(){
+      tbody.innerHTML = `<tr><td colspan="7" class="vazio">Carregando...</td></tr>`;
+      infoBar.textContent = 'Carregando...';
+
+      const qs = new URLSearchParams();
+      qs.set('status', 'CANCELADA');
+      if (evento.value) qs.set('evento', evento.value);
+
+      const r = await fetch(API + 'api_adesoes_listar.php?' + qs.toString(), {
+        credentials:'include',
+        cache:'no-store'
+      });
+      const data = await r.json();
+
+      if (!r.ok || !data.ok) {
+        throw new Error(data.error || 'Falha ao carregar cancelamentos');
+      }
+
+      const rows = data.rows || [];
+      infoBar.textContent = `${rows.length} cancelamento(s) encontrado(s).`;
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="vazio">Nenhum cancelamento encontrado para o filtro selecionado.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td>${esc(r.unidade_login)}</td>
+          <td>${esc(r.unidade_internet)}</td>
+          <td>${esc(r.vagas)}</td>
+          <td>${chipStatus(r.status)}</td>
+          <td>${esc(fmtData(r.cancelado_em))}</td>
+          <td>
+            <textarea
+              id="obs_${Number(r.id)}"
+              class="obs-box"
+              placeholder="Informe o motivo do cancelamento..."
+            >${esc(r.observacoes || '')}</textarea>
+          </td>
+          <td class="acoes">
+            <button class="btn-mini" onclick="salvarObservacao(${Number(r.id)})">Salvar</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('btnBuscar').addEventListener('click', carregarCanceladas);
+
+    document.getElementById('btnLimpar').addEventListener('click', async () => {
+      evento.value = '';
+      await carregarCanceladas();
+    });
+
+    window.salvarObservacao = salvarObservacao;
+
+    (async function init(){
+      try{
+        await carregarEventos();
+        await carregarCanceladas();
+      } catch(e){
+        console.error(e);
+        infoBar.textContent = 'Erro ao carregar dados.';
+        tbody.innerHTML = `<tr><td colspan="7" class="vazio">Erro ao carregar dados.</td></tr>`;
+      }
+    })();
+  </script>
+</body>
+</html>
