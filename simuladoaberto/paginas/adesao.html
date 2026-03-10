@@ -330,7 +330,6 @@
             <th>CEP</th>
             <th>Status</th>
             <th>Criado em</th>
-            <th>Ações</th>
           </tr>
         </thead>
         <tbody id="tbody">
@@ -416,26 +415,6 @@
       } catch(e){
         alert(e.message || 'Erro ao atualizar status.');
       }
-    }
-
-    function botoesAcoes(r){
-      const st = String(r.status || '').toUpperCase();
-
-      let html = '';
-
-      if (st !== 'ATIVA') {
-        html += `<button class="btn-mini btn-ok" onclick="alterarStatus(${Number(r.id)}, 'ATIVA')">LIBERAR</button>`;
-      }
-
-      if (st !== 'AGUARDANDO') {
-        html += `<button class="btn-mini btn-warn" onclick="alterarStatus(${Number(r.id)}, 'AGUARDANDO')">AGUARDAR</button>`;
-      }
-
-      if (st !== 'CANCELADA') {
-        html += `<button class="btn-mini btn-cancel" onclick="alterarStatus(${Number(r.id)}, 'CANCELADA')">CANCELAR</button>`;
-      }
-
-      return html || '-';
     }
 
     async function carregarAdesoes(){
