@@ -311,7 +311,7 @@
           </tr>
         </thead>
         <tbody id="tbody">
-          <tr><td colspan="14" class="vazio">Carregando dados...</td></tr>
+          <tr><td colspan="11" class="vazio">Selecione um evento para carregar as adesões.</td></tr>
         </tbody>
       </table>
     </div>
@@ -371,11 +371,17 @@
     }
 
     async function carregarAdesoes(){
-      tbody.innerHTML = `<tr><td colspan="11" class="vazio">Carregando...</td></tr>`;
-      infoBar.textContent = 'Carregando...';
-      totalAdesoes.textContent = '0';
-      totalVagas.textContent = '0';
-      totalInscritos.textContent = '0';
+      if (!evento.value) {
+        infoBar.textContent = 'Selecione um evento para consultar.';
+        return;
+      }
+        tbody.innerHTML = `<tr><td colspan="11" class="vazio">Carregando...</td></tr>`;
+        infoBar.textContent = 'Carregando...';
+        totalAdesoes.textContent = '0';
+        totalVagas.textContent = '0';
+        totalInscritos.textContent = '0';
+        totalEstados.textContent = '0';
+        totalCidades.textContent = '0';
 
       const qs = new URLSearchParams();
       if (evento.value) qs.set('evento', evento.value);
@@ -427,15 +433,32 @@
 
     document.getElementById('btnLimpar').addEventListener('click', async () => {
       evento.value = '';
-      await carregarAdesoes();
-    });
 
-    //window.alterarStatus = alterarStatus;
+      totalAdesoes.textContent = '0';
+      totalVagas.textContent = '0';
+      totalInscritos.textContent = '0';
+      totalEstados.textContent = '0';
+      totalCidades.textContent = '0';
+
+      infoBar.textContent = 'Selecione um evento e clique em Buscar.';
+      tbody.innerHTML = `<tr>
+        <td colspan="11" class="vazio">
+          Selecione um evento para carregar as adesões.
+        </td>
+      </tr>`;
+    });
 
     (async function init(){
       try{
         await carregarEventos();
-        await carregarAdesoes();
+
+        infoBar.textContent = 'Selecione um evento e clique em Buscar.';
+        tbody.innerHTML = `<tr>
+          <td colspan="11" class="vazio">
+            Selecione um evento para carregar as adesões.
+          </td>
+        </tr>`;
+
       } catch(e){
         console.error(e);
         infoBar.textContent = 'Erro ao carregar dados.';
