@@ -110,8 +110,19 @@
       border-radius:8px;
       font-size:12px;
       font-weight:700;
+      background:#0b3b78;
+      color:#fff;
+    }
+
+    .btn-save{
       background:#166534;
       color:#fff;
+    }
+
+    .btn-close{
+      background:#e8f0fb;
+      color:var(--primary);
+      border:1px solid #cfe0f5;
     }
 
     .info-bar{
@@ -130,7 +141,7 @@
     table{
       width:100%;
       border-collapse:collapse;
-      min-width:1100px;
+      min-width:1000px;
     }
 
     th, td{
@@ -171,19 +182,137 @@
       color:var(--muted);
     }
 
-    .obs-box{
-      width:100%;
-      min-width:260px;
-      min-height:70px;
-      resize:vertical;
-      border-radius:10px;
-      padding:10px 12px;
-      background:#fff;
+    .acoes{
+      white-space:nowrap;
+    }
+
+    .obs-resumo{
+      max-width:320px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
       color:var(--text);
     }
 
-    .acoes{
-      white-space:nowrap;
+    .sem-obs{
+      color:var(--muted);
+      font-style:italic;
+    }
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(15, 23, 42, .45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:9999;
+    }
+
+    .modal-backdrop.show{
+      display:flex;
+    }
+
+    .modal{
+      width:min(760px, 100%);
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 20px 50px rgba(2, 6, 23, .18);
+      overflow:hidden;
+    }
+
+    .modal-head{
+      padding:16px 18px;
+      border-bottom:1px solid #e8eef7;
+      background:#f7fbff;
+    }
+
+    .modal-title{
+      margin:0;
+      font-size:20px;
+      color:var(--primary);
+    }
+
+    .modal-sub{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .modal-body{
+      padding:18px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:12px 16px;
+      margin-bottom:16px;
+    }
+
+    .meta{
+      background:#f8fbff;
+      border:1px solid #e3edf8;
+      border-radius:10px;
+      padding:10px 12px;
+    }
+
+    .meta-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      margin-bottom:4px;
+    }
+
+    .meta-value{
+      font-size:14px;
+      color:var(--text);
+      word-break:break-word;
+    }
+
+    .obs-box{
+      width:100%;
+      min-height:140px;
+      resize:vertical;
+      border-radius:12px;
+      padding:12px 14px;
+      background:#fff;
+      color:var(--text);
+      outline:none;
+    }
+
+    .obs-box:focus{
+      border-color:#9cc0eb;
+      box-shadow:0 0 0 3px rgba(37, 99, 235, .10);
+    }
+
+    .modal-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .save-msg{
+      margin-top:10px;
+      font-size:13px;
+      color:#166534;
+      font-weight:600;
+      display:none;
+    }
+
+    .save-msg.show{
+      display:block;
+    }
+
+    @media (max-width: 720px){
+      .grid{
+        grid-template-columns:1fr;
+      }
     }
   </style>
 </head>
@@ -231,11 +360,74 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 class="modal-title">Motivo do cancelamento</h3>
+        <div class="modal-sub">Registro e edição da observação da unidade cancelada</div>
+      </div>
+
+      <div class="modal-body">
+        <div class="grid">
+          <div class="meta">
+            <div class="meta-label">Código</div>
+            <div class="meta-value" id="mCodigo">-</div>
+          </div>
+
+          <div class="meta">
+            <div class="meta-label">Evento</div>
+            <div class="meta-value" id="mEvento">-</div>
+          </div>
+
+          <div class="meta">
+            <div class="meta-label">Unidade</div>
+            <div class="meta-value" id="mUnidade">-</div>
+          </div>
+
+          <div class="meta">
+            <div class="meta-label">Vagas</div>
+            <div class="meta-value" id="mVagas">-</div>
+          </div>
+
+          <div class="meta">
+            <div class="meta-label">Status</div>
+            <div class="meta-value" id="mStatus">-</div>
+          </div>
+
+          <div class="meta">
+            <div class="meta-label">Cancelado em</div>
+            <div class="meta-value" id="mCanceladoEm">-</div>
+          </div>
+        </div>
+
+        <div class="campo" style="min-width:100%;">
+          <label for="modalObservacoes">Observações</label>
+          <textarea id="modalObservacoes" class="obs-box" placeholder="Informe o motivo do cancelamento..."></textarea>
+        </div>
+
+        <div class="save-msg" id="saveMsg">Observação salva com sucesso.</div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-close" id="btnFecharModal">Fechar</button>
+          <button type="button" class="btn-save" id="btnSalvarModal">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
     const tbody = document.getElementById('tbody');
     const evento = document.getElementById('evento');
     const infoBar = document.getElementById('infoBar');
+
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalObservacoes = document.getElementById('modalObservacoes');
+    const btnSalvarModal = document.getElementById('btnSalvarModal');
+    const btnFecharModal = document.getElementById('btnFecharModal');
+    const saveMsg = document.getElementById('saveMsg');
+
+    let registroAtual = null;
 
     function esc(v){
       return String(v ?? '')
@@ -254,6 +446,34 @@
 
     function chipStatus(v){
       return `<span class="chip">${esc(v || 'CANCELADA')}</span>`;
+    }
+
+    function resumoObs(v){
+      const txt = String(v || '').trim();
+      if (!txt) return `<span class="sem-obs">Sem observação</span>`;
+      return `<div class="obs-resumo" title="${esc(txt)}">${esc(txt)}</div>`;
+    }
+
+    function abrirModal(r){
+      registroAtual = r;
+      saveMsg.classList.remove('show');
+
+      document.getElementById('mCodigo').textContent = r.unidade_login || '-';
+      document.getElementById('mEvento').textContent = r.evento || '-';
+      document.getElementById('mUnidade').textContent = r.unidade_internet || '-';
+      document.getElementById('mVagas').textContent = r.vagas ?? '-';
+      document.getElementById('mStatus').textContent = r.status || '-';
+      document.getElementById('mCanceladoEm').textContent = fmtData(r.cancelado_em || '');
+
+      modalObservacoes.value = r.observacoes || '';
+      modalBackdrop.classList.add('show');
+      setTimeout(() => modalObservacoes.focus(), 50);
+    }
+
+    function fecharModal(){
+      modalBackdrop.classList.remove('show');
+      registroAtual = null;
+      saveMsg.classList.remove('show');
     }
 
     async function carregarEventos(){
@@ -277,17 +497,24 @@
       });
     }
 
-    async function salvarObservacao(id){
-      const textarea = document.getElementById(`obs_${id}`);
-      const observacoes = textarea ? textarea.value.trim() : '';
+    async function salvarObservacaoModal(){
+      if (!registroAtual) return;
+
+      const observacoes = modalObservacoes.value.trim();
 
       try{
+        btnSalvarModal.disabled = true;
+        btnSalvarModal.textContent = 'Salvando...';
+
         const r = await fetch(API + 'api_adesoes_observacao.php', {
           method:'POST',
           credentials:'include',
           cache:'no-store',
           headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify({ id, observacoes })
+          body: JSON.stringify({
+            id: registroAtual.id,
+            observacoes
+          })
         });
 
         const data = await r.json();
@@ -296,9 +523,13 @@
           throw new Error(data.error || 'Falha ao salvar observação');
         }
 
-        alert('Observação salva com sucesso.');
+        saveMsg.classList.add('show');
+        await carregarCanceladas();
       } catch(e){
         alert(e.message || 'Erro ao salvar observação.');
+      } finally {
+        btnSalvarModal.disabled = false;
+        btnSalvarModal.textContent = 'Salvar';
       }
     }
 
@@ -335,18 +566,21 @@
           <td>${esc(r.vagas)}</td>
           <td>${chipStatus(r.status)}</td>
           <td>${esc(fmtData(r.cancelado_em))}</td>
-          <td>
-            <textarea
-              id="obs_${Number(r.id)}"
-              class="obs-box"
-              placeholder="Informe o motivo do cancelamento..."
-            >${esc(r.observacoes || '')}</textarea>
-          </td>
+          <td>${resumoObs(r.observacoes)}</td>
           <td class="acoes">
-            <button class="btn-mini" onclick="salvarObservacao(${Number(r.id)})">Salvar</button>
+            <button class="btn-mini" onclick="abrirModalPorId(${Number(r.id)})">Ver / Editar</button>
           </td>
         </tr>
       `).join('');
+
+      window.__cancelRows = rows;
+    }
+
+    function abrirModalPorId(id){
+      const rows = window.__cancelRows || [];
+      const row = rows.find(x => Number(x.id) === Number(id));
+      if (!row) return;
+      abrirModal(row);
     }
 
     document.getElementById('btnBuscar').addEventListener('click', carregarCanceladas);
@@ -356,7 +590,16 @@
       await carregarCanceladas();
     });
 
-    window.salvarObservacao = salvarObservacao;
+    btnFecharModal.addEventListener('click', fecharModal);
+    btnSalvarModal.addEventListener('click', salvarObservacaoModal);
+
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) {
+        fecharModal();
+      }
+    });
+
+    window.abrirModalPorId = abrirModalPorId;
 
     (async function init(){
       try{
