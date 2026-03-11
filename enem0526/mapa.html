@@ -396,7 +396,7 @@
       <div class="map-head">
         <div>
           <h2>Brasil</h2>
-          <p>Apenas os pins das unidades participantes.</p>
+          <p>Unidades participantes.</p>
         </div>
         <span class="badge"><i class="material-icons">place</i><b id="qtdPins">0 unidades</b></span>
       </div>
@@ -603,6 +603,13 @@ async function carregarMapa(){
       if (isNaN(lat) || isNaN(lng)) return;
 
       const marker = L.marker([lat, lng]).addTo(markersLayer);
+
+      marker.bindTooltip(item.unidade_cidade || '', {
+        direction: 'top',
+        offset: [0, -10],
+        opacity: 0.95
+      });
+
       bounds.push([lat, lng]);
     });
 
