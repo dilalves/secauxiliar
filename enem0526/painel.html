@@ -431,12 +431,21 @@
     else alert(msg);
   }
 
-  async function logout(){
-    try {
-      await fetch(API + 'auth_login_out.php', { credentials: 'include' });
-    } catch(e){}
-    location.replace(LOGIN_URL);
+async function logout(){
+  try {
+    const res = await fetch(API + 'auth_login_out.php', {
+      method: 'POST',
+      credentials: 'include',
+      cache: 'no-store'
+    });
+
+    await res.json().catch(() => ({}));
+  } catch(e) {
+    console.error('logout', e);
   }
+
+  location.href = './index.html?logout=1';
+}
 
   async function carregarUsuario(){
     const evt = document.getElementById('evt');
@@ -467,7 +476,7 @@
       const login = data.login || '';
       const unidade = data.unidade || '';
 
-      uLogin.textContent = login ? `Login ${login}` : 'Login';
+      uLogin.textContent = login ? `Unidade ${login}` : 'Login';
       uNome.textContent = unidade || '';
 
       if (welcomeTitle) {
