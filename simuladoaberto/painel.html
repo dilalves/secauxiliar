@@ -8,9 +8,9 @@
 
   <style>
     :root{
-      --bg:#eef4fb;         /* azul bem clarinho */
-      --panel:#f6f9fe;      /* fundo interno */
-      --primary:#0b3b78;    /* azul Objetivo */
+      --bg:#eef4fb;
+      --panel:#f6f9fe;
+      --primary:#0b3b78;
       --accent:#2563eb;
       --line:#dbe6f3;
       --text:#0f172a;
@@ -83,7 +83,7 @@
       top:var(--top-h);
       left:0;
       right:0;
-      height:var(--menu-h);
+      min-height:var(--menu-h);
       background:rgba(255,255,255,.92);
       backdrop-filter:blur(8px);
       border-bottom:1px solid var(--line);
@@ -93,6 +93,7 @@
       gap:10px;
       flex-wrap:wrap;
       z-index:999;
+      overflow:visible;
     }
 
     .menu button{
@@ -110,6 +111,12 @@
       background:#dbeafe;
     }
 
+    .menu button.ativo{
+      background:#0b3b78;
+      color:#fff;
+      box-shadow:0 4px 12px rgba(11,59,120,.22);
+    }
+
     .menu .btn-sair{
       margin-left:auto;
       background:#fde8e8;
@@ -118,6 +125,65 @@
 
     .menu .btn-sair:hover{
       background:#fbd5d5;
+    }
+
+    .menu-item{
+      position:relative;
+      display:flex;
+      align-items:center;
+    }
+
+    .menu-item > button{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .seta{
+      font-size:12px;
+      line-height:1;
+      opacity:.85;
+    }
+
+    .submenu{
+      display:none;
+      position:absolute;
+      top:calc(100% + 8px);
+      left:0;
+      min-width:220px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      box-shadow:0 12px 28px rgba(11,59,120,.14);
+      padding:8px;
+      z-index:1200;
+    }
+
+    .menu-item:hover .submenu,
+    .menu-item.open .submenu{
+      display:block;
+    }
+
+    .submenu button{
+      width:100%;
+      text-align:left;
+      background:#fff;
+      color:#12345b;
+      border:none;
+      border-radius:8px;
+      padding:10px 12px;
+      font-weight:600;
+      box-shadow:none;
+    }
+
+    .submenu button:hover{
+      background:#eef4fb;
+    }
+
+    .submenu button.ativo{
+      background:#0b3b78;
+      color:#fff;
+      box-shadow:0 4px 12px rgba(11,59,120,.18);
     }
 
     #conteudo{
@@ -158,25 +224,18 @@
       display:none !important;
     }
 
-    .menu button{
-    border:none;
-    background:#e8f0fb;
-    color:#12345b;
-    padding:10px 16px;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight:600;
-    transition:.15s ease;
-    }
+    @media (max-width: 900px){
+      .menu{
+        align-items:flex-start;
+      }
 
-    .menu button:hover{
-    background:#dbeafe;
-    }
+      #conteudo{
+        padding-top:150px;
+      }
 
-    .menu button.ativo{
-    background:#0b3b78;
-    color:#fff;
-    box-shadow:0 4px 12px rgba(11,59,120,.22);
+      iframe{
+        height:calc(100vh - 190px);
+      }
     }
   </style>
 </head>
@@ -194,14 +253,57 @@
     </header>
 
     <div class="menu">
-    <button data-page="paginas/dashboard.html" onclick="abrir('paginas/dashboard.html', this)">Dashboard</button>
-    <button data-page="paginas/datas.html" onclick="abrir('paginas/datas.html', this)">Datas</button>
-    <button data-page="paginas/adesao.html" onclick="abrir('paginas/adesao.html', this)">Adesão</button>    
-    <button data-page="paginas/cancelamento.html" onclick="abrir('paginas/cancelamento.html', this)">Cancelamento</button>    
-    <button data-page="paginas/contagem.html" onclick="abrir('paginas/contagem.html', this)">Contagem</button>
-    <button data-page="paginas/unidades.html" onclick="abrir('paginas/unidades.html', this)">Unidades</button>
-    <button data-page="paginas/resultados.html" onclick="abrir('paginas/resultados.html', this)">Resultados</button>
-    <button class="btn-sair" onclick="logout()">Sair</button>
+      <div class="menu-item" id="menu-cadastro">
+        <button type="button" id="btn-cadastro">
+          Cadastro <span class="seta">▾</span>
+        </button>
+
+        <div class="submenu">
+          <button
+            type="button"
+            data-page="paginas/datas.html"
+            onclick="abrir('paginas/datas.html', this)">
+            Datas
+          </button>
+
+          <button
+            type="button"
+            data-page="paginas/unidades.html"
+            onclick="abrir('paginas/unidades.html', this)">
+            Unidades
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        data-page="paginas/adesao.html"
+        onclick="abrir('paginas/adesao.html', this)">
+        Adesão
+      </button>
+
+      <button
+        type="button"
+        data-page="paginas/cancelamento.html"
+        onclick="abrir('paginas/cancelamento.html', this)">
+        Cancelamento
+      </button>
+
+      <button
+        type="button"
+        data-page="paginas/contagem.html"
+        onclick="abrir('paginas/contagem.html', this)">
+        Contagem
+      </button>
+
+      <button
+        type="button"
+        data-page="paginas/resultados.html"
+        onclick="abrir('paginas/resultados.html', this)">
+        Resultados
+      </button>
+
+      <button class="btn-sair" type="button" onclick="logout()">Sair</button>
     </div>
 
     <div id="conteudo">
@@ -212,78 +314,99 @@
   </div>
 
   <script>
-  const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
+    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
 
-  function marcarAtivo(botao){
-    document.querySelectorAll('.menu button').forEach(btn => {
-      btn.classList.remove('ativo');
-    });
-
-    if (botao) {
-      botao.classList.add('ativo');
-    }
-  }
-
-function abrir(pagina, botao = null){
-  const frame = document.getElementById('frame');
-  frame.src = pagina + '?v=' + Date.now();
-  marcarAtivo(botao);
-}
-  async function verificarSessao(){
-    try{
-      const r = await fetch(API + 'auth_me.php', {
-        method: 'GET',
-        credentials: 'include',
-        cache: 'no-store'
+    function marcarAtivo(botao){
+      document.querySelectorAll('.menu button, .submenu button').forEach(btn => {
+        btn.classList.remove('ativo');
       });
 
-      const data = await r.json();
+      if (botao) {
+        botao.classList.add('ativo');
+      }
+    }
 
-      if (!r.ok || !data.ok) {
-        throw new Error(data.msg || data.error || 'Sessão inválida');
+    function fecharSubmenus(){
+      document.querySelectorAll('.menu-item.open').forEach(item => {
+        item.classList.remove('open');
+      });
+    }
+
+    function abrir(pagina, botao = null){
+      const frame = document.getElementById('frame');
+      frame.src = pagina + '?v=' + Date.now();
+      marcarAtivo(botao);
+      fecharSubmenus();
+    }
+
+    async function verificarSessao(){
+      try{
+        const r = await fetch(API + 'auth_me.php', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.msg || data.error || 'Sessão inválida');
+        }
+
+        const user = data.user || {};
+        const nivel = String(user.nivel || '').trim().toLowerCase();
+
+        if (nivel !== 'admin') {
+          throw new Error('Sem permissão');
+        }
+
+        document.getElementById('userbox').textContent =
+          (user.nome || user.login || 'Usuário') + ' • ' + nivel;
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+
+        abrir('paginas/dashboard.html');
+
+      } catch (e) {
+        console.error('Falha ao validar sessão:', e);
+        location.replace('./index.html');
+      }
+    }
+
+    async function logout(){
+      try{
+        await fetch(API + 'auth_logout.php', {
+          method:'POST',
+          credentials:'include',
+          cache:'no-store'
+        });
+      } catch(e){
+        console.warn('Falha ao chamar logout da API');
       }
 
-      const user = data.user || {};
-      const nivel = String(user.nivel || '').trim().toLowerCase();
-
-      if (nivel !== 'admin') {
-        throw new Error('Sem permissão');
-      }
-
-      document.getElementById('userbox').textContent =
-        (user.nome || user.login || 'Usuário') + ' • ' + nivel;
-
-      document.getElementById('loading').classList.add('hidden');
-      document.getElementById('app').classList.remove('hidden');
-
-      const primeiroBotao = document.querySelector('.menu button[data-page]');
-      if (primeiroBotao) {
-        abrir(primeiroBotao.dataset.page, primeiroBotao);
-      }
-
-    } catch (e) {
-      console.error('Falha ao validar sessão:', e);
+      localStorage.removeItem('PRESENCA_token');
+      sessionStorage.clear();
       location.replace('./index.html');
     }
-  }
 
-  async function logout(){
-    try{
-      await fetch(API + 'auth_logout.php', {
-        method:'POST',
-        credentials:'include',
-        cache:'no-store'
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnCadastro = document.getElementById('btn-cadastro');
+      const menuCadastro = document.getElementById('menu-cadastro');
+
+      btnCadastro.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menuCadastro.classList.toggle('open');
       });
-    } catch(e){
-      console.warn('Falha ao chamar logout da API');
-    }
 
-    localStorage.removeItem('PRESENCA_token');
-    sessionStorage.clear();
-    location.replace('./index.html');
-  }
+      document.addEventListener('click', (e) => {
+        if (!menuCadastro.contains(e.target)) {
+          menuCadastro.classList.remove('open');
+        }
+      });
+    });
 
-  verificarSessao();
-</script>
+    verificarSessao();
+  </script>
 </body>
 </html>
