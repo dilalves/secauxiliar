@@ -563,11 +563,10 @@
   async function carregarMapa(){
     const statusMsg = document.getElementById('statusMsg');
     const qtdPins = document.getElementById('qtdPins');
-    const kpiVagas = document.getElementById('kpiVagas');
-    const kpiSite = document.getElementById('kpiSite');
-    const kpiAvulsos = document.getElementById('kpiAvulsos');
-    const kpiTotalInscritos = document.getElementById('kpiTotalInscritos');
-
+    const totalVagas = Number(data.kpis?.total_vagas || 0);
+    const totalSite = Number(data.kpis?.total_inscritos_site || 0);
+    const totalAvulsos = Number(data.kpis?.total_inscritos_avulsos || 0);
+    const totalGeral = Number(data.kpis?.total_inscritos_geral || 0);
     try{
       statusMsg.textContent = 'Carregando mapa...';
 
@@ -613,10 +612,10 @@
         map.setView([-14.2350, -51.9253], 4);
       }
 
-      kpiVagas.textContent = formatNumber(totalVagas);
-      kpiSite.textContent = formatNumber(totalSite);
-      kpiAvulsos.textContent = formatNumber(totalAvulsos);
-      kpiTotalInscritos.textContent = formatNumber(totalGeral);
+      kpiVagas.textContent = formatNumber(data.kpis?.total_vagas);
+      kpiSite.textContent = formatNumber(data.kpis?.total_inscritos_site);
+      kpiAvulsos.textContent = formatNumber(data.kpis?.total_inscritos_avulsos);
+      kpiTotalInscritos.textContent = formatNumber(data.kpis?.total_inscritos_geral);
 
       statusMsg.textContent = '';
 
