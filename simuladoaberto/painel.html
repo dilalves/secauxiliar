@@ -193,7 +193,8 @@
       <div class="userbox" id="userbox"></div>
     </header>
 
-    <div class="menu">   
+    <div class="menu">
+    <button data-page="paginas/dashboard.html" onclick="abrir('paginas/dashboard.html', this)">Dashboard</button>
     <button data-page="paginas/datas.html" onclick="abrir('paginas/datas.html', this)">Datas</button>
     <button data-page="paginas/adesao.html" onclick="abrir('paginas/adesao.html', this)">Adesão</button>    
     <button data-page="paginas/cancelamento.html" onclick="abrir('paginas/cancelamento.html', this)">Cancelamento</button>    
@@ -223,21 +224,11 @@
     }
   }
 
-function marcarAtivo(botao){
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  if (botao) botao.classList.add('active');
-}
-
 function abrir(pagina, botao = null){
   const frame = document.getElementById('frame');
   frame.src = pagina + '?v=' + Date.now();
   marcarAtivo(botao);
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  abrir('dashboard.html');
-});
-
   async function verificarSessao(){
     try{
       const r = await fetch(API + 'auth_me.php', {
