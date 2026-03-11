@@ -422,40 +422,44 @@
 </main>
 
 <script>
-  // ajuste conforme sua API do evento
   const API = 'https://apisec.secauxiliar.com.br/enem0526/';
   const LOGIN_URL = './index.html';
   const EVENTO_FIXO = 'ENEM0526';
 
   function toast(msg){
-    if (window.M && M.toast) M.toast({html: msg});
+    if (window.M && M.toast) M.toast({ html: msg });
     else alert(msg);
   }
 
   async function logout(){
-    try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); } catch(e){}
+    try {
+      await fetch(API + 'auth_login_out.php', { credentials: 'include' });
+    } catch(e){}
     location.replace(LOGIN_URL);
   }
 
   async function carregarUsuario(){
-    // preenche rótulos do evento
-    document.getElementById('evt').textContent = EVENTO_FIXO;
-    document.getElementById('evt2').textContent = EVENTO_FIXO;
-
+    const evt = document.getElementById('evt');
     const uLogin = document.getElementById('uLogin');
-    const uNome  = document.getElementById('uNome');
+    const uNome = document.getElementById('uNome');
+    const welcomeTitle = document.getElementById('welcomeTitle');
+    const welcomeSub = document.getElementById('welcomeSub');
 
-    // coloca texto enquanto carrega (tira skeleton)
+    if (evt) evt.textContent = EVENTO_FIXO;
+
     uLogin.classList.remove('skeleton','sk-line');
     uNome.classList.remove('skeleton','sk-mini');
     uLogin.textContent = 'Carregando...';
-    uNome.textContent  = '';
+    uNome.textContent = '';
 
-    try{
-      const res = await fetch(API + 'auth_me_unidade.php', { credentials:'include' });
+    try {
+      const res = await fetch(API + 'auth_me_unidade.php', {
+        credentials: 'include'
+      });
+
       const data = await res.json();
 
-      if (!data.ok){
+      if (!data.ok) {
         toast('Sessão expirada. Faça login novamente.');
         return logout();
       }
@@ -464,96 +468,91 @@
       const unidade = data.unidade || '';
 
       uLogin.textContent = login ? `Login ${login}` : 'Login';
-      uNome.textContent  = unidade || '';
+      uNome.textContent = unidade || '';
 
-      document.getElementById('welcomeTitle').textContent = `Bem-vindo(a), ${unidade || 'Unidade'}!`;
-      document.getElementById('welcomeSub').textContent = `Você está no painel do evento ${EVENTO_FIXO}.`;
+      if (welcomeTitle) {
+        welcomeTitle.textContent = `Bem-vindo(a), ${unidade || 'Unidade'}!`;
+      }
 
-      // Resumo (pode trocar depois por API real)
-      document.getElementById('resumoTxt').textContent =
-        `Unidade ${unidade || ''} (${login}). Use os atalhos abaixo para operar o simulado.`;
+      if (welcomeSub) {
+        welcomeSub.textContent = `Você está no painel do evento ${EVENTO_FIXO}.`;
+      }
 
-      // KPIs placeholder (depois ligamos num endpoint)
-      document.getElementById('kpiInscr').textContent = '—';
-      document.getElementById('kpiEnv').textContent = '—';
-      document.getElementById('kpiPend').textContent = '—';
-
-    }catch(e){
+    } catch (e) {
       console.error(e);
       toast('Erro de conexão ao carregar usuário.');
       uLogin.textContent = 'Erro';
-      uNome.textContent  = 'Sem conexão';
+      uNome.textContent = 'Sem conexão';
     }
   }
 
-  document.addEventListener('DOMContentLoaded', carregarUsuario);
-
   function setupUserMenu(){
-  const btn = document.getElementById('userBtn');
-  const dd  = document.getElementById('userDropdown');
-  if(!btn || !dd) return;
+    const btn = document.getElementById('userBtn');
+    const dd = document.getElementById('userDropdown');
+    if (!btn || !dd) return;
 
-  function close(){
-    dd.classList.remove('open');
-    btn.setAttribute('aria-expanded','false');
-  }
-  function toggle(){
-    const isOpen = dd.classList.toggle('open');
-    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-  }
+    function close(){
+      dd.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
 
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    toggle();
-  });
+    function toggle(){
+      const isOpen = dd.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
 
-  document.addEventListener('click', close);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') close();
-  });
-}
-
-async function gatePainel() {
-  const r = await fetch(API + 'auth_me_unidade.php', { credentials: 'include' });
-  const data = await r.json().catch(()=> ({}));
-
-  if (!r.ok || !data.ok) {
-    location.replace('./index.html');
-    return false;
-  }
-
-  const st = (data.adesao?.status || '').toUpperCase();
-
-  // se NÃO está ATIVA, expulsa do painel
-  if (st !== 'ATIVA') {
-    await Swal.fire({
-      title: 'Acesso indisponível',
-      html: `
-        <div style="text-align:left;line-height:1.5">
-          <p>Sua adesão ainda não foi liberada.</p>
-          <p>Status atual: <b>${st || 'SEM ADESÃO'}</b></p>
-          <p>⏳ Aguarde a conferência e liberação.</p>
-        </div>
-      `,
-      icon: 'info',
-      confirmButtonColor: '#0b3b78',
-      confirmButtonText: 'OK'
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggle();
     });
-    location.replace('./index.html');
-    return false;
+
+    document.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
   }
 
-  return true;
-}
+  async function gatePainel() {
+    const r = await fetch(API + 'auth_me_unidade.php', { credentials: 'include' });
+    const data = await r.json().catch(() => ({}));
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const ok = await gatePainel();
-  if (!ok) return;
+    if (!r.ok || !data.ok) {
+      location.replace('./index.html');
+      return false;
+    }
 
-  await carregarUsuario();
-  setupUserMenu();
-});
+    const st = (data.adesao?.status || '').toUpperCase();
 
+    if (st !== 'ATIVA') {
+      await Swal.fire({
+        title: 'Acesso indisponível',
+        html: `
+          <div style="text-align:left;line-height:1.5">
+            <p>Sua adesão ainda não foi liberada.</p>
+            <p>Status atual: <b>${st || 'SEM ADESÃO'}</b></p>
+            <p>⏳ Aguarde a conferência e liberação.</p>
+          </div>
+        `,
+        icon: 'info',
+        confirmButtonColor: '#0b3b78',
+        confirmButtonText: 'OK'
+      });
+      location.replace('./index.html');
+      return false;
+    }
+
+    return true;
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const ok = await gatePainel();
+    if (!ok) return;
+
+    setupUserMenu();
+    await carregarUsuario();
+  });
 </script>
+
+
 </body>
 </html>
