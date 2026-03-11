@@ -286,7 +286,7 @@
     .kpis{
       margin-top:16px;
       display:grid;
-      grid-template-columns:repeat(3,1fr);
+      grid-template-columns:repeat(4,1fr);
       gap:12px;
     }
 
@@ -418,6 +418,11 @@
       <div class="kpi">
         <div class="l">Total de inscritos avulsos</div>
         <div class="v" id="kpiAvulsos">0</div>
+      </div>
+
+      <div class="kpi">
+        <div class="l">Total geral de inscritos</div>
+        <div class="v" id="kpiTotalInscritos">0</div>
       </div>
     </section>
 
@@ -561,6 +566,7 @@
     const kpiVagas = document.getElementById('kpiVagas');
     const kpiSite = document.getElementById('kpiSite');
     const kpiAvulsos = document.getElementById('kpiAvulsos');
+    const kpiTotalInscritos = document.getElementById('kpiTotalInscritos');
 
     try{
       statusMsg.textContent = 'Carregando mapa...';
@@ -600,15 +606,17 @@
         bounds.push([lat, lng]);
       });
 
-      if (bounds.length > 0) {
+      if (bounds.length > 1) {
         map.fitBounds(bounds, { padding: [30, 30] });
       } else {
+        // Brasil inteiro, mesmo com só 1 unidade
         map.setView([-14.2350, -51.9253], 4);
       }
 
       kpiVagas.textContent = formatNumber(data.kpis?.total_vagas);
       kpiSite.textContent = formatNumber(data.kpis?.total_inscritos_site);
       kpiAvulsos.textContent = formatNumber(data.kpis?.total_inscritos_avulsos);
+      kpiTotalInscritos.textContent = formatNumber(totalGeralInscritos);
 
       statusMsg.textContent = '';
 
