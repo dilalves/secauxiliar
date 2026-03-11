@@ -71,6 +71,8 @@
 <script>
 const API = 'https://apisec.secauxiliar.com.br/enem0526/';
 const EVENTO_FIXO = 'ENEM0526'; // ✅ fixo neste site/pasta
+const params = new URLSearchParams(location.search);
+const saiuAgora = params.get('logout') === '1';
 
 document.getElementById('btn').onclick = async () => {
   const login = document.getElementById('login').value.trim();
@@ -241,8 +243,14 @@ document.getElementById('forgot').onclick = async (ev) => {
 };
 
 (async function autoCheckSession(){
+  if (saiuAgora) return;
+
   try{
-    const r = await fetch(API + 'auth_me_unidade.php', { credentials:'include' });
+    const r = await fetch(API + 'auth_me_unidade.php', {
+      credentials:'include',
+      cache:'no-store'
+    });
+
     const data = await r.json().catch(()=> ({}));
     if(!r.ok || !data.ok) return;
 
@@ -267,9 +275,10 @@ document.getElementById('forgot').onclick = async (ev) => {
         confirmButtonText: 'OK',
         confirmButtonColor: '#0b3b78'
       });
-      // fica no login mesmo
     }
-  } catch(e){}
+  } catch(e){
+    console.error(e);
+  }
 })();
 
 

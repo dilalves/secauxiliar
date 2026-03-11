@@ -433,15 +433,13 @@
 
 async function logout(){
   try {
-    const res = await fetch(API + 'auth_login_out.php', {
+    await fetch(API + 'auth_login_out.php', {
       method: 'POST',
       credentials: 'include',
       cache: 'no-store'
     });
-
-    await res.json().catch(() => ({}));
-  } catch(e) {
-    console.error('logout', e);
+  } catch(e){
+    console.error(e);
   }
 
   location.href = './index.html?logout=1';
