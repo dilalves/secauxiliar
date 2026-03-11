@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
-  <title>Mapa • Simulado Aberto ENEM — Maio/2026</title>
+  <title>Mapa - Simulado Aberto ENEM</title>
 
   <link
     rel="stylesheet"
@@ -16,14 +16,13 @@
     :root{
       --bg:#eef4fb;
       --panel:#f6f9fe;
-      --card:#ffffff;
       --primary:#0b3b78;
       --accent:#2563eb;
       --line:#dbe6f3;
       --text:#0f172a;
       --muted:#64748b;
-      --ok:#16a34a;
-      --shadow:0 10px 30px rgba(15,23,42,.08);
+      --card:#ffffff;
+      --shadow:0 10px 24px rgba(15,23,42,.06);
       --radius:18px;
     }
 
@@ -31,9 +30,9 @@
 
     body{
       margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       background:var(--bg);
       color:var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     }
 
     .wrap{
@@ -53,8 +52,8 @@
 
     .hero-top{
       display:flex;
-      align-items:center;
       justify-content:space-between;
+      align-items:center;
       gap:12px;
       flex-wrap:wrap;
     }
@@ -85,7 +84,7 @@
       font-size:13px;
     }
 
-    .map-card{
+    .card{
       background:var(--card);
       border:1px solid var(--line);
       border-radius:22px;
@@ -93,7 +92,7 @@
       box-shadow:var(--shadow);
     }
 
-    .map-head{
+    .card-head{
       display:flex;
       justify-content:space-between;
       align-items:center;
@@ -104,14 +103,14 @@
       flex-wrap:wrap;
     }
 
-    .map-head h2{
+    .card-head h2{
       margin:0;
       font-size:22px;
       color:var(--primary);
     }
 
-    .map-head .sub{
-      margin:4px 0 0;
+    .card-head .sub{
+      margin-top:4px;
       color:var(--muted);
       font-size:14px;
     }
@@ -150,26 +149,16 @@
       color:var(--primary);
     }
 
-    .loading,
-    .empty,
-    .error{
-      padding:22px;
+    .status{
+      margin-top:14px;
       color:var(--muted);
-      font-size:15px;
+      font-size:14px;
     }
 
     @media (max-width: 900px){
-      .hero h1{
-        font-size:28px;
-      }
-
-      #map{
-        height:480px;
-      }
-
-      .kpis{
-        grid-template-columns:1fr;
-      }
+      .hero h1{ font-size:28px; }
+      #map{ height:460px; }
+      .kpis{ grid-template-columns:1fr; }
     }
   </style>
 </head>
@@ -179,21 +168,20 @@
       <div class="hero-top">
         <div>
           <h1>Mapa das unidades participantes</h1>
-          <p>Visualização do Brasil com os pontos das unidades que aderiram ao simulado.</p>
+          <p>Visualização das unidades aderentes ao simulado no Brasil.</p>
         </div>
         <div class="badge" id="eventoBadge">ENEM0526</div>
       </div>
     </section>
 
-    <section class="map-card">
-      <div class="map-head">
+    <section class="card">
+      <div class="card-head">
         <div>
           <h2>Brasil</h2>
-          <div class="sub">Pins das unidades participantes do evento.</div>
+          <div class="sub">Apenas os pins das unidades participantes.</div>
         </div>
         <div class="badge" id="qtdPins">0 unidades</div>
       </div>
-
       <div id="map"></div>
     </section>
 
@@ -202,15 +190,19 @@
         <div class="label">Total de vagas</div>
         <div class="value" id="kpiVagas">0</div>
       </div>
+
       <div class="kpi">
         <div class="label">Total de inscritos (site)</div>
         <div class="value" id="kpiSite">0</div>
       </div>
+
       <div class="kpi">
         <div class="label">Total de inscritos avulsos</div>
         <div class="value" id="kpiAvulsos">0</div>
       </div>
     </section>
+
+    <div class="status" id="statusMsg"></div>
   </div>
 
   <script
@@ -226,8 +218,13 @@
     const kpiVagas = document.getElementById('kpiVagas');
     const kpiSite = document.getElementById('kpiSite');
     const kpiAvulsos = document.getElementById('kpiAvulsos');
+    const statusMsg = document.getElementById('statusMsg');
 
     eventoBadge.textContent = EVENTO;
+
+    function formatNumber(n){
+      return new Intl.NumberFormat('pt-BR').format(Number(n || 0));
+    }
 
     const map = L.map('map', {
       zoomControl: true,
@@ -240,24 +237,18 @@
 
     const markersLayer = L.layerGroup().addTo(map);
 
-    function formatNumber(n){
-      return new Intl.NumberFormat('pt-BR').format(Number(n || 0));
-    }
-
     async function carregarMapa() {
       try {
+        statusMsg.textContent = 'Carregando mapa...';
+
         const resp = await fetch(`mapa_dados.php?evento=${encodeURIComponent(EVENTO)}`, {
           credentials: 'include'
         });
 
-        if (!resp.ok) {
-          throw new Error('Falha ao carregar dados do mapa.');
-        }
-
         const data = await resp.json();
 
-        if (!data.ok) {
-          throw new Error(data.error || 'Erro ao obter dados.');
+        if (!resp.ok || !data.ok) {
+          throw new Error(data.error || 'Erro ao carregar mapa.');
         }
 
         const pins = Array.isArray(data.pins) ? data.pins : [];
@@ -287,9 +278,10 @@
         kpiSite.textContent = formatNumber(data.kpis?.total_inscritos_site);
         kpiAvulsos.textContent = formatNumber(data.kpis?.total_inscritos_avulsos);
 
+        statusMsg.textContent = '';
       } catch (err) {
         console.error(err);
-        qtdPins.textContent = 'Erro ao carregar';
+        statusMsg.textContent = err.message || 'Falha ao carregar o mapa.';
       }
     }
 
