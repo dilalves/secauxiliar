@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Mapa • Simulado Aberto ENEM — Maio/2026</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+
+  <style>
+    :root{
+      --bg:#eef4fb;
+      --panel:#f6f9fe;
+      --card:#ffffff;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --line:#dbe6f3;
+      --text:#0f172a;
+      --muted:#64748b;
+      --ok:#16a34a;
+      --shadow:0 10px 30px rgba(15,23,42,.08);
+      --radius:18px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .wrap{
+      max-width:1280px;
+      margin:0 auto;
+      padding:22px;
+    }
+
+    .hero{
+      background:linear-gradient(180deg,#f7fbff 0%, #eef5fd 100%);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px 20px;
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+    }
+
+    .hero-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .hero h1{
+      margin:0;
+      font-size:34px;
+      line-height:1.05;
+      color:var(--primary);
+    }
+
+    .hero p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--line);
+      color:var(--primary);
+      font-weight:700;
+      font-size:13px;
+    }
+
+    .map-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+    }
+
+    .map-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:16px 18px;
+      border-bottom:1px solid var(--line);
+      background:#f9fbfe;
+      flex-wrap:wrap;
+    }
+
+    .map-head h2{
+      margin:0;
+      font-size:22px;
+      color:var(--primary);
+    }
+
+    .map-head .sub{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    #map{
+      width:100%;
+      height:620px;
+      background:#ddeafb;
+    }
+
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(220px,1fr));
+      gap:16px;
+      margin-top:18px;
+    }
+
+    .kpi{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+
+    .kpi .label{
+      color:var(--muted);
+      font-size:14px;
+      margin-bottom:8px;
+    }
+
+    .kpi .value{
+      font-size:34px;
+      line-height:1;
+      font-weight:800;
+      color:var(--primary);
+    }
+
+    .loading,
+    .empty,
+    .error{
+      padding:22px;
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    @media (max-width: 900px){
+      .hero h1{
+        font-size:28px;
+      }
+
+      #map{
+        height:480px;
+      }
+
+      .kpis{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>Mapa das unidades participantes</h1>
+          <p>Visualização do Brasil com os pontos das unidades que aderiram ao simulado.</p>
+        </div>
+        <div class="badge" id="eventoBadge">ENEM0526</div>
+      </div>
+    </section>
+
+    <section class="map-card">
+      <div class="map-head">
+        <div>
+          <h2>Brasil</h2>
+          <div class="sub">Pins das unidades participantes do evento.</div>
+        </div>
+        <div class="badge" id="qtdPins">0 unidades</div>
+      </div>
+
+      <div id="map"></div>
+    </section>
+
+    <section class="kpis">
+      <div class="kpi">
+        <div class="label">Total de vagas</div>
+        <div class="value" id="kpiVagas">0</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Total de inscritos (site)</div>
+        <div class="value" id="kpiSite">0</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Total de inscritos avulsos</div>
+        <div class="value" id="kpiAvulsos">0</div>
+      </div>
+    </section>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    crossorigin=""
+  ></script>
+
+  <script>
+    const EVENTO = 'ENEM0526';
+
+    const eventoBadge = document.getElementById('eventoBadge');
+    const qtdPins = document.getElementById('qtdPins');
+    const kpiVagas = document.getElementById('kpiVagas');
+    const kpiSite = document.getElementById('kpiSite');
+    const kpiAvulsos = document.getElementById('kpiAvulsos');
+
+    eventoBadge.textContent = EVENTO;
+
+    const map = L.map('map', {
+      zoomControl: true,
+      scrollWheelZoom: true
+    }).setView([-14.2350, -51.9253], 4);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    const markersLayer = L.layerGroup().addTo(map);
+
+    function formatNumber(n){
+      return new Intl.NumberFormat('pt-BR').format(Number(n || 0));
+    }
+
+    async function carregarMapa() {
+      try {
+        const resp = await fetch(`mapa_dados.php?evento=${encodeURIComponent(EVENTO)}`, {
+          credentials: 'include'
+        });
+
+        if (!resp.ok) {
+          throw new Error('Falha ao carregar dados do mapa.');
+        }
+
+        const data = await resp.json();
+
+        if (!data.ok) {
+          throw new Error(data.error || 'Erro ao obter dados.');
+        }
+
+        const pins = Array.isArray(data.pins) ? data.pins : [];
+        qtdPins.textContent = `${pins.length} unidade${pins.length === 1 ? '' : 's'}`;
+
+        markersLayer.clearLayers();
+
+        const bounds = [];
+
+        pins.forEach(item => {
+          const lat = parseFloat(item.latitude);
+          const lng = parseFloat(item.longitude);
+
+          if (isNaN(lat) || isNaN(lng)) return;
+
+          const marker = L.marker([lat, lng]);
+          marker.addTo(markersLayer);
+
+          bounds.push([lat, lng]);
+        });
+
+        if (bounds.length > 0) {
+          map.fitBounds(bounds, { padding: [30, 30] });
+        }
+
+        kpiVagas.textContent = formatNumber(data.kpis?.total_vagas);
+        kpiSite.textContent = formatNumber(data.kpis?.total_inscritos_site);
+        kpiAvulsos.textContent = formatNumber(data.kpis?.total_inscritos_avulsos);
+
+      } catch (err) {
+        console.error(err);
+        qtdPins.textContent = 'Erro ao carregar';
+      }
+    }
+
+    carregarMapa();
+  </script>
+</body>
+</html>
