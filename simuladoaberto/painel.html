@@ -146,7 +146,7 @@
     .submenu{
       display:none;
       position:absolute;
-      top:calc(100% + 8px);
+      top:100%;
       left:0;
       min-width:220px;
       background:#fff;
@@ -160,7 +160,7 @@
     .menu-item:hover .submenu{
       display:block;
     }
-    
+
     .submenu button{
       width:100%;
       text-align:left;
@@ -324,9 +324,6 @@
     }
 
     function fecharSubmenus(){
-      document.querySelectorAll('.menu-item.open').forEach(item => {
-        item.classList.remove('open');
-      });
     }
 
     function abrir(pagina, botao = null){
@@ -386,23 +383,7 @@
       sessionStorage.clear();
       location.replace('./index.html');
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const btnCadastro = document.getElementById('btn-cadastro');
-      const menuCadastro = document.getElementById('menu-cadastro');
-
-      btnCadastro.addEventListener('click', (e) => {
-        e.stopPropagation();
-        menuCadastro.classList.toggle('open');
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!menuCadastro.contains(e.target)) {
-          menuCadastro.classList.remove('open');
-        }
-      });
-    });
-
+   
     verificarSessao();
   </script>
 </body>
