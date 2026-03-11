@@ -560,70 +560,75 @@
 
   const markersLayer = L.layerGroup().addTo(map);
 
-  async function carregarMapa(){
-    const statusMsg = document.getElementById('statusMsg');
-    const qtdPins = document.getElementById('qtdPins');
+async function carregarMapa(){
+  const statusMsg = document.getElementById('statusMsg');
+  const qtdPins = document.getElementById('qtdPins');
+  const kpiVagas = document.getElementById('kpiVagas');
+  const kpiSite = document.getElementById('kpiSite');
+  const kpiAvulsos = document.getElementById('kpiAvulsos');
+  const kpiTotalInscritos = document.getElementById('kpiTotalInscritos');
+
+  try{
+    statusMsg.textContent = 'Carregando mapa...';
+
+    const res = await fetch(API + 'mapa_dados.php?evento=' + encodeURIComponent(EVENTO_FIXO), {
+      credentials:'include'
+    });
+
+    const txt = await res.text();
+    let data = null;
+
+    try {
+      data = JSON.parse(txt);
+    } catch(parseErr) {
+      console.error('Resposta bruta:', txt);
+      throw new Error('A API do mapa não retornou JSON válido.');
+    }
+
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || 'Erro ao carregar mapa.');
+    }
+
+    const pins = Array.isArray(data.pins) ? data.pins : [];
+    qtdPins.textContent = `${pins.length} unidade${pins.length === 1 ? '' : 's'}`;
+
+    markersLayer.clearLayers();
+
+    const bounds = [];
+
+    pins.forEach(item => {
+      const lat = parseFloat(item.latitude);
+      const lng = parseFloat(item.longitude);
+
+      if (isNaN(lat) || isNaN(lng)) return;
+
+      const marker = L.marker([lat, lng]).addTo(markersLayer);
+      bounds.push([lat, lng]);
+    });
+
+    if (bounds.length > 1) {
+      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 5 });
+    } else {
+      map.setView([-14.2350, -51.9253], 4);
+    }
+
     const totalVagas = Number(data.kpis?.total_vagas || 0);
     const totalSite = Number(data.kpis?.total_inscritos_site || 0);
     const totalAvulsos = Number(data.kpis?.total_inscritos_avulsos || 0);
     const totalGeral = Number(data.kpis?.total_inscritos_geral || 0);
-    try{
-      statusMsg.textContent = 'Carregando mapa...';
 
-      const res = await fetch(API + 'mapa_dados.php?evento=' + encodeURIComponent(EVENTO_FIXO), {
-        credentials:'include'
-      });
+    kpiVagas.textContent = formatNumber(totalVagas);
+    kpiSite.textContent = formatNumber(totalSite);
+    kpiAvulsos.textContent = formatNumber(totalAvulsos);
+    kpiTotalInscritos.textContent = formatNumber(totalGeral);
 
-      const txt = await res.text();
-      let data = null;
+    statusMsg.textContent = '';
 
-      try {
-        data = JSON.parse(txt);
-      } catch(parseErr) {
-        console.error('Resposta bruta:', txt);
-        throw new Error('A API do mapa não retornou JSON válido.');
-      }
-
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || 'Erro ao carregar mapa.');
-      }
-
-      const pins = Array.isArray(data.pins) ? data.pins : [];
-      qtdPins.textContent = `${pins.length} unidade${pins.length === 1 ? '' : 's'}`;
-
-      markersLayer.clearLayers();
-
-      const bounds = [];
-
-      pins.forEach(item => {
-        const lat = parseFloat(item.latitude);
-        const lng = parseFloat(item.longitude);
-
-        if (isNaN(lat) || isNaN(lng)) return;
-
-        const marker = L.marker([lat, lng]).addTo(markersLayer);
-        bounds.push([lat, lng]);
-      });
-
-      if (bounds.length > 1) {
-        map.fitBounds(bounds, { padding: [30, 30] });
-      } else {
-        // Brasil inteiro, mesmo com só 1 unidade
-        map.setView([-14.2350, -51.9253], 4);
-      }
-
-      kpiVagas.textContent = formatNumber(data.kpis?.total_vagas);
-      kpiSite.textContent = formatNumber(data.kpis?.total_inscritos_site);
-      kpiAvulsos.textContent = formatNumber(data.kpis?.total_inscritos_avulsos);
-      kpiTotalInscritos.textContent = formatNumber(data.kpis?.total_inscritos_geral);
-
-      statusMsg.textContent = '';
-
-    }catch(e){
-      console.error(e);
-      statusMsg.textContent = e.message || 'Erro ao carregar o mapa.';
-    }
+  }catch(e){
+    console.error(e);
+    statusMsg.textContent = e.message || 'Erro ao carregar o mapa.';
   }
+}
 
   document.addEventListener('DOMContentLoaded', async () => {
     const ok = await gatePainel();
