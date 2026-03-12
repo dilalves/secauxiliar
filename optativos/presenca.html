@@ -222,6 +222,7 @@
           <span class="pill pill-gray"><b>Fiscal:</b> <span id="ctx_fiscal">—</span></span>
           <span class="pill pill-green"><b>Rede:</b> <span id="netStatus" class="net-status">Online</span></span>
           <span class="pill pill-orange"><b>Pendências:</b> <span id="pendCount">0</span></span>
+          <span class="pill pill-green"><b>Presentes:</b> <span id="presentCount">0</span></span>
         </div>
 
         <div class="sync-panel">
@@ -336,6 +337,7 @@
     const $lastSyncAt = document.getElementById('lastSyncAt');
     const $btnSyncManual = document.getElementById('btnSyncManual');
     const $btnRecarregar = document.getElementById('btnRecarregar');
+    const $presentCount = document.getElementById('presentCount');
 
     let contexto = null;
     let alunos = [];
@@ -591,7 +593,9 @@
         }).join('');
       }
 
+      atualizarTotalPresentes();
       atualizarPainelSync();
+
     }
 
     async function carregarContexto(){
@@ -1057,6 +1061,11 @@
       }catch(e){
         M.toast({html:'Erro de rede ao trocar sala'});
       }
+    }
+
+    function atualizarTotalPresentes(){
+      const totalPresentes = alunos.filter(a => a.presenca_ok || a.pendente_sync).length;
+      $presentCount.textContent = String(totalPresentes);
     }
   </script>
 </body>
