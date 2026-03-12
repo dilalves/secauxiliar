@@ -6,434 +6,456 @@
   <title>Ficha de Inscrição</title>
   <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
 
-  <style>
-    :root{
-      --primary:#0b3b78;
-      --accent:#2563eb;
-      --line:#d9e6f5;
-      --soft:#f5f9ff;
-      --text:#10233f;
-      --muted:#5f7088;
-      --ok:#eaf3ff;
-    }
+<style>
+  :root{
+    --primary:#0b3b78;
+    --accent:#2563eb;
+    --line:#d9e6f5;
+    --soft:#f5f9ff;
+    --text:#10233f;
+    --muted:#5f7088;
+    --ok:#eaf3ff;
+  }
 
-    *{ box-sizing:border-box; }
+  *{ box-sizing:border-box; }
 
+  body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#eef4fb;
+    color:var(--text);
+  }
+
+  .page-wrap{
+    padding:14px;
+    display:flex;
+    justify-content:center;
+  }
+
+  .sheet{
+    width:210mm;
+    min-height:297mm;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(11,59,120,.10);
+    overflow:hidden;
+    position:relative;
+  }
+
+  .top-logo{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding-top:10px;
+    margin-bottom:-14px;
+    position:relative;
+    z-index:3;
+  }
+
+  .logo{
+    width:90px;
+    height:90px;
+    border-radius:18px;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    flex:0 0 auto;
+    box-shadow:0 8px 24px rgba(11,59,120,.16);
+    border:1px solid var(--line);
+  }
+
+  .logo img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+  }
+
+  .topbar{
+    background:linear-gradient(135deg, var(--primary), #134d96);
+    color:#fff;
+    padding:22px 18px 12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+  }
+
+  .head h1{
+    margin:0 0 2px;
+    font-size:22px;
+    line-height:1.05;
+  }
+
+  .head p{
+    margin:0;
+    font-size:12px;
+    color:rgba(255,255,255,.92);
+  }
+
+  .badge{
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:14px;
+    padding:10px 14px;
+    min-width:190px;
+    text-align:center;
+    flex:0 0 auto;
+  }
+
+  .badge .lbl{
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.7px;
+    opacity:.9;
+    margin-bottom:4px;
+  }
+
+  .badge .num{
+    font-size:24px;
+    font-weight:700;
+    letter-spacing:.5px;
+    line-height:1.05;
+  }
+
+  .content{
+    padding:14px 16px 16px;
+  }
+
+  .hero{
+    background:linear-gradient(180deg, #f8fbff, #f2f7ff);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px 12px;
+    margin-bottom:10px;
+    display:grid;
+    grid-template-columns:1.2fr .8fr;
+    gap:10px;
+    align-items:stretch;
+  }
+
+  .hero-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 12px;
+  }
+
+  .hero-title{
+    margin:0 0 6px;
+    font-size:11px;
+    font-weight:700;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.5px;
+  }
+
+  .hero-big{
+    font-size:18px;
+    font-weight:700;
+    color:var(--primary);
+    line-height:1.15;
+  }
+
+  .hero-sub{
+    margin-top:5px;
+    font-size:11px;
+    color:var(--muted);
+    line-height:1.28;
+  }
+
+  .section{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px 12px;
+    margin-bottom:10px;
+    background:#fff;
+  }
+
+  .section h2{
+    margin:0 0 8px;
+    font-size:15px;
+    color:var(--primary);
+    line-height:1.1;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px 12px;
+  }
+
+  .field{
+    border-bottom:1px dashed #dbe5f0;
+    padding-bottom:4px;
+    min-height:auto;
+  }
+
+  .field.full{
+    grid-column:1 / -1;
+  }
+
+  .label{
+    font-size:10px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.45px;
+    margin-bottom:2px;
+    font-weight:700;
+  }
+
+  .value{
+    font-size:13px;
+    color:var(--text);
+    word-break:break-word;
+    line-height:1.2;
+  }
+
+  .prova-box{
+    background:var(--ok);
+    border:1px solid #cfe0fb;
+    border-radius:12px;
+    padding:8px 10px;
+    margin-top:4px;
+  }
+
+  .prova-destaque{
+    font-size:15px;
+    font-weight:700;
+    color:var(--primary);
+    line-height:1.15;
+  }
+
+  .declaracao{
+    font-size:11.5px;
+    line-height:1.38;
+    text-align:justify;
+  }
+
+  .footer{
+    margin-top:8px;
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    font-size:10px;
+    color:var(--muted);
+    align-items:flex-end;
+  }
+
+  .warn{
+    font-size:10px;
+    line-height:1.28;
+    color:#6a7688;
+    background:#fafcff;
+    border:1px dashed #cfdced;
+    border-radius:10px;
+    padding:7px 8px;
+    margin-top:7px;
+  }
+
+  .loading{
+    padding:60px 20px;
+    text-align:center;
+    color:var(--muted);
+    font-size:18px;
+  }
+
+  .actions{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    padding:14px;
+  }
+
+  .btn{
+    border:none;
+    border-radius:12px;
+    padding:10px 16px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+  .btn.primary{
+    background:var(--primary);
+    color:#fff;
+  }
+
+  .btn.light{
+    background:#e9f1fb;
+    color:var(--primary);
+  }
+
+  @page{
+    size:A4;
+    margin:6mm;
+  }
+
+  @media print{
     body{
-      margin:0;
-      font-family:Arial, Helvetica, sans-serif;
-      background:#eef4fb;
-      color:var(--text);
+      background:#fff;
     }
 
     .page-wrap{
-      padding:14px;
-      display:flex;
-      justify-content:center;
+      padding:0;
     }
 
     .sheet{
-      width:210mm;
-      min-height:297mm;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:16px;
-      box-shadow:0 10px 30px rgba(11,59,120,.10);
-      overflow:hidden;
-      position:relative;
-    }
-
-    .topbar{
-      background:linear-gradient(135deg, var(--primary), #134d96);
-      color:#fff;
-      padding:14px 18px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:14px;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-
-    .logo{
-      width:56px;
-      height:56px;
-      border-radius:12px;
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      flex:0 0 auto;
-    }
-
-    .logo img{
-      width:100%;
-      height:100%;
-      object-fit:contain;
-    }
-
-    .head h1{
-      margin:0 0 2px;
-      font-size:22px;
-      line-height:1.05;
-    }
-
-    .head p{
-      margin:0;
-      font-size:12px;
-      color:rgba(255,255,255,.92);
-    }
-
-    .badge{
-      background:rgba(255,255,255,.14);
-      border:1px solid rgba(255,255,255,.28);
-      border-radius:14px;
-      padding:10px 14px;
-      min-width:190px;
-      text-align:center;
-    }
-
-    .badge .lbl{
-      font-size:10px;
-      text-transform:uppercase;
-      letter-spacing:.7px;
-      opacity:.9;
-      margin-bottom:4px;
-    }
-
-    .badge .num{
-      font-size:24px;
-      font-weight:700;
-      letter-spacing:.5px;
-      line-height:1.05;
-    }
-
-    .content{
-      padding:14px 16px 16px;
-    }
-
-    .hero{
-      background:linear-gradient(180deg, #f8fbff, #f2f7ff);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      margin-bottom:10px;
-      display:grid;
-      grid-template-columns:1.2fr .8fr;
-      gap:10px;
-      align-items:stretch;
-    }
-
-    .hero-card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px 12px;
-    }
-
-    .hero-title{
-      margin:0 0 6px;
-      font-size:11px;
-      font-weight:700;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.5px;
-    }
-
-    .hero-big{
-      font-size:18px;
-      font-weight:700;
-      color:var(--primary);
-      line-height:1.15;
-    }
-
-    .hero-sub{
-      margin-top:5px;
-      font-size:11px;
-      color:var(--muted);
-      line-height:1.28;
-    }
-
-    .section{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      margin-bottom:10px;
-      background:#fff;
-    }
-
-    .section h2{
-      margin:0 0 8px;
-      font-size:15px;
-      color:var(--primary);
-      line-height:1.1;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:8px 12px;
-    }
-
-    .field{
-      border-bottom:1px dashed #dbe5f0;
-      padding-bottom:4px;
+      width:auto;
       min-height:auto;
-    }
-
-    .field.full{
-      grid-column:1 / -1;
-    }
-
-    .label{
-      font-size:10px;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.45px;
-      margin-bottom:2px;
-      font-weight:700;
-    }
-
-    .value{
-      font-size:13px;
-      color:var(--text);
-      word-break:break-word;
-      line-height:1.2;
-    }
-
-    .prova-box{
-      background:var(--ok);
-      border:1px solid #cfe0fb;
-      border-radius:12px;
-      padding:8px 10px;
-      margin-top:4px;
-    }
-
-    .prova-destaque{
-      font-size:15px;
-      font-weight:700;
-      color:var(--primary);
-      line-height:1.15;
-    }
-
-    .declaracao{
-      font-size:11.5px;
-      line-height:1.38;
-      text-align:justify;
-    }
-
-    .footer{
-      margin-top:8px;
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      font-size:10px;
-      color:var(--muted);
-      align-items:flex-end;
-    }
-
-    .warn{
-      font-size:10px;
-      line-height:1.28;
-      color:#6a7688;
-      background:#fafcff;
-      border:1px dashed #cfdced;
-      border-radius:10px;
-      padding:7px 8px;
-      margin-top:7px;
-    }
-
-    .loading{
-      padding:60px 20px;
-      text-align:center;
-      color:var(--muted);
-      font-size:18px;
+      border:none;
+      border-radius:0;
+      box-shadow:none;
     }
 
     .actions{
-      display:flex;
-      gap:10px;
-      justify-content:center;
-      padding:14px;
+      display:none !important;
     }
 
-    .btn{
-      border:none;
-      border-radius:12px;
-      padding:10px 16px;
-      font-size:13px;
-      font-weight:700;
-      cursor:pointer;
+    .top-logo{
+      padding-top:6px !important;
+      margin-bottom:-10px !important;
+      z-index:3 !important;
     }
 
-    .btn.primary{
-      background:var(--primary);
-      color:#fff;
+    .topbar{
+      padding:18px 14px 10px !important;
+      gap:10px !important;
     }
 
-    .btn.light{
-      background:#e9f1fb;
-      color:var(--primary);
+    .logo{
+      width:68px !important;
+      height:68px !important;
+      border-radius:14px !important;
+      box-shadow:0 6px 14px rgba(11,59,120,.12) !important;
     }
 
-    @page{
-      size:A4;
-      margin:6mm;
+    .head h1{
+      font-size:20px !important;
+      margin-bottom:2px !important;
     }
 
-    @media print{
-      body{
-        background:#fff;
-      }
-
-      .page-wrap{
-        padding:0;
-      }
-
-      .sheet{
-        width:auto;
-        min-height:auto;
-        border:none;
-        border-radius:0;
-        box-shadow:none;
-      }
-
-      .actions{
-        display:none !important;
-      }
-
-      .topbar{
-        padding:12px 14px !important;
-        gap:12px !important;
-      }
-
-      .logo{
-        width:50px !important;
-        height:50px !important;
-        border-radius:10px !important;
-      }
-
-      .head h1{
-        font-size:20px !important;
-        margin-bottom:2px !important;
-      }
-
-      .head p{
-        font-size:11px !important;
-      }
-
-      .badge{
-        padding:8px 12px !important;
-        min-width:180px !important;
-      }
-
-      .badge .lbl{
-        font-size:9px !important;
-        margin-bottom:3px !important;
-      }
-
-      .badge .num{
-        font-size:22px !important;
-      }
-
-      .content{
-        padding:10px 12px 12px !important;
-      }
-
-      .hero{
-        padding:8px 9px !important;
-        margin-bottom:8px !important;
-        gap:8px !important;
-        border-radius:12px !important;
-      }
-
-      .hero-card{
-        padding:8px 9px !important;
-        border-radius:10px !important;
-      }
-
-      .hero-title{
-        font-size:10px !important;
-        margin-bottom:4px !important;
-      }
-
-      .hero-big{
-        font-size:16px !important;
-        line-height:1.1 !important;
-      }
-
-      .hero-sub{
-        margin-top:4px !important;
-        font-size:10px !important;
-        line-height:1.2 !important;
-      }
-
-      .section{
-        padding:8px 10px !important;
-        margin-bottom:8px !important;
-        border-radius:12px !important;
-      }
-
-      .section h2{
-        margin-bottom:6px !important;
-        font-size:13px !important;
-      }
-
-      .grid{
-        gap:6px 10px !important;
-      }
-
-      .field{
-        padding-bottom:3px !important;
-        min-height:auto !important;
-      }
-
-      .label{
-        font-size:9px !important;
-        margin-bottom:1px !important;
-      }
-
-      .value{
-        font-size:12px !important;
-        line-height:1.15 !important;
-      }
-
-      .prova-box{
-        padding:7px 8px !important;
-        margin-top:3px !important;
-        border-radius:10px !important;
-      }
-
-      .prova-destaque{
-        font-size:14px !important;
-        line-height:1.1 !important;
-      }
-
-      .declaracao{
-        font-size:10.5px !important;
-        line-height:1.28 !important;
-      }
-
-      .warn{
-        font-size:9px !important;
-        line-height:1.18 !important;
-        padding:5px 6px !important;
-        margin-top:5px !important;
-        border-radius:8px !important;
-      }
-
-      .footer{
-        margin-top:6px !important;
-        font-size:9px !important;
-        gap:8px !important;
-      }
+    .head p{
+      font-size:11px !important;
     }
-  </style>
+
+    .badge{
+      padding:8px 12px !important;
+      min-width:170px !important;
+      border-radius:12px !important;
+    }
+
+    .badge .lbl{
+      font-size:9px !important;
+      margin-bottom:3px !important;
+    }
+
+    .badge .num{
+      font-size:21px !important;
+    }
+
+    .content{
+      padding:10px 12px 12px !important;
+    }
+
+    .hero{
+      padding:8px 9px !important;
+      margin-bottom:8px !important;
+      gap:8px !important;
+      border-radius:12px !important;
+    }
+
+    .hero-card{
+      padding:8px 9px !important;
+      border-radius:10px !important;
+    }
+
+    .hero-title{
+      font-size:10px !important;
+      margin-bottom:4px !important;
+    }
+
+    .hero-big{
+      font-size:16px !important;
+      line-height:1.1 !important;
+    }
+
+    .hero-sub{
+      margin-top:4px !important;
+      font-size:10px !important;
+      line-height:1.2 !important;
+    }
+
+    .section{
+      padding:8px 10px !important;
+      margin-bottom:8px !important;
+      border-radius:12px !important;
+    }
+
+    .section h2{
+      margin-bottom:6px !important;
+      font-size:13px !important;
+    }
+
+    .grid{
+      gap:6px 10px !important;
+    }
+
+    .field{
+      padding-bottom:3px !important;
+      min-height:auto !important;
+    }
+
+    .label{
+      font-size:9px !important;
+      margin-bottom:1px !important;
+    }
+
+    .value{
+      font-size:12px !important;
+      line-height:1.15 !important;
+    }
+
+    .prova-box{
+      padding:7px 8px !important;
+      margin-top:3px !important;
+      border-radius:10px !important;
+    }
+
+    .prova-destaque{
+      font-size:14px !important;
+      line-height:1.1 !important;
+    }
+
+    .declaracao{
+      font-size:10.5px !important;
+      line-height:1.28 !important;
+    }
+
+    .warn{
+      font-size:9px !important;
+      line-height:1.18 !important;
+      padding:5px 6px !important;
+      margin-top:5px !important;
+      border-radius:8px !important;
+    }
+
+    .footer{
+      margin-top:6px !important;
+      font-size:9px !important;
+      gap:8px !important;
+    }
+  }
+</style>
   
 </head>
 <body>
@@ -523,11 +545,14 @@
       const enderecoProva = d.endereco_prova || d.razao_social || '-';
 
       document.getElementById('sheet').innerHTML = `
+        <div class="top-logo">
+          <div class="logo">
+            <img src="/enem0526/logo.png" alt="Objetivo">
+          </div>
+        </div>
+
         <div class="topbar">
           <div class="brand">
-            <div class="logo">
-              <img src="/enem0526/logo.png" alt="Objetivo">
-            </div>
             <div class="head">
               <h1>Ficha de Inscrição</h1>
               <p>Simulado Aberto Objetivo</p>
@@ -539,7 +564,6 @@
             <div class="num">${escapeHtml(d.inscricao || '-')}</div>
           </div>
         </div>
-
         <div class="content">
           <div class="hero">
             <div class="hero-card">
