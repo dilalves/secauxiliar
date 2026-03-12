@@ -580,35 +580,6 @@
     </section>
 
     <section class="grid" id="apoioGrid">
-
-      <div class="box wide">
-        <div class="box-head">
-          <div class="box-title">
-            <div class="box-icon"><i class="material-icons">how_to_reg</i></div>
-            <div class="txt">
-              <h3>Contagem de presentes</h3>
-              <p>Informe rapidamente a quantidade de alunos presentes na unidade.</p>
-            </div>
-          </div>
-          <span class="count-pill">Ação rápida</span>
-        </div>
-        <div class="box-body">
-          <div class="help-card">
-            <div class="help-left">
-              <div class="icon"><i class="material-icons">fact_check</i></div>
-              <div>
-                <h3>Quantidade de alunos presentes</h3>
-                <p id="presencaTexto">Use este atalho para abrir o formulário de presença já vinculado à sua unidade.</p>
-              </div>
-            </div>
-            <a id="btnPresenca" class="btn-go" target="_blank" rel="noopener noreferrer">
-              <i class="material-icons">open_in_new</i>
-              Abrir formulário
-            </a>
-          </div>
-        </div>
-      </div>
-
       <div class="box wide">
         <div class="box-body">
           <div id="loadingBox" class="loading">Carregando materiais...</div>
@@ -694,8 +665,6 @@
     const welcomeTitle = document.getElementById('welcomeTitle');
     const welcomeSub = document.getElementById('welcomeSub');
     const evt = document.getElementById('evt');
-    const btnPresenca = document.getElementById('btnPresenca');
-    const presencaTexto = document.getElementById('presencaTexto');
 
     if (evt) evt.textContent = EVENTO_FIXO;
 
@@ -725,17 +694,6 @@
 
     welcomeTitle.textContent = `Material de apoio — ${unidade || 'Unidade'}`;
     welcomeSub.textContent = `Arquivos organizados por categoria para o evento ${EVENTO_FIXO}.`;
-
-    const formUrl =
-      'https://docs.google.com/forms/d/e/1FAIpQLSce1dZa9vXRuVOQnuVNekZIz3ypjtK1qdUk0yKxg4dZXCYcSQ/viewform' +
-      `?entry.1148590000=${encodeURIComponent(login)}` +
-      '&entry.914330967=2%C2%BA%20DIA&usp=pp_url';
-
-    btnPresenca.href = formUrl;
-    presencaTexto.textContent = login
-      ? `O formulário será aberto já com a unidade ${login} preenchida.`
-      : 'Abra o formulário de presença da sua unidade.';
-
     return data;
   }
 
