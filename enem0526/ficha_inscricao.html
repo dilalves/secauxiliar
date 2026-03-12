@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ficha de Inscrição</title>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+
+  <style>
+    :root{
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --line:#d9e6f5;
+      --soft:#f5f9ff;
+      --text:#10233f;
+      --muted:#5f7088;
+      --ok:#eaf3ff;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:#eef4fb;
+      color:var(--text);
+    }
+
+    .page-wrap{
+      padding:24px;
+      display:flex;
+      justify-content:center;
+    }
+
+    .sheet{
+      width:210mm;
+      min-height:297mm;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:0 10px 30px rgba(11,59,120,.10);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .topbar{
+      background:linear-gradient(135deg, var(--primary), #134d96);
+      color:#fff;
+      padding:24px 28px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:20px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+
+    .logo{
+      width:74px;
+      height:74px;
+      border-radius:16px;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+
+    .logo img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+    }
+
+    .head h1{
+      margin:0 0 4px;
+      font-size:28px;
+      line-height:1.1;
+    }
+
+    .head p{
+      margin:0;
+      font-size:14px;
+      color:rgba(255,255,255,.92);
+    }
+
+    .badge{
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.28);
+      border-radius:16px;
+      padding:14px 18px;
+      min-width:220px;
+      text-align:center;
+    }
+
+    .badge .lbl{
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.8px;
+      opacity:.9;
+      margin-bottom:6px;
+    }
+
+    .badge .num{
+      font-size:30px;
+      font-weight:700;
+      letter-spacing:1px;
+    }
+
+    .content{
+      padding:26px 28px 30px;
+    }
+
+    .hero{
+      background:linear-gradient(180deg, #f8fbff, #f2f7ff);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px 20px;
+      margin-bottom:18px;
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:16px;
+      align-items:stretch;
+    }
+
+    .hero-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px 18px;
+    }
+
+    .hero-title{
+      margin:0 0 10px;
+      font-size:13px;
+      font-weight:700;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.6px;
+    }
+
+    .hero-big{
+      font-size:24px;
+      font-weight:700;
+      color:var(--primary);
+      line-height:1.2;
+    }
+
+    .hero-sub{
+      margin-top:8px;
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .section{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px 20px;
+      margin-bottom:16px;
+      background:#fff;
+    }
+
+    .section h2{
+      margin:0 0 14px;
+      font-size:18px;
+      color:var(--primary);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px 18px;
+    }
+
+    .field{
+      border-bottom:1px dashed #dbe5f0;
+      padding-bottom:8px;
+      min-height:48px;
+    }
+
+    .field.full{
+      grid-column:1 / -1;
+    }
+
+    .label{
+      font-size:12px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.5px;
+      margin-bottom:4px;
+      font-weight:700;
+    }
+
+    .value{
+      font-size:16px;
+      color:var(--text);
+      word-break:break-word;
+    }
+
+    .prova-box{
+      background:var(--ok);
+      border:1px solid #cfe0fb;
+      border-radius:16px;
+      padding:14px 16px;
+      margin-top:8px;
+    }
+
+    .prova-destaque{
+      font-size:20px;
+      font-weight:700;
+      color:var(--primary);
+      line-height:1.35;
+    }
+
+    .declaracao{
+      font-size:15px;
+      line-height:1.7;
+      text-align:justify;
+    }
+
+    .footer{
+      margin-top:18px;
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+      font-size:13px;
+      color:var(--muted);
+      align-items:flex-end;
+    }
+
+    .warn{
+      font-size:13px;
+      line-height:1.5;
+      color:#6a7688;
+      background:#fafcff;
+      border:1px dashed #cfdced;
+      border-radius:14px;
+      padding:12px 14px;
+      margin-top:14px;
+    }
+
+    .loading{
+      padding:80px 20px;
+      text-align:center;
+      color:var(--muted);
+      font-size:18px;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      padding:18px;
+    }
+
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:12px 18px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .btn.primary{
+      background:var(--primary);
+      color:#fff;
+    }
+
+    .btn.light{
+      background:#e9f1fb;
+      color:var(--primary);
+    }
+
+    @page{
+      size:A4;
+      margin:10mm;
+    }
+
+    @media print{
+      body{
+        background:#fff;
+      }
+
+      .page-wrap{
+        padding:0;
+      }
+
+      .sheet{
+        width:auto;
+        min-height:auto;
+        border:none;
+        border-radius:0;
+        box-shadow:none;
+      }
+
+      .actions{
+        display:none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <div class="sheet" id="sheet">
+      <div class="loading" id="loading">Carregando ficha de inscrição...</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" onclick="window.print()">Imprimir / Salvar em PDF</button>
+    <button class="btn light" onclick="history.back()">Voltar</button>
+  </div>
+
+  <script>
+    const API_BASE = './get_ficha_inscricao_avulsa.php';
+
+    function qs(name) {
+      return new URLSearchParams(window.location.search).get(name) || '';
+    }
+
+    function formatDateBR(v) {
+      if (!v) return '-';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+        const [y,m,d] = v.split('-');
+        return `${d}/${m}/${y}`;
+      }
+      const dt = new Date(v);
+      if (!isNaN(dt.getTime())) {
+        return dt.toLocaleDateString('pt-BR');
+      }
+      return v;
+    }
+
+    function formatDateTimeBR(v) {
+      if (!v) return '-';
+      const dt = new Date(v.replace(' ', 'T'));
+      if (!isNaN(dt.getTime())) {
+        return dt.toLocaleString('pt-BR');
+      }
+      return v;
+    }
+
+    function formatCpf(cpf) {
+      const s = String(cpf || '').replace(/\D/g, '');
+      if (s.length !== 11) return cpf || '-';
+      return s.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    async function carregar() {
+      const inscricao = qs('inscricao');
+
+      if (!inscricao) {
+        document.getElementById('sheet').innerHTML = `
+          <div class="loading">Inscrição não informada.</div>
+        `;
+        return;
+      }
+
+      const resp = await fetch(`${API_BASE}?inscricao=${encodeURIComponent(inscricao)}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      const json = await resp.json();
+
+      if (!resp.ok || !json.ok) {
+        document.getElementById('sheet').innerHTML = `
+          <div class="loading">${escapeHtml(json.msg || 'Não foi possível carregar a ficha.')}</div>
+        `;
+        return;
+      }
+
+      const d = json.item || {};
+
+      const eventoTitulo = d.evento_titulo || d.evento || 'Simulado Aberto Objetivo';
+      const localProva = d.local_prova || d.unidade_internet || 'Local a definir';
+      const enderecoProva = d.endereco_prova || d.razao_social || '-';
+
+      document.getElementById('sheet').innerHTML = `
+        <div class="topbar">
+          <div class="brand">
+            <div class="logo">
+              <img src="https://www.curso-objetivo.br/assets/img/logo-objetivo.png" alt="Objetivo">
+            </div>
+            <div class="head">
+              <h1>Ficha de Inscrição</h1>
+              <p>Simulado Aberto Objetivo</p>
+            </div>
+          </div>
+
+          <div class="badge">
+            <div class="lbl">Número de inscrição</div>
+            <div class="num">${escapeHtml(d.inscricao || '-')}</div>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="hero">
+            <div class="hero-card">
+              <div class="hero-title">Evento</div>
+              <div class="hero-big">${escapeHtml(eventoTitulo)}</div>
+              <div class="hero-sub">
+                Este comprovante confirma a inscrição do candidato no
+                <strong>Simulado Aberto Objetivo</strong>.
+              </div>
+            </div>
+
+            <div class="hero-card">
+              <div class="hero-title">Local da prova</div>
+              <div class="hero-big">${escapeHtml(localProva)}</div>
+              <div class="hero-sub">${escapeHtml(enderecoProva)}</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Dados do candidato</h2>
+            <div class="grid">
+              <div class="field full">
+                <div class="label">Nome</div>
+                <div class="value">${escapeHtml(d.nome || '-')}</div>
+              </div>
+
+              <div class="field">
+                <div class="label">CPF</div>
+                <div class="value">${escapeHtml(formatCpf(d.cpf))}</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Data de nascimento</div>
+                <div class="value">${escapeHtml(formatDateBR(d.dt_nascimento))}</div>
+              </div>
+
+              <div class="field full">
+                <div class="label">E-mail</div>
+                <div class="value">${escapeHtml(d.email || '-')}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Dados da inscrição</h2>
+            <div class="grid">
+              <div class="field">
+                <div class="label">Evento</div>
+                <div class="value">${escapeHtml(d.evento || '-')}</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Data da inscrição</div>
+                <div class="value">${escapeHtml(formatDateTimeBR(d.dt_inscricao))}</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Login da unidade</div>
+                <div class="value">${escapeHtml(d.login || '-')}</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Unidade</div>
+                <div class="value">${escapeHtml(d.unidade_internet || '-')}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Dados da prova</h2>
+            <div class="grid">
+              <div class="field">
+                <div class="label">Data da prova</div>
+                <div class="value">${escapeHtml(formatDateBR(d.data_prova))}</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Horário</div>
+                <div class="value">${escapeHtml(d.hora_prova || '-')}</div>
+              </div>
+
+              <div class="field full">
+                <div class="label">Local de realização</div>
+                <div class="prova-box">
+                  <div class="prova-destaque">${escapeHtml(localProva)}</div>
+                  <div style="margin-top:6px; color:#49607f; font-size:14px;">
+                    ${escapeHtml(enderecoProva)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Declaração</h2>
+            <div class="declaracao">
+              Declaro estar de acordo com as normas previstas no regulamento do
+              <strong>Simulado Aberto Objetivo</strong>, disponível em
+              <strong>https://www.curso-objetivo.br</strong>, que regerão todo o período
+              de realização do processo, nada tendo a opor quanto à sua aplicação,
+              aos critérios de correção, classificação, apuração e divulgação dos resultados.
+              <br><br>
+              Declaro ainda estar ciente de que, caso qualquer informação fornecida
+              nesta inscrição não corresponda à realidade, a participação poderá ser
+              cancelada, a prova poderá ser anulada e o candidato poderá perder o
+              direito aos benefícios, descontos, classificação e acesso ao resultado
+              do simulado, conforme as regras estabelecidas pela organização.
+            </div>
+
+            <div class="warn">
+              <strong>Atenção:</strong> recomenda-se que o candidato confira todos os dados,
+              compareça ao local com antecedência e mantenha este comprovante em mãos
+              no dia da prova.
+            </div>
+
+            <div class="footer">
+              <div>
+                <strong>Emitido em:</strong> ${escapeHtml(formatDateTimeBR(new Date().toISOString()))}
+              </div>
+              <div>
+                <strong>Simulado Aberto Objetivo</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    }
+
+    carregar().catch(err => {
+      document.getElementById('sheet').innerHTML = `
+        <div class="loading">Erro ao carregar ficha.</div>
+      `;
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
