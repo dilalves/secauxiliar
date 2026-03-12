@@ -696,32 +696,32 @@
     return data;
   }
 
-  function montarArquivoHTML(arquivo){
-    const icone = ICONES[arquivo.tipo] || ICONES.arquivo;
+function montarArquivoHTML(arquivo){
+  const icone = ICONES[arquivo.tipo] || ICONES.arquivo;
 
-    return `
-      <div class="file-item">
-        <div class="file-left">
-          <div class="file-ico">
-            <i class="material-icons">${icone}</i>
-          </div>
-          <div class="file-meta">
-            <div class="file-name">${escapeHtml(arquivo.nome || 'Arquivo')}</div>
-            <div class="file-info">
-              ${escapeHtml(arquivo.tamanho_format || '--')}
-              ${arquivo.modificado_em ? ' • Atualizado em ' + escapeHtml(arquivo.modificado_em) : ''}
-            </div>
-          </div>
+  return `
+    <div class="file-item">
+      <div class="file-left">
+        <div class="file-ico">
+          <i class="material-icons">${icone}</i>
         </div>
-        <div class="file-actions">
-          <a class="btn-file" href="${arquivo.download_url}" rel="noopener noreferrer">
-            <i class="material-icons">download</i>
-            Baixar
-          </a>
+        <div class="file-meta">
+          <div class="file-name">${escapeHtml(arquivo.nome || 'Arquivo')}</div>
+          <div class="file-info">
+            ${escapeHtml(arquivo.tamanho_format || '--')}
+            ${arquivo.modificado_em ? ' • Atualizado em ' + escapeHtml(arquivo.modificado_em) : ''}
+          </div>
         </div>
       </div>
-    `;
-  }
+      <div class="file-actions">
+        <a class="btn-file" href="${arquivo.download_url}" rel="noopener noreferrer">
+          <i class="material-icons">download</i>
+          Baixar
+        </a>
+      </div>
+    </div>
+  `;
+}
 
   function montarCategoriaHTML(slug, categoria){
     const arquivos = Array.isArray(categoria.arquivos) ? categoria.arquivos : [];
