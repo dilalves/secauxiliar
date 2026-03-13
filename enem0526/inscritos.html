@@ -59,22 +59,17 @@
     }
 
     .logo-wrap{
-      width:40px;
-      height:40px;
-      border-radius:12px;
-      background:rgba(255,255,255,.12);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
     }
 
     .logo-wrap img{
-      width:28px;
-      height:28px;
-      object-fit:contain;
-      display:block;
+    width:46px;
+    height:auto;
+    object-fit:contain;
+    display:block;
     }
 
     .title-wrap{
@@ -342,25 +337,39 @@
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-left">
-      <div class="logo-wrap">
-        <img src="https://www.curso-objetivo.br/assets/img/favicon.ico" alt="Logo">
-      </div>
+<header class="topbar">
+  <div class="container">
+    <div class="brand">
+      <img src="/enem0526/logo-mini.png" alt="Logo">
       <div class="title-wrap">
-        <div class="title-main">Simulados Abertos</div>
-        <div class="title-sub">Consulta de inscritos da unidade</div>
+        <div class="title">Simulado Aberto ENEM — Maio/2026</div>
+        <div class="sub">Painel da unidade</div>
       </div>
     </div>
 
-    <div class="topbar-right">
-      <div class="top-pill">
-        <i class="material-icons" style="font-size:16px;">groups</i>
-        <span>Inscritos</span>
-      </div>
-    </div>
-  </header>
+    <div class="actions">
+      <div class="user-menu" id="userMenu">
+        <button class="chip-user btn-user waves-effect" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <i class="material-icons mat">account_circle</i>
+          <div class="txt">
+            <b id="uLogin" class="skeleton sk-line"></b>
+            <span id="uNome" class="skeleton sk-mini"></span>
+          </div>
+          <i class="material-icons caret">arrow_drop_down</i>
+        </button>
 
+        <div class="dropdown" id="userDropdown" role="menu" aria-label="Menu do usuário">
+          <a href="./alterar_senha.html" class="dd-item" role="menuitem">
+            <i class="material-icons">lock</i> Alterar senha
+          </a>
+          <a href="#" class="dd-item" role="menuitem" onclick="logout(); return false;">
+            <i class="material-icons">logout</i> Sair
+          </a>
+        </div>
+      </div>
+    </div>  
+  </div>
+</header>
   <main class="wrap">
     <section class="page-card">
       <div class="page-head">
@@ -484,7 +493,7 @@
       tbody.innerHTML = lista.map(item => `
         <tr>
           <td>${esc(item.inscricao)}</td>
-          <td>${esc(item.nome)}</td>
+          <td>${esc(String(item.nome ?? '').toUpperCase())}</td>
           <td>${esc(item.cpf)}</td>
           <td>${esc(fmtDate(item.data_inscricao))}</td>
         </tr>
