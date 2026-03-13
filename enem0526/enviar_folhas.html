@@ -976,6 +976,42 @@ async function uploadFile() {
   }
 }
 
+document.addEventListener('DOMContentLoaded', async () => {
+  const ok = await gatePainel();
+  if (!ok) return;
+
+  // Inicializa o select do Materialize
+  M.FormSelect.init(document.querySelectorAll('select'));
+
+  // Menu do usuário
+  setupUserMenu();
+
+  // Carrega unidade/login no topo
+  await carregarUsuario();
+
+  // Eventos da tela
+  document.getElementById('fileInput').addEventListener('change', atualizarResumoDoDia);
+  document.getElementById('dia').addEventListener('change', atualizarResumoDoDia);
+
+  // Habilita R1 quando a redação estiver liberada
+  try {
+    const res = await verificarRedacaoHabilitada(EVENTO_FIXO);
+    const sel = document.getElementById('dia');
+
+    if (res.habilitada && !sel.querySelector('option[value="R1"]')) {
+      sel.insertAdjacentHTML('beforeend', '<option value="R1">REDAÇÃO (R1)</option>');
+      M.FormSelect.init(sel);
+    }
+  } catch (err) {
+    console.error('Erro ao verificar redação:', err);
+  }
+
+  // Atualiza os KPIs iniciais se já houver dia selecionado
+  await atualizarResumoDoDia();
+});
+
+
+
 </script>
 
 </body>
