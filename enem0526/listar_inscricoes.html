@@ -677,6 +677,57 @@
     btnExcel.addEventListener('click', baixarExcel);
 
     carregar();
+    await carregarUsuario();
+
+  
+  async function carregarUsuario(){
+    const evt = document.getElementById('evt');
+    const uLogin = document.getElementById('uLogin');
+    const uNome = document.getElementById('uNome');
+    const welcomeTitle = document.getElementById('welcomeTitle');
+    const welcomeSub = document.getElementById('welcomeSub');
+
+    if (evt) evt.textContent = EVENTO_FIXO;
+
+    uLogin.classList.remove('skeleton','sk-line');
+    uNome.classList.remove('skeleton','sk-mini');
+    uLogin.textContent = 'Carregando...';
+    uNome.textContent = '';
+
+    try {
+      const res = await fetch(API + 'auth_me_unidade.php', {
+        credentials: 'include'
+      });
+
+      const data = await res.json();
+
+      if (!data.ok) {
+        toast('Sessão expirada. Faça login novamente.');
+        return logout();
+      }
+
+      const login = data.login || '';
+      const unidade = data.unidade || '';
+
+      uLogin.textContent = login ? `Unidade ${login}` : 'Login';
+      uNome.textContent = unidade || '';
+
+      if (welcomeTitle) {
+        welcomeTitle.textContent = `Bem-vindo(a), ${unidade || 'Unidade'}!`;
+      }
+
+      if (welcomeSub) {
+        welcomeSub.textContent = `Você está no painel do evento ${EVENTO_FIXO}.`;
+      }
+
+    } catch (e) {
+      console.error(e);
+      toast('Erro de conexão ao carregar usuário.');
+      uLogin.textContent = 'Erro';
+      uNome.textContent = 'Sem conexão';
+    }
+  }
+
   </script>
 </body>
 </html>
