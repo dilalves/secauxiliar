@@ -783,222 +783,199 @@
     });
   }
 
-  async function enviarArquivo(file, newFileName, originalFileName, diaSelecionado) {
-    const fd = new FormData();
-    fd.append('arquivo', file);
-    fd.append('evento', EVENTO_FIXO);
-    fd.append('dia', diaSelecionado);
-    fd.append('originalFileName', originalFileName);
-    fd.append('newFileName', newFileName);
+async function enviarArquivo(file, originalFileName, diaSelecionado, dpiX, dpiY) {
+  const fd = new FormData();
+  fd.append('arquivo', file);
+  fd.append('evento', EVENTO_FIXO);
+  fd.append('dia', diaSelecionado);
+  fd.append('originalFileName', originalFileName);
+  fd.append('dpi_x', dpiX ?? '');
+  fd.append('dpi_y', dpiY ?? '');
 
-    const resp = await fetch(API + 'enviar_upload.php', {
-      method: 'POST',
-      credentials: 'include',
-      body: fd
-    });
+  const resp = await fetch(API + 'enviar_upload.php', {
+    method: 'POST',
+    credentials: 'include',
+    body: fd
+  });
 
-    const data = await resp.json().catch(() => ({}));
+  const data = await resp.json().catch(() => ({}));
 
-    if (!resp.ok || !data.ok) {
-      throw new Error(data.error || data.msg || 'Erro ao enviar arquivo.');
-    }
-
-    return data;
+  if (!resp.ok || !data.ok) {
+    throw new Error(data.error || data.msg || 'Erro ao enviar arquivo.');
   }
 
-  async function uploadFile() {
-    const fileInput = document.getElementById('fileInput');
-    const arquivosOriginais = Array.from(fileInput.files || []);
-    const fileNamesPreview = document.getElementById('fileNamesPreview');
-    const sendButton = document.getElementById('btnEnviar');
-    const diaSelecionado = document.getElementById('dia').value;
+  return data;
+}
 
-    fileNamesPreview.innerHTML = '';
-    sendButton.disabled = true;
+async function uploadFile() {
+  const fileInput = document.getElementById('fileInput');
+  const arquivosOriginais = Array.from(fileInput.files || []);
+  const fileNamesPreview = document.getElementById('fileNamesPreview');
+  const sendButton = document.getElementById('btnEnviar');
+  const diaSelecionado = document.getElementById('dia').value;
 
-    if (!diaSelecionado) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Dados inválidos',
-        text: 'Selecione o dia do envio.'
-      });
-      sendButton.disabled = false;
-      return;
-    }
+  fileNamesPreview.innerHTML = '';
+  sendButton.disabled = true;
 
-    if (arquivosOriginais.length === 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Nenhum arquivo selecionado',
-        text: 'Escolha pelo menos um arquivo para enviar.'
-      });
-      sendButton.disabled = false;
-      return;
-    }
+  if (!diaSelecionado) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Dados inválidos',
+      text: 'Selecione o dia do envio.'
+    });
+    sendButton.disabled = false;
+    return;
+  }
 
-    let arquivosProcessados = [];
+  if (arquivosOriginais.length === 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Nenhum arquivo selecionado',
+      text: 'Escolha pelo menos um arquivo para enviar.'
+    });
+    sendButton.disabled = false;
+    return;
+  }
 
-    for (const f of arquivosOriginais) {
-      if (isTiff(f)) {
-        try {
-          const jpgs = await converterTiffParaJpgs(f);
-          arquivosProcessados.push(...jpgs);
-        } catch (e) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Erro ao converter TIF',
-            text: `${f.name}: ${e}`
-          });
-          sendButton.disabled = false;
-          return;
-        }
-      } else {
-        arquivosProcessados.push(f);
+  let arquivosProcessados = [];
+
+  for (const f of arquivosOriginais) {
+    if (isTiff(f)) {
+      try {
+        const jpgs = await converterTiffParaJpgs(f);
+        arquivosProcessados.push(...jpgs);
+      } catch (e) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro ao converter TIF',
+          text: `${f.name}: ${e}`
+        });
+        sendButton.disabled = false;
+        return;
       }
+    } else {
+      arquivosProcessados.push(f);
     }
+  }
 
-    atualizarKPIs(numeroPresentes, imagensEnviadas, arquivosProcessados.length);
+  atualizarKPIs(numeroPresentes, imagensEnviadas, arquivosProcessados.length);
 
-    let resposta;
+  let resposta;
+  try {
+    resposta = await verificarLimiteUpload(EVENTO_FIXO, diaSelecionado);
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Erro ao validar envio',
+      text: err.message || String(err)
+    });
+    sendButton.disabled = false;
+    return;
+  }
+
+  numeroPresentes = resposta.presentes || 0;
+  imagensEnviadas = resposta.enviados || 0;
+  atualizarKPIs(numeroPresentes, imagensEnviadas, arquivosProcessados.length);
+
+  if (numeroPresentes === 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Presença não informada',
+      text: 'Essa unidade não tem quantidade liberada para esse dia.'
+    });
+    sendButton.disabled = false;
+    return;
+  }
+
+  if ((arquivosProcessados.length + imagensEnviadas) > numeroPresentes) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Excesso de arquivos',
+      text: `Já foram enviados ${imagensEnviadas} de ${numeroPresentes} imagens permitidas.`
+    });
+    sendButton.disabled = false;
+    return;
+  }
+
+  const resultadosDpi = await Promise.all(arquivosProcessados.map(verificarDPIReal));
+  const falhas = resultadosDpi.filter(r => !r.ok);
+
+  if (falhas.length > 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Imagens recusadas por baixa resolução',
+      html: falhas.map(f => f.erro || `❌ <strong>${f.nome}</strong> - ${f.dpiX}x${f.dpiY} DPI`).join('<br>')
+    });
+    sendButton.disabled = false;
+    return;
+  }
+
+  document.getElementById('loadingOverlay').classList.add('show');
+
+  let houveErro = false;
+
+  for (let idx = 0; idx < arquivosProcessados.length; idx++) {
+    const file = arquivosProcessados[idx];
+    const originalFileName = file.name;
+    const dpiInfo = resultadosDpi[idx];
+
+    const row = document.createElement('div');
+    row.className = 'preview-item';
+    row.innerHTML = `
+      <span class="muted">${esc(originalFileName)}</span>
+      → <strong>gerando nome...</strong>
+      — <span class="warn">⏳ em andamento</span>
+    `;
+    fileNamesPreview.appendChild(row);
+    row.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
     try {
-      resposta = await verificarLimiteUpload(EVENTO_FIXO, diaSelecionado);
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Erro ao validar envio',
-        text: err.message || String(err)
-      });
-      sendButton.disabled = false;
-      return;
-    }
+      const retorno = await enviarArquivo(
+        file,
+        originalFileName,
+        diaSelecionado,
+        dpiInfo?.dpiX ?? '',
+        dpiInfo?.dpiY ?? ''
+      );
 
-    numeroPresentes = resposta.presentes || 0;
-    imagensEnviadas = resposta.enviados || 0;
-    atualizarKPIs(numeroPresentes, imagensEnviadas, arquivosProcessados.length);
-
-    if (numeroPresentes === 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Presença não informada',
-        text: 'Essa unidade não tem quantidade liberada para esse dia.'
-      });
-      sendButton.disabled = false;
-      return;
-    }
-
-    if ((arquivosProcessados.length + imagensEnviadas) > numeroPresentes) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Excesso de arquivos',
-        text: `Já foram enviados ${imagensEnviadas} de ${numeroPresentes} imagens permitidas.`
-      });
-      sendButton.disabled = false;
-      return;
-    }
-
-    const resultadosDpi = await Promise.all(arquivosProcessados.map(verificarDPIReal));
-    const falhas = resultadosDpi.filter(r => !r.ok);
-
-    if (falhas.length > 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Imagens recusadas por baixa resolução',
-        html: falhas.map(f => f.erro || `❌ <strong>${f.nome}</strong> - ${f.dpiX}x${f.dpiY} DPI`).join('<br>')
-      });
-      sendButton.disabled = false;
-      return;
-    }
-
-    const now = new Date();
-    const date = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-    const time = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
-
-    document.getElementById('loadingOverlay').classList.add('show');
-
-    let houveErro = false;
-
-    for (let idx = 0; idx < arquivosProcessados.length; idx++) {
-      const file = arquivosProcessados[idx];
-      const extOriginal = (file.name.split('.').pop() || '').toLowerCase();
-      const ext = extOriginal === 'jpeg' ? 'jpg' : extOriginal;
-      const seq = String(idx + 1).padStart(2, '0');
-      const originalFileName = file.name;
-      const newFileName = `${date}_${time}_${diaSelecionado}_${seq}.${ext}`;
-
-      const row = document.createElement('div');
-      row.className = 'preview-item';
       row.innerHTML = `
         <span class="muted">${esc(originalFileName)}</span>
-        → <strong>${esc(newFileName)}</strong>
-        — <span class="warn">⏳ em andamento</span>
+        → <strong>${esc(retorno.arquivo)}</strong>
+        — <span class="ok">✔ enviado</span>
       `;
-      fileNamesPreview.appendChild(row);
-      row.scrollIntoView({ behavior: 'smooth', block: 'end' });
-
-      try {
-        await enviarArquivo(file, newFileName, originalFileName, diaSelecionado);
-        row.innerHTML = `
-          <span class="muted">${esc(originalFileName)}</span>
-          → <strong>${esc(newFileName)}</strong>
-          — <span class="ok">✔ enviado</span>
-        `;
-      } catch (err) {
-        houveErro = true;
-        row.innerHTML = `
-          <span class="muted">${esc(originalFileName)}</span>
-          → <strong>${esc(newFileName)}</strong>
-          — <span class="err">✖ erro</span>
-          <span class="muted">${esc(err.message || String(err))}</span>
-        `;
-      }
-    }
-
-    document.getElementById('loadingOverlay').classList.remove('show');
-    sendButton.disabled = false;
-
-    await atualizarResumoDoDia();
-
-    if (houveErro) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Envio concluído com ocorrências',
-        text: 'Alguns arquivos não foram enviados. Verifique a lista abaixo.'
-      });
-    } else {
-      Swal.fire({
-        icon: 'success',
-        title: 'Sucesso',
-        text: 'Todos os arquivos foram enviados com sucesso.'
-      });
-      fileInput.value = '';
-      document.querySelector('.file-path').value = '';
-      atualizarKPIs(numeroPresentes, imagensEnviadas, 0);
+    } catch (err) {
+      houveErro = true;
+      row.innerHTML = `
+        <span class="muted">${esc(originalFileName)}</span>
+        — <span class="err">✖ erro</span>
+        <span class="muted">${esc(err.message || String(err))}</span>
+      `;
     }
   }
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    const ok = await gatePainel();
-    if (!ok) return;
+  document.getElementById('loadingOverlay').classList.remove('show');
+  sendButton.disabled = false;
 
-    M.FormSelect.init(document.querySelectorAll('select'));
-    setupUserMenu();
-    await carregarUsuario();
+  await atualizarResumoDoDia();
 
-    document.getElementById('fileInput').addEventListener('change', atualizarResumoDoDia);
-    document.getElementById('dia').addEventListener('change', atualizarResumoDoDia);
+  if (houveErro) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Envio concluído com ocorrências',
+      text: 'Alguns arquivos não foram enviados. Verifique a lista abaixo.'
+    });
+  } else {
+    Swal.fire({
+      icon: 'success',
+      title: 'Sucesso',
+      text: 'Todos os arquivos foram enviados com sucesso.'
+    });
+    fileInput.value = '';
+    document.querySelector('.file-path').value = '';
+    atualizarKPIs(numeroPresentes, imagensEnviadas, 0);
+  }
+}
 
-    try {
-      const res = await verificarRedacaoHabilitada(EVENTO_FIXO);
-      const sel = document.getElementById('dia');
-
-      if (res.habilitada && !sel.querySelector('option[value="R1"]')) {
-        sel.insertAdjacentHTML('beforeend', '<option value="R1">REDAÇÃO (R1)</option>');
-        M.FormSelect.init(sel);
-      }
-    } catch (err) {
-      console.error('Erro ao verificar redação:', err);
-    }
-  });
 </script>
 
 </body>
