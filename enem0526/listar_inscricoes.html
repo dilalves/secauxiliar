@@ -610,10 +610,11 @@
       }
 
       const headers = ['INSCRICAO', 'NOME', 'CPF', 'DATA_INSCRICAO'];
+
       const rows = dadosAtuais.map(item => [
-        item.inscricao ?? '',
-        item.nome ?? '',
-        item.cpf ?? '',
+        `="${String(item.inscricao ?? '').trim()}"`,
+        String(item.nome ?? '').toUpperCase(),
+        `="${String(item.cpf ?? '').trim()}"`,
         fmtDate(item.data_inscricao ?? '')
       ]);
 
