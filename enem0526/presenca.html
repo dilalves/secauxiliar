@@ -284,6 +284,10 @@
       gap:12px;
     }
 
+    .kpis-6{
+      grid-template-columns:repeat(3,1fr);
+    }
+
     .kpi{
       background:#fff;
       border:1px solid var(--line);
@@ -303,6 +307,61 @@
       font-weight:900;
       color:var(--primary);
       line-height:1.1;
+    }
+
+    .stats-grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .stat-box{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:0 10px 26px rgba(0,0,0,.05);
+    }
+
+    .stat-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    .stat-top span{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .stat-top b{
+      font-size:18px;
+      color:var(--primary);
+    }
+
+    .progress-mini{
+      width:100%;
+      height:10px;
+      background:#edf2f7;
+      border-radius:999px;
+      overflow:hidden;
+      margin-bottom:8px;
+    }
+
+    .progress-mini .bar{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background:linear-gradient(90deg, var(--accent), var(--primary));
+      transition:width .35s ease;
+    }
+
+    .stat-box small{
+      color:var(--muted);
+      font-size:12px;
     }
 
     .input-card{
@@ -373,7 +432,11 @@
 
     @media (max-width: 860px){
       .chip-user{ max-width:260px; }
-      .kpis{ grid-template-columns:1fr; }
+      .kpis,
+      .kpis-6,
+      .stats-grid{
+        grid-template-columns:1fr;
+      }
       .footer-actions{ justify-content:stretch; }
       .footer-actions .btn{ width:100%; }
     }
@@ -448,10 +511,25 @@
 
       <div class="content-body">
 
-        <div class="kpis">
+        <div class="kpis kpis-6">
           <div class="kpi">
             <div class="l">Vagas da unidade</div>
             <div class="v" id="kpiVagas">0</div>
+          </div>
+
+          <div class="kpi">
+            <div class="l">Inscritos site</div>
+            <div class="v" id="kpiSite" data-valor="0">0</div>
+          </div>
+
+          <div class="kpi">
+            <div class="l">Inscritos avulsos</div>
+            <div class="v" id="kpiAvulsos" data-valor="0">0</div>
+          </div>
+
+          <div class="kpi">
+            <div class="l">Inscritos total</div>
+            <div class="v" id="kpiInscritos" data-valor="0">0</div>
           </div>
 
           <div class="kpi">
@@ -462,6 +540,41 @@
           <div class="kpi">
             <div class="l">Presentes dia 2</div>
             <div class="v" id="kpiD2">0</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-top">
+              <span>Ocupação das vagas</span>
+              <b id="pctOcupacao">0%</b>
+            </div>
+            <div class="progress-mini">
+              <div class="bar" id="barOcupacao"></div>
+            </div>
+            <small>Inscritos total em relação às vagas</small>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-top">
+              <span>Presença Dia 1</span>
+              <b id="pctPresencaD1">0%</b>
+            </div>
+            <div class="progress-mini">
+              <div class="bar" id="barPresencaD1"></div>
+            </div>
+            <small>Presentes do Dia 1 em relação aos inscritos</small>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-top">
+              <span>Presença Dia 2</span>
+              <b id="pctPresencaD2">0%</b>
+            </div>
+            <div class="progress-mini">
+              <div class="bar" id="barPresencaD2"></div>
+            </div>
+            <small>Presentes do Dia 2 em relação aos inscritos</small>
           </div>
         </div>
 
@@ -527,10 +640,44 @@
     return new Intl.NumberFormat('pt-BR').format(Number(n || 0));
   }
 
+  function clampPct(n){
+    n = Number(n || 0);
+    if (n < 0) return 0;
+    if (n > 100) return 100;
+    return n;
+  }
+
+  function formatPct(n){
+    return `${Number(n || 0).toFixed(1).replace('.', ',')}%`;
+  }
+
   function atualizarKpis(){
-    document.getElementById('kpiVagas').textContent = formatNumber(document.getElementById('vagas').value || 0);
-    document.getElementById('kpiD1').textContent   = formatNumber(document.getElementById('d1').value || 0);
-    document.getElementById('kpiD2').textContent   = formatNumber(document.getElementById('d2').value || 0);
+    const vagas = Number(document.getElementById('vagas').value || 0);
+    const d1 = Number(document.getElementById('d1').value || 0);
+    const d2 = Number(document.getElementById('d2').value || 0);
+
+    const inscritosSite = Number(document.getElementById('kpiSite')?.dataset.valor || 0);
+    const inscritosAvulsos = Number(document.getElementById('kpiAvulsos')?.dataset.valor || 0);
+    const inscritosTotal = Number(document.getElementById('kpiInscritos')?.dataset.valor || 0);
+
+    document.getElementById('kpiVagas').textContent = formatNumber(vagas);
+    document.getElementById('kpiSite').textContent = formatNumber(inscritosSite);
+    document.getElementById('kpiAvulsos').textContent = formatNumber(inscritosAvulsos);
+    document.getElementById('kpiInscritos').textContent = formatNumber(inscritosTotal);
+    document.getElementById('kpiD1').textContent = formatNumber(d1);
+    document.getElementById('kpiD2').textContent = formatNumber(d2);
+
+    const pctOcupacao = vagas > 0 ? (inscritosTotal / vagas) * 100 : 0;
+    const pctPresencaD1 = inscritosTotal > 0 ? (d1 / inscritosTotal) * 100 : 0;
+    const pctPresencaD2 = inscritosTotal > 0 ? (d2 / inscritosTotal) * 100 : 0;
+
+    document.getElementById('pctOcupacao').textContent = formatPct(pctOcupacao);
+    document.getElementById('pctPresencaD1').textContent = formatPct(pctPresencaD1);
+    document.getElementById('pctPresencaD2').textContent = formatPct(pctPresencaD2);
+
+    document.getElementById('barOcupacao').style.width = clampPct(pctOcupacao) + '%';
+    document.getElementById('barPresencaD1').style.width = clampPct(pctPresencaD1) + '%';
+    document.getElementById('barPresencaD2').style.width = clampPct(pctPresencaD2) + '%';
   }
 
   async function logout(){
@@ -660,6 +807,18 @@
       document.getElementById('vagas').value = j.data?.vagas ?? 0;
       document.getElementById('d1').value    = j.data?.presentes_d1 ?? 0;
       document.getElementById('d2').value    = j.data?.presentes_d2 ?? 0;
+
+      const inscritosSite = Number(j.data?.inscritos_site ?? 0);
+      const inscritosAvulsos = Number(j.data?.inscritos_avulsos ?? 0);
+      const inscritosTotal = Number(j.data?.inscritos_total ?? (inscritosSite + inscritosAvulsos));
+
+      const elSite = document.getElementById('kpiSite');
+      const elAvulsos = document.getElementById('kpiAvulsos');
+      const elTotal = document.getElementById('kpiInscritos');
+
+      elSite.dataset.valor = inscritosSite;
+      elAvulsos.dataset.valor = inscritosAvulsos;
+      elTotal.dataset.valor = inscritosTotal;
 
       M.updateTextFields();
       atualizarKpis();
