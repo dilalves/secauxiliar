@@ -765,14 +765,18 @@
         const tr = document.createElement('tr');
         tr.dataset.dia = (item.dia_norm || '').toUpperCase();
 
-        const nomeLink = item.arquivo_url
-          ? `
-              <a href="${escapeHtml(item.arquivo_url)}" target="_blank" rel="noopener" class="file-link">
-                <span>${escapeHtml(item.nome_arquivo_recebido || '')}</span>
+        const nomeRecebido = item.nome_arquivo_recebido || '';
+        const nomeLink = nomeRecebido
+        ? `
+            <a href="${API}ver_imagem.php?evento=${encodeURIComponent(EVENTO)}&arquivo=${encodeURIComponent(nomeRecebido)}"
+                target="_blank"
+                rel="noopener"
+                class="file-link">
+                <span>${escapeHtml(nomeRecebido)}</span>
                 <i class="material-icons">open_in_new</i>
-              </a>
+            </a>
             `
-          : `<span class="file-name">${escapeHtml(item.nome_arquivo_recebido || '')}</span>`;
+        : `<span class="file-name">${escapeHtml(item.nome_arquivo_recebido || '')}</span>`;
 
         tr.innerHTML = `
           <td class="col-cod">${escapeHtml(item.login || '')}</td>
