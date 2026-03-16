@@ -559,267 +559,420 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <script>
-    const API = 'https://apisec.secauxiliar.com.br/optativo/';
-    const SYNC_INTERVAL_MS = 60 * 1000; // tenta a cada 1 minuto
-    const SYNC_TIMEOUT_MS = 10000;
+<script>
+  const API = 'https://apisec.secauxiliar.com.br/optativo/';
+  const SYNC_INTERVAL_MS = 60 * 1000;
+  const SYNC_TIMEOUT_MS = 10000;
 
-    const $ctxData   = document.getElementById('ctx_data');
-    const $ctxSala   = document.getElementById('ctx_sala');
-    const $ctxFiscal = document.getElementById('ctx_fiscal');
-    const $ctxMsg    = document.getElementById('ctx_msg');
+  const $ctxData   = document.getElementById('ctx_data');
+  const $ctxSala   = document.getElementById('ctx_sala');
+  const $ctxFiscal = document.getElementById('ctx_fiscal');
+  const $ctxMsg    = document.getElementById('ctx_msg');
 
-    const $turmaSelect = document.getElementById('turmaSelect');
-    const $tbody = document.getElementById('tbody');
-    const $listaMobile = document.getElementById('listaMobile');
-    const $total = document.getElementById('total');
-    const $busca = document.getElementById('busca');
+  const $turmaSelect = document.getElementById('turmaSelect');
+  const $tbody = document.getElementById('tbody');
+  const $listaMobile = document.getElementById('listaMobile');
+  const $total = document.getElementById('total');
+  const $busca = document.getElementById('busca');
 
-    const $mNome = document.getElementById('m_nome');
-    const $mMat  = document.getElementById('m_mat');
-    const $mStatus = document.getElementById('m_status');
-    const $mMotivo = document.getElementById('m_motivo');
-    const $mMsg = document.getElementById('m_msg');
-    const $btnConfirmar = document.getElementById('btnConfirmar');
+  const $mNome = document.getElementById('m_nome');
+  const $mMat  = document.getElementById('m_mat');
+  const $mStatus = document.getElementById('m_status');
+  const $mMotivo = document.getElementById('m_motivo');
+  const $mMsg = document.getElementById('m_msg');
+  const $btnConfirmar = document.getElementById('btnConfirmar');
 
-    const $netStatus = document.getElementById('netStatus');
-    const $pendCount = document.getElementById('pendCount');
-    const $lastCacheAt = document.getElementById('lastCacheAt');
-    const $lastSyncAt = document.getElementById('lastSyncAt');
-    const $btnSyncManual = document.getElementById('btnSyncManual');
-    const $btnRecarregar = document.getElementById('btnRecarregar');
-    const $presentCount = document.getElementById('presentCount');
+  const $netStatus = document.getElementById('netStatus');
+  const $pendCount = document.getElementById('pendCount');
+  const $lastCacheAt = document.getElementById('lastCacheAt');
+  const $lastSyncAt = document.getElementById('lastSyncAt');
+  const $btnSyncManual = document.getElementById('btnSyncManual');
+  const $btnRecarregar = document.getElementById('btnRecarregar');
+  const $presentCount = document.getElementById('presentCount');
 
-    const $btnMaterial = document.getElementById('btnMaterial');
-    const $matNome = document.getElementById('mat_nome');
-    const $matMatricula = document.getElementById('mat_matricula');
-    const $matCurso = document.getElementById('mat_curso');
-    const $matQtd = document.getElementById('mat_qtd');
-    const $matProximo = document.getElementById('mat_proximo');
-    const $matHist = document.getElementById('mat_hist');
-    const $matHistEmpty = document.getElementById('mat_hist_empty');
-    const $matCadernoSelect = document.getElementById('mat_caderno_select');
-    const $matMsg = document.getElementById('mat_msg');
-    const $btnEntregarMaterial = document.getElementById('btnEntregarMaterial');
-    const $matFinalizado = document.getElementById('mat_finalizado');
-    const $matSelectWrap = document.getElementById('mat_select_wrap');
+  const $btnMaterial = document.getElementById('btnMaterial');
+  const $matNome = document.getElementById('mat_nome');
+  const $matMatricula = document.getElementById('mat_matricula');
+  const $matCurso = document.getElementById('mat_curso');
+  const $matQtd = document.getElementById('mat_qtd');
+  const $matProximo = document.getElementById('mat_proximo');
+  const $matHist = document.getElementById('mat_hist');
+  const $matHistEmpty = document.getElementById('mat_hist_empty');
+  const $matCadernoSelect = document.getElementById('mat_caderno_select');
+  const $matMsg = document.getElementById('mat_msg');
+  const $btnEntregarMaterial = document.getElementById('btnEntregarMaterial');
+  const $matFinalizado = document.getElementById('mat_finalizado');
+  const $matSelectWrap = document.getElementById('mat_select_wrap');
 
-    let contexto = null;
-    let alunos = [];
-    let alunoSelecionado = null;
-    let syncTimer = null;
-    let isSyncRunning = false;
+  let contexto = null;
+  let alunos = [];
+  let alunoSelecionado = null;
+  let syncTimer = null;
+  let isSyncRunning = false;
+  let isMaterialSyncRunning = false;
 
-    function msgCtx(t=''){ $ctxMsg.textContent = t; }
+  function msgCtx(t=''){ $ctxMsg.textContent = t; }
 
-    function reinitSelect(){
-      const inst = M.FormSelect.getInstance($turmaSelect);
-      if(inst) inst.destroy();
-      M.FormSelect.init($turmaSelect);
+  function reinitSelect(){
+    const inst = M.FormSelect.getInstance($turmaSelect);
+    if(inst) inst.destroy();
+    M.FormSelect.init($turmaSelect);
+  }
+
+  function escapeHtml(s){
+    return String(s ?? '').replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+  }
+
+  function fmtDateTime(v){
+    if(!v) return '—';
+    try{
+      const d = new Date(v);
+      if(isNaN(d.getTime())) return String(v);
+      return d.toLocaleString('pt-BR');
+    }catch{
+      return String(v);
     }
+  }
 
-    function escapeHtml(s){
-      return String(s ?? '').replace(/[&<>"']/g, m => ({
-        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-      }[m]));
+  function nowIso(){
+    return new Date().toISOString();
+  }
+
+  function getSalaId(){
+    return Number(contexto?.sala?.id || 0);
+  }
+
+  function getTurmaId(){
+    return Number($turmaSelect?.value || 0);
+  }
+
+  function getCacheKeyList(salaId, turmaId){
+    return `presenca_cache_lista_s${salaId}_t${turmaId}`;
+  }
+
+  function getQueueKey(salaId){
+    return `presenca_cache_queue_s${salaId}`;
+  }
+
+  function getMetaKey(salaId){
+    return `presenca_cache_meta_s${salaId}`;
+  }
+
+  function getMaterialQueueKey(salaId){
+    return `material_cache_queue_s${salaId}`;
+  }
+
+  function getMaterialCacheKey(salaId, turmaId, matricula){
+    return `material_cache_hist_s${salaId}_t${turmaId}_m${matricula}`;
+  }
+
+  function readJSON(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    }catch{
+      return fallback;
     }
+  }
 
-    function fmtDateTime(v){
-      if(!v) return '—';
-      try{
-        const d = new Date(v);
-        if(isNaN(d.getTime())) return String(v);
-        return d.toLocaleString('pt-BR');
-      }catch{
-        return String(v);
+  function writeJSON(key, value){
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function getMeta(){
+    const salaId = getSalaId();
+    if(!salaId) return {};
+    return readJSON(getMetaKey(salaId), {});
+  }
+
+  function setMeta(patch){
+    const salaId = getSalaId();
+    if(!salaId) return;
+    const meta = getMeta();
+    writeJSON(getMetaKey(salaId), { ...meta, ...patch });
+    atualizarPainelSync();
+  }
+
+  // ===== FILA PRESENÇA =====
+  function getQueue(){
+    const salaId = getSalaId();
+    if(!salaId) return [];
+    return readJSON(getQueueKey(salaId), []);
+  }
+
+  function setQueue(queue){
+    const salaId = getSalaId();
+    if(!salaId) return;
+    writeJSON(getQueueKey(salaId), queue);
+    atualizarPainelSync();
+  }
+
+  function addQueueItem(item){
+    const queue = getQueue();
+
+    const jaExiste = queue.some(q =>
+      String(q.matricula) === String(item.matricula) &&
+      Number(q.turma_id) === Number(item.turma_id) &&
+      Number(q.sala_id) === Number(item.sala_id) &&
+      q.status !== 'enviado'
+    );
+
+    if(jaExiste) return false;
+
+    queue.push({
+      id: `${item.sala_id}_${item.turma_id}_${item.matricula}_${Date.now()}`,
+      created_at: nowIso(),
+      status: 'pendente',
+      ...item
+    });
+
+    setQueue(queue);
+    return true;
+  }
+
+  function removeQueueItem(id){
+    const queue = getQueue().filter(q => q.id !== id);
+    setQueue(queue);
+  }
+
+  function updateQueueItem(id, patch){
+    const queue = getQueue().map(q => q.id === id ? { ...q, ...patch } : q);
+    setQueue(queue);
+  }
+
+  // ===== FILA MATERIAL =====
+  function getMaterialQueue(){
+    const salaId = getSalaId();
+    if(!salaId) return [];
+    return readJSON(getMaterialQueueKey(salaId), []);
+  }
+
+  function setMaterialQueue(queue){
+    const salaId = getSalaId();
+    if(!salaId) return;
+    writeJSON(getMaterialQueueKey(salaId), queue);
+    atualizarPainelSync();
+  }
+
+  function addMaterialQueueItem(item){
+    const queue = getMaterialQueue();
+
+    const jaExiste = queue.some(q =>
+      String(q.matricula) === String(item.matricula) &&
+      Number(q.turma_id) === Number(item.turma_id) &&
+      Number(q.sala_id) === Number(item.sala_id) &&
+      String(q.curso_opcional || '') === String(item.curso_opcional || '') &&
+      Number(q.caderno) === Number(item.caderno) &&
+      q.status !== 'enviado'
+    );
+
+    if(jaExiste) return false;
+
+    queue.push({
+      id: `${item.sala_id}_${item.turma_id}_${item.matricula}_${item.caderno}_${Date.now()}`,
+      created_at: nowIso(),
+      status: 'pendente',
+      ...item
+    });
+
+    setMaterialQueue(queue);
+    return true;
+  }
+
+  function removeMaterialQueueItem(id){
+    const queue = getMaterialQueue().filter(q => q.id !== id);
+    setMaterialQueue(queue);
+  }
+
+  function updateMaterialQueueItem(id, patch){
+    const queue = getMaterialQueue().map(q => q.id === id ? { ...q, ...patch } : q);
+    setMaterialQueue(queue);
+  }
+
+  // ===== CACHE LISTA =====
+  function saveListCache(rows){
+    const salaId = getSalaId();
+    const turmaId = getTurmaId();
+    if(!salaId || !turmaId) return;
+
+    const payload = {
+      saved_at: nowIso(),
+      rows: rows || []
+    };
+
+    writeJSON(getCacheKeyList(salaId, turmaId), payload);
+    setMeta({ last_cache_at: payload.saved_at });
+  }
+
+  function loadListCache(){
+    const salaId = getSalaId();
+    const turmaId = getTurmaId();
+    if(!salaId || !turmaId) return null;
+
+    return readJSON(getCacheKeyList(salaId, turmaId), null);
+  }
+
+  // ===== CACHE MATERIAL =====
+  function saveMaterialCache(matricula, payload){
+    const salaId = getSalaId();
+    const turmaId = getTurmaId();
+    if(!salaId || !turmaId || !matricula) return;
+
+    writeJSON(getMaterialCacheKey(salaId, turmaId, matricula), {
+      saved_at: nowIso(),
+      payload
+    });
+  }
+
+  function loadMaterialCache(matricula){
+    const salaId = getSalaId();
+    const turmaId = getTurmaId();
+    if(!salaId || !turmaId || !matricula) return null;
+
+    return readJSON(getMaterialCacheKey(salaId, turmaId, matricula), null);
+  }
+
+  function atualizarPainelSync(){
+    const meta = getMeta();
+    const presPend = getQueue().filter(q => q.status !== 'enviado').length;
+    const matPend  = getMaterialQueue().filter(q => q.status !== 'enviado').length;
+    const pendentes = presPend + matPend;
+
+    $pendCount.textContent = String(pendentes);
+    $lastCacheAt.textContent = fmtDateTime(meta.last_cache_at);
+    $lastSyncAt.textContent = fmtDateTime(meta.last_sync_at);
+    atualizarRedeUI();
+  }
+
+  function atualizarRedeUI(){
+    const online = navigator.onLine;
+    $netStatus.textContent = online ? 'Online' : 'Offline';
+    $netStatus.parentElement.className = online
+      ? 'pill pill-green'
+      : 'pill pill-orange';
+  }
+
+  function applyQueueOnAlunos(){
+    const queue = getQueue().filter(q => q.status !== 'enviado');
+    const turmaId = getTurmaId();
+
+    alunos.forEach(a => {
+      a.pendente_sync = false;
+    });
+
+    queue.forEach(q => {
+      if(Number(q.turma_id) !== Number(turmaId)) return;
+      const aluno = alunos.find(a => String(a.matricula) === String(q.matricula));
+      if(aluno){
+        aluno.presenca_ok = true;
+        aluno.pendente_sync = true;
+        aluno.status = 'PRESENTE';
       }
-    }
+    });
+  }
 
-    function nowIso(){
-      return new Date().toISOString();
-    }
+  function applyMaterialQueueOnAlunos(){
+    const queue = getMaterialQueue().filter(q => q.status !== 'enviado');
+    const turmaId = getTurmaId();
 
-    function getSalaId(){
-      return Number(contexto?.sala?.id || 0);
-    }
+    alunos.forEach(a => {
+      a.material_qtd_local = 0;
+    });
 
-    function getTurmaId(){
-      return Number($turmaSelect?.value || 0);
-    }
-
-    function getCacheKeyList(salaId, turmaId){
-      return `presenca_cache_lista_s${salaId}_t${turmaId}`;
-    }
-
-    function getQueueKey(salaId){
-      return `presenca_cache_queue_s${salaId}`;
-    }
-
-    function getMetaKey(salaId){
-      return `presenca_cache_meta_s${salaId}`;
-    }
-
-    function readJSON(key, fallback){
-      try{
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : fallback;
-      }catch{
-        return fallback;
+    queue.forEach(q => {
+      if(Number(q.turma_id) !== Number(turmaId)) return;
+      const aluno = alunos.find(a => String(a.matricula) === String(q.matricula));
+      if(aluno){
+        aluno.material_qtd_local = Number(aluno.material_qtd_local || 0) + 1;
       }
-    }
+    });
 
-    function writeJSON(key, value){
-      localStorage.setItem(key, JSON.stringify(value));
-    }
+    alunos.forEach(a => {
+      a.material_qtd_view = Number(a.material_qtd || 0) + Number(a.material_qtd_local || 0);
+    });
+  }
 
-    function getMeta(){
-      const salaId = getSalaId();
-      if(!salaId) return {};
-      return readJSON(getMetaKey(salaId), {});
-    }
+  function badgeStatusDesktop(a){
+    if(a.bloqueado) return `<span class="badge-soft b-bloq">BLOQUEADO</span>`;
+    if(a.pendente_sync) return `<span class="badge-soft b-pend">PENDENTE</span>`;
+    if(a.presenca_ok) return `<span class="badge-soft b-ok">PRESENTE</span>`;
+    return `<span class="badge-soft b-prev">LIBERADO</span>`;
+  }
 
-    function setMeta(patch){
-      const salaId = getSalaId();
-      if(!salaId) return;
-      const meta = getMeta();
-      writeJSON(getMetaKey(salaId), { ...meta, ...patch });
-      atualizarPainelSync();
-    }
+  function reinitMaterialSelect(){
+    const inst = M.FormSelect.getInstance($matCadernoSelect);
+    if(inst) inst.destroy();
+    M.FormSelect.init($matCadernoSelect);
+  }
 
-    function getQueue(){
-      const salaId = getSalaId();
-      if(!salaId) return [];
-      return readJSON(getQueueKey(salaId), []);
-    }
+  function materialChip(a){
+    const qtd = Number(a.material_qtd_view ?? a.material_qtd ?? 0);
+    return `<span class="material-chip"><i class="material-icons">menu_book</i> Material (${qtd})</span>`;
+  }
 
-    function setQueue(queue){
-      const salaId = getSalaId();
-      if(!salaId) return;
-      writeJSON(getQueueKey(salaId), queue);
-      atualizarPainelSync();
-    }
+  function getMaterialQueueForAluno(matricula){
+    const turmaId = getTurmaId();
+    return getMaterialQueue().filter(q =>
+      Number(q.turma_id) === Number(turmaId) &&
+      String(q.matricula) === String(matricula) &&
+      q.status !== 'enviado'
+    );
+  }
 
-    function addQueueItem(item){
-      const queue = getQueue();
+  function applyMaterialQueueToPayload(payload, matricula){
+    const base = JSON.parse(JSON.stringify(payload || {}));
+    const locais = getMaterialQueueForAluno(matricula);
 
-      const jaExiste = queue.some(q =>
-        String(q.matricula) === String(item.matricula) &&
-        Number(q.turma_id) === Number(item.turma_id) &&
-        Number(q.sala_id) === Number(item.sala_id) &&
-        q.status !== 'enviado'
-      );
+    const entregues = Array.isArray(base.entregues) ? base.entregues.slice() : [];
+    const entreguesNums = Array.isArray(base.entregues_nums) ? base.entregues_nums.slice() : [];
 
-      if(jaExiste) return false;
-
-      queue.push({
-        id: `${item.sala_id}_${item.turma_id}_${item.matricula}_${Date.now()}`,
-        created_at: nowIso(),
-        status: 'pendente',
-        ...item
-      });
-
-      setQueue(queue);
-      return true;
-    }
-
-    function removeQueueItem(id){
-      const queue = getQueue().filter(q => q.id !== id);
-      setQueue(queue);
-    }
-
-    function updateQueueItem(id, patch){
-      const queue = getQueue().map(q => q.id === id ? { ...q, ...patch } : q);
-      setQueue(queue);
-    }
-
-    function saveListCache(rows){
-      const salaId = getSalaId();
-      const turmaId = getTurmaId();
-      if(!salaId || !turmaId) return;
-
-      const payload = {
-        saved_at: nowIso(),
-        rows: rows || []
-      };
-
-      writeJSON(getCacheKeyList(salaId, turmaId), payload);
-      setMeta({ last_cache_at: payload.saved_at });
-    }
-
-    function loadListCache(){
-      const salaId = getSalaId();
-      const turmaId = getTurmaId();
-      if(!salaId || !turmaId) return null;
-
-      return readJSON(getCacheKeyList(salaId, turmaId), null);
-    }
-
-    function atualizarPainelSync(){
-      const meta = getMeta();
-      const queue = getQueue();
-      const pendentes = queue.filter(q => q.status !== 'enviado').length;
-
-      $pendCount.textContent = String(pendentes);
-      $lastCacheAt.textContent = fmtDateTime(meta.last_cache_at);
-      $lastSyncAt.textContent = fmtDateTime(meta.last_sync_at);
-      atualizarRedeUI();
-    }
-
-    function atualizarRedeUI(){
-      const online = navigator.onLine;
-      $netStatus.textContent = online ? 'Online' : 'Offline';
-      $netStatus.parentElement.className = online
-        ? 'pill pill-green'
-        : 'pill pill-orange';
-    }
-
-    function applyQueueOnAlunos(){
-      const queue = getQueue().filter(q => q.status !== 'enviado');
-      const turmaId = getTurmaId();
-
-      alunos.forEach(a => {
-        a.pendente_sync = false;
-      });
-
-      queue.forEach(q => {
-        if(Number(q.turma_id) !== Number(turmaId)) return;
-        const aluno = alunos.find(a => String(a.matricula) === String(q.matricula));
-        if(aluno){
-          aluno.presenca_ok = true;
-          aluno.pendente_sync = true;
-          aluno.status = 'PRESENTE';
-        }
-      });
-    }
-
-    // status só no DESKTOP
-    function badgeStatusDesktop(a){
-      if(a.bloqueado) return `<span class="badge-soft b-bloq">BLOQUEADO</span>`;
-      if(a.pendente_sync) return `<span class="badge-soft b-pend">PENDENTE</span>`;
-      if(a.presenca_ok) return `<span class="badge-soft b-ok">PRESENTE</span>`;
-      return `<span class="badge-soft b-prev">LIBERADO</span>`;
-    }
-
-        function reinitMaterialSelect(){
-      const inst = M.FormSelect.getInstance($matCadernoSelect);
-      if(inst) inst.destroy();
-      M.FormSelect.init($matCadernoSelect);
-    }
-
-    function materialChip(a){
-      const qtd = Number(a.material_qtd || 0);
-      return `<span class="material-chip"><i class="material-icons">menu_book</i> Material (${qtd})</span>`;
-    }
-
-    async function carregarMaterialAluno(a){
-      const turmaId = getTurmaId();
-      const mat = String(a.matricula || '').trim();
-
-      if(!mat || !turmaId){
-        throw new Error('Dados insuficientes para consultar material.');
+    locais.forEach(item => {
+      const cad = Number(item.caderno);
+      if(!entreguesNums.includes(cad)){
+        entreguesNums.push(cad);
+        entregues.push({
+          id: 0,
+          caderno: cad,
+          caderno_label: `Caderno ${cad}`,
+          data_retirada: item.created_at || '',
+          data_retirada_br: fmtDateTime(item.created_at || ''),
+          fiscal: 'OFFLINE',
+          pending_local: true
+        });
       }
+    });
 
-      const url = API + 'material_listar.php?matricula=' + encodeURIComponent(mat) + '&turma_id=' + encodeURIComponent(turmaId);
+    entreguesNums.sort((a,b) => a-b);
+    entregues.sort((a,b) => Number(a.caderno) - Number(b.caderno));
+
+    const disponiveis = [];
+    for(let i=1;i<=8;i++){
+      if(!entreguesNums.includes(i)) disponiveis.push(i);
+    }
+
+    base.entregues = entregues;
+    base.entregues_nums = entreguesNums;
+    base.disponiveis = disponiveis;
+    base.qtd = entregues.length;
+    base.proximo_caderno = disponiveis[0] ?? null;
+    base.finalizado = !disponiveis.length;
+
+    return base;
+  }
+
+  async function carregarMaterialAluno(a){
+    const turmaId = getTurmaId();
+    const mat = String(a.matricula || '').trim();
+
+    if(!mat || !turmaId){
+      throw new Error('Dados insuficientes para consultar material.');
+    }
+
+    const url = API + 'material_listar.php?matricula=' + encodeURIComponent(mat) + '&turma_id=' + encodeURIComponent(turmaId);
+
+    try{
       const r = await fetch(url, { credentials:'include' });
       const j = await r.json();
 
@@ -827,676 +980,821 @@
         throw new Error(j.msg || 'Falha ao consultar material.');
       }
 
-      return j;
+      const payload = applyMaterialQueueToPayload(j, mat);
+      saveMaterialCache(mat, payload);
+      return payload;
+
+    }catch(err){
+      const cache = loadMaterialCache(mat);
+      if(cache?.payload){
+        return applyMaterialQueueToPayload(cache.payload, mat);
+      }
+
+      // fallback mínimo só com fila local
+      return applyMaterialQueueToPayload({
+        ok: true,
+        matricula: mat,
+        nome: a.nome || '—',
+        curso_opcional: $matCurso.textContent?.trim() || '',
+        curso_nome: '',
+        qtd: 0,
+        entregues: [],
+        entregues_nums: [],
+        disponiveis: [1,2,3,4,5,6,7,8],
+        proximo_caderno: 1,
+        finalizado: false
+      }, mat);
     }
+  }
 
-    function preencherModalMaterial(j){
-      $matMsg.textContent = '';
-      $matNome.textContent = j.nome || '—';
-      $matMatricula.textContent = j.matricula || '—';
-      $matCurso.textContent = j.curso_opcional || j.curso_nome || '—';
-      $matQtd.textContent = String(j.qtd || 0);
-      $matProximo.textContent = j.proximo_caderno ? ('Caderno ' + j.proximo_caderno) : '—';
+  function preencherModalMaterial(j){
+    $matMsg.textContent = '';
+    $matNome.textContent = j.nome || '—';
+    $matMatricula.textContent = j.matricula || '—';
+    $matCurso.textContent = j.curso_opcional || j.curso_nome || '—';
+    $matQtd.textContent = String(j.qtd || 0);
+    $matProximo.textContent = j.proximo_caderno ? ('Caderno ' + j.proximo_caderno) : '—';
 
-      const hist = Array.isArray(j.entregues) ? j.entregues : [];
-      if(hist.length === 0){
-        $matHist.innerHTML = '';
-        $matHistEmpty.style.display = '';
-      } else {
-        $matHistEmpty.style.display = 'none';
-        $matHist.innerHTML = hist.map(item => `
-          <li>
-            <span class="mat-ok">✓</span>
+    const hist = Array.isArray(j.entregues) ? j.entregues : [];
+    if(hist.length === 0){
+      $matHist.innerHTML = '';
+      $matHistEmpty.style.display = '';
+    } else {
+      $matHistEmpty.style.display = 'none';
+      $matHist.innerHTML = hist.map(item => `
+        <li>
+          <span class="mat-ok">✓</span>
+          <div>
             <div>
-              <div><b>${escapeHtml(item.caderno_label || ('Caderno ' + item.caderno))}</b></div>
-              <div class="small">${escapeHtml(item.data_retirada_br || item.data_retirada || '—')}${item.fiscal ? ' • ' + escapeHtml(item.fiscal) : ''}</div>
+              <b>${escapeHtml(item.caderno_label || ('Caderno ' + item.caderno))}</b>
+              ${item.pending_local ? `<span class="badge-soft b-pend" style="margin-left:6px;">OFFLINE</span>` : ``}
             </div>
-          </li>
-        `).join('');
-      }
-
-      const disponiveis = Array.isArray(j.disponiveis) ? j.disponiveis : [];
-      if(!disponiveis.length){
-        $matFinalizado.style.display = '';
-        $matSelectWrap.style.display = 'none';
-        $btnEntregarMaterial.classList.add('disabled');
-        $matCadernoSelect.innerHTML = `<option value="" selected>Todos entregues</option>`;
-        reinitMaterialSelect();
-        return;
-      }
-
-      $matFinalizado.style.display = 'none';
-      $matSelectWrap.style.display = '';
-      $btnEntregarMaterial.classList.remove('disabled');
-
-      $matCadernoSelect.innerHTML = disponiveis.map(n => {
-        const sel = Number(n) === Number(j.proximo_caderno) ? 'selected' : '';
-        return `<option value="${n}" ${sel}>Caderno ${n}</option>`;
-      }).join('');
-
-      reinitMaterialSelect();
+            <div class="small">
+              ${escapeHtml(item.data_retirada_br || item.data_retirada || '—')}
+              ${item.fiscal ? ' • ' + escapeHtml(item.fiscal) : ''}
+            </div>
+          </div>
+        </li>
+      `).join('');
     }
 
-    async function abrirModalMaterial(a){
-      try{
-        $btnEntregarMaterial.classList.add('disabled');
-        $matMsg.textContent = '';
-        $matNome.textContent = a.nome || '—';
-        $matMatricula.textContent = a.matricula || '—';
-        $matCurso.textContent = 'Carregando...';
-        $matQtd.textContent = '—';
-        $matProximo.textContent = '—';
-        $matHist.innerHTML = '';
-        $matHistEmpty.style.display = 'none';
-        $matFinalizado.style.display = 'none';
-        $matSelectWrap.style.display = 'none';
-
-        const modal = M.Modal.getInstance(document.getElementById('modalMaterial'));
-        modal.open();
-
-        const j = await carregarMaterialAluno(a);
-        preencherModalMaterial(j);
-
-      } catch(err){
-        $matMsg.textContent = err?.message || 'Falha ao carregar material.';
-      } finally {
-        if($matSelectWrap.style.display !== 'none'){
-          $btnEntregarMaterial.classList.remove('disabled');
-        }
-      }
-    }
-
-    async function entregarMaterialAluno(){
-      if(!alunoSelecionado) return;
-      if($btnEntregarMaterial.classList.contains('disabled')) return;
-
-      const turmaId = getTurmaId();
-      const mat = String(alunoSelecionado.matricula || '').trim();
-      const caderno = Number($matCadernoSelect.value || 0);
-
-      if(!mat || !turmaId || !caderno){
-        $matMsg.textContent = 'Selecione um caderno válido.';
-        return;
-      }
-
-      $matMsg.textContent = '';
+    const disponiveis = Array.isArray(j.disponiveis) ? j.disponiveis : [];
+    if(!disponiveis.length){
+      $matFinalizado.style.display = '';
+      $matSelectWrap.style.display = 'none';
       $btnEntregarMaterial.classList.add('disabled');
-
-      try{
-        const fd = new FormData();
-        fd.append('matricula', mat);
-        fd.append('turma_id', String(turmaId));
-        fd.append('caderno', String(caderno));
-        fd.append('curso_opcional', $matCurso.textContent.trim());
-
-        const r = await fetch(API + 'material_entregar.php', {
-          method: 'POST',
-          credentials: 'include',
-          body: fd
-        });
-
-        const j = await r.json();
-
-        if(!r.ok || !j.ok){
-          throw new Error(j.msg || 'Falha ao registrar entrega.');
-        }
-
-        alunoSelecionado.material_qtd = Number(alunoSelecionado.material_qtd || 0) + 1;
-        filtrarRender();
-
-        M.toast({ html: `📘 Caderno ${caderno} entregue com sucesso` });
-
-        const atualizado = await carregarMaterialAluno(alunoSelecionado);
-        preencherModalMaterial(atualizado);
-
-      } catch(err){
-        $matMsg.textContent = err?.message || 'Falha ao registrar entrega.';
-      } finally {
-        if($matSelectWrap.style.display !== 'none'){
-          $btnEntregarMaterial.classList.remove('disabled');
-        }
-      }
+      $matCadernoSelect.innerHTML = `<option value="" selected>Todos entregues</option>`;
+      reinitMaterialSelect();
+      return;
     }
 
-     function filtrarRender(){
-      const q = ($busca.value || '').trim().toLowerCase();
+    $matFinalizado.style.display = 'none';
+    $matSelectWrap.style.display = '';
+    $btnEntregarMaterial.classList.remove('disabled');
 
-      const list = !q ? alunos : alunos.filter(a => {
-        const m = (a.matricula || '').toLowerCase();
-        const n = (a.nome || '').toLowerCase();
-        return m.includes(q) || n.includes(q);
+    $matCadernoSelect.innerHTML = disponiveis.map(n => {
+      const sel = Number(n) === Number(j.proximo_caderno) ? 'selected' : '';
+      return `<option value="${n}" ${sel}>Caderno ${n}</option>`;
+    }).join('');
+
+    reinitMaterialSelect();
+  }
+
+  async function abrirModalMaterial(a){
+    try{
+      $btnEntregarMaterial.classList.add('disabled');
+      $matMsg.textContent = '';
+      $matNome.textContent = a.nome || '—';
+      $matMatricula.textContent = a.matricula || '—';
+      $matCurso.textContent = 'Carregando...';
+      $matQtd.textContent = '—';
+      $matProximo.textContent = '—';
+      $matHist.innerHTML = '';
+      $matHistEmpty.style.display = 'none';
+      $matFinalizado.style.display = 'none';
+      $matSelectWrap.style.display = 'none';
+
+      const modal = M.Modal.getInstance(document.getElementById('modalMaterial'));
+      modal.open();
+
+      const j = await carregarMaterialAluno(a);
+      preencherModalMaterial(j);
+
+    } catch(err){
+      $matMsg.textContent = err?.message || 'Falha ao carregar material.';
+    } finally {
+      if($matSelectWrap.style.display !== 'none'){
+        $btnEntregarMaterial.classList.remove('disabled');
+      }
+    }
+  }
+
+  function marcarMaterialLocal(a, caderno, cursoOpcional){
+    const salaId = getSalaId();
+    const turmaId = getTurmaId();
+    const mat = String(a.matricula || '').trim();
+
+    if(!salaId || !turmaId || !mat || !cursoOpcional){
+      throw new Error('Contexto inválido para gravar material local.');
+    }
+
+    const ok = addMaterialQueueItem({
+      sala_id: salaId,
+      turma_id: turmaId,
+      matricula: mat,
+      curso_opcional: cursoOpcional,
+      caderno: Number(caderno)
+    });
+
+    if(!ok){
+      throw new Error(`O Caderno ${caderno} já está pendente neste aparelho.`);
+    }
+
+    a.material_qtd_local = Number(a.material_qtd_local || 0) + 1;
+    a.material_qtd_view = Number(a.material_qtd || 0) + Number(a.material_qtd_local || 0);
+    filtrarRender();
+  }
+
+  async function enviarItemFila(item){
+    const fd = new FormData();
+    fd.append('sala_id', String(item.sala_id));
+    fd.append('turma_id', String(item.turma_id));
+    fd.append('matricula', String(item.matricula));
+    fd.append('data', String(item.data || ''));
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), SYNC_TIMEOUT_MS);
+
+    try{
+      const r = await fetch(API + 'presenca_sala_confirmar.php', {
+        method: 'POST',
+        credentials: 'include',
+        body: fd,
+        signal: controller.signal
       });
 
-      $total.textContent = String(list.length);
+      clearTimeout(timer);
 
-      // ===== DESKTOP =====
-      if(list.length === 0){
-        $tbody.innerHTML = `<tr><td colspan="4" class="muted">Nenhum aluno encontrado.</td></tr>`;
-      } else {
-        $tbody.innerHTML = list.map(a => {
-          const statusHtml = badgeStatusDesktop(a);
-          return `
-            <tr class="list-item" data-mat="${escapeHtml(a.matricula)}">
-              <td class="mono">${escapeHtml(a.matricula)}</td>
-              <td>
-                <b>${escapeHtml(a.nome || '—')}</b>
-              </td>
-              <td>
-                ${materialChip(a)}
-              </td>
-              <td>
-                ${statusHtml}
-              </td>
-            </tr>
-          `;
-        }).join('');
-      }
+      const j = await r.json().catch(() => ({}));
 
-      // ===== MOBILE =====
-      if(list.length === 0){
-        $listaMobile.innerHTML = `<li class="collection-item muted">Nenhum aluno encontrado.</li>`;
-      } else {
-        $listaMobile.innerHTML = list.map(a => {
-          const sub = `${a.email ? a.email + ' • ' : ''}Material: ${Number(a.material_qtd || 0)}`;
-          const pres = !!a.presenca_ok;
-          const pend = !!a.pendente_sync;
-
-          const rowClass = pres ? (pend ? 'pres-pendente' : 'pres-row') : '';
-          const indicador = pres
-            ? `<span class="pres-ind" title="${pend ? 'Presença pendente de sincronização' : 'Presente'}">${pend ? '⏳' : 'P'}</span>`
-            : '';
-
-          return `
-            <li class="collection-item list-item ${rowClass}" data-mat="${escapeHtml(a.matricula)}">
-              <div class="aluno-line">
-                <span class="aluno-mat mono">${escapeHtml(a.matricula)}</span>
-                <span class="aluno-nome" title="${escapeHtml(a.nome || '')}">${escapeHtml(a.nome || '—')}</span>
-                ${indicador}
-              </div>
-              <div class="aluno-sub muted">${escapeHtml(sub)}</div>
-            </li>
-          `;
-        }).join('');
-      }
-
-      atualizarTotalPresentes();
-      atualizarPainelSync();
-    }
-
-    async function carregarContexto(){
-      msgCtx('');
-      try{
-        const r = await fetch(API + 'presenca_contexto.php', { credentials:'include' });
-        const j = await r.json();
-
-        if(!r.ok || !j.ok){
-          msgCtx(j.msg || 'Falha ao carregar contexto.');
-          if(r.status === 409){
-            setTimeout(()=> location.href='selecionar_sala.html', 600);
-          }
-          return null;
-        }
-
-        contexto = j;
-
-        const dataStr = (j.now && j.now.date) ? j.now.date : (j.data || '—');
-        $ctxData.textContent = dataStr;
-
-        $ctxSala.textContent = j.sala?.nome ? `${j.sala.nome} (#${j.sala.id})` : '—';
-
-        const fiscalNome = (j.user && j.user.nome) ? j.user.nome : (j.fiscal?.nome || '—');
-        $ctxFiscal.textContent = fiscalNome;
-
-        const turmas = Array.isArray(j.turmas_hoje) ? j.turmas_hoje : (Array.isArray(j.turmas) ? j.turmas : []);
-        if(turmas.length === 0){
-          $turmaSelect.innerHTML = `<option value="" disabled selected>Nenhuma turma hoje</option>`;
-          reinitSelect();
-          msgCtx('Nenhuma turma encontrada para hoje nessa sala.');
-          return j;
-        }
-
-        const defId =
-          (j.turma_default && typeof j.turma_default === 'object' && j.turma_default.turma_id) ? j.turma_default.turma_id :
-          (typeof j.turma_default === 'number' ? j.turma_default :
-          (j.turma_default_id || turmas[0].turma_id));
-
-        $turmaSelect.innerHTML =
-          turmas.map(t => {
-            const hi = String(t.hora_inicio || '').substr(0,5);
-            const hf = String(t.hora_fim || '').substr(0,5);
-            const label = `${t.curso_nome} • ${hi}–${hf} (turma ${t.turma_id})`;
-            const sel = (Number(t.turma_id) === Number(defId)) ? 'selected' : '';
-            return `<option value="${t.turma_id}" ${sel}>${escapeHtml(label)}</option>`;
-          }).join('');
-
-        reinitSelect();
-        atualizarPainelSync();
-        return j;
-      }catch(e){
-        msgCtx('Falha de rede ao carregar contexto.');
-        return null;
-      }
-    }
-
-    async function carregarAlunos(opts = {}){
-      const { silent = false } = opts;
-      msgCtx('');
-
-      const turma_id = $turmaSelect.value;
-
-      if(!silent){
-        $tbody.innerHTML = `<tr><td colspan="4" class="muted">Carregando…</td></tr>`;
-        $listaMobile.innerHTML = `<li class="collection-item muted">Carregando…</li>`;
-        $total.textContent = '0';
-      }
-
-      const url = API + 'presenca_alunos_list.php?turma_id=' + encodeURIComponent(turma_id || '');
-
-      try{
-        const r = await fetch(url, { credentials:'include' });
-        const j = await r.json();
-
-        if(!r.ok || !j.ok){
-          throw new Error(j.msg || 'Falha ao carregar alunos');
-        }
-
-        alunos = (Array.isArray(j.rows) ? j.rows : []).map(x => {
-          const st = String(x.status || '').toUpperCase();
-          const presenca_ok = (st === 'PRESENTE' || st === 'OK');
-
-          return {
-            ...x,
-            status: st,
-            presenca_ok,
-            pendente_sync: false,
-            material_qtd: Number(x.material_qtd || 0)
-          };
-        });
-
-        saveListCache(alunos);
-        applyQueueOnAlunos();
-        filtrarRender();
-
-        if(!navigator.onLine){
-          msgCtx('Lista atualizada do servidor, mas você está offline agora.');
-        }
-
-      } catch (err) {
-        const cache = loadListCache();
-
-        if(cache && Array.isArray(cache.rows)){
-            alunos = cache.rows.map(x => ({
-            ...x,
-            presenca_ok: !!x.presenca_ok,
-            pendente_sync: false,
-            material_qtd: Number(x.material_qtd || 0)
-          }));
-
-          applyQueueOnAlunos();
-          filtrarRender();
-          msgCtx('Sem resposta do servidor. Lista carregada do cache local.');
-        } else {
-          msgCtx('Falha ao carregar alunos e não há cache disponível.');
-          $tbody.innerHTML = `<tr><td colspan="4" class="muted">Erro ao carregar.</td></tr>`;
-          $listaMobile.innerHTML = `<li class="collection-item muted">Erro ao carregar.</li>`;
-        }
-      }
-    }
-
-    function abrirModalAluno(a){
-      alunoSelecionado = a;
-      $mMsg.textContent = '';
-      $mNome.textContent = `${a.nome || '—'} (${a.material_qtd || 0} ${Number(a.material_qtd || 0) === 1 ? 'caderno' : 'cadernos'})`;
-      $mMat.textContent = a.matricula || '—';
-
-      if (a.bloqueado) {
-        $mStatus.className = 'badge-soft b-bloq';
-        $mStatus.textContent = 'BLOQUEADO';
-
-        $mMotivo.innerHTML =
-          `<span class="red-text"><b>Não é possível registrar presença nem entrega de material.</b></span><br>` +
-          `<span class="small">→ ${a.motivo_bloqueio || 'Encaminhar à secretaria'}.</span>`;
-
-        $btnConfirmar.classList.add('disabled');
-        $btnMaterial.classList.add('disabled');
-      }
-      else {
-        $btnMaterial.classList.remove('disabled');
-
-        if(a.pendente_sync){
-          $mStatus.className = 'badge-soft b-pend';
-          $mStatus.textContent = 'PENDENTE';
-          $mMotivo.innerHTML = `<span class="small muted">Essa presença já foi marcada no aparelho e está aguardando sincronização. A entrega de material continua disponível.</span>`;
-          $btnConfirmar.classList.add('disabled');
-        }
-        else if(a.presenca_ok){
-          $mStatus.className = 'badge-soft b-ok';
-          $mStatus.textContent = 'PRESENTE';
-          $mMotivo.innerHTML = `<span class="small muted">A presença já está registrada. Se necessário, ainda é possível registrar entrega de material.</span>`;
-          $btnConfirmar.classList.add('disabled');
-        }
-        else {
-          $mStatus.className = 'badge-soft b-prev';
-          $mStatus.textContent = 'LIBERADO';
-          $mMotivo.innerHTML = `<span class="small muted">Confirme a presença do aluno ou registre a entrega de material.</span>`;
-          $btnConfirmar.classList.remove('disabled');
-        }
-      }
-
-      const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
-      modal.open();
-    }
-
-    function marcarPresencaLocal(a){
-      const salaId = getSalaId();
-      const turmaId = getTurmaId();
-      const mat = String(a.matricula || '').trim();
-
-      if(!salaId || !turmaId || !mat){
-        throw new Error('Contexto inválido para gravar presença local.');
-      }
-
-      const item = {
-        sala_id: salaId,
-        turma_id: turmaId,
-        matricula: mat,
-        data: String(contexto?.data || contexto?.now?.date || '')
-      };
-
-      addQueueItem(item);
-
-      a.presenca_ok = true;
-      a.pendente_sync = true;
-      a.status = 'PRESENTE';
-
-      applyQueueOnAlunos();
-      filtrarRender();
-    }
-
-    async function pingServidor(timeoutMs = 5000){
-      if(!navigator.onLine) return false;
-
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-      try{
-        const r = await fetch(API + 'presenca_contexto.php', {
-          credentials: 'include',
-          signal: controller.signal,
-          cache: 'no-store'
-        });
-        clearTimeout(timer);
-        return r.ok;
-      }catch{
-        clearTimeout(timer);
-        return false;
-      }
-    }
-
-    async function enviarItemFila(item){
-      const fd = new FormData();
-      fd.append('sala_id', String(item.sala_id));
-      fd.append('turma_id', String(item.turma_id));
-      fd.append('matricula', String(item.matricula));
-      fd.append('data', String(item.data || ''));
-
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), SYNC_TIMEOUT_MS);
-
-      try{
-        const r = await fetch(API + 'presenca_sala_confirmar.php', {
-          method: 'POST',
-          credentials: 'include',
-          body: fd,
-          signal: controller.signal
-        });
-
-        clearTimeout(timer);
-
-        const j = await r.json().catch(() => ({}));
-
-        if(!r.ok || !j.ok){
-          return {
-            ok: false,
-            msg: j.msg || 'Falha ao sincronizar presença.'
-          };
-        }
-
-        return { ok: true };
-      }catch(e){
-        clearTimeout(timer);
+      if(!r.ok || !j.ok){
         return {
           ok: false,
-          msg: 'Falha de rede ao sincronizar.'
+          msg: j.msg || 'Falha ao sincronizar presença.'
         };
       }
+
+      return { ok: true };
+    }catch{
+      clearTimeout(timer);
+      return {
+        ok: false,
+        msg: 'Falha de rede ao sincronizar.'
+      };
+    }
+  }
+
+  async function enviarItemMaterialFila(item){
+    const fd = new FormData();
+    fd.append('matricula', String(item.matricula));
+    fd.append('turma_id', String(item.turma_id));
+    fd.append('caderno', String(item.caderno));
+    fd.append('curso_opcional', String(item.curso_opcional || ''));
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), SYNC_TIMEOUT_MS);
+
+    try{
+      const r = await fetch(API + 'material_entregar.php', {
+        method: 'POST',
+        credentials: 'include',
+        body: fd,
+        signal: controller.signal
+      });
+
+      clearTimeout(timer);
+
+      const j = await r.json().catch(() => ({}));
+
+      if(!r.ok || !j.ok){
+        // se já existe, considera sincronizado
+        if(r.status === 409){
+          return { ok: true, duplicate: true };
+        }
+        return {
+          ok: false,
+          msg: j.msg || 'Falha ao sincronizar material.'
+        };
+      }
+
+      return { ok: true };
+    }catch{
+      clearTimeout(timer);
+      return {
+        ok: false,
+        msg: 'Falha de rede ao sincronizar material.'
+      };
+    }
+  }
+
+  async function sincronizarPendentes(opts = {}){
+    const { silent = false, showToast = false } = opts;
+
+    if(isSyncRunning) return false;
+    if(!contexto?.sala?.id) return false;
+
+    const conectado = await pingServidor(4000);
+    if(!conectado){
+      if(!silent) msgCtx('Sem conexão estável para sincronizar agora.');
+      atualizarPainelSync();
+      return false;
     }
 
-    async function sincronizarPendentes(opts = {}){
-      const { silent = false, showToast = false } = opts;
+    let queue = getQueue().filter(q => q.status !== 'enviado');
+    if(queue.length === 0){
+      if(showToast) M.toast({ html: 'Nada pendente para sincronizar.' });
+      setMeta({ last_sync_at: nowIso() });
+      return true;
+    }
 
-      if(isSyncRunning) return false;
-      if(!contexto?.sala?.id) return false;
+    isSyncRunning = true;
+    if(!silent) msgCtx('Sincronizando presenças pendentes...');
 
-      const conectado = await pingServidor(4000);
-      if(!conectado){
-        if(!silent) msgCtx('Sem conexão estável para sincronizar agora.');
-        atualizarPainelSync();
-        return false;
-      }
+    let enviados = 0;
 
-      let queue = getQueue().filter(q => q.status !== 'enviado');
-      if(queue.length === 0){
-        if(showToast) M.toast({ html: 'Nada pendente para sincronizar.' });
-        setMeta({ last_sync_at: nowIso() });
-        return true;
-      }
+    try{
+      for(const item of queue){
+        updateQueueItem(item.id, { status: 'enviando', tentativa_at: nowIso() });
 
-      isSyncRunning = true;
-      if(!silent) msgCtx('Sincronizando presenças pendentes...');
+        const res = await enviarItemFila(item);
 
-      let enviados = 0;
-
-      try{
-        for(const item of queue){
-          updateQueueItem(item.id, { status: 'enviando', tentativa_at: nowIso() });
-
-          const res = await enviarItemFila(item);
-
-          if(res.ok){
-            removeQueueItem(item.id);
-            enviados++;
-          }else{
-            updateQueueItem(item.id, {
-              status: 'pendente',
-              erro: res.msg || '',
-              tentativa_at: nowIso()
-            });
-
-            // se começou a falhar, para e tenta depois
-            break;
-          }
-        }
-
-        // reaplica fila sobre a lista atual
-        applyQueueOnAlunos();
-        filtrarRender();
-        setMeta({ last_sync_at: nowIso() });
-
-        const restantes = getQueue().filter(q => q.status !== 'enviado').length;
-
-        if(restantes === 0){
-          if(!silent) msgCtx('');
-          if(showToast || enviados > 0){
-            M.toast({ html: `Sincronização concluída ✅ (${enviados} enviada${enviados === 1 ? '' : 's'})` });
-          }
+        if(res.ok){
+          removeQueueItem(item.id);
+          enviados++;
         }else{
-          if(!silent) msgCtx(`Sincronização parcial. Ainda restam ${restantes} pendência(s).`);
-          if(showToast && enviados > 0){
-            M.toast({ html: `Parcial: ${enviados} enviada(s), ${restantes} pendente(s).` });
-          }
+          updateQueueItem(item.id, {
+            status: 'pendente',
+            erro: res.msg || '',
+            tentativa_at: nowIso()
+          });
+          break;
         }
-
-        return true;
-
-      } finally {
-        isSyncRunning = false;
       }
+
+      applyQueueOnAlunos();
+      applyMaterialQueueOnAlunos();
+      filtrarRender();
+      setMeta({ last_sync_at: nowIso() });
+
+      const restantes = getQueue().filter(q => q.status !== 'enviado').length;
+
+      if(restantes === 0){
+        if(!silent) msgCtx('');
+        if(showToast || enviados > 0){
+          M.toast({ html: `Presenças sincronizadas ✅ (${enviados} enviada${enviados === 1 ? '' : 's'})` });
+        }
+      }else{
+        if(!silent) msgCtx(`Sincronização parcial. Ainda restam ${restantes} pendência(s) de presença.`);
+      }
+
+      return true;
+
+    } finally {
+      isSyncRunning = false;
+    }
+  }
+
+  async function sincronizarMaterialPendentes(opts = {}){
+    const { silent = false, showToast = false } = opts;
+
+    if(isMaterialSyncRunning) return false;
+    if(!contexto?.sala?.id) return false;
+
+    const conectado = await pingServidor(4000);
+    if(!conectado){
+      atualizarPainelSync();
+      return false;
     }
 
-    // clique desktop
-    $tbody.addEventListener('click', (e) => {
-      const tr = e.target.closest('tr[data-mat]');
-      if(!tr) return;
+    let queue = getMaterialQueue().filter(q => q.status !== 'enviado');
+    if(queue.length === 0){
+      return true;
+    }
 
-      const mat = tr.getAttribute('data-mat');
-      const a = alunos.find(x => x.matricula === mat);
-      if(!a) return;
+    isMaterialSyncRunning = true;
+    if(!silent) msgCtx('Sincronizando materiais pendentes...');
 
-      abrirModalAluno(a);
+    let enviados = 0;
+
+    try{
+      for(const item of queue){
+        updateMaterialQueueItem(item.id, { status: 'enviando', tentativa_at: nowIso() });
+
+        const res = await enviarItemMaterialFila(item);
+
+        if(res.ok){
+          removeMaterialQueueItem(item.id);
+          enviados++;
+        }else{
+          updateMaterialQueueItem(item.id, {
+            status: 'pendente',
+            erro: res.msg || '',
+            tentativa_at: nowIso()
+          });
+          break;
+        }
+      }
+
+      applyMaterialQueueOnAlunos();
+      filtrarRender();
+      setMeta({ last_sync_at: nowIso() });
+
+      const restantes = getMaterialQueue().filter(q => q.status !== 'enviado').length;
+
+      if(restantes === 0){
+        if(!silent) msgCtx('');
+        if(showToast || enviados > 0){
+          M.toast({ html: `Materiais sincronizados ✅ (${enviados} enviado${enviados === 1 ? '' : 's'})` });
+        }
+      }else{
+        if(!silent) msgCtx(`Sincronização parcial. Ainda restam ${restantes} pendência(s) de material.`);
+      }
+
+      return true;
+
+    } finally {
+      isMaterialSyncRunning = false;
+    }
+  }
+
+  async function sincronizarTudoPendentes(opts = {}){
+    await sincronizarPendentes(opts);
+    await sincronizarMaterialPendentes(opts);
+  }
+
+  async function entregarMaterialAluno(){
+    if(!alunoSelecionado) return;
+    if($btnEntregarMaterial.classList.contains('disabled')) return;
+
+    const turmaId = getTurmaId();
+    const mat = String(alunoSelecionado.matricula || '').trim();
+    const caderno = Number($matCadernoSelect.value || 0);
+    const cursoOpcional = $matCurso.textContent.trim();
+
+    if(!mat || !turmaId || !caderno || !cursoOpcional){
+      $matMsg.textContent = 'Selecione um caderno válido.';
+      return;
+    }
+
+    $matMsg.textContent = '';
+    $btnEntregarMaterial.classList.add('disabled');
+
+    try{
+      // salva local primeiro
+      marcarMaterialLocal(alunoSelecionado, caderno, cursoOpcional);
+
+      M.toast({ html: `📘 Caderno ${caderno} salvo no aparelho` });
+
+      const atualizado = await carregarMaterialAluno(alunoSelecionado);
+      preencherModalMaterial(atualizado);
+
+      // tenta sincronizar em seguida
+      await sincronizarMaterialPendentes({ silent: true });
+
+    } catch(err){
+      $matMsg.textContent = err?.message || 'Falha ao registrar entrega.';
+    } finally {
+      if($matSelectWrap.style.display !== 'none'){
+        $btnEntregarMaterial.classList.remove('disabled');
+      }
+    }
+  }
+
+  async function pingServidor(timeoutMs = 5000){
+    if(!navigator.onLine) return false;
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try{
+      const r = await fetch(API + 'presenca_contexto.php', {
+        credentials: 'include',
+        signal: controller.signal,
+        cache: 'no-store'
+      });
+      clearTimeout(timer);
+      return r.ok;
+    }catch{
+      clearTimeout(timer);
+      return false;
+    }
+  }
+
+  function filtrarRender(){
+    const q = ($busca.value || '').trim().toLowerCase();
+
+    const list = !q ? alunos : alunos.filter(a => {
+      const m = (a.matricula || '').toLowerCase();
+      const n = (a.nome || '').toLowerCase();
+      return m.includes(q) || n.includes(q);
     });
 
-    // clique mobile
-    $listaMobile.addEventListener('click', (e) => {
-      const li = e.target.closest('li[data-mat]');
-      if(!li) return;
+    $total.textContent = String(list.length);
 
-      const mat = li.getAttribute('data-mat');
-      const a = alunos.find(x => x.matricula === mat);
-      if(!a) return;
+    if(list.length === 0){
+      $tbody.innerHTML = `<tr><td colspan="4" class="muted">Nenhum aluno encontrado.</td></tr>`;
+    } else {
+      $tbody.innerHTML = list.map(a => {
+        const statusHtml = badgeStatusDesktop(a);
+        return `
+          <tr class="list-item" data-mat="${escapeHtml(a.matricula)}">
+            <td class="mono">${escapeHtml(a.matricula)}</td>
+            <td><b>${escapeHtml(a.nome || '—')}</b></td>
+            <td>${materialChip(a)}</td>
+            <td>${statusHtml}</td>
+          </tr>
+        `;
+      }).join('');
+    }
 
-      abrirModalAluno(a);
-    });
+    if(list.length === 0){
+      $listaMobile.innerHTML = `<li class="collection-item muted">Nenhum aluno encontrado.</li>`;
+    } else {
+      $listaMobile.innerHTML = list.map(a => {
+        const sub = `${a.email ? a.email + ' • ' : ''}Material: ${Number(a.material_qtd_view ?? a.material_qtd ?? 0)}`;
+        const pres = !!a.presenca_ok;
+        const pend = !!a.pendente_sync;
 
-    
+        const rowClass = pres ? (pend ? 'pres-pendente' : 'pres-row') : '';
+        const indicador = pres
+          ? `<span class="pres-ind" title="${pend ? 'Presença pendente de sincronização' : 'Presente'}">${pend ? '⏳' : 'P'}</span>`
+          : '';
 
-    // confirmar
-    $btnConfirmar.addEventListener('click', async () => {
-      if(!alunoSelecionado) return;
-      if(alunoSelecionado.bloqueado) return;
-      if($btnConfirmar.classList.contains('disabled')) return;
+        return `
+          <li class="collection-item list-item ${rowClass}" data-mat="${escapeHtml(a.matricula)}">
+            <div class="aluno-line">
+              <span class="aluno-mat mono">${escapeHtml(a.matricula)}</span>
+              <span class="aluno-nome" title="${escapeHtml(a.nome || '')}">${escapeHtml(a.nome || '—')}</span>
+              ${indicador}
+            </div>
+            <div class="aluno-sub muted">${escapeHtml(sub)}</div>
+          </li>
+        `;
+      }).join('');
+    }
 
-      $mMsg.textContent = '';
+    atualizarTotalPresentes();
+    atualizarPainelSync();
+  }
+
+  async function carregarContexto(){
+    msgCtx('');
+    try{
+      const r = await fetch(API + 'presenca_contexto.php', { credentials:'include' });
+      const j = await r.json();
+
+      if(!r.ok || !j.ok){
+        msgCtx(j.msg || 'Falha ao carregar contexto.');
+        if(r.status === 409){
+          setTimeout(()=> location.href='selecionar_sala.html', 600);
+        }
+        return null;
+      }
+
+      contexto = j;
+
+      const dataStr = (j.now && j.now.date) ? j.now.date : (j.data || '—');
+      $ctxData.textContent = dataStr;
+      $ctxSala.textContent = j.sala?.nome ? `${j.sala.nome} (#${j.sala.id})` : '—';
+
+      const fiscalNome = (j.user && j.user.nome) ? j.user.nome : (j.fiscal?.nome || '—');
+      $ctxFiscal.textContent = fiscalNome;
+
+      const turmas = Array.isArray(j.turmas_hoje) ? j.turmas_hoje : (Array.isArray(j.turmas) ? j.turmas : []);
+      if(turmas.length === 0){
+        $turmaSelect.innerHTML = `<option value="" disabled selected>Nenhuma turma hoje</option>`;
+        reinitSelect();
+        msgCtx('Nenhuma turma encontrada para hoje nessa sala.');
+        return j;
+      }
+
+      const defId =
+        (j.turma_default && typeof j.turma_default === 'object' && j.turma_default.turma_id) ? j.turma_default.turma_id :
+        (typeof j.turma_default === 'number' ? j.turma_default :
+        (j.turma_default_id || turmas[0].turma_id));
+
+      $turmaSelect.innerHTML =
+        turmas.map(t => {
+          const hi = String(t.hora_inicio || '').substr(0,5);
+          const hf = String(t.hora_fim || '').substr(0,5);
+          const label = `${t.curso_nome} • ${hi}–${hf} (turma ${t.turma_id})`;
+          const sel = (Number(t.turma_id) === Number(defId)) ? 'selected' : '';
+          return `<option value="${t.turma_id}" ${sel}>${escapeHtml(label)}</option>`;
+        }).join('');
+
+      reinitSelect();
+      atualizarPainelSync();
+      return j;
+    }catch{
+      msgCtx('Falha de rede ao carregar contexto.');
+      return null;
+    }
+  }
+
+  async function carregarAlunos(opts = {}){
+    const { silent = false } = opts;
+    msgCtx('');
+
+    const turma_id = $turmaSelect.value;
+
+    if(!silent){
+      $tbody.innerHTML = `<tr><td colspan="4" class="muted">Carregando…</td></tr>`;
+      $listaMobile.innerHTML = `<li class="collection-item muted">Carregando…</li>`;
+      $total.textContent = '0';
+    }
+
+    const url = API + 'presenca_alunos_list.php?turma_id=' + encodeURIComponent(turma_id || '');
+
+    try{
+      const r = await fetch(url, { credentials:'include' });
+      const j = await r.json();
+
+      if(!r.ok || !j.ok){
+        throw new Error(j.msg || 'Falha ao carregar alunos');
+      }
+
+      alunos = (Array.isArray(j.rows) ? j.rows : []).map(x => {
+        const st = String(x.status || '').toUpperCase();
+        const presenca_ok = (st === 'PRESENTE' || st === 'OK');
+
+        return {
+          ...x,
+          status: st,
+          presenca_ok,
+          pendente_sync: false,
+          material_qtd: Number(x.material_qtd || 0),
+          material_qtd_local: 0,
+          material_qtd_view: Number(x.material_qtd || 0)
+        };
+      });
+
+      saveListCache(alunos);
+      applyQueueOnAlunos();
+      applyMaterialQueueOnAlunos();
+      filtrarRender();
+
+      if(!navigator.onLine){
+        msgCtx('Lista atualizada do servidor, mas você está offline agora.');
+      }
+
+    } catch {
+      const cache = loadListCache();
+
+      if(cache && Array.isArray(cache.rows)){
+        alunos = cache.rows.map(x => ({
+          ...x,
+          presenca_ok: !!x.presenca_ok,
+          pendente_sync: false,
+          material_qtd: Number(x.material_qtd || 0),
+          material_qtd_local: 0,
+          material_qtd_view: Number(x.material_qtd || 0)
+        }));
+
+        applyQueueOnAlunos();
+        applyMaterialQueueOnAlunos();
+        filtrarRender();
+        msgCtx('Sem resposta do servidor. Lista carregada do cache local.');
+      } else {
+        msgCtx('Falha ao carregar alunos e não há cache disponível.');
+        $tbody.innerHTML = `<tr><td colspan="4" class="muted">Erro ao carregar.</td></tr>`;
+        $listaMobile.innerHTML = `<li class="collection-item muted">Erro ao carregar.</li>`;
+      }
+    }
+  }
+
+  function abrirModalAluno(a){
+    alunoSelecionado = a;
+    $mMsg.textContent = '';
+    const qtdView = Number(a.material_qtd_view ?? a.material_qtd ?? 0);
+    $mNome.textContent = `${a.nome || '—'} (${qtdView} ${qtdView === 1 ? 'caderno' : 'cadernos'})`;
+    $mMat.textContent = a.matricula || '—';
+
+    if (a.bloqueado) {
+      $mStatus.className = 'badge-soft b-bloq';
+      $mStatus.textContent = 'BLOQUEADO';
+
+      $mMotivo.innerHTML =
+        `<span class="red-text"><b>Não é possível registrar presença nem entrega de material.</b></span><br>` +
+        `<span class="small">→ ${a.motivo_bloqueio || 'Encaminhar à secretaria'}.</span>`;
+
       $btnConfirmar.classList.add('disabled');
+      $btnMaterial.classList.add('disabled');
+    } else {
+      $btnMaterial.classList.remove('disabled');
 
-      try {
-        marcarPresencaLocal(alunoSelecionado);
-
+      if(a.pendente_sync){
         $mStatus.className = 'badge-soft b-pend';
         $mStatus.textContent = 'PENDENTE';
-        $mMsg.textContent = '';
-
-        const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
-        modal.close();
-
-        M.toast({html: 'Presença salva no aparelho ✅'});
-
-        // tenta sincronizar na sequência, mas sem depender disso para marcar local
-        await sincronizarPendentes({ silent: true });
-
-      } catch (err) {
-        $mStatus.className = 'badge-soft b-bloq';
-        $mStatus.textContent = 'ERRO';
-        $mMsg.textContent = err?.message || 'Falha ao registrar presença localmente.';
-      } finally {
+        $mMotivo.innerHTML = `<span class="small muted">Essa presença já foi marcada no aparelho e está aguardando sincronização. A entrega de material continua disponível.</span>`;
+        $btnConfirmar.classList.add('disabled');
+      }
+      else if(a.presenca_ok){
+        $mStatus.className = 'badge-soft b-ok';
+        $mStatus.textContent = 'PRESENTE';
+        $mMotivo.innerHTML = `<span class="small muted">A presença já está registrada. Se necessário, ainda é possível registrar entrega de material.</span>`;
+        $btnConfirmar.classList.add('disabled');
+      }
+      else {
+        $mStatus.className = 'badge-soft b-prev';
+        $mStatus.textContent = 'LIBERADO';
+        $mMotivo.innerHTML = `<span class="small muted">Confirme a presença do aluno ou registre a entrega de material.</span>`;
         $btnConfirmar.classList.remove('disabled');
       }
-    });
+    }
 
-    $btnMaterial.addEventListener('click', () => {
-      if(!alunoSelecionado) return;
-      if($btnMaterial.classList.contains('disabled')) return;
+    const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
+    modal.open();
+  }
 
-      const modalConfirm = M.Modal.getInstance(document.getElementById('modalConfirm'));
-      if(modalConfirm) modalConfirm.close();
+  function marcarPresencaLocal(a){
+    const salaId = getSalaId();
+    const turmaId = getTurmaId();
+    const mat = String(a.matricula || '').trim();
 
-      setTimeout(() => abrirModalMaterial(alunoSelecionado), 150);
-    });
-    
-    $btnEntregarMaterial.addEventListener('click', entregarMaterialAluno);
+    if(!salaId || !turmaId || !mat){
+      throw new Error('Contexto inválido para gravar presença local.');
+    }
 
-    $turmaSelect.addEventListener('change', async () => {
+    const item = {
+      sala_id: salaId,
+      turma_id: turmaId,
+      matricula: mat,
+      data: String(contexto?.data || contexto?.now?.date || '')
+    };
+
+    addQueueItem(item);
+
+    a.presenca_ok = true;
+    a.pendente_sync = true;
+    a.status = 'PRESENTE';
+
+    applyQueueOnAlunos();
+    applyMaterialQueueOnAlunos();
+    filtrarRender();
+  }
+
+  // clique desktop
+  $tbody.addEventListener('click', (e) => {
+    const tr = e.target.closest('tr[data-mat]');
+    if(!tr) return;
+
+    const mat = tr.getAttribute('data-mat');
+    const a = alunos.find(x => x.matricula === mat);
+    if(!a) return;
+
+    abrirModalAluno(a);
+  });
+
+  // clique mobile
+  $listaMobile.addEventListener('click', (e) => {
+    const li = e.target.closest('li[data-mat]');
+    if(!li) return;
+
+    const mat = li.getAttribute('data-mat');
+    const a = alunos.find(x => x.matricula === mat);
+    if(!a) return;
+
+    abrirModalAluno(a);
+  });
+
+  // confirmar presença
+  $btnConfirmar.addEventListener('click', async () => {
+    if(!alunoSelecionado) return;
+    if(alunoSelecionado.bloqueado) return;
+    if($btnConfirmar.classList.contains('disabled')) return;
+
+    $mMsg.textContent = '';
+    $btnConfirmar.classList.add('disabled');
+
+    try {
+      marcarPresencaLocal(alunoSelecionado);
+
+      $mStatus.className = 'badge-soft b-pend';
+      $mStatus.textContent = 'PENDENTE';
+      $mMsg.textContent = '';
+
+      const modal = M.Modal.getInstance(document.getElementById('modalConfirm'));
+      modal.close();
+
+      M.toast({html: 'Presença salva no aparelho ✅'});
       await sincronizarPendentes({ silent: true });
-      await carregarAlunos();
-    });
 
-    $busca.addEventListener('input', () => filtrarRender());
-
-    $btnRecarregar.addEventListener('click', async () => {
-      await sincronizarPendentes({ silent: false, showToast: true });
-      await carregarAlunos();
-    });
-
-    $btnSyncManual.addEventListener('click', async (e) => {
-      e.preventDefault();
-      await sincronizarPendentes({ silent: false, showToast: true });
-    });
-
-    window.addEventListener('online', async () => {
-      atualizarRedeUI();
-      msgCtx('Conexão detectada. Tentando sincronizar...');
-      await sincronizarPendentes({ silent: true, showToast: true });
-    });
-
-    window.addEventListener('offline', () => {
-      atualizarRedeUI();
-      msgCtx('Sem internet. As presenças continuarão salvas no aparelho.');
-    });
-
-    document.addEventListener('visibilitychange', async () => {
-      if(document.visibilityState === 'visible'){
-        atualizarRedeUI();
-        await sincronizarPendentes({ silent: true });
-      }
-    });
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      M.Modal.init(document.querySelectorAll('.modal'), { dismissible:true });
-      atualizarRedeUI();
-
-      await carregarContexto();
-      await carregarAlunos();
-
-      syncTimer = setInterval(() => {
-        sincronizarPendentes({ silent: true });
-      }, SYNC_INTERVAL_MS);
-
-      // tenta uma sincronização logo na entrada
-      setTimeout(() => sincronizarPendentes({ silent: true }), 1200);
-    });
-
-    async function trocarSala(){
-      try{
-        await sincronizarPendentes({ silent: false, showToast: true });
-
-        const pend = getQueue().filter(q => q.status !== 'enviado').length;
-        if(pend > 0){
-          M.toast({html:`Ainda há ${pend} pendência(s). Tente novamente quando a conexão estabilizar.`});
-          return;
-        }
-
-        const r = await fetch(API + 'fiscal_trocar_sala.php', {
-          method: 'POST',
-          credentials: 'include'
-        });
-
-        const j = await r.json();
-
-        if(!j.ok){
-          M.toast({html: j.msg || j.error || 'Falha ao liberar sala'});
-          return;
-        }
-
-        location.href = 'selecionar_sala.html';
-      }catch(e){
-        M.toast({html:'Erro de rede ao trocar sala'});
-      }
+    } catch (err) {
+      $mStatus.className = 'badge-soft b-bloq';
+      $mStatus.textContent = 'ERRO';
+      $mMsg.textContent = err?.message || 'Falha ao registrar presença localmente.';
+    } finally {
+      $btnConfirmar.classList.remove('disabled');
     }
+  });
 
-    function atualizarTotalPresentes(){
-      const totalPresentes = alunos.filter(a => a.presenca_ok || a.pendente_sync).length;
-      $presentCount.textContent = String(totalPresentes);
+  $btnMaterial.addEventListener('click', () => {
+    if(!alunoSelecionado) return;
+    if($btnMaterial.classList.contains('disabled')) return;
+
+    const modalConfirm = M.Modal.getInstance(document.getElementById('modalConfirm'));
+    if(modalConfirm) modalConfirm.close();
+
+    setTimeout(() => abrirModalMaterial(alunoSelecionado), 150);
+  });
+
+  $btnEntregarMaterial.addEventListener('click', entregarMaterialAluno);
+
+  $turmaSelect.addEventListener('change', async () => {
+    await sincronizarTudoPendentes({ silent: true });
+    await carregarAlunos();
+  });
+
+  $busca.addEventListener('input', () => filtrarRender());
+
+  $btnRecarregar.addEventListener('click', async () => {
+    await sincronizarTudoPendentes({ silent: false, showToast: true });
+    await carregarAlunos();
+  });
+
+  $btnSyncManual.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await sincronizarTudoPendentes({ silent: false, showToast: true });
+  });
+
+  window.addEventListener('online', async () => {
+    atualizarRedeUI();
+    msgCtx('Conexão detectada. Tentando sincronizar...');
+    await sincronizarTudoPendentes({ silent: true, showToast: true });
+  });
+
+  window.addEventListener('offline', () => {
+    atualizarRedeUI();
+    msgCtx('Sem internet. As presenças e materiais continuarão salvos no aparelho.');
+  });
+
+  document.addEventListener('visibilitychange', async () => {
+    if(document.visibilityState === 'visible'){
+      atualizarRedeUI();
+      await sincronizarTudoPendentes({ silent: true });
     }
-  </script>
+  });
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    M.Modal.init(document.querySelectorAll('.modal'), { dismissible:true });
+    atualizarRedeUI();
+
+    await carregarContexto();
+    await carregarAlunos();
+
+    syncTimer = setInterval(() => {
+      sincronizarTudoPendentes({ silent: true });
+    }, SYNC_INTERVAL_MS);
+
+    setTimeout(() => sincronizarTudoPendentes({ silent: true }), 1200);
+  });
+
+  async function trocarSala(){
+    try{
+      await sincronizarTudoPendentes({ silent: false, showToast: true });
+
+      const pendPres = getQueue().filter(q => q.status !== 'enviado').length;
+      const pendMat  = getMaterialQueue().filter(q => q.status !== 'enviado').length;
+      const pend = pendPres + pendMat;
+
+      if(pend > 0){
+        M.toast({html:`Ainda há ${pend} pendência(s). Tente novamente quando a conexão estabilizar.`});
+        return;
+      }
+
+      const r = await fetch(API + 'fiscal_trocar_sala.php', {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      const j = await r.json();
+
+      if(!j.ok){
+        M.toast({html: j.msg || j.error || 'Falha ao liberar sala'});
+        return;
+      }
+
+      location.href = 'selecionar_sala.html';
+    }catch{
+      M.toast({html:'Erro de rede ao trocar sala'});
+    }
+  }
+
+  function atualizarTotalPresentes(){
+    const totalPresentes = alunos.filter(a => a.presenca_ok || a.pendente_sync).length;
+    $presentCount.textContent = String(totalPresentes);
+  }
+</script>
+
 </body>
 </html>
