@@ -611,6 +611,7 @@
   let syncTimer = null;
   let isSyncRunning = false;
   let isMaterialSyncRunning = false;
+  let materialCursoAtual = '';
 
   function msgCtx(t=''){ $ctxMsg.textContent = t; }
 
@@ -1008,87 +1009,91 @@
     }
   }
 
-  function preencherModalMaterial(j){
-    $matMsg.textContent = '';
-    $matNome.textContent = j.nome || '—';
-    $matMatricula.textContent = j.matricula || '—';
-    $matCurso.textContent = j.curso_opcional || j.curso_nome || '—';
-    $matQtd.textContent = String(j.qtd || 0);
-    $matProximo.textContent = j.proximo_caderno ? ('Caderno ' + j.proximo_caderno) : '—';
+function preencherModalMaterial(j){
+  $matMsg.textContent = '';
 
-    const hist = Array.isArray(j.entregues) ? j.entregues : [];
-    if(hist.length === 0){
-      $matHist.innerHTML = '';
-      $matHistEmpty.style.display = '';
-    } else {
-      $matHistEmpty.style.display = 'none';
-      $matHist.innerHTML = hist.map(item => `
-        <li>
-          <span class="mat-ok">✓</span>
+  materialCursoAtual = String(j.curso_opcional || '').trim();
+
+  $matNome.textContent = j.nome || '—';
+  $matMatricula.textContent = j.matricula || '—';
+  $matCurso.textContent = materialCursoAtual || j.curso_nome || '—';
+  $matQtd.textContent = String(j.qtd || 0);
+  $matProximo.textContent = j.proximo_caderno ? ('Caderno ' + j.proximo_caderno) : '—';
+
+  const hist = Array.isArray(j.entregues) ? j.entregues : [];
+  if(hist.length === 0){
+    $matHist.innerHTML = '';
+    $matHistEmpty.style.display = '';
+  } else {
+    $matHistEmpty.style.display = 'none';
+    $matHist.innerHTML = hist.map(item => `
+      <li>
+        <span class="mat-ok">✓</span>
+        <div>
           <div>
-            <div>
-              <b>${escapeHtml(item.caderno_label || ('Caderno ' + item.caderno))}</b>
-              ${item.pending_local ? `<span class="badge-soft b-pend" style="margin-left:6px;">OFFLINE</span>` : ``}
-            </div>
-            <div class="small">
-              ${escapeHtml(item.data_retirada_br || item.data_retirada || '—')}
-              ${item.fiscal ? ' • ' + escapeHtml(item.fiscal) : ''}
-            </div>
+            <b>${escapeHtml(item.caderno_label || ('Caderno ' + item.caderno))}</b>
+            ${item.pending_local ? `<span class="badge-soft b-pend" style="margin-left:6px;">OFFLINE</span>` : ``}
           </div>
-        </li>
-      `).join('');
-    }
-
-    const disponiveis = Array.isArray(j.disponiveis) ? j.disponiveis : [];
-    if(!disponiveis.length){
-      $matFinalizado.style.display = '';
-      $matSelectWrap.style.display = 'none';
-      $btnEntregarMaterial.classList.add('disabled');
-      $matCadernoSelect.innerHTML = `<option value="" selected>Todos entregues</option>`;
-      reinitMaterialSelect();
-      return;
-    }
-
-    $matFinalizado.style.display = 'none';
-    $matSelectWrap.style.display = '';
-    $btnEntregarMaterial.classList.remove('disabled');
-
-    $matCadernoSelect.innerHTML = disponiveis.map(n => {
-      const sel = Number(n) === Number(j.proximo_caderno) ? 'selected' : '';
-      return `<option value="${n}" ${sel}>Caderno ${n}</option>`;
-    }).join('');
-
-    reinitMaterialSelect();
+          <div class="small">
+            ${escapeHtml(item.data_retirada_br || item.data_retirada || '—')}
+            ${item.fiscal ? ' • ' + escapeHtml(item.fiscal) : ''}
+          </div>
+        </div>
+      </li>
+    `).join('');
   }
+
+  const disponiveis = Array.isArray(j.disponiveis) ? j.disponiveis : [];
+  if(!disponiveis.length){
+    $matFinalizado.style.display = '';
+    $matSelectWrap.style.display = 'none';
+    $btnEntregarMaterial.classList.add('disabled');
+    $matCadernoSelect.innerHTML = `<option value="" selected>Todos entregues</option>`;
+    reinitMaterialSelect();
+    return;
+  }
+
+  $matFinalizado.style.display = 'none';
+  $matSelectWrap.style.display = '';
+  $btnEntregarMaterial.classList.remove('disabled');
+
+  $matCadernoSelect.innerHTML = disponiveis.map(n => {
+    const sel = Number(n) === Number(j.proximo_caderno) ? 'selected' : '';
+    return `<option value="${n}" ${sel}>Caderno ${n}</option>`;
+  }).join('');
+
+  reinitMaterialSelect();
+}
 
   async function abrirModalMaterial(a){
-    try{
-      $btnEntregarMaterial.classList.add('disabled');
-      $matMsg.textContent = '';
-      $matNome.textContent = a.nome || '—';
-      $matMatricula.textContent = a.matricula || '—';
-      $matCurso.textContent = 'Carregando material...';
-      $matQtd.textContent = '—';
-      $matProximo.textContent = '—';
-      $matHist.innerHTML = '';
-      $matHistEmpty.style.display = 'none';
-      $matFinalizado.style.display = 'none';
-      $matSelectWrap.style.display = 'none';
+  try{
+    materialCursoAtual = '';
+    $btnEntregarMaterial.classList.add('disabled');
+    $matMsg.textContent = '';
+    $matNome.textContent = a.nome || '—';
+    $matMatricula.textContent = a.matricula || '—';
+    $matCurso.textContent = 'Carregando material...';
+    $matQtd.textContent = '—';
+    $matProximo.textContent = '—';
+    $matHist.innerHTML = '';
+    $matHistEmpty.style.display = 'none';
+    $matFinalizado.style.display = 'none';
+    $matSelectWrap.style.display = 'none';
 
-      const modal = M.Modal.getInstance(document.getElementById('modalMaterial'));
-      modal.open();
+    const modal = M.Modal.getInstance(document.getElementById('modalMaterial'));
+    modal.open();
 
-      const j = await carregarMaterialAluno(a);
-      preencherModalMaterial(j);
+    const j = await carregarMaterialAluno(a);
+    preencherModalMaterial(j);
 
-    } catch(err){
-      $matMsg.textContent = err?.message || 'Falha ao carregar material.';
-    } finally {
-      if($matSelectWrap.style.display !== 'none'){
-        $btnEntregarMaterial.classList.remove('disabled');
-      }
+  } catch(err){
+    $matMsg.textContent = err?.message || 'Falha ao carregar material.';
+  } finally {
+    if($matSelectWrap.style.display !== 'none'){
+      $btnEntregarMaterial.classList.remove('disabled');
     }
   }
+}
 
   function marcarMaterialLocal(a, caderno, cursoOpcional){
     const salaId = getSalaId();
@@ -1351,43 +1356,43 @@
       else if(navigator.onLine) msgCtx('');
     }
   }
-  async function entregarMaterialAluno(){
-    if(!alunoSelecionado) return;
-    if($btnEntregarMaterial.classList.contains('disabled')) return;
+ async function entregarMaterialAluno(){
+  if(!alunoSelecionado) return;
+  if($btnEntregarMaterial.classList.contains('disabled')) return;
 
-    const turmaId = getTurmaId();
-    const mat = String(alunoSelecionado.matricula || '').trim();
-    const caderno = Number($matCadernoSelect.value || 0);
-    const cursoOpcional = $matCurso.textContent.trim();
+  const turmaId = getTurmaId();
+  const mat = String(alunoSelecionado.matricula || '').trim();
+  const caderno = Number($matCadernoSelect.value || 0);
+  const cursoOpcional = String(materialCursoAtual || '').trim();
 
-    if(!mat || !turmaId || !caderno || !cursoOpcional){
-      $matMsg.textContent = 'Selecione um caderno válido.';
-      return;
-    }
+  if(!mat || !turmaId || !caderno || !cursoOpcional){
+    $matMsg.textContent = 'Aguarde o carregamento do material antes de entregar.';
+    return;
+  }
 
-    $matMsg.textContent = '';
-    $btnEntregarMaterial.classList.add('disabled');
+  $matMsg.textContent = '';
+  $btnEntregarMaterial.classList.add('disabled');
 
-    try{
-      // salva local primeiro
-      marcarMaterialLocal(alunoSelecionado, caderno, cursoOpcional);
+  try{
+    // salva local primeiro
+    marcarMaterialLocal(alunoSelecionado, caderno, cursoOpcional);
 
-      M.toast({ html: `📘 Caderno ${caderno} salvo no aparelho` });
+    M.toast({ html: `📘 Caderno ${caderno} salvo no aparelho` });
 
-      const atualizado = await carregarMaterialAluno(alunoSelecionado);
-      preencherModalMaterial(atualizado);
+    const atualizado = await carregarMaterialAluno(alunoSelecionado);
+    preencherModalMaterial(atualizado);
 
-      // tenta sincronizar em seguida
-      await sincronizarMaterialPendentes({ silent: true });
+    // tenta sincronizar em seguida
+    await sincronizarMaterialPendentes({ silent: true });
 
-    } catch(err){
-      $matMsg.textContent = err?.message || 'Falha ao registrar entrega.';
-    } finally {
-      if($matSelectWrap.style.display !== 'none'){
-        $btnEntregarMaterial.classList.remove('disabled');
-      }
+  } catch(err){
+    $matMsg.textContent = err?.message || 'Falha ao registrar entrega.';
+  } finally {
+    if($matSelectWrap.style.display !== 'none'){
+      $btnEntregarMaterial.classList.remove('disabled');
     }
   }
+}
 
   async function pingServidor(timeoutMs = 5000){
     if(!navigator.onLine) return false;
