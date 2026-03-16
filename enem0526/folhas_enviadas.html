@@ -766,19 +766,18 @@
         tr.dataset.dia = (item.dia_norm || '').toUpperCase();
 
         const nomeRecebido = item.nome_arquivo_recebido || '';
-        const nomeSeguroJs = JSON.stringify(nomeRecebido);
+        const keySeguroJs = JSON.stringify(item.key || '');
 
         const nomeLink = item.key
         ? `
-            <a href="${API}ver_imagem.php?evento=${encodeURIComponent(EVENTO)}&key=${encodeURIComponent(item.key)}"
-                target="_blank"
-                rel="noopener"
+            <a href="#!"
+                onclick='abrirImagemArquivo(${keySeguroJs}); return false;'
                 class="file-link">
-                <span>${escapeHtml(item.nome_arquivo_recebido || '')}</span>
+                <span>${escapeHtml(nomeRecebido)}</span>
                 <i class="material-icons">open_in_new</i>
             </a>
             `
-        : `<span class="file-name">${escapeHtml(item.nome_arquivo_recebido || '')}</span>`;
+        : `<span class="file-name">${escapeHtml(nomeRecebido)}</span>`;
         tr.innerHTML = `
           <td class="col-cod">${escapeHtml(item.login || '')}</td>
           <td><span class="dia-pill">${escapeHtml(item.dia_norm || item.dia || '')}</span></td>
@@ -950,32 +949,32 @@
     await carregarArquivos();
   });
 
-   async function abrirImagemArquivo(nomeRecebido) {
-    try {
-      const url = `${API}ver_imagem.php?evento=${encodeURIComponent(EVENTO)}&arquivo=${encodeURIComponent(nomeRecebido)}`;
+async function abrirImagemArquivo(key) {
+  try {
+    const url = `${API}ver_imagem.php?evento=${encodeURIComponent(EVENTO)}&key=${encodeURIComponent(key)}`;
 
-      const resp = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-        cache: 'no-store'
-      });
+    const resp = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store'
+    });
 
-      if (!resp.ok) {
-        const txt = await resp.text();
-        throw new Error(txt || 'Erro ao abrir imagem.');
-      }
-
-      const blob = await resp.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      window.open(blobUrl, '_blank', 'noopener');
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Erro ao abrir imagem',
-        text: String(err.message || err)
-      });
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error(txt || 'Erro ao abrir imagem.');
     }
+
+    const blob = await resp.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank', 'noopener');
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Erro ao abrir imagem',
+      text: String(err.message || err)
+    });
   }
+}
 
   
 </script>
