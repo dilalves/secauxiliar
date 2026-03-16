@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Presenças — Simulado ENEM</title>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+
+body{
+background:#eef4fb;
+padding:20px;
+}
+
+.card{
+border-radius:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h4>Informar Presenças</h4>
+
+<div class="card">
+
+<div class="card-content">
+
+<span class="card-title">
+Evento: <b id="eventoLabel"></b>
+</span>
+
+<div class="row">
+
+<div class="input-field col s4">
+<input id="vagas" type="number" readonly>
+<label class="active">Vagas</label>
+</div>
+
+<div class="input-field col s4">
+<input id="d1" type="number">
+<label class="active">Presentes Dia 1</label>
+</div>
+
+<div class="input-field col s4">
+<input id="d2" type="number">
+<label class="active">Presentes Dia 2</label>
+</div>
+
+</div>
+
+</div>
+
+<div class="card-action">
+
+<button class="btn blue" onclick="salvar()">
+<i class="material-icons left">save</i>
+Salvar
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const API = "https://apisec.secauxiliar.com.br/enem0526/";
+const EVENTO = "ENEM0526";
+
+document.getElementById("eventoLabel").innerText = EVENTO;
+
+async function carregar(){
+
+let r = await fetch(API + "presencas_get.php?evento="+EVENTO,{
+credentials:'include'
+});
+
+let j = await r.json();
+
+if(!j.ok){
+alert(j.error);
+return;
+}
+
+document.getElementById("vagas").value = j.data.vagas;
+document.getElementById("d1").value = j.data.presentes_d1;
+document.getElementById("d2").value = j.data.presentes_d2;
+
+}
+
+async function salvar(){
+
+let fd = new FormData();
+
+fd.append("evento",EVENTO);
+fd.append("presentes_d1",document.getElementById("d1").value);
+fd.append("presentes_d2",document.getElementById("d2").value);
+
+let r = await fetch(API+"presencas_update.php",{
+method:'POST',
+body:fd,
+credentials:'include'
+});
+
+let j = await r.json();
+
+if(!j.ok){
+Swal.fire("Erro",j.error,"error");
+return;
+}
+
+Swal.fire("Salvo","Presenças atualizadas","success");
+
+}
+
+carregar();
+
+</script>
+
+</body>
+</html>
