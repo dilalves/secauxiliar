@@ -768,12 +768,13 @@
         const nomeRecebido = item.nome_arquivo_recebido || '';
         const nomeSeguroJs = JSON.stringify(nomeRecebido);
 
-        const nomeLink = nomeRecebido
+        const nomeLink = item.key
         ? `
-            <a href="#!"
-                onclick='abrirImagemArquivo(${nomeSeguroJs}); return false;'
+            <a href="${API}ver_imagem.php?evento=${encodeURIComponent(EVENTO)}&key=${encodeURIComponent(item.key)}"
+                target="_blank"
+                rel="noopener"
                 class="file-link">
-                <span>${escapeHtml(nomeRecebido)}</span>
+                <span>${escapeHtml(item.nome_arquivo_recebido || '')}</span>
                 <i class="material-icons">open_in_new</i>
             </a>
             `
