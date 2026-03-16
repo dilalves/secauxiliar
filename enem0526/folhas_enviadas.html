@@ -591,6 +591,7 @@
 </main>
 
 <script>
+  const API = 'https://apisec.secauxiliar.com.br/enem0526/';
   const EVENTO = 'ENEM0526';
 
   function goBack() {
@@ -621,6 +622,11 @@
     });
   }
 
+  function extractPayload(json) {
+    if (!json || typeof json !== 'object') return null;
+    return json.data ?? json;
+  }
+
   function updateResumo(redacaoHabilitada) {
     const all = document.getElementById('totAll')?.textContent || '0';
     const d1  = document.getElementById('totD1')?.textContent || '0';
@@ -635,31 +641,92 @@
     setText('resumoRodape', txt);
   }
 
-  function extractPayload(json) {
-    if (!json || typeof json !== 'object') return null;
-    return json.data ?? json;
+  async function logout(){
+    try {
+      await fetch(API + 'auth_login_out.php', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store'
+      });
+    } catch(e){
+      console.error(e);
+    }
+    location.href = './index.html?logout=1';
+  }
+
+  async function gatePainel() {
+    try {
+      const r = await fetch(API + 'auth_me_unidade.php', {
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      const data = await r.json().catch(() => ({}));
+
+      if (!r.ok || !data.ok) {
+        location.replace('./index.html');
+        return false;
+      }
+
+      const st = (data.adesao?.status || '').toUpperCase();
+
+      if (st !== 'ATIVA') {
+        await Swal.fire({
+          title: 'Acesso indisponível',
+          html: `
+            <div style="text-align:left;line-height:1.5">
+              <p>Sua adesão ainda não foi liberada.</p>
+              <p>Status atual: <b>${escapeHtml(st || 'SEM ADESÃO')}</b></p>
+              <p>⏳ Aguarde a conferência e liberação.</p>
+            </div>
+          `,
+          icon: 'info',
+          confirmButtonColor: '#0b3b78',
+          confirmButtonText: 'OK'
+        });
+
+        location.replace('./index.html');
+        return false;
+      }
+
+      return data;
+    } catch (e) {
+      console.error(e);
+      location.replace('./index.html');
+      return false;
+    }
   }
 
   async function carregarArquivos() {
     try {
-      const resp = await fetch(`./folhas_enviadas.php?evento=${encodeURIComponent(EVENTO)}`, {
+      const resp = await fetch(API + `folhas_enviadas.php?evento=${encodeURIComponent(EVENTO)}`, {
         method: 'GET',
         credentials: 'include',
         cache: 'no-store'
       });
 
-      const json = await resp.json();
+      const json = await resp.json().catch(() => ({}));
 
       if (!resp.ok || !json.ok) {
+        if (resp.status === 401 || resp.status === 403) {
+          await Swal.fire({
+            icon: 'warning',
+            title: 'Sessão expirada',
+            text: 'Faça login novamente.'
+          });
+          location.replace('./index.html');
+          return;
+        }
+
         throw new Error(json.msg || 'Falha ao carregar arquivos.');
       }
 
       const data = extractPayload(json);
       const redacaoHabilitada = !!data.redacaoHabilitada;
 
-      setText('topUser', `${data.login} — ${data.unidade}`);
-      setText('badgeLogin', data.login);
-      setText('badgeUnidade', data.unidade);
+      setText('topUser', `${data.login || ''} — ${data.unidade || ''}`);
+      setText('badgeLogin', data.login || '-');
+      setText('badgeUnidade', data.unidade || '-');
 
       setText('totAllHero', data.totais?.all ?? 0);
       setText('totAll', data.totais?.all ?? 0);
@@ -730,6 +797,8 @@
       });
 
     } catch (err) {
+      console.error(err);
+
       const tbody = document.getElementById('tbodyArquivos');
       if (tbody) {
         tbody.innerHTML = `
@@ -784,7 +853,7 @@
     btn.disabled = true;
 
     try {
-      const resp = await fetch('./folhas_enviadas_excluir.php', {
+      const resp = await fetch(API + 'folhas_enviadas_excluir.php', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -796,12 +865,26 @@
         }).toString()
       });
 
-      const json = await resp.json();
+      const json = await resp.json().catch(() => ({}));
 
       if (!resp.ok || !json.ok) {
-        if (json && json.reason === 'processed') {
-          throw Object.assign(new Error('Este arquivo já foi processado e não pode ser excluído.'), { code: 'processed' });
+        if (resp.status === 401 || resp.status === 403) {
+          await Swal.fire({
+            icon: 'warning',
+            title: 'Sessão expirada',
+            text: 'Faça login novamente.'
+          });
+          location.replace('./index.html');
+          return;
         }
+
+        if (json && json.reason === 'processed') {
+          throw Object.assign(
+            new Error('Este arquivo já foi processado e não pode ser excluído.'),
+            { code: 'processed' }
+          );
+        }
+
         throw new Error(json.msg || 'Tente novamente.');
       }
 
@@ -841,6 +924,8 @@
       });
 
     } catch (err) {
+      console.error(err);
+
       Swal.fire({
         icon: err.code === 'processed' ? 'info' : 'error',
         title: err.code === 'processed' ? 'Não permitido' : 'Erro',
@@ -852,7 +937,12 @@
     }
   });
 
-  document.addEventListener('DOMContentLoaded', carregarArquivos);
+  document.addEventListener('DOMContentLoaded', async () => {
+    const ok = await gatePainel();
+    if (!ok) return;
+
+    await carregarArquivos();
+  });
 </script>
 
 </body>
