@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <base target="_top">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
@@ -442,6 +441,12 @@
       margin-bottom:8px;
     }
 
+    .loading-row{
+      padding:22px 16px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
     @media (max-width: 980px){
       .kpi-row{
         grid-template-columns:1fr 1fr;
@@ -473,26 +478,6 @@
 </head>
 <body>
 
-<? 
-  var totalD1 = 0;
-  var totalD2 = 0;
-  var totalR1 = 0;
-  var totalVisiveis = 0;
-
-  for (var i = 0; i < list.length; i++) {
-    var rowX = list[i];
-    var diaRawX = (rowX[1] || '').toString().toUpperCase();
-    var diaNormX = diaRawX.replace('1º DIA','D1').replace('2º DIA','D2').trim();
-
-    if (diaNormX === 'R1' && !redacaoHabilitada) continue;
-
-    totalVisiveis++;
-    if (diaNormX === 'D1') totalD1++;
-    else if (diaNormX === 'D2') totalD2++;
-    else if (diaNormX === 'R1') totalR1++;
-  }
-?>
-
 <header class="topbar">
   <div class="container">
     <div class="brand">
@@ -505,7 +490,7 @@
 
     <div class="top-right">
       <i class="material-icons">account_circle</i>
-      <div class="txt"><?= login ?> — <?= unidade ?></div>
+      <div class="txt" id="topUser">Carregando...</div>
     </div>
   </div>
 </header>
@@ -523,9 +508,9 @@
         </div>
 
         <div class="badges">
-          <span class="badge"><i class="material-icons">apartment</i> <?= login ?></span>
-          <span class="badge"><i class="material-icons">place</i> <?= unidade ?></span>
-          <span class="badge"><i class="material-icons">photo_library</i> <span id="totAllHero"><?= totalVisiveis ?></span> arquivos</span>
+          <span class="badge"><i class="material-icons">apartment</i> <span id="badgeLogin">...</span></span>
+          <span class="badge"><i class="material-icons">place</i> <span id="badgeUnidade">...</span></span>
+          <span class="badge"><i class="material-icons">photo_library</i> <span id="totAllHero">0</span> arquivos</span>
         </div>
       </div>
     </section>
@@ -541,31 +526,24 @@
 
       <div class="kpi-row">
         <div class="mini-kpi">
-          <div class="v" id="totAll"><?= totalVisiveis ?></div>
+          <div class="v" id="totAll">0</div>
           <div class="l">Total de arquivos</div>
         </div>
 
         <div class="mini-kpi">
-          <div class="v" id="totD1"><?= totalD1 ?></div>
+          <div class="v" id="totD1">0</div>
           <div class="l">Dia 1</div>
         </div>
 
         <div class="mini-kpi">
-          <div class="v" id="totD2"><?= totalD2 ?></div>
+          <div class="v" id="totD2">0</div>
           <div class="l">Dia 2</div>
         </div>
 
-        <? if (redacaoHabilitada) { ?>
-          <div class="mini-kpi">
-            <div class="v" id="totR1"><?= totalR1 ?></div>
-            <div class="l">Redação</div>
-          </div>
-        <? } else { ?>
-          <div class="mini-kpi">
-            <div class="v">—</div>
-            <div class="l">Redação não habilitada</div>
-          </div>
-        <? } ?>
+        <div class="mini-kpi">
+          <div class="v" id="totR1">0</div>
+          <div class="l" id="lblR1">Redação</div>
+        </div>
       </div>
 
       <div class="table-shell">
@@ -574,86 +552,34 @@
           <div class="right">Clique no nome do arquivo para abrir a imagem</div>
         </div>
 
-        <? if (totalVisiveis > 0) { ?>
-          <div class="table-container">
-            <table class="listing">
-              <thead>
-                <tr>
-                  <th>Cod. unidade</th>
-                  <th>Dia</th>
-                  <th>Nome arquivo unidade</th>
-                  <th>Nome arquivo recebido</th>
-                  <th>Timestamp</th>
-                  <th class="right-align">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                <? 
-                  for (var i = 0; i < list.length; i++) { 
-                    var row = list[i];
-                    var diaRaw = (row[1] || '').toString().toUpperCase();
-                    var dia = diaRaw.replace('1º DIA','D1').replace('2º DIA','D2').trim();
-
-                    if (dia === 'R1' && !redacaoHabilitada) continue;
-                ?>
-                  <tr data-dia="<?= dia ?>">
-                    <td class="col-cod"><?= row[0] ?></td>
-
-                    <td>
-                      <span class="dia-pill"><?= dia || row[1] ?></span>
-                    </td>
-
-                    <td><?= row[2] ?></td>
-
-                    <td>
-                      <? if (row[5]) { ?>
-                        <a href="<?= row[5] ?>" target="_blank" rel="noopener" class="file-link">
-                          <span><?= row[3] ?></span>
-                          <i class="material-icons">open_in_new</i>
-                        </a>
-                      <? } else { ?>
-                        <span class="file-name"><?= row[3] ?></span>
-                      <? } ?>
-                    </td>
-
-                    <td class="ts"><?= row[4] ?></td>
-
-                    <td class="action-cell">
-                      <button
-                        type="button"
-                        class="icon-btn delete-link"
-                        data-filename="<?= row[3] ?>"
-                        aria-label="Excluir arquivo"
-                        title="Excluir arquivo"
-                      >
-                        <i class="material-icons">delete</i>
-                      </button>
-                    </td>
-                  </tr>
-                <? } ?>
-              </tbody>
-            </table>
-          </div>
-        <? } else { ?>
-          <div class="empty-state">
-            <i class="material-icons">inventory_2</i>
-            Nenhum arquivo encontrado para esta unidade.
-          </div>
-        <? } ?>
+        <div class="table-container">
+          <table class="listing">
+            <thead>
+              <tr>
+                <th>Cod. unidade</th>
+                <th>Dia</th>
+                <th>Nome arquivo unidade</th>
+                <th>Nome arquivo recebido</th>
+                <th>Timestamp</th>
+                <th class="right-align">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyArquivos">
+              <tr>
+                <td colspan="6" class="loading-row">Carregando arquivos...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="footer-row">
-        <div class="summary">
-          Resumo: Total = <span id="totAllFooter"><?= totalVisiveis ?></span>
-          — Dia 1 = <span id="totD1Footer"><?= totalD1 ?></span>
-          — Dia 2 = <span id="totD2Footer"><?= totalD2 ?></span>
-          <? if (redacaoHabilitada) { ?>
-            — Redação = <span id="totR1Footer"><?= totalR1 ?></span>
-          <? } ?>
+        <div class="summary" id="resumoRodape">
+          Resumo: carregando...
         </div>
 
         <div class="btn-row">
-          <button class="btnx btn-secondary" type="button" onclick="goBack('<?= login ?>', '<?= unidade ?>')">
+          <button class="btnx btn-secondary" type="button" onclick="goBack()">
             <i class="material-icons">arrow_back</i>
             Voltar
           </button>
@@ -665,14 +591,15 @@
 </main>
 
 <script>
-  function goBack(login, unidade) {
-    google.script.run
-      .withSuccessHandler(function(html){
-        document.open();
-        document.write(html);
-        document.close();
-      })
-      .renderPrincipalPage(login, unidade);
+  const EVENTO = 'ENEM0526';
+
+  function goBack() {
+    history.back();
+  }
+
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
   }
 
   function decText(id){
@@ -682,90 +609,250 @@
     el.textContent = Math.max(0, atual - 1);
   }
 
-  document.addEventListener('click', function(e){
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, function(s) {
+      return {
+        '&':'&amp;',
+        '<':'&lt;',
+        '>':'&gt;',
+        '"':'&quot;',
+        "'":'&#039;'
+      }[s];
+    });
+  }
+
+  function updateResumo(redacaoHabilitada) {
+    const all = document.getElementById('totAll')?.textContent || '0';
+    const d1  = document.getElementById('totD1')?.textContent || '0';
+    const d2  = document.getElementById('totD2')?.textContent || '0';
+    const r1  = document.getElementById('totR1')?.textContent || '0';
+
+    let txt = `Resumo: Total = ${all} — Dia 1 = ${d1} — Dia 2 = ${d2}`;
+    if (redacaoHabilitada) {
+      txt += ` — Redação = ${r1}`;
+    }
+
+    setText('resumoRodape', txt);
+  }
+
+  function extractPayload(json) {
+    if (!json || typeof json !== 'object') return null;
+    return json.data ?? json;
+  }
+
+  async function carregarArquivos() {
+    try {
+      const resp = await fetch(`./folhas_enviadas.php?evento=${encodeURIComponent(EVENTO)}`, {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      const json = await resp.json();
+
+      if (!resp.ok || !json.ok) {
+        throw new Error(json.msg || 'Falha ao carregar arquivos.');
+      }
+
+      const data = extractPayload(json);
+      const redacaoHabilitada = !!data.redacaoHabilitada;
+
+      setText('topUser', `${data.login} — ${data.unidade}`);
+      setText('badgeLogin', data.login);
+      setText('badgeUnidade', data.unidade);
+
+      setText('totAllHero', data.totais?.all ?? 0);
+      setText('totAll', data.totais?.all ?? 0);
+      setText('totD1', data.totais?.d1 ?? 0);
+      setText('totD2', data.totais?.d2 ?? 0);
+
+      if (redacaoHabilitada) {
+        setText('totR1', data.totais?.r1 ?? 0);
+        setText('lblR1', 'Redação');
+      } else {
+        setText('totR1', '—');
+        setText('lblR1', 'Redação não habilitada');
+      }
+
+      updateResumo(redacaoHabilitada);
+
+      const tbody = document.getElementById('tbodyArquivos');
+      tbody.innerHTML = '';
+
+      if (!data.list || !data.list.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="material-icons">inventory_2</i>
+                Nenhum arquivo encontrado para esta unidade.
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      data.list.forEach(function(item) {
+        const tr = document.createElement('tr');
+        tr.dataset.dia = (item.dia_norm || '').toUpperCase();
+
+        const nomeLink = item.arquivo_url
+          ? `
+              <a href="${escapeHtml(item.arquivo_url)}" target="_blank" rel="noopener" class="file-link">
+                <span>${escapeHtml(item.nome_arquivo_recebido || '')}</span>
+                <i class="material-icons">open_in_new</i>
+              </a>
+            `
+          : `<span class="file-name">${escapeHtml(item.nome_arquivo_recebido || '')}</span>`;
+
+        tr.innerHTML = `
+          <td class="col-cod">${escapeHtml(item.login || '')}</td>
+          <td><span class="dia-pill">${escapeHtml(item.dia_norm || item.dia || '')}</span></td>
+          <td>${escapeHtml(item.nome_arquivo_unidade || '')}</td>
+          <td>${nomeLink}</td>
+          <td class="ts">${escapeHtml(item.timestamp || '')}</td>
+          <td class="action-cell">
+            <button
+              type="button"
+              class="icon-btn delete-link"
+              data-filename="${escapeHtml(item.nome_arquivo_recebido || '')}"
+              ${item.pode_excluir ? '' : 'disabled'}
+              aria-label="Excluir arquivo"
+              title="${item.pode_excluir ? 'Excluir arquivo' : 'Arquivo processado não pode ser excluído'}"
+            >
+              <i class="material-icons">delete</i>
+            </button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+    } catch (err) {
+      const tbody = document.getElementById('tbodyArquivos');
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="material-icons">error_outline</i>
+                Falha ao carregar os arquivos.
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro ao carregar',
+        text: String(err.message || err)
+      });
+    }
+  }
+
+  document.addEventListener('click', async function(e){
     const btn = e.target.closest('.delete-link');
     if (!btn) return;
 
     e.preventDefault();
     e.stopPropagation();
 
+    if (btn.disabled) return;
+
     const tr = btn.closest('tr');
     const fileName = btn.dataset.filename;
-    const dia = (tr.dataset.dia || '').toUpperCase();
+    const dia = (tr?.dataset.dia || '').toUpperCase();
+    const redacaoHabilitada = (document.getElementById('lblR1')?.textContent || '') === 'Redação';
 
-    Swal.fire({
+    const res = await Swal.fire({
       icon: 'warning',
       title: 'Excluir arquivo?',
       html:
-        'Vai remover <b>' + fileName + '</b> do relatório e enviar o arquivo do Drive para a lixeira.<br><small>(Só é permitido se o arquivo <b>não</b> tiver "PROCESSADO" no nome.)</small>',
+        'Vai remover <b>' + escapeHtml(fileName) + '</b> do relatório e enviar o arquivo para exclusão no armazenamento.<br><small>(Só é permitido se o arquivo <b>não</b> tiver "PROCESSADO" no nome.)</small>',
       showCancelButton: true,
       confirmButtonText: 'Sim, excluir',
       cancelButtonText: 'Cancelar',
       confirmButtonColor: '#d33',
       cancelButtonColor: '#64748b'
-    }).then(function(res){
-      if (!res.isConfirmed) return;
-
-      btn.classList.add('disabled');
-      btn.disabled = true;
-
-      google.script.run
-        .withSuccessHandler(function(resp){
-          if (!resp || !resp.ok) {
-            if (resp && resp.reason === 'processed') {
-              Swal.fire({
-                icon:'info',
-                title:'Não permitido',
-                text:'Este arquivo já foi processado e não pode ser excluído.'
-              });
-            } else {
-              Swal.fire({
-                icon:'error',
-                title:'Falha ao excluir',
-                text:(resp && resp.msg) || 'Tente novamente.'
-              });
-            }
-
-            btn.classList.remove('disabled');
-            btn.disabled = false;
-            return;
-          }
-
-          tr.remove();
-
-          decText('totAll');
-          decText('totAllHero');
-          decText('totAllFooter');
-
-          if (dia === 'D1') {
-            decText('totD1');
-            decText('totD1Footer');
-          } else if (dia === 'D2') {
-            decText('totD2');
-            decText('totD2Footer');
-          } else if (dia === 'R1') {
-            decText('totR1');
-            decText('totR1Footer');
-          }
-
-          Swal.fire({
-            icon:'success',
-            title:'Excluído',
-            text:'Arquivo movido para a lixeira e linha removida.'
-          });
-        })
-        .withFailureHandler(function(err){
-          Swal.fire({
-            icon:'error',
-            title:'Erro',
-            text:String(err)
-          });
-          btn.classList.remove('disabled');
-          btn.disabled = false;
-        })
-        .deleteUploadEnemByReceivedName(fileName);
     });
+
+    if (!res.isConfirmed) return;
+
+    btn.classList.add('disabled');
+    btn.disabled = true;
+
+    try {
+      const resp = await fetch('./folhas_enviadas_excluir.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: new URLSearchParams({
+          evento: EVENTO,
+          arquivo: fileName
+        }).toString()
+      });
+
+      const json = await resp.json();
+
+      if (!resp.ok || !json.ok) {
+        if (json && json.reason === 'processed') {
+          throw Object.assign(new Error('Este arquivo já foi processado e não pode ser excluído.'), { code: 'processed' });
+        }
+        throw new Error(json.msg || 'Tente novamente.');
+      }
+
+      tr.remove();
+
+      decText('totAll');
+      decText('totAllHero');
+
+      if (dia === 'D1') {
+        decText('totD1');
+      } else if (dia === 'D2') {
+        decText('totD2');
+      } else if (dia === 'R1' && redacaoHabilitada) {
+        decText('totR1');
+      }
+
+      updateResumo(redacaoHabilitada);
+
+      const tbody = document.getElementById('tbodyArquivos');
+      if (tbody && !tbody.querySelector('tr')) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="material-icons">inventory_2</i>
+                Nenhum arquivo encontrado para esta unidade.
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      Swal.fire({
+        icon:'success',
+        title:'Excluído',
+        text:'Arquivo removido com sucesso.'
+      });
+
+    } catch (err) {
+      Swal.fire({
+        icon: err.code === 'processed' ? 'info' : 'error',
+        title: err.code === 'processed' ? 'Não permitido' : 'Erro',
+        text: String(err.message || err)
+      });
+
+      btn.classList.remove('disabled');
+      btn.disabled = false;
+    }
   });
+
+  document.addEventListener('DOMContentLoaded', carregarArquivos);
 </script>
 
 </body>
