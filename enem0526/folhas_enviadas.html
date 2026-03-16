@@ -766,9 +766,10 @@
         tr.dataset.dia = (item.dia_norm || '').toUpperCase();
 
         const nomeRecebido = item.nome_arquivo_recebido || '';
-        const keySeguroJs = JSON.stringify(item.key || '');
+        const keyImagem = item.key || `SIM_ABERTO/${EVENTO}/imagens/${nomeRecebido}`;
+        const keySeguroJs = JSON.stringify(keyImagem);
 
-        const nomeLink = item.key
+        const nomeLink = nomeRecebido
         ? `
             <a href="#!"
                 onclick='abrirImagemArquivo(${keySeguroJs}); return false;'
@@ -951,6 +952,8 @@
 
 async function abrirImagemArquivo(key) {
   try {
+    console.log('Abrindo key:', key);
+
     const url = `${API}ver_imagem.php?evento=${encodeURIComponent(EVENTO)}&key=${encodeURIComponent(key)}`;
 
     const resp = await fetch(url, {
