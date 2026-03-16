@@ -1067,7 +1067,7 @@
       $matMsg.textContent = '';
       $matNome.textContent = a.nome || '—';
       $matMatricula.textContent = a.matricula || '—';
-      $matCurso.textContent = 'Carregando...';
+      $matCurso.textContent = 'Carregando material...';
       $matQtd.textContent = '—';
       $matProximo.textContent = '—';
       $matHist.innerHTML = '';
@@ -1338,10 +1338,19 @@
   }
 
   async function sincronizarTudoPendentes(opts = {}){
+    const { silent = false } = opts;
+
     await sincronizarPendentes(opts);
     await sincronizarMaterialPendentes(opts);
-  }
 
+    const pendPres = getQueue().filter(q => q.status !== 'enviado').length;
+    const pendMat  = getMaterialQueue().filter(q => q.status !== 'enviado').length;
+
+    if(pendPres + pendMat === 0){
+      if(!silent) msgCtx('');
+      else if(navigator.onLine) msgCtx('');
+    }
+  }
   async function entregarMaterialAluno(){
     if(!alunoSelecionado) return;
     if($btnEntregarMaterial.classList.contains('disabled')) return;
@@ -1708,14 +1717,25 @@
     }
   });
 
-  $btnMaterial.addEventListener('click', () => {
+  $btnMaterial.addEventListener('click', async (e) => {
+    e.preventDefault();
+
     if(!alunoSelecionado) return;
     if($btnMaterial.classList.contains('disabled')) return;
 
-    const modalConfirm = M.Modal.getInstance(document.getElementById('modalConfirm'));
-    if(modalConfirm) modalConfirm.close();
+    $btnMaterial.classList.add('disabled');
 
-    setTimeout(() => abrirModalMaterial(alunoSelecionado), 150);
+    try{
+      const modalConfirm = M.Modal.getInstance(document.getElementById('modalConfirm'));
+      if(modalConfirm) modalConfirm.close();
+
+      setTimeout(() => {
+        abrirModalMaterial(alunoSelecionado)
+          .finally(() => $btnMaterial.classList.remove('disabled'));
+      }, 220);
+    } catch(err){
+      $btnMaterial.classList.remove('disabled');
+    }
   });
 
   $btnEntregarMaterial.addEventListener('click', entregarMaterialAluno);
@@ -1737,10 +1757,26 @@
     await sincronizarTudoPendentes({ silent: false, showToast: true });
   });
 
-  window.addEventListener('online', async () => {
+    window.addEventListener('online', async () => {
     atualizarRedeUI();
-    msgCtx('Conexão detectada. Tentando sincronizar...');
+
+    const pendPres = getQueue().filter(q => q.status !== 'enviado').length;
+    const pendMat  = getMaterialQueue().filter(q => q.status !== 'enviado').length;
+
+    if((pendPres + pendMat) > 0){
+      msgCtx('Conexão detectada. Tentando sincronizar...');
+    } else {
+      msgCtx('');
+    }
+
     await sincronizarTudoPendentes({ silent: true, showToast: true });
+
+    const restPres = getQueue().filter(q => q.status !== 'enviado').length;
+    const restMat  = getMaterialQueue().filter(q => q.status !== 'enviado').length;
+
+    if((restPres + restMat) === 0){
+      msgCtx('');
+    }
   });
 
   window.addEventListener('offline', () => {
