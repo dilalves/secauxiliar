@@ -263,8 +263,7 @@
     }
 
     .table-container{
-      max-height:68vh;
-      overflow:auto;
+    overflow:visible;
     }
 
     table.listing{
@@ -540,7 +539,7 @@
           <div class="l">Dia 2</div>
         </div>
 
-        <div class="mini-kpi">
+        <div class="mini-kpi" id="cardRedacao">
           <div class="v" id="totR1">0</div>
           <div class="l" id="lblR1">Redação</div>
         </div>
@@ -733,13 +732,15 @@
       setText('totD1', data.totais?.d1 ?? 0);
       setText('totD2', data.totais?.d2 ?? 0);
 
-      if (redacaoHabilitada) {
+        const cardRedacao = document.getElementById('cardRedacao');
+
+        if (redacaoHabilitada) {
+        if (cardRedacao) cardRedacao.style.display = '';
         setText('totR1', data.totais?.r1 ?? 0);
         setText('lblR1', 'Redação');
-      } else {
-        setText('totR1', '—');
-        setText('lblR1', 'Redação não habilitada');
-      }
+        } else {
+        if (cardRedacao) cardRedacao.style.display = 'none';
+        }
 
       updateResumo(redacaoHabilitada);
 
