@@ -1270,47 +1270,39 @@ function preencherModalMaterial(j){
     }
   }
 
-  async function sincronizarMaterialPendentes(opts = {}){
+  async function sincronizarMaterialPendentes(opts = {}) {
     const { silent = false, showToast = false } = opts;
 
-    if(isMaterialSyncRunning) return false;
-    if(!contexto?.sala?.id) return false;
+    if (isMaterialSyncRunning) return false;
+    if (!contexto?.sala?.id) return false;
 
     const conectado = await pingServidor(4000);
-    if(!conectado){
+    if (!conectado) {
       atualizarPainelSync();
       return false;
     }
 
     let queue = getMaterialQueue().filter(q => q.status !== 'enviado');
-    if(queue.length === 0){
+    if (queue.length === 0) {
+      if (!silent) msgCtx('');
       return true;
     }
 
     isMaterialSyncRunning = true;
-    if(!silent) msgCtx('Sincronizando materiais pendentes...');
+    if (!silent) msgCtx('Sincronizando materiais pendentes...');
 
     let enviados = 0;
 
-    try{
-      for(const item of queue){
+    try {
+      for (const item of queue) {
         updateMaterialQueueItem(item.id, { status: 'enviando', tentativa_at: nowIso() });
 
         const res = await enviarItemMaterialFila(item);
 
-        if(res.ok){
-          const aluno = alunos.find(a =>
-            String(a.matricula) === String(item.matricula)
-          );
-
-          if(aluno){
-            aluno.material_qtd = Number(aluno.material_qtd || 0) + 1;
-          }
-
+        if (res.ok) {
           removeMaterialQueueItem(item.id);
           enviados++;
-        }
-        else{
+        } else {
           updateMaterialQueueItem(item.id, {
             status: 'pendente',
             erro: res.msg || '',
@@ -1320,19 +1312,20 @@ function preencherModalMaterial(j){
         }
       }
 
+      // recarrega a lista local corretamente
       applyMaterialQueueOnAlunos();
       filtrarRender();
       setMeta({ last_sync_at: nowIso() });
 
       const restantes = getMaterialQueue().filter(q => q.status !== 'enviado').length;
 
-      if(restantes === 0){
-        if(!silent) msgCtx('');
-        if(showToast || enviados > 0){
+      if (restantes === 0) {
+        if (!silent) msgCtx('');
+        if (showToast || enviados > 0) {
           M.toast({ html: `Materiais sincronizados ✅ (${enviados} enviado${enviados === 1 ? '' : 's'})` });
         }
-      }else{
-        if(!silent) msgCtx(`Sincronização parcial. Ainda restam ${restantes} pendência(s) de material.`);
+      } else {
+        if (!silent) msgCtx(`Sincronização parcial. Ainda restam ${restantes} pendência(s) de material.`);
       }
 
       return true;
@@ -1356,43 +1349,69 @@ function preencherModalMaterial(j){
       else if(navigator.onLine) msgCtx('');
     }
   }
- async function entregarMaterialAluno(){
-  if(!alunoSelecionado) return;
-  if($btnEntregarMaterial.classList.contains('disabled')) return;
 
-  const turmaId = getTurmaId();
-  const mat = String(alunoSelecionado.matricula || '').trim();
-  const caderno = Number($matCadernoSelect.value || 0);
-  const cursoOpcional = String(materialCursoAtual || '').trim();
+  async function entregarMaterialAluno(){
+    if(!alunoSelecionado) return;
+    if($btnEntregarMaterial.classList.contains('disabled')) return;
 
-  if(!mat || !turmaId || !caderno || !cursoOpcional){
-    $matMsg.textContent = 'Aguarde o carregamento do material antes de entregar.';
-    return;
-  }
+    const turmaId = getTurmaId();
+    const mat = String(alunoSelecionado.matricula || '').trim();
+    const caderno = Number($matCadernoSelect.value || 0);
+    const cursoOpcional = String(materialCursoAtual || '').trim();
 
-  $matMsg.textContent = '';
-  $btnEntregarMaterial.classList.add('disabled');
+    if(!mat || !turmaId || !caderno || !cursoOpcional){
+      $matMsg.textContent = 'Aguarde o carregamento do material antes de entregar.';
+      return;
+    }
 
-  try{
-    // salva local primeiro
-    marcarMaterialLocal(alunoSelecionado, caderno, cursoOpcional);
+    $matMsg.textContent = '';
+    $btnEntregarMaterial.classList.add('disabled');
 
-    M.toast({ html: `📘 Caderno ${caderno} salvo no aparelho` });
+    try{
+      // 1) salva local primeiro
+      marcarMaterialLocal(alunoSelecionado, caderno, cursoOpcional);
 
-    const atualizado = await carregarMaterialAluno(alunoSelecionado);
-    preencherModalMaterial(atualizado);
+      // 2) se estiver online, tenta sincronizar imediatamente
+      let sincronizouAgora = false;
 
-    // tenta sincronizar em seguida
-    await sincronizarMaterialPendentes({ silent: true });
+      if(navigator.onLine){
+        await sincronizarMaterialPendentes({ silent: true });
 
-  } catch(err){
-    $matMsg.textContent = err?.message || 'Falha ao registrar entrega.';
-  } finally {
-    if($matSelectWrap.style.display !== 'none'){
-      $btnEntregarMaterial.classList.remove('disabled');
+        const aindaPendente = getMaterialQueue().some(q =>
+          String(q.matricula) === mat &&
+          Number(q.turma_id) === turmaId &&
+          String(q.curso_opcional || '') === cursoOpcional &&
+          Number(q.caderno) === caderno &&
+          q.status !== 'enviado'
+        );
+
+        sincronizouAgora = !aindaPendente;
+      }
+
+      // 3) toast correto conforme resultado real
+      if(sincronizouAgora){
+        M.toast({ html: `📘 Caderno ${caderno} entregue e sincronizado ✅` });
+      } else {
+        M.toast({ html: `📘 Caderno ${caderno} salvo no aparelho` });
+      }
+
+      // 4) recarrega o modal por último
+      try{
+        const atualizado = await carregarMaterialAluno(alunoSelecionado);
+        preencherModalMaterial(atualizado);
+      }catch(err2){
+        // não derruba o fluxo se o reload do modal falhar
+        $matMsg.textContent = err2?.message || 'Entrega registrada, mas não foi possível atualizar a tela.';
+      }
+
+    } catch(err){
+      $matMsg.textContent = err?.message || 'Falha ao registrar entrega.';
+    } finally {
+      if($matSelectWrap.style.display !== 'none'){
+        $btnEntregarMaterial.classList.remove('disabled');
+      }
     }
   }
-}
 
   async function pingServidor(timeoutMs = 5000){
     if(!navigator.onLine) return false;
