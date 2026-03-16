@@ -1294,9 +1294,18 @@
         const res = await enviarItemMaterialFila(item);
 
         if(res.ok){
+          const aluno = alunos.find(a =>
+            String(a.matricula) === String(item.matricula)
+          );
+
+          if(aluno){
+            aluno.material_qtd = Number(aluno.material_qtd || 0) + 1;
+          }
+
           removeMaterialQueueItem(item.id);
           enviados++;
-        }else{
+        }
+        else{
           updateMaterialQueueItem(item.id, {
             status: 'pendente',
             erro: res.msg || '',
