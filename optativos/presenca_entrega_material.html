@@ -271,6 +271,12 @@
     display:inline;
   }
 
+  .pres-ind-bloq{
+    background:#fff3e0;
+    color:#ef6c00;
+    border:1px solid #ffe0b2;
+  }
+
   /* ===== Tablet / Mobile ===== */
   @media (max-width: 1024px){
     header.topbar{ padding:0 14px; }
@@ -1532,12 +1538,17 @@ function preencherModalMaterial(j){
         const sub = `Caderno: ${qtdMat}`;
         const pres = !!a.presenca_ok;
         const pend = !!a.pendente_sync;
+        const bloq = !!a.bloqueado;
 
-        const rowClass = pres ? (pend ? 'pres-pendente' : 'pres-row') : '';
-        const indicador = pres
-          ? `<span class="pres-ind" title="${pend ? 'Presença pendente de sincronização' : 'Presente'}">${pend ? '⏳' : 'P'}</span>`
-          : '';
+        const rowClass = bloq
+          ? 'pres-bloqueado'
+          : (pres ? (pend ? 'pres-pendente' : 'pres-row') : '');
 
+        const indicador = bloq
+          ? `<span class="pres-ind pres-ind-bloq" title="Bloqueado">B</span>`
+          : (pres
+              ? `<span class="pres-ind" title="${pend ? 'Presença pendente de sincronização' : 'Presente'}">${pend ? '⏳' : 'P'}</span>`
+              : '');
         return `
           <li class="collection-item list-item ${rowClass}" data-mat="${escapeHtml(a.matricula)}">
             <div class="aluno-line">
