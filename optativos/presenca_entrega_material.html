@@ -1290,7 +1290,6 @@ function preencherModalMaterial(j){
 
     let queue = getMaterialQueue().filter(q => q.status !== 'enviado');
     if (queue.length === 0) {
-      if (!silent) msgCtx('');
       return true;
     }
 
@@ -1298,6 +1297,7 @@ function preencherModalMaterial(j){
     if (!silent) msgCtx('Sincronizando materiais pendentes...');
 
     let enviados = 0;
+    let ultimoErro = '';
 
     try {
       for (const item of queue) {
@@ -1309,16 +1309,16 @@ function preencherModalMaterial(j){
           removeMaterialQueueItem(item.id);
           enviados++;
         } else {
+          ultimoErro = res.msg || 'Falha ao sincronizar material.';
           updateMaterialQueueItem(item.id, {
             status: 'pendente',
-            erro: res.msg || '',
+            erro: ultimoErro,
             tentativa_at: nowIso()
           });
           break;
         }
       }
 
-      // recarrega a lista local corretamente
       applyMaterialQueueOnAlunos();
       filtrarRender();
       setMeta({ last_sync_at: nowIso() });
@@ -1331,7 +1331,9 @@ function preencherModalMaterial(j){
           M.toast({ html: `Materiais sincronizados ✅ (${enviados} enviado${enviados === 1 ? '' : 's'})` });
         }
       } else {
-        if (!silent) msgCtx(`Sincronização parcial. Ainda restam ${restantes} pendência(s) de material.`);
+        if (!silent) {
+          msgCtx(`Ainda restam ${restantes} pendência(s) de material.${ultimoErro ? ' Último erro: ' + ultimoErro : ''}`);
+        }
       }
 
       return true;
@@ -1342,10 +1344,21 @@ function preencherModalMaterial(j){
   }
 
   async function sincronizarTudoPendentes(opts = {}){
-    const { silent = false } = opts;
+    const { silent = false, showToast = false } = opts;
 
-    await sincronizarPendentes(opts);
-    await sincronizarMaterialPendentes(opts);
+    const pendPresAntes = getQueue().filter(q => q.status !== 'enviado').length;
+    const pendMatAntes  = getMaterialQueue().filter(q => q.status !== 'enviado').length;
+
+    if((pendPresAntes + pendMatAntes) === 0){
+      if(showToast){
+        M.toast({ html: 'Nada pendente para sincronizar.' });
+      }
+      if(!silent) msgCtx('');
+      return true;
+    }
+
+    await sincronizarPendentes({ silent: true, showToast: false });
+    await sincronizarMaterialPendentes({ silent: true, showToast: false });
 
     const pendPres = getQueue().filter(q => q.status !== 'enviado').length;
     const pendMat  = getMaterialQueue().filter(q => q.status !== 'enviado').length;
@@ -1353,12 +1366,17 @@ function preencherModalMaterial(j){
 
     if(total === 0){
       msgCtx('');
-      return;
+      if(showToast){
+        M.toast({ html: 'Pendências sincronizadas ✅' });
+      }
+      return true;
     }
 
     if(!silent){
       msgCtx(`Ainda há ${total} pendência(s): ${pendPres} de presença e ${pendMat} de material.`);
     }
+
+    return false;
   }
 
   async function entregarMaterialAluno(){
@@ -1380,7 +1398,7 @@ function preencherModalMaterial(j){
       cursoOpcional.toLowerCase() === 'carregando material...' ||
       cursoOpcional.toLowerCase() === 'carregando...'
     ){
-      $matMsg.textContent = 'Não foi possível identificar a turma do material no modo offline. Reabra o aluno após carregar a lista da turma.';
+      $matMsg.textContent = 'Não foi possível identificar a turma do material.';
       return;
     }
 
@@ -1388,37 +1406,66 @@ function preencherModalMaterial(j){
     $btnEntregarMaterial.classList.add('disabled');
 
     try{
-      // 1) salva local primeiro
-      marcarMaterialLocal(alunoSelecionado, caderno, cursoOpcional);
+      let gravouServidor = false;
 
-      // 2) se estiver online, tenta sincronizar imediatamente
-      let sincronizouAgora = false;
-
+      // 1) se estiver online, tenta gravar DIRETO no servidor
       if(navigator.onLine){
-        await sincronizarMaterialPendentes({ silent: true });
+        const res = await entregarMaterialServidor({
+          matricula: mat,
+          turma_id: turmaId,
+          caderno,
+          curso_opcional: cursoOpcional
+        });
 
-        const aindaPendente = getMaterialQueue().some(q =>
-          String(q.matricula) === mat &&
-          Number(q.turma_id) === turmaId &&
-          String(q.curso_opcional || '') === cursoOpcional &&
-          Number(q.caderno) === caderno &&
-          q.status !== 'enviado'
-        );
+        if(res.ok){
+          gravouServidor = true;
 
-        sincronizouAgora = !aindaPendente;
+          // atualiza contador visual local
+          alunoSelecionado.material_qtd = Number(alunoSelecionado.material_qtd || 0) + 1;
+          alunoSelecionado.material_qtd_local = Number(alunoSelecionado.material_qtd_local || 0);
+          alunoSelecionado.material_qtd_view = Number(alunoSelecionado.material_qtd || 0) + Number(alunoSelecionado.material_qtd_local || 0);
+
+          filtrarRender();
+
+          M.toast({ html: `📘 Caderno ${caderno} entregue e sincronizado ✅` });
+
+          try{
+            const atualizado = await carregarMaterialAluno(alunoSelecionado);
+            preencherModalMaterial(atualizado);
+          }catch(err2){
+            $matMsg.textContent = err2?.message || 'Entrega registrada, mas não foi possível atualizar a tela.';
+          }
+
+          return;
+        }
+
+        // se o servidor respondeu duplicado, trata como sucesso visual
+        if(res.status === 409){
+          M.toast({ html: `📘 Caderno ${caderno} já constava como entregue.` });
+
+          try{
+            const atualizado = await carregarMaterialAluno(alunoSelecionado);
+            preencherModalMaterial(atualizado);
+          }catch(err2){
+            $matMsg.textContent = err2?.message || 'Não foi possível atualizar a tela.';
+          }
+
+          return;
+        }
+
+        // se estava online mas falhou, mostra o motivo no console
+        console.warn('Falha ao gravar material online:', res.msg);
       }
 
-      if(sincronizouAgora){
-        M.toast({ html: `📘 Caderno ${caderno} entregue e sincronizado ✅` });
-      } else {
-        M.toast({ html: `📘 Caderno ${caderno} salvo no aparelho` });
-      }
+      // 2) fallback: salva local
+      marcarMaterialLocal(alunoSelecionado, caderno, cursoOpcional);
+      M.toast({ html: `📘 Caderno ${caderno} salvo no aparelho` });
 
       try{
         const atualizado = await carregarMaterialAluno(alunoSelecionado);
         preencherModalMaterial(atualizado);
       }catch(err2){
-        $matMsg.textContent = err2?.message || 'Entrega registrada, mas não foi possível atualizar a tela.';
+        $matMsg.textContent = err2?.message || 'Entrega salva localmente, mas não foi possível atualizar a tela.';
       }
 
     } catch(err){
@@ -1885,6 +1932,52 @@ function preencherModalMaterial(j){
     const totalPresentes = alunos.filter(a => a.presenca_ok || a.pendente_sync).length;
     $presentCount.textContent = String(totalPresentes);
   }
+
+    async function entregarMaterialServidor({ matricula, turma_id, caderno, curso_opcional }){
+    const fd = new FormData();
+    fd.append('matricula', String(matricula));
+    fd.append('turma_id', String(turma_id));
+    fd.append('caderno', String(caderno));
+    fd.append('curso_opcional', String(curso_opcional || ''));
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), SYNC_TIMEOUT_MS);
+
+    try{
+      const r = await fetch(API + 'material_entregar.php', {
+        method: 'POST',
+        credentials: 'include',
+        body: fd,
+        signal: controller.signal
+      });
+
+      clearTimeout(timer);
+
+      const j = await r.json().catch(() => ({}));
+
+      if(!r.ok || !j.ok){
+        return {
+          ok: false,
+          status: r.status,
+          msg: j.msg || 'Falha ao registrar material no servidor.'
+        };
+      }
+
+      return {
+        ok: true,
+        data: j
+      };
+
+    }catch(err){
+      clearTimeout(timer);
+      return {
+        ok: false,
+        status: 0,
+        msg: 'Falha de rede ao registrar material.'
+      };
+    }
+  }
+
 </script>
 
 </body>
