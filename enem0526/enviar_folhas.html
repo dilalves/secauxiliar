@@ -488,6 +488,19 @@
   let numeroPresentes = 0;
   let imagensEnviadas = 0;
 
+  function pad2(n){
+    return String(n).padStart(2, '0');
+  }
+
+  function gerarLoteId() {
+    const agora = new Date();
+    return [
+      agora.getHours(),
+      agora.getMinutes(),
+      agora.getSeconds()
+    ].map(pad2).join('');
+  }
+
   function toast(msg){
     if (window.M && M.toast) M.toast({ html: msg });
     else alert(msg);
@@ -783,7 +796,7 @@
     });
   }
 
-async function enviarArquivo(file, originalFileName, diaSelecionado, dpiX, dpiY) {
+async function enviarArquivo(file, originalFileName, diaSelecionado, dpiX, dpiY, loteId, seqLote) {
   const fd = new FormData();
   fd.append('arquivo', file);
   fd.append('evento', EVENTO_FIXO);
@@ -791,6 +804,8 @@ async function enviarArquivo(file, originalFileName, diaSelecionado, dpiX, dpiY)
   fd.append('originalFileName', originalFileName);
   fd.append('dpi_x', dpiX ?? '');
   fd.append('dpi_y', dpiY ?? '');
+  fd.append('lote_id', loteId ?? '');
+  fd.append('seq_lote', String(seqLote ?? ''));
 
   const resp = await fetch(API + 'enviar_upload.php', {
     method: 'POST',
@@ -913,6 +928,7 @@ async function uploadFile() {
   document.getElementById('loadingOverlay').classList.add('show');
 
   let houveErro = false;
+  const loteId = gerarLoteId();
 
   for (let idx = 0; idx < arquivosProcessados.length; idx++) {
     const file = arquivosProcessados[idx];
@@ -935,7 +951,9 @@ async function uploadFile() {
         originalFileName,
         diaSelecionado,
         dpiInfo?.dpiX ?? '',
-        dpiInfo?.dpiY ?? ''
+        dpiInfo?.dpiY ?? '',
+        loteId,
+        idx + 1
       );
 
       row.innerHTML = `
@@ -1009,7 +1027,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Atualiza os KPIs iniciais se já houver dia selecionado
   await atualizarResumoDoDia();
 });
-
 
 
 </script>
