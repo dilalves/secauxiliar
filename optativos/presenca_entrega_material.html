@@ -612,6 +612,7 @@
   let isSyncRunning = false;
   let isMaterialSyncRunning = false;
   let materialCursoAtual = '';
+  let turmaEspecialAtual = '';
 
   function msgCtx(t=''){ $ctxMsg.textContent = t; }
 
@@ -992,12 +993,17 @@
         return applyMaterialQueueToPayload(cache.payload, mat);
       }
 
-      // fallback mínimo só com fila local
+      const cursoFallback =
+        String(a?.turma_especial_required || '').trim()
+        || String(turmaEspecialAtual || '').trim()
+        || String(a?.turma_especial || '').trim()
+        || '';
+
       return applyMaterialQueueToPayload({
         ok: true,
         matricula: mat,
         nome: a.nome || '—',
-        curso_opcional: $matCurso.textContent?.trim() || '',
+        curso_opcional: cursoFallback,
         curso_nome: '',
         qtd: 0,
         entregues: [],
@@ -1343,10 +1349,15 @@ function preencherModalMaterial(j){
 
     const pendPres = getQueue().filter(q => q.status !== 'enviado').length;
     const pendMat  = getMaterialQueue().filter(q => q.status !== 'enviado').length;
+    const total = pendPres + pendMat;
 
-    if(pendPres + pendMat === 0){
-      if(!silent) msgCtx('');
-      else if(navigator.onLine) msgCtx('');
+    if(total === 0){
+      msgCtx('');
+      return;
+    }
+
+    if(!silent){
+      msgCtx(`Ainda há ${total} pendência(s): ${pendPres} de presença e ${pendMat} de material.`);
     }
   }
 
@@ -1359,8 +1370,17 @@ function preencherModalMaterial(j){
     const caderno = Number($matCadernoSelect.value || 0);
     const cursoOpcional = String(materialCursoAtual || '').trim();
 
-    if(!mat || !turmaId || !caderno || !cursoOpcional){
+    if(!mat || !turmaId || !caderno){
       $matMsg.textContent = 'Aguarde o carregamento do material antes de entregar.';
+      return;
+    }
+
+    if(
+      !cursoOpcional ||
+      cursoOpcional.toLowerCase() === 'carregando material...' ||
+      cursoOpcional.toLowerCase() === 'carregando...'
+    ){
+      $matMsg.textContent = 'Não foi possível identificar a turma do material no modo offline. Reabra o aluno após carregar a lista da turma.';
       return;
     }
 
@@ -1388,19 +1408,16 @@ function preencherModalMaterial(j){
         sincronizouAgora = !aindaPendente;
       }
 
-      // 3) toast correto conforme resultado real
       if(sincronizouAgora){
         M.toast({ html: `📘 Caderno ${caderno} entregue e sincronizado ✅` });
       } else {
         M.toast({ html: `📘 Caderno ${caderno} salvo no aparelho` });
       }
 
-      // 4) recarrega o modal por último
       try{
         const atualizado = await carregarMaterialAluno(alunoSelecionado);
         preencherModalMaterial(atualizado);
       }catch(err2){
-        // não derruba o fluxo se o reload do modal falhar
         $matMsg.textContent = err2?.message || 'Entrega registrada, mas não foi possível atualizar a tela.';
       }
 
@@ -1566,6 +1583,8 @@ function preencherModalMaterial(j){
         throw new Error(j.msg || 'Falha ao carregar alunos');
       }
 
+      turmaEspecialAtual = String(j?.turma?.turma_especial_required || '').trim();
+
       alunos = (Array.isArray(j.rows) ? j.rows : []).map(x => {
         const st = String(x.status || '').toUpperCase();
         const presenca_ok = (st === 'PRESENTE' || st === 'OK');
@@ -1575,6 +1594,7 @@ function preencherModalMaterial(j){
           status: st,
           presenca_ok,
           pendente_sync: false,
+          turma_especial_required: turmaEspecialAtual || String(x.turma_especial || '').trim() || '',
           material_qtd: Number(x.material_qtd || 0),
           material_qtd_local: 0,
           material_qtd_view: Number(x.material_qtd || 0)
@@ -1598,6 +1618,7 @@ function preencherModalMaterial(j){
           ...x,
           presenca_ok: !!x.presenca_ok,
           pendente_sync: false,
+          turma_especial_required: String(x.turma_especial_required || turmaEspecialAtual || x.turma_especial || '').trim(),
           material_qtd: Number(x.material_qtd || 0),
           material_qtd_local: 0,
           material_qtd_view: Number(x.material_qtd || 0)
