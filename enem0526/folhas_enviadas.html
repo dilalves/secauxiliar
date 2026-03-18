@@ -874,7 +874,8 @@
       const json = await resp.json().catch(() => ({}));
 
       if (!resp.ok || !json.ok) {
-        if (resp.status === 401 || resp.status === 403) {
+        // 401 = sessão realmente expirada
+        if (resp.status === 401) {
           await Swal.fire({
             icon: 'warning',
             title: 'Sessão expirada',
@@ -884,14 +885,29 @@
           return;
         }
 
-        if (json && json.reason === 'processed') {
-          throw Object.assign(
-            new Error('Este arquivo já foi processado e não pode ser excluído.'),
-            { code: 'processed' }
-          );
+        // 403 = bloqueio de regra de negócio, NÃO redireciona
+        if (resp.status === 403) {
+          let msg = json.msg || json.error || 'Essa imagem não pode ser excluída.';
+          let code = 'blocked';
+
+          if (json && json.reason === 'processed') {
+            msg = 'Este arquivo já foi processado e não pode ser excluído.';
+            code = 'processed';
+          } else if (json && json.reason === 'missing_lote') {
+            msg = 'Essa imagem não pode ser excluída porque foi enviada antes da implantação do controle de lotes.';
+            code = 'missing_lote';
+          } else if (json && json.reason === 'lote_not_found') {
+            msg = 'Essa imagem não pode ser excluída porque não foi encontrado o lote correspondente.';
+            code = 'lote_not_found';
+          } else if (json && json.reason === 'lote_locked') {
+            msg = `Essa imagem não pode ser excluída porque o lote está com status "${json.status_lote || 'bloqueado'}".`;
+            code = 'lote_locked';
+          }
+
+          throw Object.assign(new Error(msg), { code });
         }
 
-        throw new Error(json.msg || 'Tente novamente.');
+        throw new Error(json.msg || json.error || 'Tente novamente.');
       }
 
       tr.remove();
@@ -932,12 +948,14 @@
     } catch (err) {
       console.error(err);
 
+      const isRegraNegocio = ['processed', 'missing_lote', 'lote_not_found', 'lote_locked', 'blocked'].includes(err.code);
+
       Swal.fire({
-        icon: err.code === 'processed' ? 'info' : 'error',
-        title: err.code === 'processed' ? 'Não permitido' : 'Erro',
+        icon: isRegraNegocio ? 'info' : 'error',
+        title: isRegraNegocio ? 'Exclusão não permitida' : 'Erro',
         text: String(err.message || err)
       });
-
+      
       btn.classList.remove('disabled');
       btn.disabled = false;
     }
