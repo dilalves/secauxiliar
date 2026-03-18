@@ -446,6 +446,56 @@
       font-weight:600;
     }
 
+    .status-chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:110px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid var(--line);
+      background:#fff;
+      white-space:nowrap;
+    }
+
+    .status-aguardando{
+      background:#fff7ed;
+      color:#b45309;
+      border-color:#fed7aa;
+    }
+
+    .status-processando{
+      background:#eff6ff;
+      color:#1d4ed8;
+      border-color:#bfdbfe;
+    }
+
+    .status-processado{
+      background:#f0fdf4;
+      color:#15803d;
+      border-color:#bbf7d0;
+    }
+
+    .status-finalizado{
+      background:#ecfdf5;
+      color:#047857;
+      border-color:#a7f3d0;
+    }
+
+    .status-recusado{
+      background:#fef2f2;
+      color:#b91c1c;
+      border-color:#fecaca;
+    }
+
+    .status-sem-lote{
+      background:#f8fafc;
+      color:#64748b;
+      border-color:#e2e8f0;
+    }
+
     @media (max-width: 980px){
       .kpi-row{
         grid-template-columns:1fr 1fr;
@@ -520,7 +570,7 @@
         Lista de imagens
       </h2>
       <p class="section-sub">
-        Visualize os arquivos recebidos por dia de prova. A exclusão continua disponível para arquivos ainda não processados.
+        Visualize os arquivos recebidos por dia de prova. A exclusão fica disponível apenas para arquivos de lotes com status <b>Aguardando</b>.
       </p>
 
       <div class="kpi-row">
@@ -559,13 +609,14 @@
                 <th>Dia</th>
                 <th>Nome arquivo unidade</th>
                 <th>Nome arquivo recebido</th>
+                <th>Status do lote</th>
                 <th>Timestamp</th>
                 <th class="right-align">Ações</th>
               </tr>
             </thead>
             <tbody id="tbodyArquivos">
               <tr>
-                <td colspan="6" class="loading-row">Carregando arquivos...</td>
+                <td colspan="7" class="loading-row">Carregando arquivos...</td>
               </tr>
             </tbody>
           </table>
@@ -750,7 +801,7 @@
       if (!data.list || !data.list.length) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6">
+            <td colspan="7">
               <div class="empty-state">
                 <i class="material-icons">inventory_2</i>
                 Nenhum arquivo encontrado para esta unidade.
@@ -762,6 +813,8 @@
       }
 
       data.list.forEach(function(item) {
+        const statusLote = item.status_lote || 'Sem lote';
+        const statusClass = getStatusClass(statusLote);
         const tr = document.createElement('tr');
         tr.dataset.dia = (item.dia_norm || '').toUpperCase();
 
@@ -784,6 +837,11 @@
           <td><span class="dia-pill">${escapeHtml(item.dia_norm || item.dia || '')}</span></td>
           <td>${escapeHtml(item.nome_arquivo_unidade || '')}</td>
           <td>${nomeLink}</td>
+          <td>
+            <span class="status-chip ${statusClass}">
+              ${escapeHtml(statusLote)}
+            </span>
+          </td>
           <td class="ts">${escapeHtml(item.timestamp || '')}</td>
           <td class="action-cell">
             <button
@@ -792,7 +850,7 @@
               data-filename="${escapeHtml(item.nome_arquivo_recebido || '')}"
               ${item.pode_excluir ? '' : 'disabled'}
               aria-label="Excluir arquivo"
-              title="${item.pode_excluir ? 'Excluir arquivo' : 'Arquivo processado não pode ser excluído'}"
+              title="${item.pode_excluir ? 'Excluir arquivo' : 'Exclusão permitida apenas para lote em Aguardando'}"
             >
               <i class="material-icons">delete</i>
             </button>
@@ -809,7 +867,7 @@
       if (tbody) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6">
+            <td colspan="7">
               <div class="empty-state">
                 <i class="material-icons">error_outline</i>
                 Falha ao carregar os arquivos.
@@ -929,7 +987,7 @@
       if (tbody && !tbody.querySelector('tr')) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6">
+            <td colspan="7">
               <div class="empty-state">
                 <i class="material-icons">inventory_2</i>
                 Nenhum arquivo encontrado para esta unidade.
@@ -955,7 +1013,7 @@
         title: isRegraNegocio ? 'Exclusão não permitida' : 'Erro',
         text: String(err.message || err)
       });
-      
+
       btn.classList.remove('disabled');
       btn.disabled = false;
     }
@@ -995,6 +1053,17 @@ async function abrirImagemArquivo(key) {
       text: String(err.message || err)
     });
   }
+}
+
+function getStatusClass(status) {
+  const s = String(status || '').trim().toLowerCase();
+
+  if (s === 'aguardando') return 'status-aguardando';
+  if (s === 'processando') return 'status-processando';
+  if (s === 'processado') return 'status-processado';
+  if (s === 'finalizado') return 'status-finalizado';
+  if (s === 'recusado') return 'status-recusado';
+  return 'status-sem-lote';
 }
   
 </script>
