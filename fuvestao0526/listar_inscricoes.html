@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Inscritos da Unidade</title>
+
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#eef4fb;
+    --panel:#f6f9fe;
+    --primary:#0b3b78;
+    --accent:#2563eb;
+    --line:#dbe6f3;
+    --text:#0f172a;
+    --muted:#64748b;
+    --ok:#eaf7ef;
+    --err:#fff1f2;
+    --shadow:0 10px 30px rgba(11,59,120,.06);
+  }
+
+  *{ box-sizing:border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+
+  body{
+    min-height:100vh;
+  }
+
+  a{
+    color:inherit;
+    text-decoration:none;
+  }
+
+  .container{
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 16px;
+  }
+
+  /* ===== Topbar no padrão do painel ===== */
+  header.topbar{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    height:64px;
+    background:var(--primary);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    z-index:10;
+    box-shadow:0 2px 10px rgba(16,24,40,.22);
+  }
+
+  .topbar .container{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    width:100%;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+  }
+
+  .brand img{
+    height:28px;
+    width:auto;
+    display:block;
+    flex:0 0 auto;
+  }
+
+  .brand .title-wrap{
+    display:flex;
+    flex-direction:column;
+    line-height:1.05;
+    min-width:0;
+  }
+
+  .brand .title{
+    font-weight:700;
+    font-size:15px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color:#fff;
+  }
+
+  .brand .sub{
+    font-size:12px;
+    opacity:.9;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color:#fff;
+  }
+
+  .actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex:0 0 auto;
+  }
+
+  .chip-user{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:999px;
+    padding:8px 12px;
+    color:#fff;
+  }
+
+  .chip-user .mat{
+    font-size:18px;
+    opacity:.95;
+    color:#fff;
+  }
+
+  .chip-user .txt{
+    display:flex;
+    flex-direction:column;
+    line-height:1.05;
+    min-width:0;
+  }
+
+  .chip-user .txt b{
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color:#fff;
+  }
+
+  .chip-user .txt span{
+    font-size:12px;
+    opacity:.9;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color:#fff;
+  }
+
+  /* ===== Conteúdo ===== */
+  main{
+    padding-top:116px;
+    padding-bottom:32px;
+  }
+
+  .wrap{
+    max-width:1300px;
+    margin:84px auto 0;
+    padding:0 16px 32px;
+  }
+
+  .page-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+
+  .page-head{
+    padding:20px 22px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .page-head h1{
+    margin:0;
+    font-size:30px;
+    line-height:1.1;
+    color:var(--primary);
+  }
+
+  .page-sub{
+    margin-top:8px;
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  .toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  .btn{
+    height:42px;
+    border:none;
+    background:var(--primary);
+    color:#fff;
+    border-radius:12px;
+    padding:0 16px;
+    font-weight:700;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    box-shadow:0 4px 14px rgba(11,59,120,.15);
+  }
+
+  .btn:hover{
+    opacity:.95;
+  }
+
+  .btn.secondary{
+    background:#fff;
+    color:var(--primary);
+    border:1px solid var(--line);
+    box-shadow:none;
+  }
+
+  .status{
+    margin:16px 20px 0;
+    padding:12px 14px;
+    border-radius:12px;
+    font-size:14px;
+    display:none;
+  }
+
+  .status.ok{
+    background:var(--ok);
+    color:#175c2f;
+    border:1px solid #cfe9d7;
+    display:block;
+  }
+
+  .status.err{
+    background:var(--err);
+    color:#8a1c2b;
+    border:1px solid #f5c2c7;
+    display:block;
+  }
+
+  .meta{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(180px, 1fr));
+    gap:14px;
+    padding:18px 20px 0;
+  }
+
+  .info{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:14px 16px;
+    min-height:88px;
+  }
+
+  .info .label{
+    color:var(--muted);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin-bottom:7px;
+  }
+
+  .info .value{
+    font-size:18px;
+    font-weight:700;
+    color:var(--primary);
+    word-break:break-word;
+  }
+
+  .table-wrap{
+    padding:18px 20px 22px;
+    overflow:auto;
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:760px;
+    background:#fff;
+  }
+
+  thead th{
+    background:#f2f7fd;
+    color:var(--primary);
+    font-size:13px;
+    text-align:left;
+    padding:12px 10px;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+    position:sticky;
+    top:0;
+    z-index:1;
+  }
+
+  tbody td{
+    padding:12px 10px;
+    border-bottom:1px solid #edf2f8;
+    font-size:14px;
+    vertical-align:top;
+  }
+
+  tbody tr:hover{
+    background:#fafcff;
+  }
+
+  .empty{
+    padding:30px 20px;
+    text-align:center;
+    color:var(--muted);
+  }
+
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--primary);
+  }
+
+  .muted{
+    color:var(--muted);
+  }
+
+/* User dropdown */
+    .user-menu{ position:relative; }
+    .btn-user{
+      cursor:pointer;
+      border:none;
+    }
+    .btn-user .caret{
+      font-size:22px;
+      opacity:.95;
+    }
+    .dropdown{
+      position:absolute;
+      right:0;
+      top:54px;
+      min-width:220px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      box-shadow:0 14px 34px rgba(0,0,0,.14);
+      padding:8px;
+      display:none;
+      z-index:9999;
+    }
+    .dropdown.open{ display:block; }
+    .dd-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:10px;
+      color:var(--ink);
+    }
+    .dd-item i{ color:var(--accent); font-size:18px; }
+    .dd-item:hover{
+      background:#f0f4ff;
+    }
+
+        /* ✅ Ajuste: chip do usuário 100% branco no topo azul */
+    .chip-user{
+      color:#fff !important;
+      background:rgba(255,255,255,.14) !important;
+      border:1px solid rgba(255,255,255,.22) !important;
+    }
+    .chip-user .txt b,
+    .chip-user .txt span{
+      color:#fff !important;
+    }
+    .chip-user .mat,
+    .chip-user .caret{
+      color:#fff !important;
+      opacity:.95;
+    }
+
+  @media (max-width: 1100px){
+    .meta{
+      grid-template-columns:repeat(2, minmax(180px, 1fr));
+    }
+  }
+
+  @media (max-width: 720px){
+    .container,
+    .wrap{
+      padding-left:12px;
+      padding-right:12px;
+    }
+
+    .brand .title{
+      font-size:14px;
+    }
+
+    .brand .sub{
+      display:none;
+    }
+
+    .page-head h1{
+      font-size:24px;
+    }
+
+    .meta{
+      grid-template-columns:1fr;
+    }
+
+    .toolbar{
+      width:100%;
+    }
+
+    .btn{
+      width:100%;
+      justify-content:center;
+    }
+
+    .chip-user .txt span{
+      display:none;
+    }
+  }
+</style>
+ 
+</head>
+<body>
+<header class="topbar">
+  <div class="container">
+    <div class="brand">
+      <img src="/fuvestao0526/logo-mini.png" alt="Logo">
+      <div class="title-wrap">
+        <div class="title">Simulado Aberto FUVESTÃO — Maio/2026</div>
+        <div class="sub">Painel da unidade</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="user-menu" id="userMenu">
+        <button class="chip-user btn-user waves-effect" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <i class="material-icons mat">account_circle</i>
+          <div class="txt">
+            <b id="uLogin" class="skeleton sk-line"></b>
+            <span id="uNome" class="skeleton sk-mini"></span>
+          </div>
+          <i class="material-icons caret">arrow_drop_down</i>
+        </button>
+
+        <div class="dropdown" id="userDropdown" role="menu" aria-label="Menu do usuário">
+          <a href="./alterar_senha.html" class="dd-item" role="menuitem">
+            <i class="material-icons">lock</i> Alterar senha
+          </a>
+          <a href="#" class="dd-item" role="menuitem" onclick="logout(); return false;">
+            <i class="material-icons">logout</i> Sair
+          </a>
+        </div>
+      </div>
+    </div>  
+  </div>
+</header>
+  <main class="wrap">
+    <section class="page-card">
+      <div class="page-head">
+        <div>
+          <h1>Inscritos do Simulado</h1>
+          <div class="page-sub">Listagem consolidada de inscritos do site e inscrições avulsas.</div>
+        </div>
+
+        <div class="toolbar">
+          <button class="btn secondary" id="btnExcel">
+            <i class="material-icons">download</i>
+            <span>Baixar Excel</span>
+          </button>
+
+          <button class="btn" id="btnRecarregar">
+            <i class="material-icons">refresh</i>
+            <span>Recarregar</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="status" class="status"></div>
+
+      <div class="meta">
+        <div class="info">
+          <div class="label">Evento</div>
+          <div class="value" id="metaEvento">—</div>
+        </div>
+
+       
+        <div class="info">
+          <div class="label">Total Site</div>
+          <div class="value" id="metaTotalSite">0</div>
+        </div>
+
+        <div class="info">
+          <div class="label">Total Avulsos</div>
+          <div class="value" id="metaTotalAvulsos">0</div>
+        </div>
+
+        <div class="info">
+          <div class="label">Total Geral</div>
+          <div class="value" id="metaTotalGeral">0</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="tabela">
+          <thead>
+            <tr>
+              <th>Inscrição</th>
+              <th>Nome</th>
+              <th>CPF</th>
+              <th>Data da inscrição</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="4" class="empty">Carregando inscritos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const EVENTO = 'FUVESTAO0526';
+    const API_URL = `https://apisec.secauxiliar.com.br/fuvestao0526/listar_inscritos.php?evento=${encodeURIComponent(EVENTO)}`;
+
+    let dadosAtuais = [];
+
+    const statusEl = document.getElementById('status');
+    const tbody = document.getElementById('tbody');
+    const metaEvento = document.getElementById('metaEvento');
+    //const metaUnidade = document.getElementById('metaUnidade');
+    const metaTotalSite = document.getElementById('metaTotalSite');
+    const metaTotalAvulsos = document.getElementById('metaTotalAvulsos');
+    const metaTotalGeral = document.getElementById('metaTotalGeral');
+    const btnRecarregar = document.getElementById('btnRecarregar');
+    const btnExcel = document.getElementById('btnExcel');
+
+    function showStatus(msg, type = 'ok') {
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = msg;
+    }
+
+    function clearStatus() {
+      statusEl.className = 'status';
+      statusEl.textContent = '';
+    }
+
+    function esc(v) {
+      return String(v ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function fmtDate(v) {
+      if (!v) return '';
+      const s = String(v).trim();
+
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+        const [y,m,d] = s.substring(0,10).split('-');
+        return `${d}/${m}/${y}`;
+      }
+      return s;
+    }
+
+    function preencherTabela(lista) {
+      if (!Array.isArray(lista) || !lista.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="empty">Nenhum inscrito encontrado para esta unidade.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = lista.map(item => `
+        <tr>
+          <td>${esc(item.inscricao)}</td>
+          <td>${esc(String(item.nome ?? '').toUpperCase())}</td>
+          <td>${esc(item.cpf)}</td>
+          <td>${esc(fmtDate(item.data_inscricao))}</td>
+        </tr>
+      `).join('');
+    }
+
+    function baixarExcel() {
+      if (!dadosAtuais.length) {
+        showStatus('Não há dados para exportar.', 'err');
+        return;
+      }
+
+      const headers = ['INSCRICAO', 'NOME', 'CPF', 'DATA_INSCRICAO'];
+
+      const rows = dadosAtuais.map(item => [
+        `="${String(item.inscricao ?? '').trim()}"`,
+        String(item.nome ?? '').toUpperCase(),
+        `="${String(item.cpf ?? '').trim()}"`,
+        fmtDate(item.data_inscricao ?? '')
+      ]);
+
+      const csv = [
+        headers.join(';'),
+        ...rows.map(row =>
+          row.map(v => `"${String(v).replaceAll('"', '""')}"`).join(';')
+        )
+      ].join('\n');
+
+      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Relacao_Inscritos_Simulado_Aberto_${EVENTO}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function carregar() {
+      clearStatus();
+      tbody.innerHTML = `<tr><td colspan="4" class="empty">Carregando inscritos...</td></tr>`;
+
+      try {
+        const resp = await fetch(API_URL, {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok || !data.ok) {
+          throw new Error(data.error || data.msg || 'Erro ao carregar inscritos.');
+        }
+
+        dadosAtuais = Array.isArray(data.inscritos) ? data.inscritos : [];
+
+        metaEvento.textContent = data.evento || EVENTO;
+        //metaUnidade.textContent = data.unidade?.unidade || data.unidade?.razao_social || data.unidade_login || '—';
+        metaTotalSite.textContent = data.totais?.site ?? 0;
+        metaTotalAvulsos.textContent = data.totais?.avulsos ?? 0;
+        metaTotalGeral.textContent = data.totais?.geral ?? data.total ?? 0;
+
+        preencherTabela(dadosAtuais);
+        showStatus(`Dados carregados com sucesso. Total geral: ${data.totais?.geral ?? data.total ?? 0} inscrito(s).`, 'ok');
+      } catch (err) {
+        console.error(err);
+        dadosAtuais = [];
+        tbody.innerHTML = `<tr><td colspan="4" class="empty">Não foi possível carregar os inscritos.</td></tr>`;
+        showStatus(err.message || 'Erro ao carregar inscritos.', 'err');
+      }
+    }
+ 
+async function carregarUsuario() {
+  const uLogin = document.getElementById('uLogin');
+  const uNome = document.getElementById('uNome');
+
+  if (!uLogin || !uNome) return;
+
+  uLogin.textContent = 'Carregando...';
+  uNome.textContent = '';
+
+  try {
+    const res = await fetch('https://apisec.secauxiliar.com.br/fuvestao0526/auth_me_unidade.php', {
+      credentials: 'include'
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      uLogin.textContent = 'Sessão';
+      uNome.textContent = 'Faça login novamente';
+      return;
+    }
+
+    const login = data.login || '';
+    const unidade = data.unidade || '';
+
+    uLogin.textContent = login ? `Unidade ${login}` : 'Unidade';
+    uNome.textContent = unidade || '';
+  } catch (e) {
+    console.error(e);
+    uLogin.textContent = 'Erro';
+    uNome.textContent = 'Sem conexão';
+  }
+}
+
+    btnRecarregar.addEventListener('click', carregar);
+    btnExcel.addEventListener('click', baixarExcel);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await carregarUsuario();
+      await carregar();
+    });
+
+
+  </script>
+</body>
+</html>

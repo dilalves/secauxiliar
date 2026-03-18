@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Presenças — Simulado FUVESTÃO Maio/2026</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e9edf3;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --ok:#e8f5e9;
+      --warn:#fff8e1;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+
+    .container{
+      max-width:1100px;
+      margin:0 auto;
+      padding:0 16px;
+    }
+
+    header.topbar{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:64px;
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      z-index:1000;
+      box-shadow:0 2px 10px rgba(16,24,40,.22);
+    }
+
+    .topbar .container{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand img{ height:28px; }
+
+    .brand .title-wrap{
+      display:flex;
+      flex-direction:column;
+      line-height:1.05;
+      min-width:0;
+    }
+
+    .brand .title{
+      font-weight:700;
+      font-size:15px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .brand .sub{
+      font-size:12px;
+      opacity:.9;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .chip-user{
+      color:#fff !important;
+      background:rgba(255,255,255,.14) !important;
+      border:1px solid rgba(255,255,255,.22) !important;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      border-radius:999px;
+      padding:8px 12px;
+      max-width:420px;
+    }
+
+    .chip-user .txt{
+      display:flex;
+      flex-direction:column;
+      line-height:1.05;
+      min-width:0;
+    }
+
+    .chip-user .txt b,
+    .chip-user .txt span,
+    .chip-user .mat,
+    .chip-user .caret{
+      color:#fff !important;
+    }
+
+    .chip-user .txt b{
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .chip-user .txt span{
+      font-size:12px;
+      opacity:.9;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .user-menu{ position:relative; }
+
+    .btn-user{
+      cursor:pointer;
+      border:none;
+    }
+
+    .dropdown{
+      position:absolute;
+      right:0;
+      top:54px;
+      min-width:220px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      box-shadow:0 14px 34px rgba(0,0,0,.14);
+      padding:8px;
+      display:none;
+      z-index:9999;
+    }
+
+    .dropdown.open{ display:block; }
+
+    .dd-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:10px;
+      color:var(--ink);
+    }
+
+    .dd-item i{
+      color:var(--accent);
+      font-size:18px;
+    }
+
+    .dd-item:hover{
+      background:#f0f4ff;
+    }
+
+    main{
+      padding-top:88px;
+      padding-bottom:40px;
+    }
+
+    .hero{
+      background:linear-gradient(180deg, rgba(11,59,120,.10), rgba(11,59,120,0));
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.05);
+      overflow:hidden;
+    }
+
+    .hero-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .hero h1{
+      margin:0;
+      font-size:22px;
+      font-weight:800;
+    }
+
+    .hero p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--line);
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .badge i{
+      font-size:16px;
+      color:var(--accent);
+    }
+
+    .content-card{
+      margin-top:16px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 10px 26px rgba(0,0,0,.05);
+      overflow:hidden;
+    }
+
+    .content-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:16px;
+      border-bottom:1px solid var(--line);
+      background:#fff;
+      flex-wrap:wrap;
+    }
+
+    .content-head h2{
+      margin:0;
+      font-size:18px;
+      font-weight:800;
+      color:var(--primary);
+    }
+
+    .content-head p{
+      margin:4px 0 0;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .content-body{
+      padding:18px 16px 8px;
+    }
+
+    .kpis{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .kpis-6{
+      grid-template-columns:repeat(3,1fr);
+    }
+
+    .kpi{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:0 10px 26px rgba(0,0,0,.05);
+    }
+
+    .kpi .l{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+
+    .kpi .v{
+      font-size:24px;
+      font-weight:900;
+      color:var(--primary);
+      line-height:1.1;
+    }
+
+    .stats-grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .stat-box{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:0 10px 26px rgba(0,0,0,.05);
+    }
+
+    .stat-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    .stat-top span{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .stat-top b{
+      font-size:18px;
+      color:var(--primary);
+    }
+
+    .progress-mini{
+      width:100%;
+      height:10px;
+      background:#edf2f7;
+      border-radius:999px;
+      overflow:hidden;
+      margin-bottom:8px;
+    }
+
+    .progress-mini .bar{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background:linear-gradient(90deg, var(--accent), var(--primary));
+      transition:width .35s ease;
+    }
+
+    .stat-box small{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .input-card{
+      margin-top:16px;
+      padding:18px 16px 6px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fcfdff;
+    }
+
+    .footer-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      padding:0 16px 16px;
+    }
+
+    .btn-main{
+      background:var(--primary) !important;
+      border-radius:12px;
+      text-transform:none;
+      font-weight:700;
+      box-shadow:none !important;
+      height:44px;
+      line-height:44px;
+      padding:0 18px;
+    }
+
+    .btn-main:hover{
+      background:#0a3367 !important;
+    }
+
+    .status-box{
+      margin-top:12px;
+      font-size:13px;
+      color:var(--muted);
+      min-height:20px;
+    }
+
+    .skeleton{
+      background: linear-gradient(90deg, #eef2f7, #f8fafc, #eef2f7);
+      background-size: 200% 100%;
+      animation: sk 1.2s infinite;
+      border-radius:8px;
+    }
+
+    @keyframes sk {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .sk-line{ height:12px; width:220px; }
+    .sk-mini{ height:10px; width:180px; opacity:.85; }
+
+    .readonly-note{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-top:8px;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .readonly-note i{
+      font-size:18px;
+      color:var(--accent);
+    }
+
+    @media (max-width: 860px){
+      .chip-user{ max-width:260px; }
+      .kpis,
+      .kpis-6,
+      .stats-grid{
+        grid-template-columns:1fr;
+      }
+      .footer-actions{ justify-content:stretch; }
+      .footer-actions .btn{ width:100%; }
+    }
+  </style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container">
+    <div class="brand">
+      <img src="/fuvestao0526/logo-mini.png" alt="Logo">
+      <div class="title-wrap">
+        <div class="title">Simulado Aberto FUVESTÃO — Maio/2026</div>
+        <div class="sub">Painel da unidade</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="user-menu" id="userMenu">
+        <button class="chip-user btn-user waves-effect" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <i class="material-icons mat">account_circle</i>
+          <div class="txt">
+            <b id="uLogin" class="skeleton sk-line"></b>
+            <span id="uNome" class="skeleton sk-mini"></span>
+          </div>
+          <i class="material-icons caret">arrow_drop_down</i>
+        </button>
+
+        <div class="dropdown" id="userDropdown" role="menu" aria-label="Menu do usuário">
+          <a href="./alterar_senha.html" class="dd-item" role="menuitem">
+            <i class="material-icons">lock</i> Alterar senha
+          </a>
+          <a href="#" class="dd-item" role="menuitem" onclick="logout(); return false;">
+            <i class="material-icons">logout</i> Sair
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1 id="welcomeTitle">Informar presenças</h1>
+          <p id="welcomeSub">Carregando dados da unidade...</p>
+        </div>
+
+        <div class="badges">
+          <div class="badge">
+            <i class="material-icons">event</i>
+            <span id="evt">FUVESTAO0526</span>
+          </div>
+          <div class="badge">
+            <i class="material-icons">apartment</i>
+            <span id="badgeUnidade">Unidade</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-card">
+      <div class="content-head">
+        <div>
+          <h2>Controle de presenças</h2>
+          <p>Informe a quantidade de presentes da sua unidade em cada dia do evento.</p>
+        </div>
+      </div>
+
+      <div class="content-body">
+
+        <div class="kpis kpis-6">
+          <div class="kpi">
+            <div class="l">Vagas da unidade</div>
+            <div class="v" id="kpiVagas">0</div>
+          </div>
+
+          <div class="kpi">
+            <div class="l">Inscritos site</div>
+            <div class="v" id="kpiSite" data-valor="0">0</div>
+          </div>
+
+          <div class="kpi">
+            <div class="l">Inscritos avulsos</div>
+            <div class="v" id="kpiAvulsos" data-valor="0">0</div>
+          </div>
+
+          <div class="kpi">
+            <div class="l">Inscritos total</div>
+            <div class="v" id="kpiInscritos" data-valor="0">0</div>
+          </div>
+
+          <div class="kpi">
+            <div class="l">Presentes dia 1</div>
+            <div class="v" id="kpiD1">0</div>
+          </div>
+
+          <div class="kpi">
+            <div class="l">Presentes dia 2</div>
+            <div class="v" id="kpiD2">0</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-top">
+              <span>Ocupação das vagas</span>
+              <b id="pctOcupacao">0%</b>
+            </div>
+            <div class="progress-mini">
+              <div class="bar" id="barOcupacao"></div>
+            </div>
+            <small>Inscritos total em relação às vagas</small>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-top">
+              <span>Presença Dia 1</span>
+              <b id="pctPresencaD1">0%</b>
+            </div>
+            <div class="progress-mini">
+              <div class="bar" id="barPresencaD1"></div>
+            </div>
+            <small>Presentes do Dia 1 em relação aos inscritos</small>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-top">
+              <span>Presença Dia 2</span>
+              <b id="pctPresencaD2">0%</b>
+            </div>
+            <div class="progress-mini">
+              <div class="bar" id="barPresencaD2"></div>
+            </div>
+            <small>Presentes do Dia 2 em relação aos inscritos</small>
+          </div>
+        </div>
+
+        <div class="input-card">
+          <div class="row" style="margin-bottom:0;">
+            <div class="input-field col s12 m4">
+              <input id="vagas" type="number" readonly>
+              <label class="active" for="vagas">Vagas</label>
+            </div>
+
+            <div class="input-field col s12 m4">
+              <input id="d1" type="number" min="0">
+              <label class="active" for="d1">Presentes Dia 1</label>
+            </div>
+
+            <div class="input-field col s12 m4">
+              <input id="d2" type="number" min="0">
+              <label class="active" for="d2">Presentes Dia 2</label>
+            </div>
+          </div>
+
+          <div class="readonly-note">
+            <i class="material-icons">info</i>
+            <span>As vagas são exibidas apenas para consulta. Somente os campos de presença podem ser alterados.</span>
+          </div>
+        </div>
+
+        <div class="status-box" id="statusMsg"></div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="btn btn-main waves-effect waves-light" onclick="salvar()">
+          <i class="material-icons left">save</i>
+          Salvar presenças
+        </button>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+  const API = 'https://apisec.secauxiliar.com.br/fuvestao0526/';
+  const LOGIN_URL = './index.html';
+  const EVENTO_FIXO = 'FUVESTAO0526';
+
+  let USUARIO = {
+    login: '',
+    unidade: '',
+    status: ''
+  };
+
+  function toast(msg){
+    if (window.M && M.toast) M.toast({html: msg});
+    else alert(msg);
+  }
+
+  function setStatus(msg){
+    document.getElementById('statusMsg').textContent = msg || '';
+  }
+
+  function formatNumber(n){
+    return new Intl.NumberFormat('pt-BR').format(Number(n || 0));
+  }
+
+  function clampPct(n){
+    n = Number(n || 0);
+    if (n < 0) return 0;
+    if (n > 100) return 100;
+    return n;
+  }
+
+  function formatPct(n){
+    return `${Number(n || 0).toFixed(1).replace('.', ',')}%`;
+  }
+
+  function atualizarKpis(){
+    const vagas = Number(document.getElementById('vagas').value || 0);
+    const d1 = Number(document.getElementById('d1').value || 0);
+    const d2 = Number(document.getElementById('d2').value || 0);
+
+    const inscritosSite = Number(document.getElementById('kpiSite')?.dataset.valor || 0);
+    const inscritosAvulsos = Number(document.getElementById('kpiAvulsos')?.dataset.valor || 0);
+    const inscritosTotal = Number(document.getElementById('kpiInscritos')?.dataset.valor || 0);
+
+    document.getElementById('kpiVagas').textContent = formatNumber(vagas);
+    document.getElementById('kpiSite').textContent = formatNumber(inscritosSite);
+    document.getElementById('kpiAvulsos').textContent = formatNumber(inscritosAvulsos);
+    document.getElementById('kpiInscritos').textContent = formatNumber(inscritosTotal);
+    document.getElementById('kpiD1').textContent = formatNumber(d1);
+    document.getElementById('kpiD2').textContent = formatNumber(d2);
+
+    const pctOcupacao = vagas > 0 ? (inscritosTotal / vagas) * 100 : 0;
+    const pctPresencaD1 = inscritosTotal > 0 ? (d1 / inscritosTotal) * 100 : 0;
+    const pctPresencaD2 = inscritosTotal > 0 ? (d2 / inscritosTotal) * 100 : 0;
+
+    document.getElementById('pctOcupacao').textContent = formatPct(pctOcupacao);
+    document.getElementById('pctPresencaD1').textContent = formatPct(pctPresencaD1);
+    document.getElementById('pctPresencaD2').textContent = formatPct(pctPresencaD2);
+
+    document.getElementById('barOcupacao').style.width = clampPct(pctOcupacao) + '%';
+    document.getElementById('barPresencaD1').style.width = clampPct(pctPresencaD1) + '%';
+    document.getElementById('barPresencaD2').style.width = clampPct(pctPresencaD2) + '%';
+  }
+
+  async function logout(){
+    try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); } catch(e){}
+    location.replace(LOGIN_URL);
+  }
+
+  function setupUserMenu(){
+    const btn = document.getElementById('userBtn');
+    const dd  = document.getElementById('userDropdown');
+    if(!btn || !dd) return;
+
+    function close(){
+      dd.classList.remove('open');
+      btn.setAttribute('aria-expanded','false');
+    }
+
+    function toggle(){
+      const isOpen = dd.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggle();
+    });
+
+    document.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
+  }
+
+  async function gatePainel() {
+    const r = await fetch(API + 'auth_me_unidade.php', { credentials: 'include' });
+    const data = await r.json().catch(()=> ({}));
+
+    if (!r.ok || !data.ok) {
+      location.replace('./index.html');
+      return false;
+    }
+
+    const st = (data.adesao?.status || '').toUpperCase();
+
+    if (st !== 'ATIVA') {
+      await Swal.fire({
+        title: 'Acesso indisponível',
+        html: `
+          <div style="text-align:left;line-height:1.5">
+            <p>Sua adesão ainda não foi liberada.</p>
+            <p>Status atual: <b>${st || 'SEM ADESÃO'}</b></p>
+            <p>⏳ Aguarde a conferência e liberação.</p>
+          </div>
+        `,
+        icon: 'info',
+        confirmButtonColor: '#0b3b78',
+        confirmButtonText: 'OK'
+      });
+      location.replace('./index.html');
+      return false;
+    }
+
+    return true;
+  }
+
+  async function carregarUsuario(){
+    document.getElementById('evt').textContent = EVENTO_FIXO;
+
+    const uLogin = document.getElementById('uLogin');
+    const uNome  = document.getElementById('uNome');
+
+    uLogin.classList.remove('skeleton','sk-line');
+    uNome.classList.remove('skeleton','sk-mini');
+    uLogin.textContent = 'Carregando...';
+    uNome.textContent  = '';
+
+    try{
+      const res = await fetch(API + 'auth_me_unidade.php', { credentials:'include' });
+      const data = await res.json();
+
+      if (!data.ok){
+        toast('Sessão expirada. Faça login novamente.');
+        return logout();
+      }
+
+      USUARIO.login   = data.login || '';
+      USUARIO.unidade = data.unidade || '';
+      USUARIO.status  = (data.adesao?.status || '').toUpperCase();
+
+      uLogin.textContent = USUARIO.login ? `Login ${USUARIO.login}` : 'Login';
+      uNome.textContent  = USUARIO.unidade || '';
+
+      document.getElementById('badgeUnidade').textContent = USUARIO.unidade || USUARIO.login || 'Unidade';
+      document.getElementById('welcomeTitle').textContent = 'Informar presenças';
+      document.getElementById('welcomeSub').textContent =
+        `Lançamento de presenças do evento ${EVENTO_FIXO} para a unidade ${USUARIO.unidade || USUARIO.login || ''}.`;
+
+    }catch(e){
+      console.error(e);
+      toast('Erro de conexão ao carregar usuário.');
+      uLogin.textContent = 'Erro';
+      uNome.textContent  = 'Sem conexão';
+    }
+  }
+
+  async function carregar(){
+    setStatus('Carregando presenças da unidade...');
+
+    try{
+      const params = new URLSearchParams({
+        evento: EVENTO_FIXO
+      });
+
+      if (USUARIO.login)   params.append('login', USUARIO.login);
+      if (USUARIO.unidade) params.append('unidade', USUARIO.unidade);
+
+      const r = await fetch(API + 'presencas_get.php?' + params.toString(), {
+        credentials:'include'
+      });
+
+      const j = await r.json();
+
+      if(!j.ok){
+        throw new Error(j.error || 'Não foi possível carregar os dados.');
+      }
+
+      document.getElementById('vagas').value = j.data?.vagas ?? 0;
+      document.getElementById('d1').value    = j.data?.presentes_d1 ?? 0;
+      document.getElementById('d2').value    = j.data?.presentes_d2 ?? 0;
+
+      const inscritosSite = Number(j.data?.inscritos_site ?? 0);
+      const inscritosAvulsos = Number(j.data?.inscritos_avulsos ?? 0);
+      const inscritosTotal = Number(j.data?.inscritos_total ?? (inscritosSite + inscritosAvulsos));
+
+      const elSite = document.getElementById('kpiSite');
+      const elAvulsos = document.getElementById('kpiAvulsos');
+      const elTotal = document.getElementById('kpiInscritos');
+
+      elSite.dataset.valor = inscritosSite;
+      elAvulsos.dataset.valor = inscritosAvulsos;
+      elTotal.dataset.valor = inscritosTotal;
+
+      M.updateTextFields();
+      atualizarKpis();
+      setStatus('');
+
+    }catch(e){
+      console.error(e);
+      setStatus(e.message || 'Erro ao carregar presenças.');
+      Swal.fire('Erro', e.message || 'Erro ao carregar presenças.', 'error');
+    }
+  }
+
+  async function salvar(){
+    const d1 = Number(document.getElementById('d1').value || 0);
+    const d2 = Number(document.getElementById('d2').value || 0);
+    const vagas = Number(document.getElementById('vagas').value || 0);
+
+    if (d1 < 0 || d2 < 0) {
+      return Swal.fire('Atenção', 'Os valores de presença não podem ser negativos.', 'warning');
+    }
+
+    if (vagas > 0 && d1 > vagas) {
+      return Swal.fire('Atenção', 'O total de presentes do Dia 1 não pode ser maior que o número de vagas.', 'warning');
+    }
+
+    if (vagas > 0 && d2 > vagas) {
+      return Swal.fire('Atenção', 'O total de presentes do Dia 2 não pode ser maior que o número de vagas.', 'warning');
+    }
+
+    setStatus('Salvando presenças...');
+
+    try{
+      const fd = new FormData();
+      fd.append('evento', EVENTO_FIXO);
+      fd.append('presentes_d1', d1);
+      fd.append('presentes_d2', d2);
+
+      if (USUARIO.login)   fd.append('login', USUARIO.login);
+      if (USUARIO.unidade) fd.append('unidade', USUARIO.unidade);
+
+      const r = await fetch(API + 'presencas_update.php', {
+        method:'POST',
+        body:fd,
+        credentials:'include'
+      });
+
+      const j = await r.json();
+
+      if(!j.ok){
+        throw new Error(j.error || 'Não foi possível salvar.');
+      }
+
+      atualizarKpis();
+      setStatus('');
+
+      await Swal.fire({
+        title:'Salvo',
+        text:'Presenças atualizadas com sucesso.',
+        icon:'success',
+        confirmButtonColor:'#0b3b78'
+      });
+
+      await carregar();
+
+    }catch(e){
+      console.error(e);
+      setStatus(e.message || 'Erro ao salvar presenças.');
+      Swal.fire('Erro', e.message || 'Erro ao salvar presenças.', 'error');
+    }
+  }
+
+  document.getElementById('d1').addEventListener('input', atualizarKpis);
+  document.getElementById('d2').addEventListener('input', atualizarKpis);
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const ok = await gatePainel();
+    if (!ok) return;
+
+    setupUserMenu();
+    await carregarUsuario();
+    await carregar();
+  });
+</script>
+</body>
+</html>

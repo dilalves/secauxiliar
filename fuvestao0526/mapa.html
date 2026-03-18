@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Mapa — Simulado FUVESTÃO Maio/2026</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+
+  <style>
+    :root{
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e9edf3;
+      --ink:#0f172a;
+      --muted:#6b7280;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+
+    .container{
+      max-width:1100px;
+      margin:0 auto;
+      padding:0 16px;
+    }
+
+    header.topbar{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:64px;
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      z-index:1000;
+      box-shadow:0 2px 10px rgba(16,24,40,.22);
+    }
+
+    .topbar .container{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand img{ height:28px; }
+
+    .brand .title-wrap{
+      display:flex;
+      flex-direction:column;
+      line-height:1.05;
+      min-width:0;
+    }
+
+    .brand .title{
+      font-weight:700;
+      font-size:15px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .brand .sub{
+      font-size:12px;
+      opacity:.9;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .chip-user{
+      color:#fff !important;
+      background:rgba(255,255,255,.14) !important;
+      border:1px solid rgba(255,255,255,.22) !important;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      border-radius:999px;
+      padding:8px 12px;
+      max-width:420px;
+    }
+
+    .chip-user .txt{
+      display:flex;
+      flex-direction:column;
+      line-height:1.05;
+      min-width:0;
+    }
+
+    .chip-user .txt b,
+    .chip-user .txt span,
+    .chip-user .mat,
+    .chip-user .caret{
+      color:#fff !important;
+    }
+
+    .chip-user .txt b{
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .chip-user .txt span{
+      font-size:12px;
+      opacity:.9;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .user-menu{ position:relative; }
+
+    .btn-user{
+      cursor:pointer;
+      border:none;
+    }
+
+    .dropdown{
+      position:absolute;
+      right:0;
+      top:54px;
+      min-width:220px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      box-shadow:0 14px 34px rgba(0,0,0,.14);
+      padding:8px;
+      display:none;
+      z-index:9999;
+    }
+
+    .dropdown.open{ display:block; }
+
+    .dd-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:10px;
+      color:var(--ink);
+    }
+
+    .dd-item i{
+      color:var(--accent);
+      font-size:18px;
+    }
+
+    .dd-item:hover{
+      background:#f0f4ff;
+    }
+
+    main{
+      padding-top:88px;
+      padding-bottom:40px;
+    }
+
+    .hero{
+      background:linear-gradient(180deg, rgba(11,59,120,.10), rgba(11,59,120,0));
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.05);
+      overflow:hidden;
+    }
+
+    .hero-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .hero h1{
+      margin:0;
+      font-size:22px;
+      font-weight:800;
+    }
+
+    .hero p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--line);
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .badge i{
+      font-size:16px;
+      color:var(--accent);
+    }
+
+    .map-wrap{
+      margin-top:16px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 10px 26px rgba(0,0,0,.05);
+      overflow:hidden;
+    }
+
+    .map-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:16px;
+      border-bottom:1px solid var(--line);
+      background:#fff;
+      flex-wrap:wrap;
+    }
+
+    .map-head h2{
+      margin:0;
+      font-size:18px;
+      font-weight:800;
+      color:var(--primary);
+    }
+
+    .map-head p{
+      margin:4px 0 0;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    #map{
+      width:100%;
+      height:460px;
+      background:#dfeaf7;
+    }
+
+    .kpis{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+
+    .kpi{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:0 10px 26px rgba(0,0,0,.05);
+    }
+
+    .kpi .l{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+
+    .kpi .v{
+      font-size:18px;
+      font-weight:900;
+      color:var(--primary);
+    }
+
+    .status-box{
+      margin-top:12px;
+      font-size:13px;
+      color:var(--muted);
+      min-height:20px;
+    }
+
+    .skeleton{
+      background: linear-gradient(90deg, #eef2f7, #f8fafc, #eef2f7);
+      background-size: 200% 100%;
+      animation: sk 1.2s infinite;
+      border-radius:8px;
+    }
+
+    @keyframes sk {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .sk-line{ height:12px; width:220px; }
+    .sk-mini{ height:10px; width:180px; opacity:.85; }
+
+    @media (max-width: 860px){
+      .chip-user{ max-width:260px; }
+      .kpis{ grid-template-columns:1fr; }
+      #map{ height:380px; }
+    }
+  </style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container">
+    <div class="brand">
+      <img src="/fuvestao0526/logo-mini.png" alt="Logo">
+      <div class="title-wrap">
+        <div class="title">Simulado Aberto FUVESTÃO — Maio/2026</div>
+        <div class="sub">Painel da unidade</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="user-menu" id="userMenu">
+        <button class="chip-user btn-user waves-effect" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <i class="material-icons mat">account_circle</i>
+          <div class="txt">
+            <b id="uLogin" class="skeleton sk-line"></b>
+            <span id="uNome" class="skeleton sk-mini"></span>
+          </div>
+          <i class="material-icons caret">arrow_drop_down</i>
+        </button>
+
+        <div class="dropdown" id="userDropdown" role="menu" aria-label="Menu do usuário">
+          <a href="./alterar_senha.html" class="dd-item" role="menuitem">
+            <i class="material-icons">lock</i> Alterar senha
+          </a>
+          <a href="#" class="dd-item" role="menuitem" onclick="logout(); return false;">
+            <i class="material-icons">logout</i> Sair
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1 id="welcomeTitle">Mapa das unidades participantes</h1>
+          <p id="welcomeSub">Visualização das unidades aderentes ao simulado.</p>
+        </div>
+
+        <div class="badges">
+          <span class="badge"><i class="material-icons">event</i><b id="evt">FUVESTAO0526</b></span>
+          <span class="badge"><i class="material-icons">map</i> Mapa do Brasil</span>
+          <span class="badge"><i class="material-icons">shield</i> Sessão segura</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="map-wrap">
+      <div class="map-head">
+        <div>
+          <h2>Brasil</h2>
+          <p>Unidades participantes.</p>
+        </div>
+        <span class="badge"><i class="material-icons">place</i><b id="qtdPins">0 unidades</b></span>
+      </div>
+
+      <div id="map"></div>
+    </section>
+
+    <section class="kpis">
+      <div class="kpi">
+        <div class="l">Total de vagas</div>
+        <div class="v" id="kpiVagas">0</div>
+      </div>
+
+      <div class="kpi">
+        <div class="l">Total de inscritos (site)</div>
+        <div class="v" id="kpiSite">0</div>
+      </div>
+
+      <div class="kpi">
+        <div class="l">Total de inscritos avulsos</div>
+        <div class="v" id="kpiAvulsos">0</div>
+      </div>
+
+      <div class="kpi">
+        <div class="l">Total geral de inscritos</div>
+        <div class="v" id="kpiTotalInscritos">0</div>
+      </div>
+    </section>
+
+    <div class="status-box" id="statusMsg"></div>
+  </div>
+</main>
+
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  crossorigin=""
+></script>
+
+<script>
+  const API = 'https://apisec.secauxiliar.com.br/fuvestao0526/';
+  const LOGIN_URL = './index.html';
+  const EVENTO_FIXO = 'FUVESTAO0526';
+
+  function toast(msg){
+    if (window.M && M.toast) M.toast({html: msg});
+    else alert(msg);
+  }
+
+  async function logout(){
+    try { await fetch(API + 'auth_login_out.php', { credentials:'include' }); } catch(e){}
+    location.replace(LOGIN_URL);
+  }
+
+  async function carregarUsuario(){
+    document.getElementById('evt').textContent = EVENTO_FIXO;
+
+    const uLogin = document.getElementById('uLogin');
+    const uNome  = document.getElementById('uNome');
+
+    uLogin.classList.remove('skeleton','sk-line');
+    uNome.classList.remove('skeleton','sk-mini');
+    uLogin.textContent = 'Carregando...';
+    uNome.textContent  = '';
+
+    try{
+      const res = await fetch(API + 'auth_me_unidade.php', { credentials:'include' });
+      const data = await res.json();
+
+      if (!data.ok){
+        toast('Sessão expirada. Faça login novamente.');
+        return logout();
+      }
+
+      const login = data.login || '';
+      const unidade = data.unidade || '';
+
+      uLogin.textContent = login ? `Login ${login}` : 'Login';
+      uNome.textContent  = unidade || '';
+
+      document.getElementById('welcomeTitle').textContent = `Mapa das unidades participantes`;
+      document.getElementById('welcomeSub').textContent = `Visualização do evento ${EVENTO_FIXO} para a unidade ${unidade || login || ''}.`;
+
+    }catch(e){
+      console.error(e);
+      toast('Erro de conexão ao carregar usuário.');
+      uLogin.textContent = 'Erro';
+      uNome.textContent  = 'Sem conexão';
+    }
+  }
+
+  function setupUserMenu(){
+    const btn = document.getElementById('userBtn');
+    const dd  = document.getElementById('userDropdown');
+    if(!btn || !dd) return;
+
+    function close(){
+      dd.classList.remove('open');
+      btn.setAttribute('aria-expanded','false');
+    }
+
+    function toggle(){
+      const isOpen = dd.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggle();
+    });
+
+    document.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
+  }
+
+  async function gatePainel() {
+    const r = await fetch(API + 'auth_me_unidade.php', { credentials: 'include' });
+    const data = await r.json().catch(()=> ({}));
+
+    if (!r.ok || !data.ok) {
+      location.replace('./index.html');
+      return false;
+    }
+
+    const st = (data.adesao?.status || '').toUpperCase();
+
+    if (st !== 'ATIVA') {
+      await Swal.fire({
+        title: 'Acesso indisponível',
+        html: `
+          <div style="text-align:left;line-height:1.5">
+            <p>Sua adesão ainda não foi liberada.</p>
+            <p>Status atual: <b>${st || 'SEM ADESÃO'}</b></p>
+            <p>⏳ Aguarde a conferência e liberação.</p>
+          </div>
+        `,
+        icon: 'info',
+        confirmButtonColor: '#0b3b78',
+        confirmButtonText: 'OK'
+      });
+      location.replace('./index.html');
+      return false;
+    }
+
+    return true;
+  }
+
+  function formatNumber(n){
+    return new Intl.NumberFormat('pt-BR').format(Number(n || 0));
+  }
+
+  const map = L.map('map', {
+    zoomControl: true,
+    scrollWheelZoom: true
+  }).setView([-14.2350, -51.9253], 4);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  const markersLayer = L.layerGroup().addTo(map);
+
+async function carregarMapa(){
+  const statusMsg = document.getElementById('statusMsg');
+  const qtdPins = document.getElementById('qtdPins');
+  const kpiVagas = document.getElementById('kpiVagas');
+  const kpiSite = document.getElementById('kpiSite');
+  const kpiAvulsos = document.getElementById('kpiAvulsos');
+  const kpiTotalInscritos = document.getElementById('kpiTotalInscritos');
+
+  try{
+    statusMsg.textContent = 'Carregando mapa...';
+
+    const res = await fetch(API + 'mapa_dados.php?evento=' + encodeURIComponent(EVENTO_FIXO), {
+      credentials:'include'
+    });
+
+    const txt = await res.text();
+    let data = null;
+
+    try {
+      data = JSON.parse(txt);
+    } catch(parseErr) {
+      console.error('Resposta bruta:', txt);
+      throw new Error('A API do mapa não retornou JSON válido.');
+    }
+
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || 'Erro ao carregar mapa.');
+    }
+
+    const pins = Array.isArray(data.pins) ? data.pins : [];
+    qtdPins.textContent = `${pins.length} unidade${pins.length === 1 ? '' : 's'}`;
+
+    markersLayer.clearLayers();
+
+    const bounds = [];
+
+    pins.forEach(item => {
+      const lat = parseFloat(item.latitude);
+      const lng = parseFloat(item.longitude);
+
+      if (isNaN(lat) || isNaN(lng)) return;
+
+      const marker = L.marker([lat, lng]).addTo(markersLayer);
+
+      marker.bindTooltip(item.unidade_internet || '', {
+        direction: 'top',
+        offset: [0, -10],
+        opacity: 0.95
+      });
+
+      bounds.push([lat, lng]);
+    });
+
+    if (bounds.length > 1) {
+      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 5 });
+    } else {
+      map.setView([-14.2350, -51.9253], 4);
+    }
+
+    const totalVagas = Number(data.kpis?.total_vagas || 0);
+    const totalSite = Number(data.kpis?.total_inscritos_site || 0);
+    const totalAvulsos = Number(data.kpis?.total_inscritos_avulsos || 0);
+    const totalGeral = Number(data.kpis?.total_inscritos_geral || 0);
+
+    kpiVagas.textContent = formatNumber(totalVagas);
+    kpiSite.textContent = formatNumber(totalSite);
+    kpiAvulsos.textContent = formatNumber(totalAvulsos);
+    kpiTotalInscritos.textContent = formatNumber(totalGeral);
+
+    statusMsg.textContent = '';
+
+  }catch(e){
+    console.error(e);
+    statusMsg.textContent = e.message || 'Erro ao carregar o mapa.';
+  }
+}
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const ok = await gatePainel();
+    if (!ok) return;
+
+    setupUserMenu();
+    await carregarUsuario();
+    await carregarMapa();
+
+    setTimeout(() => map.invalidateSize(), 150);
+  });
+</script>
+</body>
+</html>

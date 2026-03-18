@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Painel — Simulado FUVESTÃO Maio/2026</title>
+
+  <!-- Materialize (só pro toast/ícones; layout é no CSS mesmo) -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e9edf3;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --ok:#16a34a;
+      --warn:#f59e0b;
+    }
+
+    html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+    a{ color:inherit; text-decoration:none; }
+    .container{ max-width:1100px; margin:0 auto; padding:0 16px; }
+
+    /* Topbar */
+    header.topbar{
+      position:fixed; top:0; left:0; right:0; height:64px;
+      background:var(--primary); color:#fff;
+      display:flex; align-items:center; z-index:10;
+      box-shadow:0 2px 10px rgba(16,24,40,.22);
+    }
+    .topbar .container{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px; min-width:0;
+    }
+    .brand img{ height:28px; }
+    .brand .title-wrap{ display:flex; flex-direction:column; line-height:1.05; min-width:0; }
+    .brand .title{
+      font-weight:700; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .brand .sub{
+      font-size:12px; opacity:.9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .actions{
+      display:flex; align-items:center; gap:10px;
+    }
+    .chip-user{
+      display:flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:999px;
+      padding:8px 12px;
+      max-width:420px;
+    }
+    .chip-user .mat{ font-size:18px; opacity:.95; }
+    .chip-user .txt{
+      display:flex; flex-direction:column; line-height:1.05; min-width:0;
+    }
+    .chip-user .txt b{
+      font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .chip-user .txt span{
+      font-size:12px; opacity:.9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .btn-logout{
+      border:1px solid rgba(255,255,255,.25) !important;
+      color:#fff !important;
+      border-radius:10px !important;
+      padding:0 14px !important;
+    }
+
+    /* Main */
+    main{ padding-top:88px; padding-bottom:40px; }
+    .hero{
+      background:linear-gradient(180deg, rgba(11,59,120,.10), rgba(11,59,120,0));
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.05);
+      overflow:hidden;
+    }
+    .hero-top{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    }
+    .hero h1{
+      margin:0; font-size:22px; font-weight:800;
+    }
+    .hero p{
+      margin:6px 0 0; color:var(--muted); font-size:14px;
+    }
+    .badges{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px; border-radius:999px;
+      background:#fff; border:1px solid var(--line);
+      font-size:12px; color:var(--muted);
+    }
+    .badge i{ font-size:16px; color:var(--accent); }
+
+    /* Grid of actions */
+    .grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:12px;
+    }
+    .card-action{
+      grid-column: span 6;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 10px 26px rgba(0,0,0,.05);
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      transition: transform .08s ease, box-shadow .08s ease;
+    }
+    .card-action:hover{
+      transform: translateY(-1px);
+      box-shadow:0 14px 34px rgba(0,0,0,.08);
+    }
+    .left{
+      display:flex; align-items:center; gap:12px; min-width:0;
+    }
+    .icon{
+      width:44px; height:44px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(37,99,235,.10);
+      border:1px solid rgba(37,99,235,.18);
+      flex:0 0 auto;
+    }
+    .icon i{ color:var(--accent); }
+    .meta{ min-width:0; }
+    .meta .t{
+      font-weight:800; font-size:14px; margin:0;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .meta .d{
+      margin:4px 0 0; font-size:12px; color:var(--muted);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .go{
+      display:flex; align-items:center; gap:8px; flex:0 0 auto;
+    }
+    .go .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#f8fafc;
+      color:var(--muted);
+    }
+    .go i{ color:#64748b; }
+
+    /* Small cards */
+    .side{
+      grid-column: span 6;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 10px 26px rgba(0,0,0,.05);
+    }
+    .side h3{
+      margin:0; font-size:14px; font-weight:800;
+      display:flex; align-items:center; gap:8px;
+    }
+    .side p{ margin:8px 0 0; color:var(--muted); font-size:13px; }
+    .kpis{
+      margin-top:10px;
+      display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    }
+    .kpi{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      background:#fff;
+    }
+    .kpi .v{ font-weight:900; font-size:18px; }
+    .kpi .l{ font-size:12px; color:var(--muted); margin-top:2px; }
+
+    /* Responsive */
+    @media (max-width: 860px){
+      .chip-user{ max-width:260px; }
+    }
+
+    @media (max-width: 420px){
+      .kpis{ grid-template-columns:1fr; }
+    }
+
+    /* Loading skeleton */
+    .skeleton{
+      background: linear-gradient(90deg, #eef2f7, #f8fafc, #eef2f7);
+      background-size: 200% 100%;
+      animation: sk 1.2s infinite;
+      border-radius:8px;
+    }
+    @keyframes sk { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .sk-line{ height:12px; width:220px; }
+    .sk-mini{ height:10px; width:180px; opacity:.85; }
+
+    /* User dropdown */
+    .user-menu{ position:relative; }
+    .btn-user{
+      cursor:pointer;
+      border:none;
+    }
+    .btn-user .caret{
+      font-size:22px;
+      opacity:.95;
+    }
+    .dropdown{
+      position:absolute;
+      right:0;
+      top:54px;
+      min-width:220px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      box-shadow:0 14px 34px rgba(0,0,0,.14);
+      padding:8px;
+      display:none;
+      z-index:9999;
+    }
+    .dropdown.open{ display:block; }
+    .dd-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:10px;
+      color:var(--ink);
+    }
+    .dd-item i{ color:var(--accent); font-size:18px; }
+    .dd-item:hover{
+      background:#f0f4ff;
+    }
+
+        /* ✅ Ajuste: chip do usuário 100% branco no topo azul */
+    .chip-user{
+      color:#fff !important;
+      background:rgba(255,255,255,.14) !important;
+      border:1px solid rgba(255,255,255,.22) !important;
+    }
+    .chip-user .txt b,
+    .chip-user .txt span{
+      color:#fff !important;
+    }
+    .chip-user .mat,
+    .chip-user .caret{
+      color:#fff !important;
+      opacity:.95;
+    }
+  </style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container">
+    <div class="brand">
+      <img src="/fuvestao0526/logo-mini.png" alt="Logo">
+      <div class="title-wrap">
+        <div class="title">Simulado Aberto FUVESTÃO — Maio/2026</div>
+        <div class="sub">Painel da unidade</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="user-menu" id="userMenu">
+        <button class="chip-user btn-user waves-effect" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <i class="material-icons mat">account_circle</i>
+          <div class="txt">
+            <b id="uLogin" class="skeleton sk-line"></b>
+            <span id="uNome" class="skeleton sk-mini"></span>
+          </div>
+          <i class="material-icons caret">arrow_drop_down</i>
+        </button>
+
+        <div class="dropdown" id="userDropdown" role="menu" aria-label="Menu do usuário">
+          <a href="./alterar_senha.html" class="dd-item" role="menuitem">
+            <i class="material-icons">lock</i> Alterar senha
+          </a>
+          <a href="#" class="dd-item" role="menuitem" onclick="logout(); return false;">
+            <i class="material-icons">logout</i> Sair
+          </a>
+        </div>
+      </div>
+    </div>  
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1 id="welcomeTitle">Bem-vindo(a)!</h1>
+          <p id="welcomeSub">Acesse as funções do simulado para sua unidade.</p>
+        </div>
+
+        <div class="badges">
+          <span class="badge"><i class="material-icons">event</i><b id="evt">FUVESTAO0526</b></span>
+          <span class="badge"><i class="material-icons">shield</i> Sessão segura</span>
+          <span class="badge"><i class="material-icons">bolt</i> Acesso rápido</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+
+      <!-- AÇÕES PRINCIPAIS -->
+      <a class="card-action" href="./inscricao_avulsa.html">
+        <div class="left">
+          <div class="icon"><i class="material-icons">person_add</i></div>
+          <div class="meta">
+            <p class="t">Inscrição avulsa</p>
+            <p class="d">Cadastrar alunos avulsos da unidade</p>
+          </div>
+        </div>
+        <div class="go">
+          <span class="pill">Abrir</span>
+          <i class="material-icons">chevron_right</i>
+        </div>
+      </a>
+
+      <a class="card-action" href="./listar_inscricoes.html">
+        <div class="left">
+          <div class="icon"><i class="material-icons">list_alt</i></div>
+          <div class="meta">
+            <p class="t">Listar inscrições</p>
+            <p class="d">Ver inscrições cadastradas</p>
+          </div>
+        </div>
+        <div class="go">
+          <span class="pill">Abrir</span>
+          <i class="material-icons">chevron_right</i>
+        </div>
+      </a>
+
+      <a class="card-action" href="./enviar_folhas.html">
+        <div class="left">
+          <div class="icon"><i class="material-icons">cloud_upload</i></div>
+          <div class="meta">
+            <p class="t">Enviar folhas</p>
+            <p class="d">Upload das folhas de resposta</p>
+          </div>
+        </div>
+        <div class="go">
+          <span class="pill">Abrir</span>
+          <i class="material-icons">chevron_right</i>
+        </div>
+      </a>
+
+      <a class="card-action" href="./folhas_enviadas.html">
+        <div class="left">
+          <div class="icon"><i class="material-icons">folder_open</i></div>
+          <div class="meta">
+            <p class="t">Folhas enviadas</p>
+            <p class="d">Listar e acompanhar envios</p>
+          </div>
+        </div>
+        <div class="go">
+          <span class="pill">Abrir</span>
+          <i class="material-icons">chevron_right</i>
+        </div>
+      </a>
+
+      <a class="card-action" href="./presenca.html">
+        <div class="left">
+          <div class="icon"><i class="material-icons">fact_check</i></div>
+          <div class="meta">
+            <p class="t">Contagem de presentes</p>
+            <p class="d">Informar quantidade de alunos presentes</p>
+          </div>
+        </div>
+        <div class="go">
+          <span class="pill">Abrir</span>
+          <i class="material-icons">chevron_right</i>
+        </div>
+      </a>
+
+      <a class="card-action" href="./apoio.html">
+        <div class="left">
+          <div class="icon"><i class="material-icons">help</i></div>
+          <div class="meta">
+            <p class="t">Apoio</p>
+            <p class="d">Orientações e suporte</p>
+          </div>
+        </div>
+        <div class="go">
+          <span class="pill">Abrir</span>
+          <i class="material-icons">chevron_right</i>
+        </div>
+      </a>
+
+      <a class="card-action" href="./mapa.html">
+        <div class="left">
+          <div class="icon"><i class="material-icons">info</i></div>
+          <div class="meta">
+            <p class="t">Mapa</p>
+            <p class="d">Acessar mapa do simulado</p>
+          </div>
+        </div>
+        <div class="go">
+          <span class="pill">Abrir</span>
+          <i class="material-icons">chevron_right</i>
+        </div>
+      </a>
+
+
+      <a class="card-action" href="./resultado.html">
+        <div class="left">
+          <div class="icon"><i class="material-icons">analytics</i></div>
+          <div class="meta">
+            <p class="t">Resultado</p>
+            <p class="d">Acessar relatórios do simulado</p>
+          </div>
+        </div>
+        <div class="go">
+          <span class="pill">Abrir</span>
+          <i class="material-icons">chevron_right</i>
+        </div>
+      </a>
+
+    </section>
+  </div>
+</main>
+
+<script>
+  const API = 'https://apisec.secauxiliar.com.br/fuvestao0526/';
+  const LOGIN_URL = './index.html';
+  const EVENTO_FIXO = 'FUVESTAO0526';
+
+  function toast(msg){
+    if (window.M && M.toast) M.toast({ html: msg });
+    else alert(msg);
+  }
+
+async function logout(){
+  try {
+    await fetch(API + 'auth_login_out.php', {
+      method: 'POST',
+      credentials: 'include',
+      cache: 'no-store'
+    });
+  } catch(e){
+    console.error(e);
+  }
+
+  location.href = './index.html?logout=1';
+}
+
+  async function carregarUsuario(){
+    const evt = document.getElementById('evt');
+    const uLogin = document.getElementById('uLogin');
+    const uNome = document.getElementById('uNome');
+    const welcomeTitle = document.getElementById('welcomeTitle');
+    const welcomeSub = document.getElementById('welcomeSub');
+
+    if (evt) evt.textContent = EVENTO_FIXO;
+
+    uLogin.classList.remove('skeleton','sk-line');
+    uNome.classList.remove('skeleton','sk-mini');
+    uLogin.textContent = 'Carregando...';
+    uNome.textContent = '';
+
+    try {
+      const res = await fetch(API + 'auth_me_unidade.php', {
+        credentials: 'include'
+      });
+
+      const data = await res.json();
+
+      if (!data.ok) {
+        toast('Sessão expirada. Faça login novamente.');
+        return logout();
+      }
+
+      const login = data.login || '';
+      const unidade = data.unidade || '';
+
+      uLogin.textContent = login ? `Unidade ${login}` : 'Login';
+      uNome.textContent = unidade || '';
+
+      if (welcomeTitle) {
+        welcomeTitle.textContent = `Bem-vindo(a), ${unidade || 'Unidade'}!`;
+      }
+
+      if (welcomeSub) {
+        welcomeSub.textContent = `Você está no painel do evento ${EVENTO_FIXO}.`;
+      }
+
+    } catch (e) {
+      console.error(e);
+      toast('Erro de conexão ao carregar usuário.');
+      uLogin.textContent = 'Erro';
+      uNome.textContent = 'Sem conexão';
+    }
+  }
+
+  function setupUserMenu(){
+    const btn = document.getElementById('userBtn');
+    const dd = document.getElementById('userDropdown');
+    if (!btn || !dd) return;
+
+    function close(){
+      dd.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggle(){
+      const isOpen = dd.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggle();
+    });
+
+    document.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
+  }
+
+  async function gatePainel() {
+    const r = await fetch(API + 'auth_me_unidade.php', { credentials: 'include' });
+    const data = await r.json().catch(() => ({}));
+
+    if (!r.ok || !data.ok) {
+      location.replace('./index.html');
+      return false;
+    }
+
+    const st = (data.adesao?.status || '').toUpperCase();
+
+    if (st !== 'ATIVA') {
+      await Swal.fire({
+        title: 'Acesso indisponível',
+        html: `
+          <div style="text-align:left;line-height:1.5">
+            <p>Sua adesão ainda não foi liberada.</p>
+            <p>Status atual: <b>${st || 'SEM ADESÃO'}</b></p>
+            <p>⏳ Aguarde a conferência e liberação.</p>
+          </div>
+        `,
+        icon: 'info',
+        confirmButtonColor: '#0b3b78',
+        confirmButtonText: 'OK'
+      });
+      location.replace('./index.html');
+      return false;
+    }
+
+    return true;
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const ok = await gatePainel();
+    if (!ok) return;
+
+    setupUserMenu();
+    await carregarUsuario();
+  });
+</script>
+
+
+</body>
+</html>

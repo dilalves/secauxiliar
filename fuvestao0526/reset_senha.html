@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="pt-br">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+<title>Redefinir Senha — Simulado FUVESTÃO Maio/2026</title>
+
+<style>
+  :root {
+    --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3; --ink:#0f172a;
+    --muted:#6b7280; --primary:#0b3b78; --accent:#2563eb;
+  }
+  body{
+    font-family:system-ui,Arial;
+    padding:24px;
+    background:var(--bg);
+  }
+  header.topbar{
+    position:fixed; top:0; left:0; right:0; height:64px;
+    background:var(--primary); color:#fff;
+    display:flex; align-items:center; z-index:10;
+    padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+  }
+  header.topbar h5{
+    margin:0; font-weight:600; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;
+  }
+  .card{
+    max-width:520px; margin:96px auto 0;
+    background:#fff; border-radius:12px; padding:24px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+  }
+  .sub{
+    color:var(--muted); margin-top:6px; font-size:14px;
+  }
+  input{
+    width:95%; padding:12px; border-radius:8px;
+    border:1px solid #ddd; margin-top:8px;
+  }
+  .row{
+    margin-top:14px;
+  }
+  .btn{
+    width:220px; padding:12px 16px;
+    border-radius:8px; display:inline-block;
+    border:none; background:#0d6efd; color:#fff; cursor:pointer;
+  }
+  .btn:hover{ filter:brightness(1.05); }
+  .btn:disabled{ opacity:.6; cursor:default; }
+  .btn2{
+    width:220px; padding:12px 16px;
+    border-radius:8px; display:inline-block;
+    border:1px solid #cbd5e1; background:#fff; color:var(--ink);
+    cursor:pointer; margin-left:8px;
+  }
+  .btn2:hover{ filter:brightness(0.98); }
+  .msg{ margin-top:14px; color:#b00; text-align:center; }
+  .hint{
+    margin-top:10px;
+    padding:12px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fbfbfd;
+    font-size:13px;
+    color:var(--muted);
+  }
+  .actions{
+    margin-top:18px;
+    text-align:center;
+  }
+</style>
+
+<body>
+  <header class="topbar">
+    <img src="/aprovados/logo-mini.png" alt="Logo" style="height:28px; margin-right:12px;">
+    <h5>Simulado Aberto FUVESTÃO - Maio/2026</h5>
+  </header>
+
+  <div class="card">
+    <h2 style="margin-top:0;">Redefinir senha</h2>
+    <div class="sub" id="sub">Carregando dados do link…</div>
+
+    <div class="hint">
+      Este link tem validade. Se aparecer mensagem de token inválido/expirado, volte ao login e use “Esqueci minha senha” novamente.
+    </div>
+
+    <div class="row">
+      <input id="nova" type="password" placeholder="Nova senha (mínimo 6 caracteres)" autocomplete="new-password">
+      <input id="conf" type="password" placeholder="Confirmar nova senha" autocomplete="new-password">
+    </div>
+
+    <div class="actions">
+      <button id="btnSalvar" class="btn">Salvar nova senha</button>
+      <button id="btnVoltar" class="btn2" type="button">Voltar ao login</button>
+    </div>
+
+    <div id="msg" class="msg"></div>
+  </div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/fuvestao0526/';
+
+function qs(name){
+  return new URLSearchParams(location.search).get(name) || '';
+}
+
+const token  = qs('token');
+const login  = qs('login');
+const evento = qs('evento') || 'FUVESTAO0526'; // fallback
+
+const sub = document.getElementById('sub');
+const msg = document.getElementById('msg');
+const btnSalvar = document.getElementById('btnSalvar');
+const btnVoltar = document.getElementById('btnVoltar');
+
+btnVoltar.onclick = () => location.href = './index.html';
+
+(function init(){
+  if (!token || !login) {
+    sub.textContent = 'Link inválido: faltam parâmetros.';
+    msg.textContent = 'Volte ao login e solicite um novo link de redefinição.';
+    btnSalvar.disabled = true;
+    return;
+  }
+  sub.textContent = `Unidade: ${login} • Evento: ${evento}`;
+})();
+
+btnSalvar.onclick = async () => {
+  msg.style.color = '#b00';
+  msg.textContent = '';
+
+  const nova = document.getElementById('nova').value;
+  const conf = document.getElementById('conf').value;
+
+  if (!nova || !conf) {
+    msg.textContent = 'Preencha a nova senha e a confirmação.';
+    return;
+  }
+  if (nova.length < 6) {
+    msg.textContent = 'A senha deve ter pelo menos 6 caracteres.';
+    return;
+  }
+  if (nova !== conf) {
+    msg.textContent = 'As senhas não conferem.';
+    return;
+  }
+
+  btnSalvar.disabled = true;
+
+  try {
+    const r = await fetch(API + 'auth_reset.php', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ login, evento, token, nova_senha: nova }),
+      credentials: 'include'
+    });
+
+    const data = await r.json().catch(() => ({}));
+
+    if (!r.ok || !data.ok) {
+      msg.textContent = data.error || 'Não foi possível redefinir a senha.';
+      return;
+    }
+
+    msg.style.color = '#137333';
+    msg.textContent = 'Senha alterada com sucesso! Você já pode entrar no sistema.';
+
+    // opcional: redireciona depois de 2s
+    setTimeout(() => {
+      location.href = './index.html';
+    }, 2000);
+
+  } catch (e) {
+    console.error(e);
+    msg.textContent = 'Erro de rede ou servidor indisponível.';
+  } finally {
+    btnSalvar.disabled = false;
+  }
+};
+</script>
+</body>
+</html>
