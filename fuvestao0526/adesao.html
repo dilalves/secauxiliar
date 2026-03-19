@@ -204,7 +204,7 @@
     <!-- Responsáveis e vagas -->
     <div class="cardx">
       <div class="h1"><i class="material-icons" style="color:#163a77;">groups</i> Responsáveis e vagas</div>
-      <p class="sub">Informe quem estará na unidade nos dias dos simulados e a quantidade de vagas.</p>
+      <p class="sub">Informe quem estará na unidade no dia do simulado e a quantidade de vagas.</p>
 
       <div class="row">
         <div class="input-field col s12 m3">
@@ -229,19 +229,21 @@
         </div>
       </div>
 
-      <div class="section-title"><i class="material-icons">event</i> Dia 2</div>
-      <div class="row">
-        <div class="input-field col s12 m6">
-          <input id="resp_dia2_nome" type="text">
-          <label for="resp_dia2_nome" class="active">Responsável (nome)</label>
-        </div>
-        <div class="input-field col s12 m2">
-          <input id="resp_dia2_ddd" type="text">
-          <label for="resp_dia2_ddd" class="active">DDD</label>
-        </div>
-        <div class="input-field col s12 m4">
-          <input id="resp_dia2_celular" type="text">
-          <label for="resp_dia2_celular" class="active">Celular</label>
+      <div id="boxDia2" style="display:none;">
+        <div class="section-title"><i class="material-icons">event</i> Dia 2</div>     
+        <div class="row">
+          <div class="input-field col s12 m6">
+            <input id="resp_dia2_nome" type="text">
+            <label for="resp_dia2_nome" class="active">Responsável (nome)</label>
+          </div>
+          <div class="input-field col s12 m2">
+            <input id="resp_dia2_ddd" type="text">
+            <label for="resp_dia2_ddd" class="active">DDD</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input id="resp_dia2_celular" type="text">
+            <label for="resp_dia2_celular" class="active">Celular</label>
+          </div>
         </div>
       </div>
 
@@ -350,11 +352,10 @@
 
     const requiredResp = [
       'resp_dia1_nome','resp_dia1_ddd','resp_dia1_celular',
-      'resp_dia2_nome','resp_dia2_ddd','resp_dia2_celular',
       'resp_adesao'
     ];
     for (const k of requiredResp) {
-      if (!($(k).value || '').trim()) return { ok:false, msg:'Preencha os responsáveis dos dias e o responsável pela adesão.' };
+      if (!($(k).value || '').trim()) return { ok:false, msg:'Preencha o responsável pelo dia do simulado e o responsável pela adesão.' };
     }
 
     if (!$('chkAceite').checked) return { ok:false, msg:'Marque o aceite para liberar o botão de concluir.' };
@@ -396,7 +397,6 @@
       [
         'p_endereco','p_cidade','p_uf','p_cep','p_ddd','p_telefone','email_resp_adesao',
         'vagas','resp_dia1_nome','resp_dia1_ddd','resp_dia1_celular',
-        'resp_dia2_nome','resp_dia2_ddd','resp_dia2_celular',
         'resp_adesao','chkAceite'
       ].forEach(id => $(id).addEventListener('input', atualizarSalvarEnabled));
 
@@ -441,9 +441,9 @@
           resp_dia1_ddd: $('resp_dia1_ddd').value.trim(),
           resp_dia1_celular: $('resp_dia1_celular').value.trim(),
 
-          resp_dia2_nome: $('resp_dia2_nome').value.trim(),
-          resp_dia2_ddd: $('resp_dia2_ddd').value.trim(),
-          resp_dia2_celular: $('resp_dia2_celular').value.trim(),
+          resp_dia2_nome: '',
+          resp_dia2_ddd: '',
+          resp_dia2_celular: '',
 
           resp_adesao: $('resp_adesao').value.trim(),
           email_resp_adesao: $('email_resp_adesao').value.trim()
