@@ -1332,53 +1332,48 @@ function decStatusResumo(status) {
     });
   }
  
- async function carregarUsuario(){
-    const evt = document.getElementById('evt');
-    const uLogin = document.getElementById('uLogin');
-    const uNome = document.getElementById('uNome');
-    const welcomeTitle = document.getElementById('welcomeTitle');
-    const welcomeSub = document.getElementById('welcomeSub');
+ async function carregarUsuario() {
+  const uLogin = document.getElementById('uLogin');
+  const uNome = document.getElementById('uNome');
 
-    if (evt) evt.textContent = EVENTO_FIXO;
+  if (!uLogin || !uNome) return;
 
-    uLogin.classList.remove('skeleton','sk-line');
-    uNome.classList.remove('skeleton','sk-mini');
-    uLogin.textContent = 'Carregando...';
-    uNome.textContent = '';
+  uLogin.textContent = 'Carregando...';
+  uNome.textContent = '';
 
-    try {
-      const res = await fetch(API + 'auth_me_unidade.php', {
-        credentials: 'include'
-      });
+  try {
+    const res = await fetch('https://apisec.secauxiliar.com.br/enem0526/auth_me_unidade.php', {
+      credentials: 'include'
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (!data.ok) {
-        toast('Sessão expirada. Faça login novamente.');
-        return logout();
-      }
-
-      const login = data.login || '';
-      const unidade = data.unidade || '';
-
-      uLogin.textContent = login ? `Unidade ${login}` : 'Login';
-      uNome.textContent = unidade || '';
-
-      if (welcomeTitle) {
-        welcomeTitle.textContent = `Enviar folhas — ${unidade || 'Unidade'}`;
-      }
-
-      if (welcomeSub) {
-        welcomeSub.textContent = `Evento ${EVENTO_FIXO}. Selecione o dia e envie as imagens da unidade.`;
-      }
-
-    } catch (e) {
-      console.error(e);
-      toast('Erro de conexão ao carregar usuário.');
-      uLogin.textContent = 'Erro';
-      uNome.textContent = 'Sem conexão';
+    if (!data.ok) {
+      uLogin.textContent = 'Sessão';
+      uNome.textContent = 'Faça login novamente';
+      return;
     }
+
+    const login = data.login || '';
+    const unidade = data.unidade || '';
+
+    uLogin.textContent = login ? `Unidade ${login}` : 'Unidade';
+    uNome.textContent = unidade || '';
+  } catch (e) {
+    console.error(e);
+    uLogin.textContent = 'Erro';
+    uNome.textContent = 'Sem conexão';
   }
+}
+
+    btnRecarregar.addEventListener('click', carregar);
+    btnExcel.addEventListener('click', baixarExcel);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await carregarUsuario();
+      await carregar();
+    });
+
   
 </script>
 
