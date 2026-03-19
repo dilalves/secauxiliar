@@ -381,7 +381,7 @@
       <div class="hero-top">
         <div>
           <h1 id="welcomeTitle">Enviar folhas da unidade</h1>
-          <p id="welcomeSub">Selecione o dia, escolha os arquivos e faça o envio com validação de quantidade e resolução.</p>
+          <p id="welcomeSub">Envie as imagens da unidade com validação de quantidade e resolução.</p>
         </div>
 
         <div class="badges">
@@ -403,14 +403,14 @@
 
       <div class="grid-form">
         <div class="field-card">
-          <label class="field-label" for="dia">Dia da prova</label>
-          <div class="input-field" style="margin:0">
-            <select id="dia" required>
-              <option value="" disabled selected>Selecione o dia</option>
-              <option value="D1">1º DIA</option>
-              <option value="D2">2º DIA</option>
-            </select>
+          <label class="field-label">Dia da prova</label>
+          <div style="display:flex;align-items:center;min-height:56px;">
+            <span class="badge" style="font-size:14px;">
+              <i class="material-icons">event</i>
+              <b>1º DIA</b>
+            </span>
           </div>
+          <input type="hidden" id="dia" value="D1">
         </div>
 
         <div class="field-card">
@@ -624,7 +624,7 @@
       }
 
       if (welcomeSub) {
-        welcomeSub.textContent = `Evento ${EVENTO_FIXO}. Selecione o dia e envie as imagens da unidade.`;
+        welcomeSub.textContent = `Evento ${EVENTO_FIXO}. Envie as imagens da unidade referentes ao Fuvestão.`;
       }
 
     } catch (e) {
@@ -685,7 +685,7 @@
   }
 
   async function atualizarResumoDoDia() {
-    const dia = document.getElementById('dia').value;
+    const dia = 'D1';
     const files = Array.from(document.getElementById('fileInput').files || []);
     atualizarKPIs('-', '-', files.length);
 
@@ -827,20 +827,10 @@ async function uploadFile() {
   const arquivosOriginais = Array.from(fileInput.files || []);
   const fileNamesPreview = document.getElementById('fileNamesPreview');
   const sendButton = document.getElementById('btnEnviar');
-  const diaSelecionado = document.getElementById('dia').value;
+  const diaSelecionado = 'D1';
 
   fileNamesPreview.innerHTML = '';
   sendButton.disabled = true;
-
-  if (!diaSelecionado) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Dados inválidos',
-      text: 'Selecione o dia do envio.'
-    });
-    sendButton.disabled = false;
-    return;
-  }
 
   if (arquivosOriginais.length === 0) {
     Swal.fire({
@@ -998,9 +988,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const ok = await gatePainel();
   if (!ok) return;
 
-  // Inicializa o select do Materialize
-  M.FormSelect.init(document.querySelectorAll('select'));
-
   // Menu do usuário
   setupUserMenu();
 
@@ -1009,20 +996,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Eventos da tela
   document.getElementById('fileInput').addEventListener('change', atualizarResumoDoDia);
-  document.getElementById('dia').addEventListener('change', atualizarResumoDoDia);
-
-  // Habilita R1 quando a redação estiver liberada
-  try {
-    const res = await verificarRedacaoHabilitada(EVENTO_FIXO);
-    const sel = document.getElementById('dia');
-
-    if (res.habilitada && !sel.querySelector('option[value="R1"]')) {
-      sel.insertAdjacentHTML('beforeend', '<option value="R1">REDAÇÃO (R1)</option>');
-      M.FormSelect.init(sel);
-    }
-  } catch (err) {
-    console.error('Erro ao verificar redação:', err);
-  }
 
   // Atualiza os KPIs iniciais se já houver dia selecionado
   await atualizarResumoDoDia();
