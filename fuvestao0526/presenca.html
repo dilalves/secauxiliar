@@ -284,10 +284,6 @@
       gap:12px;
     }
 
-    .kpis-6{
-      grid-template-columns:repeat(3,1fr);
-    }
-
     .kpi{
       background:#fff;
       border:1px solid var(--line);
@@ -408,6 +404,10 @@
       border-radius:8px;
     }
 
+    .stats-grid-2{
+      grid-template-columns:repeat(2,1fr);
+    }
+
     @keyframes sk {
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
@@ -505,13 +505,13 @@
       <div class="content-head">
         <div>
           <h2>Controle de presenças</h2>
-          <p>Informe a quantidade de presentes da sua unidade em cada dia do evento.</p>
+          <p>Informe a quantidade de presentes da sua unidade no dia do evento.</p>
         </div>
       </div>
 
       <div class="content-body">
 
-        <div class="kpis kpis-6">
+        <div class="kpis">
           <div class="kpi">
             <div class="l">Vagas da unidade</div>
             <div class="v" id="kpiVagas">0</div>
@@ -536,14 +536,10 @@
             <div class="l">Presentes dia 1</div>
             <div class="v" id="kpiD1">0</div>
           </div>
-
-          <div class="kpi">
-            <div class="l">Presentes dia 2</div>
-            <div class="v" id="kpiD2">0</div>
-          </div>
+          
         </div>
 
-        <div class="stats-grid">
+        <div class="stats-grid stats-grid-2">
           <div class="stat-box">
             <div class="stat-top">
               <span>Ocupação das vagas</span>
@@ -566,33 +562,18 @@
             <small>Presentes do Dia 1 em relação aos inscritos</small>
           </div>
 
-          <div class="stat-box">
-            <div class="stat-top">
-              <span>Presença Dia 2</span>
-              <b id="pctPresencaD2">0%</b>
-            </div>
-            <div class="progress-mini">
-              <div class="bar" id="barPresencaD2"></div>
-            </div>
-            <small>Presentes do Dia 2 em relação aos inscritos</small>
-          </div>
         </div>
 
         <div class="input-card">
           <div class="row" style="margin-bottom:0;">
-            <div class="input-field col s12 m4">
+            <div class="input-field col s12 m6">
               <input id="vagas" type="number" readonly>
               <label class="active" for="vagas">Vagas</label>
             </div>
 
-            <div class="input-field col s12 m4">
+            <div class="input-field col s12 m6">
               <input id="d1" type="number" min="0">
-              <label class="active" for="d1">Presentes Dia 1</label>
-            </div>
-
-            <div class="input-field col s12 m4">
-              <input id="d2" type="number" min="0">
-              <label class="active" for="d2">Presentes Dia 2</label>
+              <label class="active" for="d1">Presentes na prova</label>
             </div>
           </div>
 
@@ -654,7 +635,6 @@
   function atualizarKpis(){
     const vagas = Number(document.getElementById('vagas').value || 0);
     const d1 = Number(document.getElementById('d1').value || 0);
-    const d2 = Number(document.getElementById('d2').value || 0);
 
     const inscritosSite = Number(document.getElementById('kpiSite')?.dataset.valor || 0);
     const inscritosAvulsos = Number(document.getElementById('kpiAvulsos')?.dataset.valor || 0);
@@ -665,19 +645,15 @@
     document.getElementById('kpiAvulsos').textContent = formatNumber(inscritosAvulsos);
     document.getElementById('kpiInscritos').textContent = formatNumber(inscritosTotal);
     document.getElementById('kpiD1').textContent = formatNumber(d1);
-    document.getElementById('kpiD2').textContent = formatNumber(d2);
 
     const pctOcupacao = vagas > 0 ? (inscritosTotal / vagas) * 100 : 0;
     const pctPresencaD1 = inscritosTotal > 0 ? (d1 / inscritosTotal) * 100 : 0;
-    const pctPresencaD2 = inscritosTotal > 0 ? (d2 / inscritosTotal) * 100 : 0;
 
     document.getElementById('pctOcupacao').textContent = formatPct(pctOcupacao);
     document.getElementById('pctPresencaD1').textContent = formatPct(pctPresencaD1);
-    document.getElementById('pctPresencaD2').textContent = formatPct(pctPresencaD2);
 
     document.getElementById('barOcupacao').style.width = clampPct(pctOcupacao) + '%';
     document.getElementById('barPresencaD1').style.width = clampPct(pctPresencaD1) + '%';
-    document.getElementById('barPresencaD2').style.width = clampPct(pctPresencaD2) + '%';
   }
 
   async function logout(){
@@ -773,7 +749,7 @@
       document.getElementById('badgeUnidade').textContent = USUARIO.unidade || USUARIO.login || 'Unidade';
       document.getElementById('welcomeTitle').textContent = 'Informar presenças';
       document.getElementById('welcomeSub').textContent =
-        `Lançamento de presenças do evento ${EVENTO_FIXO} para a unidade ${USUARIO.unidade || USUARIO.login || ''}.`;
+        `Lançamento de presenças do ${EVENTO_FIXO} para a unidade ${USUARIO.unidade || USUARIO.login || ''}.`;
 
     }catch(e){
       console.error(e);
@@ -805,8 +781,7 @@
       }
 
       document.getElementById('vagas').value = j.data?.vagas ?? 0;
-      document.getElementById('d1').value    = j.data?.presentes_d1 ?? 0;
-      document.getElementById('d2').value    = j.data?.presentes_d2 ?? 0;
+      document.getElementById('d1').value = j.data?.presentes_d1 ?? 0;
 
       const inscritosSite = Number(j.data?.inscritos_site ?? 0);
       const inscritosAvulsos = Number(j.data?.inscritos_avulsos ?? 0);
@@ -831,69 +806,63 @@
     }
   }
 
-  async function salvar(){
-    const d1 = Number(document.getElementById('d1').value || 0);
-    const d2 = Number(document.getElementById('d2').value || 0);
-    const vagas = Number(document.getElementById('vagas').value || 0);
+async function salvar(){
+  const d1 = Number(document.getElementById('d1').value || 0);
+  const vagas = Number(document.getElementById('vagas').value || 0);
 
-    if (d1 < 0 || d2 < 0) {
-      return Swal.fire('Atenção', 'Os valores de presença não podem ser negativos.', 'warning');
-    }
-
-    if (vagas > 0 && d1 > vagas) {
-      return Swal.fire('Atenção', 'O total de presentes do Dia 1 não pode ser maior que o número de vagas.', 'warning');
-    }
-
-    if (vagas > 0 && d2 > vagas) {
-      return Swal.fire('Atenção', 'O total de presentes do Dia 2 não pode ser maior que o número de vagas.', 'warning');
-    }
-
-    setStatus('Salvando presenças...');
-
-    try{
-      const fd = new FormData();
-      fd.append('evento', EVENTO_FIXO);
-      fd.append('presentes_d1', d1);
-      fd.append('presentes_d2', d2);
-
-      if (USUARIO.login)   fd.append('login', USUARIO.login);
-      if (USUARIO.unidade) fd.append('unidade', USUARIO.unidade);
-
-      const r = await fetch(API + 'presencas_update.php', {
-        method:'POST',
-        body:fd,
-        credentials:'include'
-      });
-
-      const j = await r.json();
-
-      if(!j.ok){
-        throw new Error(j.error || 'Não foi possível salvar.');
-      }
-
-      atualizarKpis();
-      setStatus('');
-
-      await Swal.fire({
-        title:'Salvo',
-        text:'Presenças atualizadas com sucesso.',
-        icon:'success',
-        confirmButtonColor:'#0b3b78'
-      });
-
-      await carregar();
-
-    }catch(e){
-      console.error(e);
-      setStatus(e.message || 'Erro ao salvar presenças.');
-      Swal.fire('Erro', e.message || 'Erro ao salvar presenças.', 'error');
-    }
+  if (d1 < 0) {
+    return Swal.fire('Atenção', 'O valor de presença não pode ser negativo.', 'warning');
   }
 
-  document.getElementById('d1').addEventListener('input', atualizarKpis);
-  document.getElementById('d2').addEventListener('input', atualizarKpis);
+  if (vagas > 0 && d1 > vagas) {
+    return Swal.fire('Atenção', 'O total de presentes do Dia 1 não pode ser maior que o número de vagas.', 'warning');
+  }
+
+  setStatus('Salvando presenças...');
+
+  try{
+    const fd = new FormData();
+    fd.append('evento', EVENTO_FIXO);
+    fd.append('presentes_d1', d1);
+    fd.append('presentes_d2', 0);
+
+    if (USUARIO.login)   fd.append('login', USUARIO.login);
+    if (USUARIO.unidade) fd.append('unidade', USUARIO.unidade);
+
+    const r = await fetch(API + 'presencas_update.php', {
+      method:'POST',
+      body:fd,
+      credentials:'include'
+    });
+
+    const j = await r.json();
+
+    if(!j.ok){
+      throw new Error(j.error || 'Não foi possível salvar.');
+    }
+
+    atualizarKpis();
+    setStatus('');
+
+    await Swal.fire({
+      title:'Salvo',
+      text:'Presenças atualizadas com sucesso.',
+      icon:'success',
+      confirmButtonColor:'#0b3b78'
+    });
+
+    await carregar();
+
+  }catch(e){
+    console.error(e);
+    setStatus(e.message || 'Erro ao salvar presenças.');
+    Swal.fire('Erro', e.message || 'Erro ao salvar presenças.', 'error');
+  }
+}
 
   document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('d1').addEventListener('input', atualizarKpis);
+
     const ok = await gatePainel();
     if (!ok) return;
 
@@ -901,6 +870,7 @@
     await carregarUsuario();
     await carregar();
   });
+
 </script>
 </body>
 </html>
