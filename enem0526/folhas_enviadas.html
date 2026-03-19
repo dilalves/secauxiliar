@@ -1003,7 +1003,6 @@
       const data = extractPayload(json);
       const redacaoHabilitada = !!data.redacaoHabilitada;
 
-      setText('topUser', `${data.login || ''} — ${data.unidade || ''}`);
       setText('badgeLogin', data.login || '-');
       setText('badgeUnidade', data.unidade || '-');
 
@@ -1261,6 +1260,7 @@
     const ok = await gatePainel();
     if (!ok) return;
 
+    await carregarUsuario(ok);
     await carregarArquivos();
   });
 
@@ -1332,49 +1332,41 @@ function decStatusResumo(status) {
     });
   }
  
- async function carregarUsuario() {
-  const uLogin = document.getElementById('uLogin');
-  const uNome = document.getElementById('uNome');
+  async function carregarUsuario(dataAuth = null) {
+    const uLogin = document.getElementById('uLogin');
+    const uNome  = document.getElementById('uNome');
 
-  if (!uLogin || !uNome) return;
+    if (!uLogin || !uNome) return;
 
-  uLogin.textContent = 'Carregando...';
-  uNome.textContent = '';
+    try {
+      let data = dataAuth;
 
-  try {
-    const res = await fetch('https://apisec.secauxiliar.com.br/enem0526/auth_me_unidade.php', {
-      credentials: 'include'
-    });
+      if (!data) {
+        const res = await fetch(API + 'auth_me_unidade.php', {
+          credentials: 'include',
+          cache: 'no-store'
+        });
 
-    const data = await res.json();
+        data = await res.json();
 
-    if (!data.ok) {
-      uLogin.textContent = 'Sessão';
-      uNome.textContent = 'Faça login novamente';
-      return;
+        if (!res.ok || !data.ok) {
+          uLogin.textContent = 'Sessão';
+          uNome.textContent = 'Faça login novamente';
+          return;
+        }
+      }
+
+      const login = data.login || '';
+      const unidade = data.unidade || '';
+
+      uLogin.textContent = login ? `Unidade ${login}` : 'Unidade';
+      uNome.textContent = unidade || '';
+    } catch (e) {
+      console.error(e);
+      uLogin.textContent = 'Erro';
+      uNome.textContent = 'Sem conexão';
     }
-
-    const login = data.login || '';
-    const unidade = data.unidade || '';
-
-    uLogin.textContent = login ? `Unidade ${login}` : 'Unidade';
-    uNome.textContent = unidade || '';
-  } catch (e) {
-    console.error(e);
-    uLogin.textContent = 'Erro';
-    uNome.textContent = 'Sem conexão';
   }
-}
-
-    btnRecarregar.addEventListener('click', carregar);
-    btnExcel.addEventListener('click', baixarExcel);
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      await carregarUsuario();
-      await carregar();
-    });
-
-  
 </script>
 
 </body>
