@@ -1206,7 +1206,36 @@ function decStatusResumo(status) {
   return decText('sumSemLote');
 }
   
+ function setupUserMenu(){
+    const btn = document.getElementById('userBtn');
+    const dd = document.getElementById('userDropdown');
+    if (!btn || !dd) return;
+
+    function close(){
+      dd.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggle(){
+      const isOpen = dd.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggle();
+    });
+
+    document.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
+  }
+
+
 </script>
 
 </body>
 </html>
+
+
