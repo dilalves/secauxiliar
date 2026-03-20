@@ -638,6 +638,12 @@
     margin-bottom:18px;
   }
 
+  .icon-delete{
+    background:#fef2f2;
+    color:#dc2626;
+    border:1px solid #fecaca;
+  }
+
   @media (max-width: 1280px){
     .grid-form.grid-salas{
       grid-template-columns:repeat(4,1fr);
@@ -1131,6 +1137,12 @@
             title="${item.status === 'ATIVA' ? 'Inativar sala' : 'Ativar sala'}">
             <i class="material-icons">${item.status === 'ATIVA' ? 'toggle_off' : 'toggle_on'}</i>
           </button>
+
+          <button class="icon-btn icon-delete" type="button"
+            onclick="excluirSalaSafe(${item.id}, '${escapeHtml(item.sala)}')"
+            title="Excluir sala">
+            <i class="material-icons">delete</i>
+          </button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -1353,6 +1365,57 @@
       Swal.fire({ icon:'error', title:'Erro', text:String(e.message || e) });
     }
   });
+
+
+    async function excluirSala(id, sala) {
+    const ok = await Swal.fire({
+      icon:'warning',
+      title:'Excluir sala?',
+      html:`Confirma a exclusão da sala <b>${sala}</b>?<br>Essa ação não poderá ser desfeita.`,
+      showCancelButton:true,
+      confirmButtonText:'Excluir',
+      cancelButtonText:'Cancelar',
+      confirmButtonColor:'#dc2626'
+    });
+
+    if (!ok.isConfirmed) return;
+
+    const fd = new FormData();
+    fd.append('id', id);
+
+    const resp = await fetch(API + 'salas_delete.php', {
+      method:'POST',
+      credentials:'include',
+      body:fd
+    });
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || !json.ok) {
+      throw new Error(json.msg || 'Não foi possível excluir a sala.');
+    }
+
+    await Swal.fire({
+      icon:'success',
+      title:'Sala excluída',
+      text:'A sala foi removida com sucesso.'
+    });
+
+    await carregarSalas();
+  }
+
+  async function excluirSalaSafe(id, sala) {
+    try {
+      await excluirSala(id, sala);
+    } catch (e) {
+      Swal.fire({
+        icon:'error',
+        title:'Erro',
+        text:String(e.message || e)
+      });
+    }
+  }
+  
 </script>
 
 </body>
