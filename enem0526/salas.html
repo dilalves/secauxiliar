@@ -1039,6 +1039,12 @@
     }
   }
 
+  function atualizarCampoPrioridadeForcado() {
+    const campo = document.getElementById('prioridade');
+    if (!campo) return;
+    campo.value = String(sugerirProximaPrioridade());
+  }
+
   async function logout(){
     try {
       await fetch(API + 'auth_login_out.php', {
@@ -1172,10 +1178,9 @@
     setText('totVagas', totais.vagas_ativas ?? 0);
     setText('badgeSalas', totais.total ?? 0);
 
-    preencherCampoPrioridadePadrao();
     renderizarSalas();
+    atualizarCampoPrioridadeForcado();
   }
-
   async function salvarSala(ev) {
     ev.preventDefault();
 
@@ -1415,7 +1420,7 @@
       });
     }
   }
-  
+
 </script>
 
 </body>
