@@ -599,6 +599,39 @@
     margin-bottom:18px;
   }
 
+   .table-filters{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .filter-inline{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:8px 12px;
+  }
+
+  .filter-inline label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--muted);
+    white-space:nowrap;
+  }
+
+  .filter-inline select{
+    border:none;
+    outline:none;
+    background:transparent;
+    font-weight:700;
+    color:var(--ink);
+    min-width:140px;
+  }
+
   @media (max-width: 1280px){
     .grid-form.grid-salas{
       grid-template-columns:repeat(4,1fr);
@@ -666,6 +699,7 @@
       grid-template-columns:1fr;
     }
   }
+
 </style>
 </head>
 <body>
@@ -819,7 +853,19 @@
       <div class="table-shell">
         <div class="table-top">
           <div class="left">Lista de salas</div>
-          <div class="right">As salas exibidas pertencem à unidade logada.</div>
+
+          <div class="table-filters">
+            <div class="filter-inline">
+              <label for="filtroStatusSala">Status:</label>
+              <select id="filtroStatusSala">
+                <option value="TODAS">Todas</option>
+                <option value="ATIVA">Somente ativas</option>
+                <option value="INATIVA">Somente inativas</option>
+              </select>
+            </div>
+
+            <div class="right">As salas exibidas pertencem à unidade logada.</div>
+          </div>
         </div>
 
         <div class="table-container">
@@ -840,7 +886,7 @@
             </thead>
             <tbody id="tbodySalas">
               <tr>
-                <td colspan="9">
+                <td colspan="10">
                   <div class="empty-state">
                     <i class="material-icons">hourglass_top</i>
                     Carregando salas...
@@ -1024,32 +1070,21 @@
     }
   }
 
-  async function carregarSalas() {
-    const resp = await fetch(API + 'salas_list.php', {
-      credentials:'include',
-      cache:'no-store'
-    });
+    function getFiltroStatusAtual() {
+    const el = document.getElementById('filtroStatusSala');
+    return el ? el.value : 'TODAS';
+  }
 
-    const json = await resp.json().catch(() => ({}));
+  function renderizarSalas() {
+    const tbody = document.getElementById('tbodySalas');
+    const filtro = getFiltroStatusAtual();
 
-    if (!resp.ok || !json.ok) {
-      throw new Error(json.msg || 'Falha ao carregar salas.');
+    let list = [...cacheSalas];
+
+    if (filtro !== 'TODAS') {
+      list = list.filter(item => String(item.status || '').toUpperCase() === filtro);
     }
 
-    const data = json.data || {};
-    const list = data.list || [];
-    const totais = data.totais || {};
-
-    cacheSalas = list;
-
-    setText('totSalasAtivas', totais.ativas ?? 0);
-    setText('totSalasInativas', totais.inativas ?? 0);
-    setText('totVagas', totais.vagas_ativas ?? 0);
-    setText('badgeSalas', totais.total ?? 0);
-
-    preencherCampoPrioridadePadrao();
-
-    const tbody = document.getElementById('tbodySalas');
     tbody.innerHTML = '';
 
     if (!list.length) {
@@ -1057,8 +1092,8 @@
         <tr>
           <td colspan="10">
             <div class="empty-state">
-              <i class="material-icons">meeting_room</i>
-              Nenhuma sala cadastrada.
+              <i class="material-icons">filter_alt_off</i>
+              Nenhuma sala encontrada para o filtro selecionado.
             </div>
           </td>
         </tr>
@@ -1086,7 +1121,7 @@
           </button>
 
           <button class="icon-btn ${item.status === 'ATIVA' ? 'icon-toggle-on' : 'icon-toggle-off'}" type="button"
-            onclick="toggleSala(${item.id}, '${item.status}')"
+            onclick="toggleSalaSafe(${item.id}, '${item.status}')"
             title="${item.status === 'ATIVA' ? 'Inativar sala' : 'Ativar sala'}">
             <i class="material-icons">${item.status === 'ATIVA' ? 'toggle_off' : 'toggle_on'}</i>
           </button>
@@ -1094,6 +1129,33 @@
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  async function carregarSalas() {
+    const resp = await fetch(API + 'salas_list.php', {
+      credentials:'include',
+      cache:'no-store'
+    });
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || !json.ok) {
+      throw new Error(json.msg || 'Falha ao carregar salas.');
+    }
+
+    const data = json.data || {};
+    const list = data.list || [];
+    const totais = data.totais || {};
+
+    cacheSalas = list;
+
+    setText('totSalasAtivas', totais.ativas ?? 0);
+    setText('totSalasInativas', totais.inativas ?? 0);
+    setText('totVagas', totais.vagas_ativas ?? 0);
+    setText('badgeSalas', totais.total ?? 0);
+
+    preencherCampoPrioridadePadrao();
+    renderizarSalas();
   }
 
   async function salvarSala(ev) {
@@ -1216,6 +1278,18 @@
     await carregarSalas();
   }
 
+   async function toggleSalaSafe(id, statusAtual) {
+    try {
+      await toggleSala(id, statusAtual);
+    } catch (e) {
+      Swal.fire({
+        icon:'error',
+        title:'Erro',
+        text:String(e.message || e)
+      });
+    }
+  }
+
   const userBtn = document.getElementById('userBtn');
   const userDropdown = document.getElementById('userDropdown');
   const userMenu = document.getElementById('userMenu');
@@ -1245,6 +1319,11 @@
       const campoPrioridade = document.getElementById('prioridade');
       if (campoPrioridade) {
         campoPrioridade.addEventListener('focus', preencherCampoPrioridadePadrao);
+      }
+
+      const filtroStatusSala = document.getElementById('filtroStatusSala');
+      if (filtroStatusSala) {
+        filtroStatusSala.addEventListener('change', renderizarSalas);
       }
 
       document.getElementById('formSala').addEventListener('submit', async (ev) => {
