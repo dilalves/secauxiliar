@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="pt-br">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+<title>Login — Simulado FUVESTÃO Maio/2026</title>
+
+<style>
+  :root {
+    --bg:#f7f8fb; --card:#ffffff; --line:#e9edf3; --ink:#0f172a; 
+    --muted:#6b7280; --primary:#0b3b78; --accent:#2563eb;
+  }
+  body {
+    font-family:system-ui,Arial;
+    padding:24px;
+    background:var(--bg);
+  }
+  header.topbar {
+    position:fixed; top:0; left:0; right:0; height:64px;
+    background:var(--primary); color:#fff;
+    display:flex; align-items:center; z-index:10;
+    padding:0 24px; box-shadow:0 2px 10px rgba(16,24,40,.12);
+  }
+  header.topbar h5 {
+    margin:0; font-weight:600; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;
+  }
+  .card {
+    max-width:420px; margin:96px auto 0;
+    background:#fff; border-radius:12px; padding:24px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+  }
+  input {
+    width:95%; padding:12px; border-radius:8px;
+    border:1px solid #ddd; margin-top:8px;
+  }
+  #btn {
+    width:160px; padding:12px 16px;
+    border-radius:8px; display:block; margin:16px auto 0;
+    border:none; background:#0d6efd; color:#fff; cursor:pointer;
+  }
+  #btn:hover{ filter:brightness(1.05); }
+  #btn:disabled{ opacity:.6; cursor:default; }
+  .msg{ margin-top:12px; color:#b00; text-align:center; }
+</style>
+
+<body>
+  <header class="topbar">
+    <img src="/aprovados/logo-mini.png" alt="Logo" style="height:28px; margin-right:12px;">
+    <h5>Simulado Aberto FUVESTÃO - Maio/2026</h5>
+  </header>
+
+  <div class="card">
+    <h2 style="margin-top:0;">Acesso ao Sistema</h2>
+    <input id="login" placeholder="Login da unidade (ex.: 1501)" inputmode="numeric">
+    <input id="senha" type="password" placeholder="Senha">
+    <button id="btn">Entrar</button>
+
+    <div style="text-align:center; margin-top:10px;">
+      <a href="#" id="forgot" style="color:#2563eb; text-decoration:none; font-weight:600;">
+        Esqueci minha senha
+      </a>
+    </div>    
+
+    <div id="msg" class="msg"></div>
+  </div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/fuvestao0526/';
+const EVENTO_FIXO = 'FUVESTAO0526'; // ✅ fixo neste site/pasta
+const params = new URLSearchParams(location.search);
+const saiuAgora = params.get('logout') === '1';
+
+document.getElementById('btn').onclick = async () => {
+  const login = document.getElementById('login').value.trim();
+  const senha = document.getElementById('senha').value;
+  const msg = document.getElementById('msg');
+  const btn = document.getElementById('btn');
+
+  msg.style.color = '#b00';
+  msg.textContent = '';
+
+  if (!login || !senha) {
+    msg.textContent = 'Informe login e senha.';
+    return;
+  }
+
+  btn.disabled = true;
+
+  try {
+    const r = await fetch(API + 'auth_login.php', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ login, senha, evento: EVENTO_FIXO }),
+      credentials: 'include'
+    });
+
+    const data = await r.json().catch(() => ({}));
+
+    if (!r.ok || !data.ok) {
+      msg.textContent = data.error || 'Falha no login';
+      return;
+    }
+
+    // ✅ novo: status da adesão vem do backend
+    const adesaoExists = !!(data.adesao && data.adesao.exists);
+    const adesaoStatus = (data.adesao && data.adesao.status) ? String(data.adesao.status).toUpperCase() : '';
+
+    // 1) não existe adesão -> manda para adesão
+    if (!adesaoExists) {
+      // (se ainda quiser manter o limite de data, aplica aqui)
+      const hoje = new Date(); hoje.setHours(0,0,0,0);
+      const deadline = new Date(2026, 3, 24); deadline.setHours(0,0,0,0);
+
+      if (hoje <= deadline) {
+        const rr = await Swal.fire({
+          title: 'Bem-vindo! 👋',
+          html: `
+            <div style="text-align:left; line-height:1.5;">
+              <p>Você será direcionado para a <b>adesão ao evento</b>.</p>
+              <p>⏳ Adesões abertas até <b>24/04/2026</b>.</p>
+              <p>⚠️ Preencha <b>TODOS</b> os campos obrigatórios para concluir.</p>
+            </div>
+          `,
+          icon: 'info',
+          confirmButtonText: 'Ir para adesão',
+          showCancelButton: true,
+          cancelButtonText: 'Agora não',
+          confirmButtonColor: '#0b3b78',
+          cancelButtonColor: '#9e9e9e',
+          background: '#fff',
+          backdrop: true
+        });
+
+        if (rr.isConfirmed) location.href = './adesao.html';
+      } else {
+        await Swal.fire({
+          title: 'Adesão encerrada',
+          html: `
+            <div style="text-align:left; line-height:1.5;">
+              <p>Não é possível realizar a adesão, pois o prazo máximo foi <b>24/04/2026</b>.</p>
+            </div>
+          `,
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#0b3b78'
+        });
+        location.href = './login.html';
+      }
+
+      return;
+    }
+
+    // 2) existe adesão: decide pelo status
+    if (adesaoStatus === 'ATIVA') {
+      location.href = './painel.html';
+      return;
+    }
+
+    if (adesaoStatus === 'AGUARDANDO') {
+      await Swal.fire({
+        title: 'Adesão já registrada ✅',
+        html: `
+          <div style="text-align:left; line-height:1.5;">
+            <p>Sua unidade já realizou a adesão para este evento.</p>
+            <p>Status atual: <b>AGUARDANDO</b></p>
+            <p>⏳ A adesão está em fila para <b>conferência e liberação</b>.</p>
+            <p>Assim que liberarmos, o painel ficará disponível automaticamente.</p>
+          </div>
+        `,
+        icon: 'info',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#0b3b78'
+      });
+
+      // fica na tela ou redireciona para uma página "status"
+      // location.href = './status.html';
+      return;
+    }
+
+    // 3) fallback: status desconhecido
+    await Swal.fire({
+      title: 'Atenção',
+      text: `Adesão encontrada, mas status inesperado: ${adesaoStatus || '(vazio)'}`,
+      icon: 'warning',
+      confirmButtonColor: '#0b3b78'
+    });
+
+  } catch (e) {
+    console.error(e);
+    msg.textContent = 'Erro de rede ou servidor indisponível.';
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+// ✅ NOVO: Esqueci minha senha
+document.getElementById('forgot').onclick = async (ev) => {
+  ev.preventDefault();
+
+  const login = document.getElementById('login').value.trim();
+  const msg = document.getElementById('msg');
+
+  msg.style.color = '#b00';
+  msg.textContent = '';
+
+  if (!login) {
+    msg.textContent = 'Informe o login da unidade para enviar a redefinição.';
+    return;
+  }
+
+  try {
+    const r = await fetch(API + 'auth_forgot.php?debug=1',{
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ login, evento: EVENTO_FIXO }),
+      credentials: 'include'
+    });
+
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || !data.ok) {
+      msg.textContent = data.error || 'Não foi possível enviar.';
+      return;
+    }
+
+    msg.style.color = '#137333';
+
+    // ✅ aqui é o que você quer:
+    if (data.email_mask) {
+      msg.textContent = `E-mail enviado para ${data.email_mask}`;
+    } else {
+      // fallback (caso o backend não mande a máscara)
+      msg.textContent = 'Se o login existir, enviamos a redefinição para o e-mail institucional da unidade.';
+    }
+
+  } catch (e) {
+    console.error(e);
+    msg.textContent = 'Erro de rede ou servidor indisponível.';
+  }
+};
+
+(async function autoCheckSession(){
+  if (saiuAgora) return;
+
+  try{
+    const r = await fetch(API + 'auth_me_unidade.php', {
+      credentials:'include',
+      cache:'no-store'
+    });
+
+    const data = await r.json().catch(()=> ({}));
+    if(!r.ok || !data.ok) return;
+
+    const st = String(data?.adesao?.status ?? '').trim().toUpperCase();
+
+    if (st === 'ATIVA') {
+      location.replace('./painel.html');
+      return;
+    }
+
+    if (st === 'AGUARDANDO') {
+      await Swal.fire({
+        title: 'Adesão já registrada ✅',
+        html: `
+          <div style="text-align:left; line-height:1.5;">
+            <p>Sua unidade já realizou a adesão para este evento.</p>
+            <p>Status atual: <b>AGUARDANDO</b></p>
+            <p>⏳ A adesão está em fila para <b>conferência e liberação</b>.</p>
+          </div>
+        `,
+        icon: 'info',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#0b3b78'
+      });
+    }
+  } catch(e){
+    console.error(e);
+  }
+})();
+
+
+</script>
+</body>
+</html>
