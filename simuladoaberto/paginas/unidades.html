@@ -221,18 +221,71 @@
     .btn-main:hover{ filter:brightness(1.03); }
     .btn-flatline:hover{ background:#f8fbff; }
 
-    .grid-form{
-      display:grid;
-      grid-template-columns:repeat(12, 1fr);
-      gap:14px;
-    }
+.grid-form{
+  display:grid;
+  grid-template-columns:repeat(12, minmax(0, 1fr));
+  gap:18px 14px;
+  align-items:end;
+}
 
-    .col-2{ grid-column:span 2; }
-    .col-3{ grid-column:span 3; }
-    .col-4{ grid-column:span 4; }
-    .col-6{ grid-column:span 6; }
-    .col-8{ grid-column:span 8; }
-    .col-12{ grid-column:span 12; }
+.col-2{ grid-column:span 2; }
+.col-3{ grid-column:span 3; }
+.col-4{ grid-column:span 4; }
+.col-5{ grid-column:span 5; }
+.col-6{ grid-column:span 6; }
+.col-7{ grid-column:span 7; }
+.col-8{ grid-column:span 8; }
+.col-9{ grid-column:span 9; }
+.col-12{ grid-column:span 12; }
+
+.input-field input,
+.input-field select{
+  width:100%;
+  min-width:0;
+}
+
+.input-field label{
+  max-width:100%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.form-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:flex-start;
+  flex-wrap:wrap;
+  padding-top:8px;
+}
+
+@media (max-width: 1100px){
+  .grid-form .col-2,
+  .grid-form .col-3,
+  .grid-form .col-4,
+  .grid-form .col-5,
+  .grid-form .col-6,
+  .grid-form .col-7,
+  .grid-form .col-8,
+  .grid-form .col-9{
+    grid-column:span 6;
+  }
+}
+
+@media (max-width: 720px){
+  .grid-form .col-2,
+  .grid-form .col-3,
+  .grid-form .col-4,
+  .grid-form .col-5,
+  .grid-form .col-6,
+  .grid-form .col-7,
+  .grid-form .col-8,
+  .grid-form .col-9,
+  .grid-form .col-12{
+    grid-column:span 12;
+  }
+}
 
     .table-wrap{
       overflow:auto;
@@ -429,135 +482,137 @@
         <form id="frmUnidade">
           <input type="hidden" id="id" name="id">
 
-          <div class="grid-form">
+            <div class="grid-form">
+            <input type="hidden" id="id" name="id">
+
+            <div class="input-field col-3">
+                <input id="login" name="login" maxlength="20" required>
+                <label for="login">Login *</label>
+            </div>
+
+            <div class="input-field col-9">
+                <input id="unidade" name="unidade" maxlength="160" required>
+                <label for="unidade">Unidade *</label>
+            </div>
+
+            <div class="input-field col-6">
+                <input id="unidade_internet" name="unidade_internet" maxlength="160">
+                <label for="unidade_internet">Unidade Internet</label>
+            </div>
+
             <div class="input-field col-2">
-              <input id="login" name="login" maxlength="20" required>
-              <label for="login">Login *</label>
+                <input id="metrics" name="metrics" maxlength="30">
+                <label for="metrics">Metrics</label>
+            </div>
+
+            <div class="input-field col-4">
+                <input id="cnpj" name="cnpj" maxlength="18">
+                <label for="cnpj">CNPJ</label>
             </div>
 
             <div class="input-field col-6">
-              <input id="unidade" name="unidade" maxlength="160" required>
-              <label for="unidade">Unidade *</label>
+                <input id="razao_social" name="razao_social" maxlength="255">
+                <label for="razao_social">Razão Social</label>
             </div>
 
-            <div class="input-field col-6">
-              <input id="unidade_internet" name="unidade_internet" maxlength="160">
-              <label for="unidade_internet">Unidade Internet</label>
+            <div class="input-field col-3">
+                <input id="assessora" name="assessora" maxlength="120">
+                <label for="assessora">Assessora</label>
             </div>
 
-            <div class="input-field col-2">
-              <input id="metrics" name="metrics" maxlength="30">
-              <label for="metrics">Metrics</label>
+            <div class="input-field col-3">
+                <input id="cac" name="cac" maxlength="120">
+                <label for="cac">CAC</label>
             </div>
 
-            <div class="input-field col-4">
-              <input id="cnpj" name="cnpj" maxlength="18">
-              <label for="cnpj">CNPJ</label>
+            <div class="input-field col-3">
+                <input id="classificacao" name="classificacao" maxlength="120">
+                <label for="classificacao">Classificação</label>
             </div>
 
-            <div class="input-field col-6">
-              <input id="razao_social" name="razao_social" maxlength="255">
-              <label for="razao_social">Razão Social</label>
-            </div>
-
-            <div class="input-field col-4">
-              <input id="assessora" name="assessora" maxlength="120">
-              <label for="assessora">Assessora</label>
-            </div>
-
-            <div class="input-field col-4">
-              <input id="cac" name="cac" maxlength="120">
-              <label for="cac">CAC</label>
-            </div>
-
-            <div class="input-field col-4">
-              <input id="classificacao" name="classificacao" maxlength="120">
-              <label for="classificacao">Classificação</label>
-            </div>
-
-            <div class="input-field col-4">
-              <input id="roteiro" name="roteiro" maxlength="120">
-              <label for="roteiro">Roteiro</label>
+            <div class="input-field col-3">
+                <input id="roteiro" name="roteiro" maxlength="120">
+                <label for="roteiro">Roteiro</label>
             </div>
 
             <div class="input-field col-8">
-              <input id="endereco" name="endereco" maxlength="255">
-              <label for="endereco">Endereço</label>
+                <input id="endereco" name="endereco" maxlength="255">
+                <label for="endereco">Endereço</label>
             </div>
 
             <div class="input-field col-4">
-              <input id="cidade" name="cidade" maxlength="120">
-              <label for="cidade">Cidade</label>
+                <input id="cidade" name="cidade" maxlength="120">
+                <label for="cidade">Cidade</label>
             </div>
 
             <div class="input-field col-2">
-              <input id="uf" name="uf" maxlength="2">
-              <label for="uf">UF</label>
+                <input id="uf" name="uf" maxlength="2">
+                <label for="uf">UF</label>
             </div>
 
             <div class="input-field col-3">
-              <input id="cep" name="cep" maxlength="9">
-              <label for="cep">CEP</label>
+                <input id="cep" name="cep" maxlength="9">
+                <label for="cep">CEP</label>
             </div>
 
             <div class="input-field col-3">
-              <input id="grupo" name="grupo" maxlength="20">
-              <label for="grupo">Grupo</label>
+                <input id="grupo" name="grupo" maxlength="20">
+                <label for="grupo">Grupo</label>
             </div>
 
             <div class="input-field col-2">
-              <input id="ddd" name="ddd" maxlength="2">
-              <label for="ddd">DDD</label>
+                <input id="ddd" name="ddd" maxlength="2">
+                <label for="ddd">DDD</label>
             </div>
 
             <div class="input-field col-2">
-              <input id="telefone" name="telefone" maxlength="20">
-              <label for="telefone">Telefone</label>
+                <input id="telefone" name="telefone" maxlength="20">
+                <label for="telefone">Telefone</label>
             </div>
 
             <div class="input-field col-6">
-              <input id="email_institucional" name="email_institucional" maxlength="160">
-              <label for="email_institucional">E-mail institucional</label>
+                <input id="email_institucional" name="email_institucional" maxlength="160">
+                <label for="email_institucional">E-mail institucional</label>
             </div>
 
             <div class="input-field col-6">
-              <input id="email_dir" name="email_dir" maxlength="160">
-              <label for="email_dir">E-mail direção</label>
+                <input id="email_dir" name="email_dir" maxlength="160">
+                <label for="email_dir">E-mail direção</label>
             </div>
 
             <div class="input-field col-6">
-              <input id="email_alternativo1" name="email_alternativo1" maxlength="160">
-              <label for="email_alternativo1">E-mail alternativo 1</label>
+                <input id="email_alternativo1" name="email_alternativo1" maxlength="160">
+                <label for="email_alternativo1">E-mail alternativo 1</label>
             </div>
 
             <div class="input-field col-6">
-              <input id="email_alternativo2" name="email_alternativo2" maxlength="160">
-              <label for="email_alternativo2">E-mail alternativo 2</label>
+                <input id="email_alternativo2" name="email_alternativo2" maxlength="160">
+                <label for="email_alternativo2">E-mail alternativo 2</label>
             </div>
 
             <div class="input-field col-3">
-              <select id="ativo" name="ativo">
+                <select id="ativo" name="ativo">
                 <option value="1" selected>Ativo</option>
                 <option value="0">Inativo</option>
-              </select>
-              <label>Status</label>
+                </select>
+                <label>Status</label>
             </div>
 
             <div class="input-field col-3">
-              <input id="latitude" name="latitude" maxlength="20">
-              <label for="latitude">Latitude</label>
+                <input id="latitude" name="latitude" maxlength="20">
+                <label for="latitude">Latitude</label>
             </div>
 
             <div class="input-field col-3">
-              <input id="longitude" name="longitude" maxlength="20">
-              <label for="longitude">Longitude</label>
+                <input id="longitude" name="longitude" maxlength="20">
+                <label for="longitude">Longitude</label>
             </div>
 
-            <div class="col-3" style="display:flex;align-items:center;gap:10px;">
-              <button class="btn-main" type="submit">Salvar unidade</button>
-              <button class="btn-flatline" type="button" onclick="novaUnidade()">Limpar</button>
+            <div class="col-3 form-actions">
+                <button class="btn-main" type="submit">Salvar unidade</button>
+                <button class="btn-flatline" type="button" onclick="novaUnidade()">Limpar</button>
             </div>
-          </div>
+            </div>
 
 
         </form>
@@ -573,16 +628,14 @@
     const URL_SALVAR = `${API}unidades_salvar.php`;
 
     const els = {
-      busca: document.getElementById('busca'),
-      filtroAtivo: document.getElementById('filtroAtivo'),
-      tbodyLista: document.getElementById('tbodyLista'),
-      statusLista: document.getElementById('statusLista'),
-      badgeTotal: document.getElementById('badgeTotal'),
-      frm: document.getElementById('frmUnidade'),
-      tituloForm: document.getElementById('tituloForm'),
-      id: document.getElementById('id'),
-      senha: document.getElementById('senha'),
-      lblSenha: document.getElementById('lblSenha')
+    busca: document.getElementById('busca'),
+    filtroAtivo: document.getElementById('filtroAtivo'),
+    tbodyLista: document.getElementById('tbodyLista'),
+    statusLista: document.getElementById('statusLista'),
+    badgeTotal: document.getElementById('badgeTotal'),
+    frm: document.getElementById('frmUnidade'),
+    tituloForm: document.getElementById('tituloForm'),
+    id: document.getElementById('id')
     };
 
     function toast(msg, classes = '') {
@@ -607,14 +660,12 @@
     }
 
     function novaUnidade() {
-      els.frm.reset();
-      els.id.value = '';
-      els.tituloForm.textContent = 'Nova unidade';
-      els.lblSenha.textContent = '(obrigatória no novo cadastro)';
-      document.getElementById('ativo').value = '1';
-      M.updateTextFields();
-      M.FormSelect.init(document.querySelectorAll('select'));
-      window.scrollTo({ top: document.body.scrollHeight * 0.35, behavior: 'smooth' });
+    els.frm.reset();
+    els.id.value = '';
+    els.tituloForm.textContent = 'Nova unidade';
+    document.getElementById('ativo').value = '1';
+    M.updateTextFields();
+    M.FormSelect.init(document.querySelectorAll('select'));
     }
 
     function formToObject(form) {
