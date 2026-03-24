@@ -435,11 +435,6 @@
               <label for="login">Login *</label>
             </div>
 
-            <div class="input-field col-4">
-              <input id="senha" name="senha" type="text">
-              <label for="senha">Senha <span id="lblSenha">(obrigatória no novo cadastro)</span></label>
-            </div>
-
             <div class="input-field col-6">
               <input id="unidade" name="unidade" maxlength="160" required>
               <label for="unidade">Unidade *</label>
@@ -564,9 +559,7 @@
             </div>
           </div>
 
-          <div class="helper">
-            Ao editar uma unidade, deixe a senha em branco se não quiser alterá-la.
-          </div>
+
         </form>
       </div>
     </section>
@@ -695,10 +688,8 @@
           const el = document.getElementById(k);
           if (el) el.value = v ?? '';
         }
-
-        els.senha.value = '';
-        els.tituloForm.textContent = `Alterar unidade #${u.id}`;
-        els.lblSenha.textContent = '(preencha só se quiser trocar a senha)';
+        
+        els.tituloForm.textContent = `Alterar unidade #${u.id}`;        
         M.updateTextFields();
         M.FormSelect.init(document.querySelectorAll('select'));
 
@@ -721,11 +712,6 @@
 
       if (!dados.unidade?.trim()) {
         toast('Informe o nome da unidade.', 'red');
-        return;
-      }
-
-      if (!dados.id && !dados.senha?.trim()) {
-        toast('Informe a senha para novo cadastro.', 'red');
         return;
       }
 
