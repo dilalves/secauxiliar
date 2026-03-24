@@ -655,27 +655,16 @@
     abrir(url.toString());
   }
 
-  function gerarListaPorta() {
-    const salaId = getSalaId();
-    if (!salaId) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Selecione uma sala',
-        text: 'Para gerar a lista da porta, escolha uma sala específica.'
-      });
-      return;
-    }
+function gerarListaPorta() {
+  const url = new URL(URL_LISTA_PORTA, location.href);
+  url.searchParams.set('evento', getEvento());
 
-    const url = new URL(URL_LISTA_PORTA, location.href);
-    url.searchParams.set('evento', getEvento());
-    url.searchParams.set('sala_id', salaId);
-
-    if (getDia()) {
-      url.searchParams.set('dia', getDia());
-    }
-
-    abrir(url.toString());
+  if (getDia()) {
+    url.searchParams.set('dia', getDia());
   }
+
+  abrir(url.toString());
+}
 
   async function logout() {
     try {
