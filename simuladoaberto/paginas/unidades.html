@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Simulados Abertos - Unidades</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    :root{
+      --bg:#eef4fb;
+      --panel:#f6f9fe;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --line:#dbe6f3;
+      --text:#0f172a;
+      --muted:#64748b;
+      --card:#ffffff;
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --danger:#dc2626;
+    }
+
+    html,body{
+      margin:0; padding:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    }
+
+    .container{ width:min(1400px, calc(100% - 32px)); margin:0 auto; }
+
+    .topbar{
+      position:fixed;
+      top:0; left:0; right:0;
+      height:66px;
+      background:var(--primary);
+      color:#fff;
+      z-index:1000;
+      box-shadow:0 2px 16px rgba(0,0,0,.16);
+      display:flex;
+      align-items:center;
+    }
+
+    .topbar .wrap{
+      width:min(1400px, calc(100% - 32px));
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width:0;
+    }
+
+    .brand img{
+      height:28px;
+      width:auto;
+      display:block;
+    }
+
+    .brand-text{
+      min-width:0;
+    }
+
+    .brand-text .title{
+      font-size:15px;
+      font-weight:800;
+      line-height:1.1;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .brand-text .sub{
+      font-size:12px;
+      opacity:.9;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    main{
+      padding-top:92px;
+      padding-bottom:36px;
+    }
+
+    .hero{
+      background:linear-gradient(180deg, rgba(11,59,120,.08), rgba(11,59,120,0));
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 8px 24px rgba(15,23,42,.05);
+    }
+
+    .hero-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .hero h1{
+      margin:0;
+      font-size:26px;
+      color:var(--primary);
+      font-weight:800;
+    }
+
+    .hero p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .badge-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 12px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .badge-chip i{
+      font-size:16px;
+      color:var(--accent);
+    }
+
+    .section{
+      margin-top:16px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:0 8px 24px rgba(15,23,42,.05);
+      overflow:hidden;
+    }
+
+    .section-head{
+      padding:16px 18px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .section-head h2{
+      margin:0;
+      font-size:18px;
+      color:var(--primary);
+      font-weight:800;
+    }
+
+    .section-body{
+      padding:16px 18px 18px;
+    }
+
+    .toolbar{
+      display:grid;
+      grid-template-columns: 1.3fr 160px auto auto;
+      gap:12px;
+      align-items:end;
+    }
+
+    .input-field{
+      margin:0 !important;
+    }
+
+    .input-field input,
+    .input-field select{
+      margin-bottom:0 !important;
+    }
+
+    .btn-flatline{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--primary);
+      border-radius:12px;
+      height:46px;
+      line-height:46px;
+      padding:0 18px;
+      font-weight:700;
+      text-transform:none;
+      cursor:pointer;
+    }
+
+    .btn-main{
+      border:none;
+      background:var(--primary);
+      color:#fff;
+      border-radius:12px;
+      height:46px;
+      line-height:46px;
+      padding:0 18px;
+      font-weight:700;
+      text-transform:none;
+      cursor:pointer;
+    }
+
+    .btn-main:hover{ filter:brightness(1.03); }
+    .btn-flatline:hover{ background:#f8fbff; }
+
+    .grid-form{
+      display:grid;
+      grid-template-columns:repeat(12, 1fr);
+      gap:14px;
+    }
+
+    .col-2{ grid-column:span 2; }
+    .col-3{ grid-column:span 3; }
+    .col-4{ grid-column:span 4; }
+    .col-6{ grid-column:span 6; }
+    .col-8{ grid-column:span 8; }
+    .col-12{ grid-column:span 12; }
+
+    .table-wrap{
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:14px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      background:#fff;
+    }
+
+    thead th{
+      position:sticky;
+      top:0;
+      background:#f8fbff;
+      color:var(--primary);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.02em;
+      border-bottom:1px solid var(--line);
+    }
+
+    th, td{
+      padding:12px 10px;
+      border-bottom:1px solid #edf2f7;
+      font-size:13px;
+      white-space:nowrap;
+    }
+
+    tbody tr:hover{
+      background:#fafcff;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      padding:4px 10px;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .pill-ok{
+      background:#ecfdf3;
+      color:#15803d;
+      border:1px solid #bbf7d0;
+    }
+
+    .pill-off{
+      background:#fff1f2;
+      color:#be123c;
+      border:1px solid #fecdd3;
+    }
+
+    .mini-btn{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--primary);
+      border-radius:10px;
+      padding:6px 10px;
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .status-box{
+      margin-top:12px;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .helper{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    @media (max-width: 1100px){
+      .toolbar{ grid-template-columns:1fr 1fr; }
+      .grid-form .col-2,
+      .grid-form .col-3,
+      .grid-form .col-4,
+      .grid-form .col-6,
+      .grid-form .col-8{
+        grid-column:span 6;
+      }
+    }
+
+    @media (max-width: 720px){
+      .toolbar{ grid-template-columns:1fr; }
+      .grid-form .col-2,
+      .grid-form .col-3,
+      .grid-form .col-4,
+      .grid-form .col-6,
+      .grid-form .col-8,
+      .grid-form .col-12{
+        grid-column:span 12;
+      }
+      .hero h1{ font-size:22px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <div class="brand">
+        <img src="https://www.curso-objetivo.br/assets/img/favicon.ico" alt="Logo">
+        <div class="brand-text">
+          <div class="title">Simulados Abertos — Administração</div>
+          <div class="sub">Manutenção de unidades</div>
+        </div>
+      </div>
+      <button class="btn-flatline" type="button" onclick="novaUnidade()">Nova unidade</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>Cadastro de unidades</h1>
+          <p>Consulte, cadastre e altere as unidades do sistema administrativo.</p>
+        </div>
+
+        <div class="badges">
+          <div class="badge-chip"><i class="material-icons">apartment</i><span id="badgeTotal">0 unidade(s)</span></div>
+          <div class="badge-chip"><i class="material-icons">verified_user</i><span>Admin</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Consulta</h2>
+      </div>
+
+      <div class="section-body">
+        <div class="toolbar">
+          <div class="input-field">
+            <input id="busca" type="text" placeholder="Buscar por login, unidade, cidade, UF, CNPJ ou e-mail">
+            <label for="busca" class="active">Busca</label>
+          </div>
+
+          <div class="input-field">
+            <select id="filtroAtivo">
+              <option value="">Todos</option>
+              <option value="1">Somente ativos</option>
+              <option value="0">Somente inativos</option>
+            </select>
+            <label>Status</label>
+          </div>
+
+          <button class="btn-main" type="button" onclick="carregarLista()">Pesquisar</button>
+          <button class="btn-flatline" type="button" onclick="limparBusca()">Limpar</button>
+        </div>
+
+        <div class="status-box" id="statusLista">Carregando unidades...</div>
+
+        <div class="table-wrap" style="margin-top:14px;">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Login</th>
+                <th>Unidade</th>
+                <th>Unidade Internet</th>
+                <th>Cidade</th>
+                <th>UF</th>
+                <th>Grupo</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyLista">
+              <tr><td colspan="9">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2 id="tituloForm">Nova unidade</h2>
+      </div>
+
+      <div class="section-body">
+        <form id="frmUnidade">
+          <input type="hidden" id="id" name="id">
+
+          <div class="grid-form">
+            <div class="input-field col-2">
+              <input id="login" name="login" maxlength="20" required>
+              <label for="login">Login *</label>
+            </div>
+
+            <div class="input-field col-4">
+              <input id="senha" name="senha" type="text">
+              <label for="senha">Senha <span id="lblSenha">(obrigatória no novo cadastro)</span></label>
+            </div>
+
+            <div class="input-field col-6">
+              <input id="unidade" name="unidade" maxlength="160" required>
+              <label for="unidade">Unidade *</label>
+            </div>
+
+            <div class="input-field col-6">
+              <input id="unidade_internet" name="unidade_internet" maxlength="160">
+              <label for="unidade_internet">Unidade Internet</label>
+            </div>
+
+            <div class="input-field col-2">
+              <input id="metrics" name="metrics" maxlength="30">
+              <label for="metrics">Metrics</label>
+            </div>
+
+            <div class="input-field col-4">
+              <input id="cnpj" name="cnpj" maxlength="18">
+              <label for="cnpj">CNPJ</label>
+            </div>
+
+            <div class="input-field col-6">
+              <input id="razao_social" name="razao_social" maxlength="255">
+              <label for="razao_social">Razão Social</label>
+            </div>
+
+            <div class="input-field col-4">
+              <input id="assessora" name="assessora" maxlength="120">
+              <label for="assessora">Assessora</label>
+            </div>
+
+            <div class="input-field col-4">
+              <input id="cac" name="cac" maxlength="120">
+              <label for="cac">CAC</label>
+            </div>
+
+            <div class="input-field col-4">
+              <input id="classificacao" name="classificacao" maxlength="120">
+              <label for="classificacao">Classificação</label>
+            </div>
+
+            <div class="input-field col-4">
+              <input id="roteiro" name="roteiro" maxlength="120">
+              <label for="roteiro">Roteiro</label>
+            </div>
+
+            <div class="input-field col-8">
+              <input id="endereco" name="endereco" maxlength="255">
+              <label for="endereco">Endereço</label>
+            </div>
+
+            <div class="input-field col-4">
+              <input id="cidade" name="cidade" maxlength="120">
+              <label for="cidade">Cidade</label>
+            </div>
+
+            <div class="input-field col-2">
+              <input id="uf" name="uf" maxlength="2">
+              <label for="uf">UF</label>
+            </div>
+
+            <div class="input-field col-3">
+              <input id="cep" name="cep" maxlength="9">
+              <label for="cep">CEP</label>
+            </div>
+
+            <div class="input-field col-3">
+              <input id="grupo" name="grupo" maxlength="20">
+              <label for="grupo">Grupo</label>
+            </div>
+
+            <div class="input-field col-2">
+              <input id="ddd" name="ddd" maxlength="2">
+              <label for="ddd">DDD</label>
+            </div>
+
+            <div class="input-field col-2">
+              <input id="telefone" name="telefone" maxlength="20">
+              <label for="telefone">Telefone</label>
+            </div>
+
+            <div class="input-field col-6">
+              <input id="email_institucional" name="email_institucional" maxlength="160">
+              <label for="email_institucional">E-mail institucional</label>
+            </div>
+
+            <div class="input-field col-6">
+              <input id="email_dir" name="email_dir" maxlength="160">
+              <label for="email_dir">E-mail direção</label>
+            </div>
+
+            <div class="input-field col-6">
+              <input id="email_alternativo1" name="email_alternativo1" maxlength="160">
+              <label for="email_alternativo1">E-mail alternativo 1</label>
+            </div>
+
+            <div class="input-field col-6">
+              <input id="email_alternativo2" name="email_alternativo2" maxlength="160">
+              <label for="email_alternativo2">E-mail alternativo 2</label>
+            </div>
+
+            <div class="input-field col-3">
+              <select id="ativo" name="ativo">
+                <option value="1" selected>Ativo</option>
+                <option value="0">Inativo</option>
+              </select>
+              <label>Status</label>
+            </div>
+
+            <div class="input-field col-3">
+              <input id="latitude" name="latitude" maxlength="20">
+              <label for="latitude">Latitude</label>
+            </div>
+
+            <div class="input-field col-3">
+              <input id="longitude" name="longitude" maxlength="20">
+              <label for="longitude">Longitude</label>
+            </div>
+
+            <div class="col-3" style="display:flex;align-items:center;gap:10px;">
+              <button class="btn-main" type="submit">Salvar unidade</button>
+              <button class="btn-flatline" type="button" onclick="novaUnidade()">Limpar</button>
+            </div>
+          </div>
+
+          <div class="helper">
+            Ao editar uma unidade, deixe a senha em branco se não quiser alterá-la.
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
+
+    const URL_LISTAR = `${API}unidades_listar.php`;
+    const URL_OBTER  = `${API}unidades_get.php`;
+    const URL_SALVAR = `${API}unidades_salvar.php`;
+
+    const els = {
+      busca: document.getElementById('busca'),
+      filtroAtivo: document.getElementById('filtroAtivo'),
+      tbodyLista: document.getElementById('tbodyLista'),
+      statusLista: document.getElementById('statusLista'),
+      badgeTotal: document.getElementById('badgeTotal'),
+      frm: document.getElementById('frmUnidade'),
+      tituloForm: document.getElementById('tituloForm'),
+      id: document.getElementById('id'),
+      senha: document.getElementById('senha'),
+      lblSenha: document.getElementById('lblSenha')
+    };
+
+    function toast(msg, classes = '') {
+      if (window.M && M.toast) {
+        M.toast({ html: msg, classes });
+      }
+    }
+
+    function escapeHtml(v) {
+      return String(v ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+    }
+
+    function limparBusca() {
+      els.busca.value = '';
+      els.filtroAtivo.value = '';
+      M.FormSelect.init(document.querySelectorAll('select'));
+      carregarLista();
+    }
+
+    function novaUnidade() {
+      els.frm.reset();
+      els.id.value = '';
+      els.tituloForm.textContent = 'Nova unidade';
+      els.lblSenha.textContent = '(obrigatória no novo cadastro)';
+      document.getElementById('ativo').value = '1';
+      M.updateTextFields();
+      M.FormSelect.init(document.querySelectorAll('select'));
+      window.scrollTo({ top: document.body.scrollHeight * 0.35, behavior: 'smooth' });
+    }
+
+    function formToObject(form) {
+      const fd = new FormData(form);
+      return Object.fromEntries(fd.entries());
+    }
+
+    async function carregarLista() {
+      els.statusLista.textContent = 'Carregando unidades...';
+      els.tbodyLista.innerHTML = `<tr><td colspan="9">Carregando...</td></tr>`;
+
+      try {
+        const url = new URL(URL_LISTAR, location.href);
+        if (els.busca.value.trim()) url.searchParams.set('q', els.busca.value.trim());
+        if (els.filtroAtivo.value !== '') url.searchParams.set('ativo', els.filtroAtivo.value);
+
+        const r = await fetch(url.toString(), { credentials: 'include' });
+        const j = await r.json();
+
+        if (!r.ok || !j.ok) throw new Error(j.msg || 'Erro ao carregar unidades.');
+
+        const dados = Array.isArray(j.dados) ? j.dados : [];
+        els.badgeTotal.textContent = `${dados.length} unidade(s)`;
+        els.statusLista.textContent = `${dados.length} registro(s) encontrado(s).`;
+
+        if (!dados.length) {
+          els.tbodyLista.innerHTML = `<tr><td colspan="9">Nenhuma unidade encontrada.</td></tr>`;
+          return;
+        }
+
+        els.tbodyLista.innerHTML = dados.map(u => `
+          <tr>
+            <td>${u.id}</td>
+            <td>${escapeHtml(u.login)}</td>
+            <td>${escapeHtml(u.unidade)}</td>
+            <td>${escapeHtml(u.unidade_internet || '')}</td>
+            <td>${escapeHtml(u.cidade || '')}</td>
+            <td>${escapeHtml(u.uf || '')}</td>
+            <td>${escapeHtml(u.grupo || '')}</td>
+            <td>
+              ${String(u.ativo) === '1'
+                ? '<span class="pill pill-ok">ATIVO</span>'
+                : '<span class="pill pill-off">INATIVO</span>'}
+            </td>
+            <td>
+              <button class="mini-btn" type="button" onclick="editarUnidade(${u.id})">Editar</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+        els.statusLista.textContent = 'Erro ao carregar unidades.';
+        els.tbodyLista.innerHTML = `<tr><td colspan="9">${escapeHtml(err.message || 'Erro')}</td></tr>`;
+        toast(err.message || 'Erro ao carregar unidades.', 'red');
+      }
+    }
+
+    async function editarUnidade(id) {
+      try {
+        const url = new URL(URL_OBTER, location.href);
+        url.searchParams.set('id', id);
+
+        const r = await fetch(url.toString(), { credentials: 'include' });
+        const j = await r.json();
+
+        if (!r.ok || !j.ok) throw new Error(j.msg || 'Erro ao carregar unidade.');
+
+        const u = j.dados || {};
+
+        for (const [k, v] of Object.entries(u)) {
+          const el = document.getElementById(k);
+          if (el) el.value = v ?? '';
+        }
+
+        els.senha.value = '';
+        els.tituloForm.textContent = `Alterar unidade #${u.id}`;
+        els.lblSenha.textContent = '(preencha só se quiser trocar a senha)';
+        M.updateTextFields();
+        M.FormSelect.init(document.querySelectorAll('select'));
+
+        window.scrollTo({ top: document.body.scrollHeight * 0.28, behavior: 'smooth' });
+      } catch (err) {
+        console.error(err);
+        toast(err.message || 'Erro ao carregar unidade.', 'red');
+      }
+    }
+
+    async function salvarUnidade(ev) {
+      ev.preventDefault();
+
+      const dados = formToObject(els.frm);
+
+      if (!dados.login?.trim()) {
+        toast('Informe o login.', 'red');
+        return;
+      }
+
+      if (!dados.unidade?.trim()) {
+        toast('Informe o nome da unidade.', 'red');
+        return;
+      }
+
+      if (!dados.id && !dados.senha?.trim()) {
+        toast('Informe a senha para novo cadastro.', 'red');
+        return;
+      }
+
+      try {
+        const body = new URLSearchParams(dados);
+
+        const r = await fetch(URL_SALVAR, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: body.toString()
+        });
+
+        const j = await r.json();
+
+        if (!r.ok || !j.ok) throw new Error(j.msg || 'Erro ao salvar unidade.');
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Tudo certo',
+          text: j.msg || 'Registro salvo com sucesso.'
+        });
+
+        await carregarLista();
+
+        if (!dados.id && j.id) {
+          await editarUnidade(j.id);
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro ao salvar',
+          text: err.message || 'Não foi possível salvar.'
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      M.FormSelect.init(document.querySelectorAll('select'));
+      M.updateTextFields();
+
+      els.frm.addEventListener('submit', salvarUnidade);
+      els.busca.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          carregarLista();
+        }
+      });
+
+      carregarLista();
+      novaUnidade();
+    });
+  </script>
+</body>
+</html>
