@@ -103,7 +103,7 @@
       gap:10px;
     }
 
-        chip-link{
+    .chip-link{
       display:inline-flex;
       align-items:center;
       gap:8px;
@@ -128,7 +128,6 @@
       font-size:20px;
       line-height:1;
     }
-
 
     .chip-user{
       color:#fff !important;
@@ -209,9 +208,7 @@
       font-size:18px;
     }
 
-    .dd-item:hover{
-      background:#f0f4ff;
-    }
+    .dd-item:hover{ background:#f0f4ff; }
 
     main{
       padding-top:88px;
@@ -284,7 +281,7 @@
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:12px;
+      gap:16px;
       padding:16px;
       border-bottom:1px solid var(--line);
       background:#fff;
@@ -302,6 +299,46 @@
       margin:4px 0 0;
       font-size:13px;
       color:var(--muted);
+    }
+
+    .map-summary{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(190px, 1fr));
+      gap:10px;
+      min-width:min(100%, 430px);
+    }
+
+    .summary-card{
+      background:linear-gradient(180deg, #f8fbff, #eef5ff);
+      border:1px solid #dbe6f3;
+      border-radius:14px;
+      padding:12px 14px;
+      min-height:72px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      box-shadow:0 8px 18px rgba(37, 99, 235, .06);
+    }
+
+    .summary-card .label{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .summary-card .label i{
+      font-size:16px;
+      color:var(--accent);
+    }
+
+    .summary-card .value{
+      font-size:24px;
+      font-weight:900;
+      color:var(--primary);
+      line-height:1.05;
     }
 
     #map{
@@ -362,6 +399,7 @@
     @media (max-width: 860px){
       .chip-user{ max-width:260px; }
       .kpis{ grid-template-columns:1fr; }
+      .map-summary{ grid-template-columns:1fr; min-width:100%; }
       #map{ height:380px; }
     }
   </style>
@@ -428,9 +466,20 @@
       <div class="map-head">
         <div>
           <h2>Brasil</h2>
-          <p>Unidades participantes.</p>
+          <p>Unidades participantes no evento.</p>
         </div>
-        <span class="badge"><i class="material-icons">place</i><b id="qtdPins">0 unidades</b></span>
+
+        <div class="map-summary">
+          <div class="summary-card">
+            <div class="label"><i class="material-icons">place</i> Total de unidades</div>
+            <div class="value" id="sumUnidades">0</div>
+          </div>
+
+          <div class="summary-card">
+            <div class="label"><i class="material-icons">groups</i> Total geral de inscritos</div>
+            <div class="value" id="sumInscritosEvento">0</div>
+          </div>
+        </div>
       </div>
 
       <div id="map"></div>
@@ -508,7 +557,7 @@
       uLogin.textContent = login ? `Login ${login}` : 'Login';
       uNome.textContent  = unidade || '';
 
-      document.getElementById('welcomeTitle').textContent = `Mapa das unidades participantes`;
+      document.getElementById('welcomeTitle').textContent = 'Mapa das unidades participantes';
       document.getElementById('welcomeSub').textContent = `Visualização do evento ${EVENTO_FIXO} para a unidade ${unidade || login || ''}.`;
 
     }catch(e){
@@ -592,82 +641,87 @@
 
   const markersLayer = L.layerGroup().addTo(map);
 
-async function carregarMapa(){
-  const statusMsg = document.getElementById('statusMsg');
-  const qtdPins = document.getElementById('qtdPins');
-  const kpiVagas = document.getElementById('kpiVagas');
-  const kpiSite = document.getElementById('kpiSite');
-  const kpiAvulsos = document.getElementById('kpiAvulsos');
-  const kpiTotalInscritos = document.getElementById('kpiTotalInscritos');
+  async function carregarMapa(){
+    const statusMsg = document.getElementById('statusMsg');
+    const sumUnidades = document.getElementById('sumUnidades');
+    const sumInscritosEvento = document.getElementById('sumInscritosEvento');
+    const kpiVagas = document.getElementById('kpiVagas');
+    const kpiSite = document.getElementById('kpiSite');
+    const kpiAvulsos = document.getElementById('kpiAvulsos');
+    const kpiTotalInscritos = document.getElementById('kpiTotalInscritos');
 
-  try{
-    statusMsg.textContent = 'Carregando mapa...';
+    try{
+      statusMsg.textContent = 'Carregando mapa...';
 
-    const res = await fetch(API + 'mapa_dados.php?evento=' + encodeURIComponent(EVENTO_FIXO), {
-      credentials:'include'
-    });
-
-    const txt = await res.text();
-    let data = null;
-
-    try {
-      data = JSON.parse(txt);
-    } catch(parseErr) {
-      console.error('Resposta bruta:', txt);
-      throw new Error('A API do mapa não retornou JSON válido.');
-    }
-
-    if (!res.ok || !data.ok) {
-      throw new Error(data.error || 'Erro ao carregar mapa.');
-    }
-
-    const pins = Array.isArray(data.pins) ? data.pins : [];
-    qtdPins.textContent = `${pins.length} unidade${pins.length === 1 ? '' : 's'}`;
-
-    markersLayer.clearLayers();
-
-    const bounds = [];
-
-    pins.forEach(item => {
-      const lat = parseFloat(item.latitude);
-      const lng = parseFloat(item.longitude);
-
-      if (isNaN(lat) || isNaN(lng)) return;
-
-      const marker = L.marker([lat, lng]).addTo(markersLayer);
-
-      marker.bindTooltip(item.unidade_internet || '', {
-        direction: 'top',
-        offset: [0, -10],
-        opacity: 0.95
+      const res = await fetch(API + 'mapa_dados.php?evento=' + encodeURIComponent(EVENTO_FIXO), {
+        credentials:'include'
       });
 
-      bounds.push([lat, lng]);
-    });
+      const txt = await res.text();
+      let data = null;
 
-    if (bounds.length > 1) {
-      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 5 });
-    } else {
-      map.setView([-14.2350, -51.9253], 4);
+      try {
+        data = JSON.parse(txt);
+      } catch(parseErr) {
+        console.error('Resposta bruta:', txt);
+        throw new Error('A API do mapa não retornou JSON válido.');
+      }
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || 'Erro ao carregar mapa.');
+      }
+
+      const pins = Array.isArray(data.pins) ? data.pins : [];
+      const totalUnidades = Number(data.resumo_mapa?.total_unidades_participantes || pins.length || 0);
+      const totalInscritosEvento = Number(data.resumo_mapa?.total_inscritos_evento_geral || 0);
+
+      sumUnidades.textContent = formatNumber(totalUnidades);
+      sumInscritosEvento.textContent = formatNumber(totalInscritosEvento);
+
+      markersLayer.clearLayers();
+
+      const bounds = [];
+
+      pins.forEach(item => {
+        const lat = parseFloat(item.latitude);
+        const lng = parseFloat(item.longitude);
+
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const marker = L.marker([lat, lng]).addTo(markersLayer);
+
+        marker.bindTooltip(item.unidade_internet || '', {
+          direction: 'top',
+          offset: [0, -10],
+          opacity: 0.95
+        });
+
+        bounds.push([lat, lng]);
+      });
+
+      if (bounds.length > 1) {
+        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 5 });
+      } else {
+        map.setView([-14.2350, -51.9253], 4);
+      }
+
+      const totalVagas = Number(data.kpis?.total_vagas || 0);
+      const totalSite = Number(data.kpis?.total_inscritos_site || 0);
+      const totalAvulsos = Number(data.kpis?.total_inscritos_avulsos || 0);
+      const totalGeral = Number(data.kpis?.total_inscritos_geral || 0);
+
+      kpiVagas.textContent = formatNumber(totalVagas);
+      kpiSite.textContent = formatNumber(totalSite);
+      kpiAvulsos.textContent = formatNumber(totalAvulsos);
+      kpiTotalInscritos.textContent = formatNumber(totalGeral);
+
+      statusMsg.textContent = '';
+
+    }catch(e){
+      console.error(e);
+      statusMsg.textContent = e.message || 'Erro ao carregar o mapa.';
     }
-
-    const totalVagas = Number(data.kpis?.total_vagas || 0);
-    const totalSite = Number(data.kpis?.total_inscritos_site || 0);
-    const totalAvulsos = Number(data.kpis?.total_inscritos_avulsos || 0);
-    const totalGeral = Number(data.kpis?.total_inscritos_geral || 0);
-
-    kpiVagas.textContent = formatNumber(totalVagas);
-    kpiSite.textContent = formatNumber(totalSite);
-    kpiAvulsos.textContent = formatNumber(totalAvulsos);
-    kpiTotalInscritos.textContent = formatNumber(totalGeral);
-
-    statusMsg.textContent = '';
-
-  }catch(e){
-    console.error(e);
-    statusMsg.textContent = e.message || 'Erro ao carregar o mapa.';
   }
-}
 
   document.addEventListener('DOMContentLoaded', async () => {
     const ok = await gatePainel();
