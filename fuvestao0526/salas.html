@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Cadastro de salas — Simulado ENEM Maio/2026</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+  :root{
+    --primary:#0b3b78;
+    --accent:#2563eb;
+    --bg:#f7f8fb;
+    --card:#ffffff;
+    --line:#e9edf3;
+    --ink:#0f172a;
+    --muted:#6b7280;
+    --ok:#16a34a;
+    --warn:#f59e0b;
+    --err:#dc2626;
+    --soft:#eff6ff;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+
+  a{
+    color:inherit;
+    text-decoration:none;
+  }
+
+  .container{
+    max-width:1360px;
+    margin:0 auto;
+    padding:0 16px;
+  }
+
+  header.topbar{
+    position:fixed;
+    top:0; left:0; right:0;
+    height:64px;
+    background:var(--primary);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    z-index:1000;
+    box-shadow:0 2px 10px rgba(16,24,40,.22);
+  }
+
+  .topbar .container{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    width:100%;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+    flex:1 1 auto;
+  }
+
+  .brand img{
+    height:28px;
+    display:block;
+  }
+
+  .brand .title-wrap{
+    display:flex;
+    flex-direction:column;
+    line-height:1.05;
+    min-width:0;
+  }
+
+  .brand .title{
+    font-weight:700;
+    font-size:15px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .brand .sub{
+    font-size:12px;
+    opacity:.9;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .top-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex:0 0 auto;
+  }
+
+  .chip-link,
+  .chip-user{
+    height:44px;
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    color:#fff;
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.22);
+    box-shadow:0 6px 16px rgba(0,0,0,.10);
+  }
+
+  .chip-link{
+    gap:8px;
+    padding:0 14px;
+    font-weight:700;
+    white-space:nowrap;
+    transition:.18s ease;
+  }
+
+  .chip-link:hover{
+    background:rgba(255,255,255,.20);
+    transform:translateY(-1px);
+  }
+
+  .chip-user{
+    gap:10px;
+    padding:0 12px;
+    cursor:pointer;
+    appearance:none;
+    -webkit-appearance:none;
+    outline:none;
+    margin:0;
+    font:inherit;
+    border-radius:999px !important;
+  }
+
+  .chip-user:hover{
+    background:rgba(255,255,255,.20);
+  }
+
+  .chip-link .material-icons,
+  .chip-user .material-icons{
+    font-size:20px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+  }
+
+  .chip-user .txt{
+    display:flex;
+    flex-direction:column;
+    line-height:1.05;
+    min-width:0;
+    text-align:left;
+  }
+
+  .chip-user .txt b,
+  .chip-user .txt span{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .chip-user .txt b{
+    font-size:13px;
+    font-weight:800;
+    color:#fff;
+  }
+
+  .chip-user .txt span{
+    font-size:11px;
+    opacity:.95;
+    color:#eaf1ff;
+  }
+
+  .user-menu{
+    position:relative;
+  }
+
+  .dropdown{
+    position:absolute;
+    top:52px;
+    right:0;
+    min-width:220px;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    box-shadow:0 18px 40px rgba(15,23,42,.18);
+    padding:8px;
+    display:none;
+    z-index:1200;
+  }
+
+  .dropdown.open{
+    display:block;
+  }
+
+  .dd-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:10px;
+    color:#334155;
+    font-weight:600;
+    text-decoration:none;
+  }
+
+  .dd-item:hover{
+    background:#f1f5f9;
+  }
+
+  .dd-item i{
+    font-size:18px;
+    color:var(--accent);
+    line-height:1;
+  }
+
+  main{
+    padding-top:88px;
+    padding-bottom:40px;
+  }
+
+  .hero{
+    background:linear-gradient(180deg, rgba(11,59,120,.10), rgba(11,59,120,0));
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.05);
+    overflow:hidden;
+  }
+
+  .hero-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+
+  .hero h1{
+    margin:0;
+    font-size:24px;
+    font-weight:800;
+    color:var(--ink);
+  }
+
+  .hero p{
+    margin:6px 0 0;
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  .badges{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:7px 11px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid var(--line);
+    font-size:12px;
+    color:var(--muted);
+    font-weight:600;
+  }
+
+  .badge i{
+    font-size:16px;
+    color:var(--accent);
+  }
+
+  .content-card{
+    margin-top:16px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 10px 26px rgba(0,0,0,.05);
+  }
+
+  .section-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:0 0 6px;
+    font-size:20px;
+    font-weight:800;
+  }
+
+  .section-sub{
+    margin:0 0 16px;
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  .grid-form{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+  }
+
+  .grid-form.grid-salas{
+    display:grid;
+    grid-template-columns:
+      minmax(140px, 1.2fr)
+      minmax(110px, .9fr)
+      minmax(130px, 1fr)
+      minmax(120px, 1fr)
+      minmax(110px, .8fr)
+      minmax(120px, .9fr)
+      minmax(140px, 1fr);
+    gap:14px;
+    align-items:end;
+  }
+
+  .field-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:12px 12px 10px;
+    min-width:0;
+  }
+
+  .field-card.full{
+    grid-column:1 / -1;
+  }
+
+  .field-label{
+    display:block;
+    margin-bottom:6px;
+    font-weight:700;
+    font-size:13px;
+    color:var(--ink);
+  }
+
+  .field-card input,
+  .field-card select{
+    width:100%;
+    margin:0;
+  }
+
+  .kpi-row{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-bottom:18px;
+  }
+
+  .mini-kpi{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px;
+    background:#fff;
+  }
+
+  .mini-kpi .v{
+    font-size:24px;
+    font-weight:900;
+    color:var(--primary);
+    line-height:1;
+  }
+
+  .mini-kpi .l{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:6px;
+  }
+
+  .btn-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:16px;
+  }
+
+  .btnx{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:none;
+    border-radius:12px;
+    padding:0 16px;
+    height:44px;
+    cursor:pointer;
+    font-weight:700;
+    transition:.18s ease;
+  }
+
+  .btnx:hover{
+    transform:translateY(-1px);
+  }
+
+  .btn-primary{
+    background:var(--accent);
+    color:#fff;
+  }
+
+  .btn-secondary{
+    background:#fff;
+    color:var(--ink);
+    border:1px solid var(--line);
+  }
+
+  .table-shell{
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+    background:#fff;
+    margin-top:18px;
+  }
+
+  .table-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 16px;
+    border-bottom:1px solid var(--line);
+    background:#fbfdff;
+    flex-wrap:wrap;
+  }
+
+  .table-top .left{
+    font-weight:800;
+    color:var(--ink);
+  }
+
+  .table-top .right{
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .table-filters{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .filter-inline{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:8px 12px;
+  }
+
+  .filter-inline label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--muted);
+    white-space:nowrap;
+  }
+
+  .filter-inline select{
+    display:block;
+    flex:0 0 auto;
+    width:170px;
+    height:36px;
+    padding:0 10px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    color:var(--ink);
+    font-weight:700;
+    outline:none;
+    cursor:pointer;
+  }
+
+  .table-container{
+    overflow:auto;
+  }
+
+  table.listing{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    min-width:980px;
+  }
+
+  table.listing thead th{
+    background:#f8fbff;
+    z-index:2;
+    font-size:12px;
+    letter-spacing:.02em;
+    text-transform:uppercase;
+    color:#475569;
+    border-bottom:1px solid var(--line);
+    padding:14px 12px;
+    white-space:nowrap;
+    text-align:left;
+  }
+
+  table.listing tbody td{
+    padding:14px 12px;
+    border-bottom:1px solid #eef2f7;
+    vertical-align:middle;
+    font-size:14px;
+  }
+
+  table.listing tbody tr:nth-child(even){
+    background:#f8fbff;
+  }
+
+  table.listing tbody tr:hover{
+    background:#eef6ff;
+  }
+
+  .status-chip{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:90px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+    border:1px solid var(--line);
+    background:#fff;
+    white-space:nowrap;
+  }
+
+  .status-ativa{
+    background:#ecfdf5;
+    color:#047857;
+    border-color:#a7f3d0;
+  }
+
+  .status-inativa{
+    background:#fef2f2;
+    color:#b91c1c;
+    border-color:#fecaca;
+  }
+
+  .icon-btn{
+    width:38px;
+    height:38px;
+    border:none;
+    border-radius:10px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:.18s ease;
+    margin-right:6px;
+  }
+
+  .icon-btn:hover{
+    transform:translateY(-1px);
+  }
+
+  .icon-edit{
+    background:#eff6ff;
+    color:#1d4ed8;
+    border:1px solid #bfdbfe;
+  }
+
+  .icon-toggle-on{
+    background:#fef2f2;
+    color:#b91c1c;
+    border:1px solid #fecaca;
+  }
+
+  .icon-toggle-off{
+    background:#ecfdf5;
+    color:#047857;
+    border:1px solid #a7f3d0;
+  }
+
+  .empty-state{
+    padding:36px 18px;
+    text-align:center;
+    color:var(--muted);
+  }
+
+  .empty-state i{
+    font-size:44px;
+    color:#94a3b8;
+    display:block;
+    margin-bottom:8px;
+  }
+
+  .skeleton{
+    background:linear-gradient(90deg, #eef2f7, #f8fafc, #eef2f7);
+    background-size:200% 100%;
+    animation:sk 1.2s infinite;
+    border-radius:8px;
+  }
+
+  @keyframes sk {
+    0% { background-position:200% 0; }
+    100% { background-position:-200% 0; }
+  }
+
+  .sk-line{
+    height:12px;
+    width:220px;
+  }
+
+  .sk-mini{
+    height:10px;
+    width:180px;
+    opacity:.85;
+  }
+
+  .modal{
+    max-height:90%;
+    border-radius:18px;
+  }
+
+  .modal .modal-content h4{
+    font-size:24px;
+    font-weight:800;
+    margin-bottom:18px;
+  }
+
+  .icon-delete{
+    background:#fef2f2;
+    color:#dc2626;
+    border:1px solid #fecaca;
+  }
+
+  @media (max-width: 1280px){
+    .grid-form.grid-salas{
+      grid-template-columns:repeat(4,1fr);
+    }
+  }
+
+  @media (max-width: 980px){
+    .grid-form{
+      grid-template-columns:1fr 1fr;
+    }
+
+    .kpi-row{
+      grid-template-columns:1fr;
+    }
+  }
+
+  @media (max-width: 900px){
+    .grid-form.grid-salas{
+      grid-template-columns:repeat(3,1fr);
+    }
+  }
+
+  @media (max-width: 700px){
+    .grid-form{
+      grid-template-columns:1fr;
+    }
+
+    .chip-user .txt{
+      max-width:120px;
+    }
+  }
+
+  @media (max-width: 680px){
+    .grid-form.grid-salas{
+      grid-template-columns:repeat(2,1fr);
+    }
+  }
+
+  @media (max-width: 640px){
+    .chip-link span{
+      display:none;
+    }
+
+    .chip-link{
+      width:44px;
+      min-width:44px;
+      justify-content:center;
+      padding:0;
+    }
+
+    .chip-user .txt{
+      display:none;
+    }
+
+    .chip-user{
+      width:44px;
+      min-width:44px;
+      justify-content:center;
+      padding:0;
+    }
+  }
+
+  @media (max-width: 560px){
+    .grid-form.grid-salas{
+      grid-template-columns:1fr;
+    }
+  }
+</style>
+
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container">
+    <div class="brand">
+      <img src="/enem0526/logo-mini.png" alt="Logo">
+      <div class="title-wrap">
+        <div class="title">Simulado Aberto ENEM — Maio/2026</div>
+        <div class="sub">Cadastro de salas</div>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <a href="./painel.html" class="chip-link">
+        <i class="material-icons">dashboard</i>
+        <span>Painel</span>
+      </a>
+
+      <div class="user-menu" id="userMenu">
+        <button class="chip-user btn-user" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <i class="material-icons mat">account_circle</i>
+          <div class="txt">
+            <b id="uLogin" class="skeleton sk-line"></b>
+            <span id="uNome" class="skeleton sk-mini"></span>
+          </div>
+          <i class="material-icons caret">arrow_drop_down</i>
+        </button>
+
+        <div class="dropdown" id="userDropdown">
+          <a href="./alterar_senha.html" class="dd-item">
+            <i class="material-icons">lock</i> Alterar senha
+          </a>
+          <a href="#" class="dd-item" onclick="logout(); return false;">
+            <i class="material-icons">logout</i> Sair
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>Cadastro de salas da unidade</h1>
+          <p>Cadastre as salas disponíveis para distribuição dos candidatos e conferência das vagas totais.</p>
+        </div>
+
+        <div class="badges">
+          <span class="badge"><i class="material-icons">apartment</i> <span id="badgeLogin">...</span></span>
+          <span class="badge"><i class="material-icons">place</i> <span id="badgeUnidade">...</span></span>
+          <span class="badge"><i class="material-icons">meeting_room</i> <span id="badgeSalas">0</span> salas</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-card">
+      <h2 class="section-title">
+        <i class="material-icons" style="color:var(--accent)">meeting_room</i>
+        Nova sala
+      </h2>
+      <p class="section-sub">Preencha os dados da sala. O cadastro ficará vinculado à unidade logada.</p>
+
+      <div class="kpi-row">
+        <div class="mini-kpi">
+          <div class="v" id="totSalasAtivas">0</div>
+          <div class="l">Salas ativas</div>
+        </div>
+        <div class="mini-kpi">
+          <div class="v" id="totSalasInativas">0</div>
+          <div class="l">Salas inativas</div>
+        </div>
+        <div class="mini-kpi">
+          <div class="v" id="totVagas">0</div>
+          <div class="l">Total de vagas ativas</div>
+        </div>
+      </div>
+
+      <form id="formSala">
+        <div class="grid-form grid-salas">
+          <div class="field-card">
+            <label class="field-label" for="sala">Sala</label>
+            <input id="sala" name="sala" type="text" maxlength="50" required>
+          </div>
+
+          <div class="field-card">
+            <label class="field-label" for="andar">Andar</label>
+            <input id="andar" name="andar" type="text" maxlength="30">
+          </div>
+
+          <div class="field-card">
+            <label class="field-label" for="predio">Prédio</label>
+            <input id="predio" name="predio" type="text" maxlength="60">
+          </div>
+
+          <div class="field-card">
+            <label class="field-label" for="bloco">Bloco</label>
+            <input id="bloco" name="bloco" type="text" maxlength="60">
+          </div>
+
+          <div class="field-card">
+            <label class="field-label" for="prioridade">Prioridade</label>
+            <input id="prioridade" name="prioridade" type="number" min="0" step="1" required>
+          </div>
+
+          <div class="field-card">
+            <label class="field-label" for="candidatos">Candidatos</label>
+            <input id="candidatos" name="candidatos" type="number" min="0" step="1" required>
+          </div>
+
+          <div class="field-card">
+            <label class="field-label" for="status">Status</label>
+            <select id="status" name="status" class="browser-default">
+              <option value="ATIVA">ATIVA</option>
+              <option value="INATIVA">INATIVA</option>
+            </select>
+          </div>
+
+          <div class="field-card full">
+            <label class="field-label" for="observacao">Observação</label>
+            <input id="observacao" name="observacao" type="text" maxlength="255">
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btnx btn-primary">
+            <i class="material-icons">save</i>
+            Salvar sala
+          </button>
+
+          <button type="button" class="btnx btn-secondary" onclick="window.location.href='./painel.html'">
+            <i class="material-icons">arrow_back</i>
+            Voltar ao painel
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="content-card">
+      <h2 class="section-title">
+        <i class="material-icons" style="color:var(--accent)">list_alt</i>
+        Salas cadastradas
+      </h2>
+      <p class="section-sub">Edite os dados da sala ou altere o status para ativar/inativar o uso no simulado.</p>
+
+      <div class="table-shell">
+        <div class="table-top">
+          <div class="left">Lista de salas</div>
+
+          <div class="table-filters">
+              <div class="filter-inline">
+                <label for="filtroStatusSala">Status:</label>
+                <select id="filtroStatusSala" class="browser-default">
+                  <option value="TODAS">Todas</option>
+                  <option value="ATIVA">Somente ativas</option>
+                  <option value="INATIVA">Somente inativas</option>
+                </select>
+              </div>
+
+            <div class="right">As salas exibidas pertencem à unidade logada.</div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="listing">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Sala</th>
+                <th>Andar</th>
+                <th>Prédio</th>
+                <th>Bloco</th>
+                <th>Prioridade</th>
+                <th>Candidatos</th>
+                <th>Status</th>
+                <th>Observação</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodySalas">
+              <tr>
+                <td colspan="10">
+                  <div class="empty-state">
+                    <i class="material-icons">hourglass_top</i>
+                    Carregando salas...
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div id="modalEditar" class="modal">
+  <div class="modal-content">
+    <h4>Editar sala</h4>
+
+    <form id="formEditarSala">
+      <input type="hidden" id="edit_id" name="id">
+
+      <div class="grid-form">
+        <div class="field-card">
+          <label class="field-label">ID</label>
+          <input id="edit_id_view" type="text" disabled>
+        </div>
+
+        <div class="field-card">
+          <label class="field-label">Unidade</label>
+          <input id="edit_login_unidade" type="text" disabled>
+        </div>
+
+        <div class="field-card">
+          <label class="field-label" for="edit_sala">Sala</label>
+          <input id="edit_sala" name="sala" type="text" maxlength="50" required>
+        </div>
+
+        <div class="field-card">
+          <label class="field-label" for="edit_andar">Andar</label>
+          <input id="edit_andar" name="andar" type="text" maxlength="30">
+        </div>
+
+        <div class="field-card">
+          <label class="field-label" for="edit_predio">Prédio</label>
+          <input id="edit_predio" name="predio" type="text" maxlength="60">
+        </div>
+
+        <div class="field-card">
+          <label class="field-label" for="edit_bloco">Bloco</label>
+          <input id="edit_bloco" name="bloco" type="text" maxlength="60">
+        </div>
+
+        <div class="field-card">
+          <label class="field-label" for="edit_prioridade">Prioridade</label>
+          <input id="edit_prioridade" name="prioridade" type="number" min="0" step="1" required>
+        </div>
+
+        <div class="field-card">
+          <label class="field-label" for="edit_candidatos">Candidatos</label>
+          <input id="edit_candidatos" name="candidatos" type="number" min="0" step="1" required>
+        </div>
+
+        <div class="field-card">
+          <label class="field-label" for="edit_status">Status</label>
+          <select id="edit_status" name="status" class="browser-default">
+            <option value="ATIVA">ATIVA</option>
+            <option value="INATIVA">INATIVA</option>
+          </select>
+        </div>
+
+        <div class="field-card full">
+          <label class="field-label" for="edit_observacao">Observação</label>
+          <input id="edit_observacao" name="observacao" type="text" maxlength="255">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btnx btn-primary">
+          <i class="material-icons">save</i>
+          Salvar alterações
+        </button>
+
+        <button type="button" class="btnx btn-secondary modal-close">
+          <i class="material-icons">close</i>
+          Fechar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const API = 'https://apisec.secauxiliar.com.br/enem0526/';
+  let modalEditar = null;
+  let cacheSalas = [];
+
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value ?? '';
+  }
+
+  function setValue(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.value = value ?? '';
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, s => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#039;'
+    }[s]));
+  }
+
+  function getMaiorPrioridade(list) {
+    if (!Array.isArray(list) || !list.length) return 0;
+    return list.reduce((max, item) => {
+      const p = parseInt(item.prioridade, 10) || 0;
+      return p > max ? p : max;
+    }, 0);
+  }
+
+  function sugerirProximaPrioridade(list = cacheSalas) {
+    const maior = getMaiorPrioridade(list);
+    return maior + 1;
+  }
+
+  function preencherCampoPrioridadePadrao() {
+    const campo = document.getElementById('prioridade');
+    if (!campo) return;
+
+    const atual = String(campo.value || '').trim();
+    if (atual === '' || atual === '0') {
+      campo.value = String(sugerirProximaPrioridade());
+    }
+  }
+
+  function atualizarCampoPrioridadeForcado() {
+    const campo = document.getElementById('prioridade');
+    if (!campo) return;
+    campo.value = String(sugerirProximaPrioridade());
+  }
+
+  async function logout(){
+    try {
+      await fetch(API + 'auth_login_out.php', {
+        method:'POST',
+        credentials:'include',
+        cache:'no-store'
+      });
+    } catch(e){}
+    location.href = './index.html?logout=1';
+  }
+
+  async function gateSalas() {
+    try {
+      const r = await fetch(API + 'auth_me_unidade.php', {
+        credentials:'include',
+        cache:'no-store'
+      });
+
+      const data = await r.json().catch(() => ({}));
+
+      if (!r.ok || !data.ok) {
+        location.replace('./index.html');
+        return false;
+      }
+
+      setText('badgeLogin', data.login || '-');
+      setText('badgeUnidade', data.unidade || '-');
+      setText('uLogin', data.login ? `Unidade ${data.login}` : 'Unidade');
+      setText('uNome', data.unidade || '');
+
+      const uLogin = document.getElementById('uLogin');
+      const uNome = document.getElementById('uNome');
+      if (uLogin) uLogin.classList.remove('skeleton', 'sk-line');
+      if (uNome)  uNome.classList.remove('skeleton', 'sk-mini');
+
+      return data;
+    } catch (e) {
+      console.error(e);
+      location.replace('./index.html');
+      return false;
+    }
+  }
+
+    function getFiltroStatusAtual() {
+    const el = document.getElementById('filtroStatusSala');
+    return el ? el.value : 'TODAS';
+  }
+
+  function renderizarSalas() {
+    const tbody = document.getElementById('tbodySalas');
+    const filtro = getFiltroStatusAtual();
+
+    let list = [...cacheSalas];
+
+    if (filtro !== 'TODAS') {
+      list = list.filter(item => String(item.status || '').toUpperCase() === filtro);
+    }
+
+    tbody.innerHTML = '';
+
+    if (!list.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="10">
+            <div class="empty-state">
+              <i class="material-icons">filter_alt_off</i>
+              Nenhuma sala encontrada para o filtro selecionado.
+            </div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    list.forEach(item => {
+      const tr = document.createElement('tr');
+      const statusClass = item.status === 'ATIVA' ? 'status-ativa' : 'status-inativa';
+
+      tr.innerHTML = `
+        <td>${escapeHtml(item.id)}</td>
+        <td>${escapeHtml(item.sala)}</td>
+        <td>${escapeHtml(item.andar)}</td>
+        <td>${escapeHtml(item.predio)}</td>
+        <td>${escapeHtml(item.bloco)}</td>
+        <td>${escapeHtml(item.prioridade)}</td>
+        <td>${escapeHtml(item.candidatos)}</td>
+        <td><span class="status-chip ${statusClass}">${escapeHtml(item.status)}</span></td>
+        <td>${escapeHtml(item.observacao)}</td>
+        <td>
+          <button class="icon-btn icon-edit" type="button" onclick='abrirModalEditar(${JSON.stringify(item).replace(/'/g, "&apos;")})' title="Editar">
+            <i class="material-icons">edit</i>
+          </button>
+
+          <button class="icon-btn ${item.status === 'ATIVA' ? 'icon-toggle-on' : 'icon-toggle-off'}" type="button"
+            onclick="toggleSalaSafe(${item.id}, '${item.status}')"
+            title="${item.status === 'ATIVA' ? 'Inativar sala' : 'Ativar sala'}">
+            <i class="material-icons">${item.status === 'ATIVA' ? 'toggle_off' : 'toggle_on'}</i>
+          </button>
+
+          <button class="icon-btn icon-delete" type="button"
+            onclick="excluirSalaSafe(${item.id}, '${escapeHtml(item.sala)}')"
+            title="Excluir sala">
+            <i class="material-icons">delete</i>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function carregarSalas() {
+    const resp = await fetch(API + 'salas_list.php', {
+      credentials:'include',
+      cache:'no-store'
+    });
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || !json.ok) {
+      throw new Error(json.msg || 'Falha ao carregar salas.');
+    }
+
+    const data = json.data || {};
+    const list = data.list || [];
+    const totais = data.totais || {};
+
+    cacheSalas = list;
+
+    setText('totSalasAtivas', totais.ativas ?? 0);
+    setText('totSalasInativas', totais.inativas ?? 0);
+    setText('totVagas', totais.vagas_ativas ?? 0);
+    setText('badgeSalas', totais.total ?? 0);
+
+    renderizarSalas();
+    atualizarCampoPrioridadeForcado();
+  }
+  async function salvarSala(ev) {
+    ev.preventDefault();
+
+    const form = document.getElementById('formSala');
+    const fd = new FormData(form);
+
+    const prioridadeAtual = parseInt(fd.get('prioridade'), 10);
+    if (!Number.isFinite(prioridadeAtual) || prioridadeAtual < 1) {
+      fd.set('prioridade', String(sugerirProximaPrioridade()));
+    }
+
+    const resp = await fetch(API + 'salas_save.php', {
+      method:'POST',
+      credentials:'include',
+      body:fd
+    });
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || !json.ok) {
+      throw new Error(json.msg || 'Não foi possível salvar a sala.');
+    }
+
+    await Swal.fire({
+      icon:'success',
+      title:'Sala cadastrada',
+      text:'Cadastro realizado com sucesso.'
+    });
+
+    form.reset();
+    await carregarSalas();
+    preencherCampoPrioridadePadrao();
+
+    const campoSala = document.getElementById('sala');
+    if (campoSala) campoSala.focus();
+  }
+
+  function abrirModalEditar(item) {
+    setValue('edit_id', item.id || '');
+    setValue('edit_id_view', item.id || '');
+    setValue('edit_login_unidade', item.login_unidade || '');
+    setValue('edit_sala', item.sala || '');
+    setValue('edit_andar', item.andar || '');
+    setValue('edit_predio', item.predio || '');
+    setValue('edit_bloco', item.bloco || '');
+    setValue('edit_prioridade', item.prioridade || 0);
+    setValue('edit_candidatos', item.candidatos || 0);
+    setValue('edit_status', item.status || 'ATIVA');
+    setValue('edit_observacao', item.observacao || '');
+
+    modalEditar.open();
+  }
+
+  async function salvarEdicao(ev) {
+    ev.preventDefault();
+
+    const form = document.getElementById('formEditarSala');
+    const fd = new FormData(form);
+
+    const prioridadeAtual = parseInt(fd.get('prioridade'), 10);
+    if (!Number.isFinite(prioridadeAtual) || prioridadeAtual < 0) {
+      throw new Error('Prioridade inválida.');
+    }
+
+    const resp = await fetch(API + 'salas_update.php', {
+      method:'POST',
+      credentials:'include',
+      body:fd
+    });
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || !json.ok) {
+      throw new Error(json.msg || 'Não foi possível atualizar a sala.');
+    }
+
+    modalEditar.close();
+
+    await Swal.fire({
+      icon:'success',
+      title:'Sala atualizada',
+      text:'Alterações salvas com sucesso.'
+    });
+
+    await carregarSalas();
+  }
+
+  async function toggleSala(id, statusAtual) {
+    const novoStatus = statusAtual === 'ATIVA' ? 'INATIVA' : 'ATIVA';
+
+    const ok = await Swal.fire({
+      icon:'question',
+      title:`${novoStatus === 'ATIVA' ? 'Ativar' : 'Inativar'} sala?`,
+      text:`Confirma alteração do status para ${novoStatus}?`,
+      showCancelButton:true,
+      confirmButtonText:'Sim',
+      cancelButtonText:'Cancelar'
+    });
+
+    if (!ok.isConfirmed) return;
+
+    const fd = new FormData();
+    fd.append('id', id);
+    fd.append('status', novoStatus);
+
+    const resp = await fetch(API + 'salas_toggle.php', {
+      method:'POST',
+      credentials:'include',
+      body:fd
+    });
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || !json.ok) {
+      throw new Error(json.msg || 'Não foi possível alterar o status.');
+    }
+
+    await carregarSalas();
+  }
+
+   async function toggleSalaSafe(id, statusAtual) {
+    try {
+      await toggleSala(id, statusAtual);
+    } catch (e) {
+      Swal.fire({
+        icon:'error',
+        title:'Erro',
+        text:String(e.message || e)
+      });
+    }
+  }
+
+  const userBtn = document.getElementById('userBtn');
+  const userDropdown = document.getElementById('userDropdown');
+  const userMenu = document.getElementById('userMenu');
+
+  if (userBtn && userDropdown && userMenu) {
+    userBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      userDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', function(e){
+      if (!userMenu.contains(e.target)) {
+        userDropdown.classList.remove('open');
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    modalEditar = M.Modal.init(document.getElementById('modalEditar'));
+
+    try {
+      const ok = await gateSalas();
+      if (!ok) return;
+
+      await carregarSalas();
+
+      const campoPrioridade = document.getElementById('prioridade');
+      if (campoPrioridade) {
+        campoPrioridade.addEventListener('focus', preencherCampoPrioridadePadrao);
+      }
+
+      const filtroStatusSala = document.getElementById('filtroStatusSala');
+      if (filtroStatusSala) {
+        filtroStatusSala.addEventListener('change', renderizarSalas);
+      }
+
+      document.getElementById('formSala').addEventListener('submit', async (ev) => {
+        try {
+          await salvarSala(ev);
+        } catch (e) {
+          Swal.fire({ icon:'error', title:'Erro', text:String(e.message || e) });
+        }
+      });
+
+      document.getElementById('formEditarSala').addEventListener('submit', async (ev) => {
+        try {
+          await salvarEdicao(ev);
+        } catch (e) {
+          Swal.fire({ icon:'error', title:'Erro', text:String(e.message || e) });
+        }
+      });
+
+    } catch (e) {
+      console.error(e);
+      Swal.fire({ icon:'error', title:'Erro', text:String(e.message || e) });
+    }
+  });
+
+
+    async function excluirSala(id, sala) {
+    const ok = await Swal.fire({
+      icon:'warning',
+      title:'Excluir sala?',
+      html:`Confirma a exclusão da sala <b>${sala}</b>?<br>Essa ação não poderá ser desfeita.`,
+      showCancelButton:true,
+      confirmButtonText:'Excluir',
+      cancelButtonText:'Cancelar',
+      confirmButtonColor:'#dc2626'
+    });
+
+    if (!ok.isConfirmed) return;
+
+    const fd = new FormData();
+    fd.append('id', id);
+
+    const resp = await fetch(API + 'salas_delete.php', {
+      method:'POST',
+      credentials:'include',
+      body:fd
+    });
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || !json.ok) {
+      throw new Error(json.msg || 'Não foi possível excluir a sala.');
+    }
+
+    await Swal.fire({
+      icon:'success',
+      title:'Sala excluída',
+      text:'A sala foi removida com sucesso.'
+    });
+
+    await carregarSalas();
+  }
+
+  async function excluirSalaSafe(id, sala) {
+    try {
+      await excluirSala(id, sala);
+    } catch (e) {
+      Swal.fire({
+        icon:'error',
+        title:'Erro',
+        text:String(e.message || e)
+      });
+    }
+  }
+
+</script>
+
+</body>
+</html>

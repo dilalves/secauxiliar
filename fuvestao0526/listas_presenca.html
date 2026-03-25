@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Listas de Presença — Simulado Fuvestão Maio/2026</title>
+
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <style>
+    :root{
+      --primary:#0b3b78;
+      --primary-2:#133f7d;
+      --accent:#2563eb;
+      --bg:#f3f6fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#dbe3ef;
+      --soft:#f7faff;
+      --success:#16a34a;
+      --danger:#dc2626;
+      --shadow:0 12px 30px rgba(15,23,42,.08);
+      --radius:18px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    .topbar{
+      background:linear-gradient(90deg, var(--primary), var(--primary-2));
+      color:#fff;
+      box-shadow:0 2px 12px rgba(0,0,0,.15);
+      position:sticky;
+      top:0;
+      z-index:1000;
+    }
+
+    .topbar .container{
+      width:min(1180px, calc(100% - 24px));
+      margin:0 auto;
+      min-height:76px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+    }
+
+    .brand img{
+      width:38px;
+      height:38px;
+      object-fit:contain;
+      display:block;
+    }
+
+    .title-wrap{
+      min-width:0;
+      line-height:1.1;
+    }
+
+    .title{
+      font-size:16px;
+      font-weight:800;
+      color:#fff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .sub{
+      font-size:12px;
+      color:rgba(255,255,255,.82);
+      margin-top:3px;
+    }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .chip-link{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.22);
+      color:#fff;
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:600;
+      text-decoration:none;
+    }
+
+    .chip-link i{ font-size:18px; }
+
+    .user-menu{
+      position:relative;
+    }
+
+    .btn-user{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.22);
+      color:#fff;
+      border-radius:999px;
+      padding:8px 12px;
+      cursor:pointer;
+      min-width:160px;
+    }
+
+    .btn-user .mat{ font-size:22px; }
+
+    .btn-user .txt{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      line-height:1.1;
+      min-width:0;
+    }
+
+    .btn-user .txt b,
+    .btn-user .txt span{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:180px;
+    }
+
+    .btn-user .txt b{
+      font-size:14px;
+      font-weight:800;
+      color:#fff;
+    }
+
+    .btn-user .txt span{
+      font-size:12px;
+      color:rgba(255,255,255,.82);
+    }
+
+    .user-dropdown{
+      position:absolute;
+      right:0;
+      top:calc(100% + 10px);
+      background:#fff;
+      min-width:220px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      padding:8px;
+      display:none;
+      z-index:1001;
+    }
+
+    .user-dropdown.show{ display:block; }
+
+    .user-dropdown a,
+    .user-dropdown button{
+      width:100%;
+      border:0;
+      background:#fff;
+      border-radius:12px;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--text);
+      cursor:pointer;
+      text-align:left;
+      font-size:14px;
+    }
+
+    .user-dropdown a:hover,
+    .user-dropdown button:hover{
+      background:var(--soft);
+    }
+
+    .page{
+      width:min(1180px, calc(100% - 24px));
+      margin:16px auto 28px;
+    }
+
+    .hero{
+      margin-top:8px;
+      background:linear-gradient(180deg, rgba(11,59,120,.10), rgba(11,59,120,0));
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.05);
+    }
+
+    .hero-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .hero h1{
+      margin:0 0 6px;
+      font-size:22px;
+      font-weight:800;
+      color:#0f172a;
+    }
+
+    .hero p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    .badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 10px;
+      font-size:13px;
+      color:#334155;
+      box-shadow:0 2px 10px rgba(15,23,42,.04);
+    }
+
+    .badge i{ font-size:18px; color:var(--accent); }
+
+    .status-line{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .status-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(255,255,255,.8);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+      color:#475569;
+    }
+
+    .toolbar{
+      margin-top:16px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+
+    .toolbar-grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr .9fr auto;
+      gap:14px;
+      align-items:end;
+    }
+
+    .toolbar .input-field{
+      margin:0;
+    }
+
+    .toolbar input,
+    .toolbar .select-wrapper input.select-dropdown{
+      margin:0 !important;
+    }
+
+    .toolbar .btn{
+      background:linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius:14px;
+      height:54px;
+      line-height:54px;
+      box-shadow:none;
+      font-weight:700;
+      text-transform:none;
+      padding:0 18px;
+    }
+
+    .section-grid{
+      margin-top:16px;
+    }
+
+    .card-box{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+
+    .card-box h3{
+      margin:0 0 6px;
+      font-size:18px;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .card-box h3 i{
+      color:var(--primary);
+      font-size:22px;
+    }
+
+    .card-box p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    .actions-grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:12px;
+    }
+
+    .action-btn{
+      width:100%;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:16px;
+      padding:14px;
+      display:flex;
+      align-items:center;
+      gap:14px;
+      cursor:pointer;
+      transition:.18s ease;
+      text-align:left;
+    }
+
+    .action-btn:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 20px rgba(15,23,42,.06);
+      border-color:#c9d8ef;
+      background:#fbfdff;
+    }
+
+    .action-btn:disabled{
+      cursor:not-allowed;
+      opacity:.7;
+      transform:none;
+      box-shadow:none;
+    }
+
+    .action-ico{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:#eef4ff;
+      border:1px solid #d8e6ff;
+      color:var(--accent);
+      flex:0 0 auto;
+    }
+
+    .action-ico i{ font-size:22px; }
+
+    .action-meta .t{
+      font-size:16px;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+
+    .action-meta .d{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+    .helper{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:12px;
+    }
+
+    .kpi{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      padding:14px;
+      min-height:84px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+
+    .kpi .v{
+      font-size:28px;
+      font-weight:800;
+      line-height:1;
+      color:#0f172a;
+      margin-bottom:6px;
+    }
+
+    .kpi .l{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .skeleton{
+      position:relative;
+      overflow:hidden;
+      background:#e8edf6;
+      color:transparent !important;
+      border-radius:6px;
+    }
+
+    .skeleton::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      transform:translateX(-100%);
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,.65), transparent);
+      animation:skeletonMove 1.3s infinite;
+    }
+
+    .sk-line{ width:74px; height:14px; }
+    .sk-mini{ width:120px; height:12px; }
+
+    @keyframes skeletonMove{
+      100%{ transform:translateX(100%); }
+    }
+
+    .loading-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.22);
+      backdrop-filter:blur(2px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:9998;
+      padding:16px;
+    }
+
+    .loading-overlay.show{
+      display:flex;
+    }
+
+    .loading-card{
+      width:min(560px, 100%);
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:0 18px 40px rgba(0,0,0,.18);
+      padding:20px;
+    }
+
+    .loading-head{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .loading-head .spin{
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      border:4px solid #dbe7ff;
+      border-top-color: var(--accent);
+      animation:giro .9s linear infinite;
+      flex:0 0 auto;
+    }
+
+    @keyframes giro{
+      to{ transform:rotate(360deg); }
+    }
+
+    .loading-title{
+      font-size:18px;
+      font-weight:800;
+      margin:0;
+    }
+
+    .loading-text{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .progress-wrap{
+      margin-top:14px;
+      background:#eef3fb;
+      border-radius:999px;
+      overflow:hidden;
+      height:10px;
+      border:1px solid #e3eaf5;
+    }
+
+    .progress-bar{
+      height:100%;
+      width:35%;
+      background:linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius:999px;
+      animation:progressInd 1.2s ease-in-out infinite;
+      transform-origin:left center;
+    }
+
+    @keyframes progressInd{
+      0%   { margin-left:-35%; width:35%; }
+      50%  { margin-left:35%; width:45%; }
+      100% { margin-left:100%; width:35%; }
+    }
+
+    .loading-steps{
+      margin-top:14px;
+      display:grid;
+      gap:8px;
+    }
+
+    .loading-step{
+      font-size:13px;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .loading-step i{
+      font-size:18px;
+      color:var(--accent);
+    }
+
+    .disabled-area{
+      opacity:.55;
+      pointer-events:none;
+      filter:grayscale(.08);
+    }
+
+    @media (max-width: 980px){
+      .toolbar-grid{ grid-template-columns:1fr 1fr; }
+      .actions-grid{ grid-template-columns:1fr; }
+      .helper{ grid-template-columns:1fr 1fr; }
+    }
+
+    @media (max-width: 680px){
+      .topbar .container,
+      .page{
+        width:calc(100% - 16px);
+      }
+
+      .topbar .container{
+        min-height:72px;
+      }
+
+      .title{ font-size:15px; }
+      .toolbar-grid{ grid-template-columns:1fr; }
+      .helper{ grid-template-columns:1fr; }
+      .hero h1{ font-size:20px; }
+
+      .btn-user{
+        min-width:auto;
+        padding:8px 10px;
+      }
+
+      .btn-user .txt b,
+      .btn-user .txt span{
+        max-width:110px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <img src="https://secauxiliar.com.br/optativos/logo-mini.png" alt="Logo">
+        <div class="title-wrap">
+          <div class="title">Simulado Aberto Fuvestão — Maio/2026</div>
+          <div class="sub">Inscrição avulsa</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="chip-link" href="./painel.html">
+          <i class="material-icons">dashboard</i>
+          <span>Painel</span>
+        </a>
+
+        <div class="user-menu" id="userMenu">
+          <button class="btn-user" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
+            <i class="material-icons mat">account_circle</i>
+            <div class="txt">
+              <b id="uLogin" class="skeleton sk-line"></b>
+              <span id="uNome" class="skeleton sk-mini"></span>
+            </div>
+            <i class="material-icons" style="font-size:18px;">arrow_drop_down</i>
+          </button>
+
+          <div class="user-dropdown" id="userDropdown">
+            <button type="button" id="btnLogout">
+              <i class="material-icons">logout</i>
+              <span>Sair</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>Listas de presença e apoio à aplicação</h1>
+          <p>Gere as listas gerais, listas por sala e listas de chamada da unidade.</p>
+        </div>
+
+        <div class="badges">
+          <div class="badge"><i class="material-icons">event</i> <span id="badgeEvento">FUVESTAO0526</span></div>
+          <div class="badge"><i class="material-icons">meeting_room</i> <span id="badgeSalas">Carregando salas...</span></div>
+          <div class="badge"><i class="material-icons">groups</i> <span id="badgeAlunos">Carregando alunos...</span></div>
+        </div>
+      </div>
+
+      <div class="status-line">
+        <span class="status-pill" id="statusUnidade">Unidade: carregando...</span>
+        <span class="status-pill" id="statusDia">Dia selecionado: 1º dia</span>
+        <span class="status-pill" id="statusSala">Sala: todas</span>
+      </div>
+    </section>
+
+    <section class="toolbar">
+      <div class="toolbar-grid">
+        <div class="input-field">
+          <input id="evento" type="text" value="FUVESTAO0526">
+          <label for="evento" class="active">Evento</label>
+        </div>
+
+        <div class="input-field">
+          <select id="dia">
+            <option value="1" selected>1º dia</option>
+            <option value="2">2º dia</option>
+          </select>
+          <label>Dia da prova</label>
+        </div>
+
+        <div class="input-field">
+          <select id="sala">
+            <option value="">Todas as salas</option>
+          </select>
+          <label>Sala</label>
+        </div>
+
+        <button class="btn waves-effect waves-light" id="btnAtualizar" type="button">
+          <i class="material-icons left">refresh</i>Atualizar
+        </button>
+      </div>
+    </section>
+
+    <section class="section-grid">
+      <div class="card-box">
+        <h3><i class="material-icons">print</i> Impressões disponíveis</h3>
+        <p>Selecione uma das opções abaixo para gerar o relatório desejado.</p>
+
+        <div class="actions-grid">
+          <button class="action-btn" id="btnListaGeral" type="button">
+            <div class="action-ico"><i class="material-icons">format_list_bulleted</i></div>
+            <div class="action-meta">
+              <div class="t">Lista geral</div>
+              <div class="d">Todos os alunos da unidade, em ordem alfabética, com inscrição, nome, CPF mascarado e sala.</div>
+            </div>
+          </button>
+
+          <button class="action-btn" id="btnListaPorta" type="button">
+            <div class="action-ico"><i class="material-icons">meeting_room</i></div>
+            <div class="action-meta">
+              <div class="t">Lista da porta</div>
+              <div class="d">Gera todas as salas da unidade, organizadas por sala e prontas para impressão.</div>
+            </div>
+          </button>
+
+          <button class="action-btn" id="btnListaChamada" type="button">
+            <div class="action-ico"><i class="material-icons">fact_check</i></div>
+            <div class="action-meta">
+              <div class="t">Lista de chamada</div>
+              <div class="d">PDF oficial de presença, com dia da prova, data, sala, local e nomes dos candidatos.</div>
+            </div>
+          </button>
+        </div>
+
+        <div class="helper">
+          <div class="kpi">
+            <div class="v" id="kpiSalas">--</div>
+            <div class="l">Salas encontradas</div>
+          </div>
+          <div class="kpi">
+            <div class="v" id="kpiAlunos">--</div>
+            <div class="l">Alunos no evento</div>
+          </div>
+          <div class="kpi">
+            <div class="v" id="kpiComSala">--</div>
+            <div class="l">Com sala</div>
+          </div>
+          <div class="kpi">
+            <div class="v" id="kpiSemSala">--</div>
+            <div class="l">Sem sala</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+    <div class="loading-card">
+      <div class="loading-head">
+        <div class="spin" aria-hidden="true"></div>
+        <div>
+          <p class="loading-title" id="loadingTitle">Preparando listas da unidade</p>
+          <p class="loading-text" id="loadingText">Consultando ensalamento, salas e totais da unidade. Aguarde um instante.</p>
+        </div>
+      </div>
+
+      <div class="progress-wrap" aria-hidden="true">
+        <div class="progress-bar"></div>
+      </div>
+
+      <div class="loading-steps">
+        <div class="loading-step"><i class="material-icons">dns</i><span>Consultando dados do ensalamento</span></div>
+        <div class="loading-step"><i class="material-icons">meeting_room</i><span>Carregando salas cadastradas</span></div>
+        <div class="loading-step"><i class="material-icons">groups</i><span>Atualizando indicadores da tela</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const EVENTO_PADRAO = 'FUVESTAO0526';
+
+    const API_BASE = 'https://apisec.secauxiliar.com.br/fuvestao0526';
+    const API_DADOS = `${API_BASE}/gerar_lista_presenca.php`;
+    const URL_LISTA_CHAMADA = `${API_BASE}/gerar_pdf_presenca.php`;
+    const URL_LISTA_GERAL = `${API_BASE}/gerar_lista_geral.php`;
+    const URL_LISTA_PORTA = `${API_BASE}/gerar_lista_porta.php`;
+    const URL_ME = `${API_BASE}/auth_me_unidade.php`;
+    const URL_LOGOUT = `${API_BASE}/logout.php`;
+
+    const els = {
+      evento: document.getElementById('evento'),
+      dia: document.getElementById('dia'),
+      sala: document.getElementById('sala'),
+      btnAtualizar: document.getElementById('btnAtualizar'),
+      btnListaGeral: document.getElementById('btnListaGeral'),
+      btnListaPorta: document.getElementById('btnListaPorta'),
+      btnListaChamada: document.getElementById('btnListaChamada'),
+
+      badgeEvento: document.getElementById('badgeEvento'),
+      badgeSalas: document.getElementById('badgeSalas'),
+      badgeAlunos: document.getElementById('badgeAlunos'),
+
+      statusUnidade: document.getElementById('statusUnidade'),
+      statusDia: document.getElementById('statusDia'),
+      statusSala: document.getElementById('statusSala'),
+
+      kpiSalas: document.getElementById('kpiSalas'),
+      kpiAlunos: document.getElementById('kpiAlunos'),
+      kpiComSala: document.getElementById('kpiComSala'),
+      kpiSemSala: document.getElementById('kpiSemSala'),
+
+      uLogin: document.getElementById('uLogin'),
+      uNome: document.getElementById('uNome'),
+      userBtn: document.getElementById('userBtn'),
+      userDropdown: document.getElementById('userDropdown'),
+      userMenu: document.getElementById('userMenu'),
+      btnLogout: document.getElementById('btnLogout'),
+
+      loadingOverlay: document.getElementById('loadingOverlay'),
+      loadingTitle: document.getElementById('loadingTitle'),
+      loadingText: document.getElementById('loadingText')
+    };
+
+    let dadosCache = null;
+    let carregando = false;
+
+    function toast(msg, classes = '') {
+      if (window.M && M.toast) M.toast({ html: msg, classes });
+    }
+
+    function getEvento() {
+      return (els.evento.value || EVENTO_PADRAO).trim();
+    }
+
+    function getDia() {
+      return els.dia.value === '2' ? '2' : '1';
+    }
+
+    function getSalaId() {
+      return (els.sala.value || '').trim();
+    }
+
+    function updateStatus() {
+      const salaTxt = els.sala.options[els.sala.selectedIndex]?.text || 'Todas as salas';
+      els.badgeEvento.textContent = getEvento();
+      els.statusDia.textContent = `Dia selecionado: ${getDia() === '2' ? '2º dia' : '1º dia'}`;
+      els.statusSala.textContent = `Sala: ${getSalaId() ? salaTxt : 'todas'}`;
+    }
+
+    function fillUser(data) {
+      const login = data?.login || '---';
+      const nome = data?.unidade || data?.nome || 'Unidade';
+      els.uLogin.classList.remove('skeleton', 'sk-line');
+      els.uNome.classList.remove('skeleton', 'sk-mini');
+      els.uLogin.textContent = login;
+      els.uNome.textContent = nome;
+      els.statusUnidade.textContent = `Unidade: ${nome}`;
+    }
+
+    function setReportsEnabled(enabled) {
+      const botoes = [
+        els.btnAtualizar,
+        els.btnListaGeral,
+        els.btnListaPorta,
+        els.btnListaChamada,
+        els.evento,
+        els.dia,
+        els.sala
+      ];
+
+      botoes.forEach(el => {
+        if (!el) return;
+        el.disabled = !enabled;
+
+        if (!enabled) {
+          el.classList.add('disabled-area');
+        } else {
+          el.classList.remove('disabled-area');
+        }
+      });
+    }
+
+    function showLoading(title = 'Preparando listas da unidade', text = 'Consultando ensalamento, salas e totais da unidade. Aguarde um instante.') {
+      carregando = true;
+      els.loadingTitle.textContent = title;
+      els.loadingText.textContent = text;
+      els.loadingOverlay.classList.add('show');
+      els.loadingOverlay.setAttribute('aria-hidden', 'false');
+      setReportsEnabled(false);
+      els.badgeSalas.textContent = 'Carregando salas...';
+      els.badgeAlunos.textContent = 'Carregando alunos...';
+    }
+
+    function hideLoading() {
+      carregando = false;
+      els.loadingOverlay.classList.remove('show');
+      els.loadingOverlay.setAttribute('aria-hidden', 'true');
+      setReportsEnabled(true);
+    }
+
+    async function carregarUsuario() {
+      try {
+        const r = await fetch(URL_ME, { credentials: 'include' });
+        if (!r.ok) throw new Error('Falha ao carregar usuário');
+        const j = await r.json();
+        fillUser(j || {});
+      } catch {
+        els.uLogin.classList.remove('skeleton', 'sk-line');
+        els.uNome.classList.remove('skeleton', 'sk-mini');
+        els.uLogin.textContent = 'Unidade';
+        els.uNome.textContent = 'Sessão ativa';
+        els.statusUnidade.textContent = 'Unidade: sessão ativa';
+      }
+    }
+
+    function preencherSalas(salas) {
+      const valorAtual = getSalaId();
+      els.sala.innerHTML = '<option value="">Todas as salas</option>';
+
+      (salas || []).forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.sala_id;
+        opt.textContent = s.sala || `Sala ${s.sala_id}`;
+        els.sala.appendChild(opt);
+      });
+
+      if ([...els.sala.options].some(o => o.value === valorAtual)) {
+        els.sala.value = valorAtual;
+      } else {
+        els.sala.value = '';
+      }
+
+      M.FormSelect.init(els.sala);
+    }
+
+    function atualizarKpis(dados) {
+      const totais = dados?.totais || {};
+      els.kpiSalas.textContent = totais.salas ?? '--';
+      els.kpiAlunos.textContent = totais.geral ?? '--';
+      els.kpiComSala.textContent = totais.com_sala ?? '--';
+      els.kpiSemSala.textContent = totais.sem_sala ?? '--';
+
+      els.badgeSalas.textContent = `${totais.salas ?? 0} sala(s)`;
+      els.badgeAlunos.textContent = `${totais.geral ?? 0} aluno(s)`;
+    }
+
+    async function carregarDados() {
+      updateStatus();
+      showLoading(
+        'Preparando listas da unidade',
+        'Consultando ensalamento, salas cadastradas e totais para liberar os relatórios.'
+      );
+
+      const url = new URL(API_DADOS, location.href);
+      url.searchParams.set('evento', getEvento());
+
+      try {
+        const r = await fetch(url.toString(), { credentials: 'include' });
+        const j = await r.json();
+
+        if (!r.ok || !j.ok) {
+          throw new Error(j.msg || 'Não foi possível carregar as listas.');
+        }
+
+        dadosCache = j;
+        preencherSalas(j.salas || []);
+        atualizarKpis(j);
+
+        const unidadeNome = j?.unidade?.unidade || j?.unidade?.login || 'Unidade';
+        els.statusUnidade.textContent = `Unidade: ${unidadeNome}`;
+
+        updateStatus();
+      } catch (err) {
+        console.error(err);
+        toast(err.message || 'Erro ao carregar dados.', 'red');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function abrir(url) {
+      window.open(url, '_blank');
+    }
+
+    function gerarListaChamada() {
+      if (carregando) return;
+
+      const url = new URL(URL_LISTA_CHAMADA, location.href);
+      url.searchParams.set('evento', getEvento());
+      url.searchParams.set('dia', getDia());
+
+      if (getSalaId()) {
+        url.searchParams.set('sala_id', getSalaId());
+      }
+
+      abrir(url.toString());
+    }
+
+    function gerarListaGeral() {
+      if (carregando) return;
+
+      const url = new URL(URL_LISTA_GERAL, location.href);
+      url.searchParams.set('evento', getEvento());
+      url.searchParams.set('dia', getDia());
+      abrir(url.toString());
+    }
+
+    function gerarListaPorta() {
+      if (carregando) return;
+
+      const url = new URL(URL_LISTA_PORTA, location.href);
+      url.searchParams.set('evento', getEvento());
+
+      if (getDia()) {
+        url.searchParams.set('dia', getDia());
+      }
+
+      abrir(url.toString());
+    }
+
+    function initUserMenu() {
+      document.addEventListener('click', (e) => {
+        const dentro = els.userMenu.contains(e.target);
+        if (!dentro) {
+          els.userDropdown.classList.remove('show');
+          els.userBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      els.userBtn.addEventListener('click', () => {
+        const abrir = !els.userDropdown.classList.contains('show');
+        els.userDropdown.classList.toggle('show', abrir);
+        els.userBtn.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+      });
+
+      els.btnLogout.addEventListener('click', async () => {
+        try {
+          await fetch(URL_LOGOUT, { credentials: 'include' });
+        } catch {}
+        location.href = './index.html';
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      M.FormSelect.init(document.querySelectorAll('select'));
+
+      els.evento.value = EVENTO_PADRAO;
+      M.updateTextFields();
+
+      initUserMenu();
+
+      setReportsEnabled(false);
+      showLoading(
+        'Carregando ambiente da unidade',
+        'Aguarde enquanto validamos a sessão e consultamos os dados para os relatórios.'
+      );
+
+      await carregarUsuario();
+      await carregarDados();
+
+      els.btnAtualizar.addEventListener('click', carregarDados);
+      els.dia.addEventListener('change', updateStatus);
+      els.sala.addEventListener('change', updateStatus);
+
+      els.btnListaChamada.addEventListener('click', gerarListaChamada);
+      els.btnListaGeral.addEventListener('click', gerarListaGeral);
+      els.btnListaPorta.addEventListener('click', gerarListaPorta);
+    });
+  </script>
+</body>
+</html>
