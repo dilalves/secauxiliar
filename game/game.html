@@ -119,7 +119,7 @@
       <div class="badge">FASE: <span id="level">1</span></div>
     </div>
 
-    <canvas id="game" width="600" height="800"></canvas>
+    <canvas id="game" width="600" height="800" tabindex="0"></canvas>
 
     <div class="hint">
       Setas / WASD para mover • <b>Espaço</b> gira a portinha onde você estiver encostando •
@@ -145,6 +145,12 @@
   const scoreEl = document.getElementById('score');
   const livesEl = document.getElementById('lives');
   const levelEl = document.getElementById('level');
+
+  canvas.focus();
+
+    canvas.addEventListener('click', () => {
+    canvas.focus();
+    });
 
   const imgFilhote = new Image();
   imgFilhote.src = 'filhote.png';
@@ -233,8 +239,8 @@
   const player = {
     x: playerStart.x * tile + tile/2,
     y: playerStart.y * tile + tile/2,
-    dir: 'left',
-    nextDir: 'left',
+    dir: 'right',
+    nextDir: 'right',
     speed: 2.2,
     radius: 15,
     powerTimer: 0,
@@ -374,21 +380,23 @@
     }
   }
 
-  function updatePlayer() {
-    if (centeredOnTile(player) && canMove(player, player.nextDir)) {
-      player.dir = player.nextDir;
-    }
-    if (!canMove(player, player.dir)) return;
-
-    const {dx,dy} = moveDelta(player.dir, player.speed);
-    player.x += dx;
-    player.y += dy;
-
-    if (player.powerTimer > 0) player.powerTimer--;
-    if (winPulse > 0) winPulse--;
-    player.blink++;
-    eatThings();
+function updatePlayer() {
+  if (centeredOnTile(player) && canMove(player, player.nextDir)) {
+    player.dir = player.nextDir;
   }
+
+  if (!player.dir) return;
+  if (!canMove(player, player.dir)) return;
+
+  const {dx,dy} = moveDelta(player.dir, player.speed);
+  player.x += dx;
+  player.y += dy;
+
+  if (player.powerTimer > 0) player.powerTimer--;
+  if (winPulse > 0) winPulse--;
+  player.blink++;
+  eatThings();
+}
 
   function validDirs(entity){
     return ['left','right','up','down'].filter(d => canMove(entity,d));
@@ -574,13 +582,13 @@
 function drawPlayer() {
   const px = player.x;
   const py = worldY(player.y);
-
   const size = 40;
 
   ctx.save();
   ctx.translate(px, py);
 
   if (imgFilhote.complete && imgFilhote.naturalWidth > 0) {
+    ctx.rotate(Math.PI); // gira 180 graus
     ctx.drawImage(imgFilhote, -size/2, -size/2, size, size);
   } else {
     ctx.fillStyle = COLORS.yellow;
