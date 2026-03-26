@@ -261,6 +261,7 @@
 
       <button id="btnBuscar">Buscar</button>
       <button id="btnLimpar" class="btn-sec">Limpar filtro</button>
+      <button id="btnGerarLink" class="btn-sec">Gerar link da gráfica</button>
     </div>
 
     <div class="resumo">
@@ -522,6 +523,43 @@
 
   return `<span class="vaga-wrap">${html}</span>`;
 }
+
+document.getElementById('btnGerarLink').addEventListener('click', async () => {
+  try {
+    if (!evento.value) {
+      alert('Selecione um evento antes de gerar o link.');
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('evento', evento.value);
+
+    const r = await fetch(API + 'api_public_link_create.php', {
+      method: 'POST',
+      body: fd,
+      credentials: 'include'
+    });
+
+    const data = await r.json();
+
+    if (!r.ok || !data.ok) {
+      throw new Error(data.error || 'Falha ao gerar link');
+    }
+
+    const texto = `Link gerado com sucesso.\n\nEvento: ${data.evento}\nExpira em: ${data.expires_at}\n\n${data.url}`;
+
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(data.url);
+      alert(texto + '\n\nO link já foi copiado.');
+    } else {
+      prompt('Copie o link abaixo:', data.url);
+    }
+  } catch(e) {
+    console.error(e);
+    alert(e.message || 'Erro ao gerar link.');
+  }
+});
+
   </script>
 </body>
 </html>
