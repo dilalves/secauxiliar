@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     :root{
       --bg:#f8fbff;
@@ -553,35 +554,41 @@ document.getElementById('btnGerarLink').addEventListener('click', async () => {
       await navigator.clipboard.writeText(data.url);
 
       // Mensagem amigável para o usuário, informando que o link foi copiado
-      Swal.fire({
-        title: titulo,
-        html: `
-          <div style="text-align:left">
-            <b>Evento:</b> ${data.evento}<br>
-            <b>Expira em:</b> ${data.expires_at}<br><br>
-            <div style="
-              background:#f4f8fe;
-              border:1px solid #dce7f6;
-              padding:10px;
-              border-radius:8px;
-              word-break:break-all;
-              font-size:13px;
-            ">
-              ${data.url}
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: titulo,
+          html: `
+            <div style="text-align:left">
+              <b>Evento:</b> ${data.evento}<br>
+              <b>Expira em:</b> ${data.expires_at}<br><br>
+              <div style="
+                background:#f4f8fe;
+                border:1px solid #dce7f6;
+                padding:10px;
+                border-radius:8px;
+                word-break:break-all;
+                font-size:13px;
+              ">
+                ${data.url}
+              </div>
+              <br>
+              ${data.reused ? 'O link já existia e foi reaproveitado.' : 'Foi gerado um novo link.'}
             </div>
-            <br>
-            ${data.reused ? 'O link já existia e foi reaproveitado.' : 'Foi gerado um novo link.'}
-          </div>
-        `,
-        icon: 'success',
-        confirmButtonText: 'OK',
-        showCancelButton: true,
-        cancelButtonText: 'Abrir link'
-      }).then((result) => {
-        if (result.dismiss === Swal.DismissReason.cancel) {
-          window.open(data.url, '_blank');
-        }
-      });
+          `,
+          icon: 'success',
+          confirmButtonText: 'OK',
+          showCancelButton: true,
+          cancelButtonText: 'Abrir link'
+        }).then((result) => {
+          if (result.dismiss === Swal.DismissReason.cancel) {
+            window.open(data.url, '_blank');
+          }
+        });
+      } else {
+        alert(
+          `${titulo}\n\nEvento: ${data.evento}\nExpira em: ${data.expires_at}\n\n${data.url}`
+        );
+}
     } else {
       prompt('Copie o link abaixo:', data.url);
     }
