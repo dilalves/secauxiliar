@@ -547,18 +547,18 @@ document.getElementById('btnGerarLink').addEventListener('click', async () => {
     }
 
     const texto = `Link gerado com sucesso.\n\nEvento: ${data.evento}\nExpira em: ${data.expires_at}\n\n${data.url}`;
+    const titulo = data.reused ? 'Link já existente' : 'Novo link gerado';
 
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(data.url);
 
       // Mensagem amigável para o usuário, informando que o link foi copiado
       Swal.fire({
-        title: 'Link gerado com sucesso',
+        title: titulo,
         html: `
           <div style="text-align:left">
             <b>Evento:</b> ${data.evento}<br>
             <b>Expira em:</b> ${data.expires_at}<br><br>
-            
             <div style="
               background:#f4f8fe;
               border:1px solid #dce7f6;
@@ -569,12 +569,14 @@ document.getElementById('btnGerarLink').addEventListener('click', async () => {
             ">
               ${data.url}
             </div>
+            <br>
+            ${data.reused ? 'O link já existia e foi reaproveitado.' : 'Foi gerado um novo link.'}
           </div>
         `,
         icon: 'success',
         confirmButtonText: 'OK',
         showCancelButton: true,
-        cancelButtonText: 'Abrir link',
+        cancelButtonText: 'Abrir link'
       }).then((result) => {
         if (result.dismiss === Swal.DismissReason.cancel) {
           window.open(data.url, '_blank');
