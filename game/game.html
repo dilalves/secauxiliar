@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Mini Lady Bug Clone</title>
+  <title>Lady Bug do Filhote</title>
   <style>
     :root{
-      --bg:#05070c;
-      --panel:#111625;
-      --pink:#e89cff;
-      --green:#54ff71;
-      --blue:#8cb8ff;
-      --yellow:#ffe04d;
-      --orange:#ff8e2c;
-      --white:#f2f5fb;
-      --red:#ff5d73;
-      --cyan:#69e7ff;
-      --purple:#b487ff;
+      --pink:#e8a0ff;
+      --green:#53ff6f;
+      --blue:#95b8ff;
+      --yellow:#ffe34d;
+      --orange:#ff912c;
+      --white:#f3f6fb;
+      --red:#ff5f79;
+      --cyan:#6fe7ff;
+      --purple:#b48cff;
+      --bg1:#12192b;
+      --bg2:#05070c;
     }
 
     *{box-sizing:border-box}
@@ -38,7 +38,7 @@
       justify-content:center;
       gap:10px;
       padding:10px;
-      background:radial-gradient(circle at top,#12192b 0%,#06080e 45%,#000 100%);
+      background:radial-gradient(circle at top,var(--bg1) 0%,var(--bg2) 45%,#000 100%);
     }
 
     .topbar{
@@ -63,7 +63,7 @@
       height:auto;
       aspect-ratio:3/4;
       background:#000;
-      border:6px solid var(--pink);
+      border:4px solid var(--pink);
       border-radius:8px;
       display:block;
       image-rendering:pixelated;
@@ -103,10 +103,8 @@
     }
 
     .btn:active{transform:scale(.98)}
-
     .up{grid-column:2;grid-row:1}
     .left{grid-column:1;grid-row:2}
-    .rotate{grid-column:2;grid-row:2;font-size:14px}
     .right{grid-column:3;grid-row:2}
     .down{grid-column:2;grid-row:3}
 
@@ -133,20 +131,19 @@
   <canvas id="game" width="600" height="800" tabindex="0"></canvas>
 
   <div class="hint">
-    Setas ou WASD para mover • Espaço para girar portinha • toque no jogo para ativar som
+    Setas ou WASD para mover • as portinhas giram automaticamente • toque na tela para começar
   </div>
 
   <div class="controls">
     <button class="btn up" data-dir="up">▲</button>
     <button class="btn left" data-dir="left">◀</button>
-    <button class="btn rotate" id="rotateBtn">GIRAR</button>
     <button class="btn right" data-dir="right">▶</button>
     <button class="btn down" data-dir="down">▼</button>
   </div>
 
   <div class="footer">
-    Coloque o arquivo <b>filhote.png</b> na mesma pasta do HTML.  
-    Edite a variável <b>CHILD_NAME</b> no código.
+    Deixe o arquivo <b>filhote.png</b> na mesma pasta do HTML.  
+    Troque o nome na variável <b>CHILD_NAME</b> dentro do código.
   </div>
 </div>
 
@@ -159,7 +156,6 @@
   const scoreEl = document.getElementById('score');
   const livesEl = document.getElementById('lives');
   const levelEl = document.getElementById('level');
-  const rotateBtn = document.getElementById('rotateBtn');
 
   const W = canvas.width;
   const H = canvas.height;
@@ -171,15 +167,15 @@
   const boardY = 120;
 
   const COLORS = {
-    pink:'#e89cff',
-    green:'#54ff71',
-    blue:'#8cb8ff',
-    white:'#f2f5fb',
-    yellow:'#ffe04d',
-    orange:'#ff8e2c',
-    red:'#ff5d73',
-    cyan:'#69e7ff',
-    purple:'#b487ff'
+    pink:'#e8a0ff',
+    green:'#53ff6f',
+    blue:'#95b8ff',
+    white:'#f3f6fb',
+    yellow:'#ffe34d',
+    orange:'#ff912c',
+    red:'#ff5f79',
+    cyan:'#6fe7ff',
+    purple:'#b48cff'
   };
 
   const imgFilhote = new Image();
@@ -196,7 +192,7 @@
     }
   }
 
-  function beep(freq, duration = 0.10, volume = 0.02, type = 'square') {
+  function beep(freq, duration = 0.08, volume = 0.02, type = 'square') {
     if (!audioCtx) return;
     const now = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
@@ -214,26 +210,16 @@
     osc.stop(now + duration);
   }
 
-  function sfxEat() {
-    beep(950, 0.04, 0.015, 'square');
+  function sfxEat(){ beep(1050, 0.03, 0.014, 'square'); }
+  function sfxPower(){
+    beep(720, 0.07, 0.02, 'square');
+    setTimeout(() => beep(980, 0.08, 0.02, 'square'), 50);
   }
-
-  function sfxPower() {
-    beep(700, 0.08, 0.02, 'square');
-    setTimeout(() => beep(1000, 0.10, 0.02, 'square'), 60);
-  }
-
-  function sfxRotate() {
-    beep(450, 0.05, 0.02, 'triangle');
-  }
-
-  function sfxHit() {
-    beep(220, 0.18, 0.03, 'sawtooth');
-  }
-
-  function sfxEnemyEaten() {
-    beep(850, 0.08, 0.025, 'square');
-    setTimeout(() => beep(1100, 0.08, 0.02, 'square'), 60);
+  function sfxRotate(){ beep(420, 0.04, 0.018, 'triangle'); }
+  function sfxHit(){ beep(210, 0.18, 0.03, 'sawtooth'); }
+  function sfxEnemyEaten(){
+    beep(900, 0.06, 0.02, 'square');
+    setTimeout(() => beep(1200, 0.06, 0.02, 'square'), 45);
   }
 
   function startMusic(){
@@ -242,18 +228,21 @@
     musicStarted = true;
 
     const melody = [
-      523, 659, 784, 659,
-      523, 659, 880, 784,
-      659, 523, 659, 784,
-      659, 523, 440, 494
+      523,659,784,659,
+      587,698,880,784,
+      523,659,784,659,
+      494,587,698,587
     ];
 
     musicTimer = setInterval(() => {
-      if (!audioCtx) return;
       const note = melody[musicStep % melody.length];
-      beep(note, 0.12, 0.018, 'square');
+      const type = (musicStep % 4 === 0) ? 'square' : 'triangle';
+      beep(note, 0.11, 0.016, type);
+      if (musicStep % 8 === 4) {
+        setTimeout(() => beep(note / 2, 0.06, 0.01, 'square'), 40);
+      }
       musicStep++;
-    }, 220);
+    }, 190);
   }
 
   const rawMap = [
@@ -297,10 +286,7 @@
         if(c === 'E') enemyStarts.push({x,y});
         if(c === 'G'){
           pellets.add(key(x,y));
-          gates.push({
-            x,y,
-            orientation: Math.random() > 0.5 ? 'h' : 'v'
-          });
+          gates.push({ x, y, orientation: Math.random() > 0.5 ? 'h' : 'v' });
         }
       }
     }
@@ -313,7 +299,6 @@
   let level = 1;
   let gameOver = false;
   let gameStarted = false;
-
   let powerTimer = 0;
 
   const player = {
@@ -327,7 +312,7 @@
     nextDir: null,
     moving: false,
     progress: 0,
-    speed: 0.14
+    speed: 0.17
   };
 
   const enemies = enemyStarts.map((p, i) => ({
@@ -340,7 +325,7 @@
     dir: ['left','right','up','down'][i % 4],
     moving: false,
     progress: 0,
-    speed: 0.055,
+    speed: 0.035,
     color: [COLORS.red, COLORS.cyan, COLORS.orange, COLORS.purple][i % 4],
     scared: 0,
     homeX: p.x,
@@ -386,8 +371,12 @@
     return walls.has(key(x,y));
   }
 
+  function gateAt(x,y){
+    return gates.find(g => g.x === x && g.y === y);
+  }
+
   function gateBlocks(x, y, dir){
-    const gate = gates.find(g => g.x === x && g.y === y);
+    const gate = gateAt(x,y);
     if(!gate) return false;
     if(gate.orientation === 'h' && (dir === 'up' || dir === 'down')) return true;
     if(gate.orientation === 'v' && (dir === 'left' || dir === 'right')) return true;
@@ -404,16 +393,18 @@
     return true;
   }
 
-  function rotateNearbyGate(){
-    let changed = false;
-    gates.forEach(g => {
-      const dist = Math.abs(g.x - player.x) + Math.abs(g.y - player.y);
-      if(dist <= 1){
-        g.orientation = g.orientation === 'h' ? 'v' : 'h';
-        changed = true;
-      }
-    });
-    if (changed) sfxRotate();
+  function autoRotateGateForDirection(x, y, dir){
+    const gate = gateAt(x, y);
+    if(!gate) return false;
+
+    const wanted = (dir === 'left' || dir === 'right') ? 'v' : 'h';
+
+    if(gate.orientation !== wanted){
+      gate.orientation = wanted;
+      sfxRotate();
+      return true;
+    }
+    return false;
   }
 
   function eatThings(){
@@ -468,13 +459,18 @@
       return;
     }
 
-    if(player.nextDir && canMove(player.x, player.y, player.nextDir)){
-      startStep(player, player.nextDir);
-      return;
-    }
+    const tryDir = player.nextDir || player.dir;
+    if(!tryDir) return;
 
-    if(player.dir && canMove(player.x, player.y, player.dir)){
-      startStep(player, player.dir);
+    const {dx,dy} = delta(tryDir);
+    const nx = player.x + dx;
+    const ny = player.y + dy;
+
+    autoRotateGateForDirection(nx, ny, tryDir);
+
+    if(canMove(player.x, player.y, tryDir)){
+      startStep(player, tryDir);
+      player.dir = tryDir;
     }
   }
 
@@ -483,7 +479,7 @@
     if(dirs.length === 0) return null;
 
     if(dirs.length > 1){
-      dirs = dirs.filter(d => d !== opposite(e.dir)) || dirs;
+      dirs = dirs.filter(d => d !== opposite(e.dir));
       if(dirs.length === 0) dirs = enemyValidDirs(e);
     }
 
@@ -502,7 +498,7 @@
       return e.scared > 0 ? distB - distA : distA - distB;
     });
 
-    if (Math.random() < 0.22) {
+    if (Math.random() < 0.25) {
       return dirs[Math.floor(Math.random() * dirs.length)];
     }
     return dirs[0];
@@ -614,26 +610,27 @@
   function drawBorder(){
     for(let x=0;x<W;x+=20){
       ctx.fillStyle = COLORS.white;
-      ctx.fillRect(x, 42, 16, 16);
-      ctx.fillRect(x, H - 34, 16, 16);
+      ctx.fillRect(x, 42, 14, 14);
+      ctx.fillRect(x, H - 32, 14, 14);
     }
-    for(let y=42;y<H-20;y+=20){
-      ctx.fillRect(0, y, 16, 16);
-      ctx.fillRect(W - 16, y, 16, 16);
+    for(let y=42;y<H-18;y+=20){
+      ctx.fillRect(0, y, 14, 14);
+      ctx.fillRect(W - 14, y, 14, 14);
     }
     ctx.strokeStyle = COLORS.pink;
-    ctx.lineWidth = 6;
-    ctx.strokeRect(24, 60, W - 48, H - 118);
+    ctx.lineWidth = 4;
+    ctx.strokeRect(24, 60, W - 48, H - 116);
   }
 
   function drawWalls(){
     ctx.strokeStyle = COLORS.pink;
-    ctx.lineWidth = 6;
-    ctx.lineCap = 'square';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'butt';
 
     for(let y=0;y<rows;y++){
       for(let x=0;x<cols;x++){
         if(!walls.has(key(x,y))) continue;
+
         const px = boardX + x * tile;
         const py = boardY + y * tile;
 
@@ -644,26 +641,26 @@
 
         if(upOpen){
           ctx.beginPath();
-          ctx.moveTo(px+8, py+8);
-          ctx.lineTo(px+tile-8, py+8);
+          ctx.moveTo(px+10, py+10);
+          ctx.lineTo(px+tile-10, py+10);
           ctx.stroke();
         }
         if(downOpen){
           ctx.beginPath();
-          ctx.moveTo(px+8, py+tile-8);
-          ctx.lineTo(px+tile-8, py+tile-8);
+          ctx.moveTo(px+10, py+tile-10);
+          ctx.lineTo(px+tile-10, py+tile-10);
           ctx.stroke();
         }
         if(leftOpen){
           ctx.beginPath();
-          ctx.moveTo(px+8, py+8);
-          ctx.lineTo(px+8, py+tile-8);
+          ctx.moveTo(px+10, py+10);
+          ctx.lineTo(px+10, py+tile-10);
           ctx.stroke();
         }
         if(rightOpen){
           ctx.beginPath();
-          ctx.moveTo(px+tile-8, py+8);
-          ctx.lineTo(px+tile-8, py+tile-8);
+          ctx.moveTo(px+tile-10, py+10);
+          ctx.lineTo(px+tile-10, py+tile-10);
           ctx.stroke();
         }
       }
@@ -675,7 +672,7 @@
       const [x,y] = k.split(',').map(Number);
       const p = cellCenterFromCoords(x,y);
       ctx.fillStyle = COLORS.white;
-      ctx.fillRect(p.px - 4, p.py - 4, 8, 8);
+      ctx.fillRect(p.px - 3, p.py - 3, 6, 6);
     });
 
     powerUps.forEach(k => {
@@ -683,7 +680,7 @@
       const p = cellCenterFromCoords(x,y);
       ctx.fillStyle = powerTimer % 30 < 15 ? COLORS.yellow : COLORS.green;
       ctx.beginPath();
-      ctx.arc(p.px, p.py, 8, 0, Math.PI * 2);
+      ctx.arc(p.px, p.py, 7, 0, Math.PI * 2);
       ctx.fill();
     });
   }
@@ -691,23 +688,24 @@
   function drawGates(){
     gates.forEach(g => {
       const p = cellCenterFromCoords(g.x,g.y);
+
       ctx.strokeStyle = COLORS.green;
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 4;
       ctx.fillStyle = COLORS.blue;
 
       if(g.orientation === 'h'){
         ctx.beginPath();
-        ctx.moveTo(p.px - 16, p.py);
-        ctx.lineTo(p.px + 16, p.py);
+        ctx.moveTo(p.px - 17, p.py);
+        ctx.lineTo(p.px + 17, p.py);
         ctx.stroke();
       } else {
         ctx.beginPath();
-        ctx.moveTo(p.px, p.py - 16);
-        ctx.lineTo(p.px, p.py + 16);
+        ctx.moveTo(p.px, p.py - 17);
+        ctx.lineTo(p.px, p.py + 17);
         ctx.stroke();
       }
 
-      ctx.fillRect(p.px - 4, p.py - 4, 8, 8);
+      ctx.fillRect(p.px - 3, p.py - 3, 6, 6);
     });
   }
 
@@ -737,24 +735,25 @@
     ctx.save();
     ctx.translate(p.px, p.py);
 
-    ctx.fillStyle = scared ? (Math.floor(Date.now()/120) % 2 ? COLORS.blue : COLORS.white) : e.color;
+    ctx.fillStyle = scared ? (Math.floor(Date.now()/140) % 2 ? COLORS.blue : COLORS.white) : e.color;
     ctx.beginPath();
-    ctx.arc(0,-4,14,Math.PI,0);
-    ctx.lineTo(14,10);
+    ctx.arc(0,-4,13,Math.PI,0);
+    ctx.lineTo(13,9);
     ctx.lineTo(8,4);
-    ctx.lineTo(2,10);
-    ctx.lineTo(-4,4);
-    ctx.lineTo(-10,10);
-    ctx.lineTo(-14,10);
+    ctx.lineTo(3,9);
+    ctx.lineTo(-2,4);
+    ctx.lineTo(-7,9);
+    ctx.lineTo(-12,4);
+    ctx.lineTo(-13,9);
     ctx.closePath();
     ctx.fill();
 
     ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(-5,-3,4,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(5,-3,4,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-4,-3,3.6,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4,-3,3.6,0,Math.PI*2); ctx.fill();
     ctx.fillStyle = '#111';
-    ctx.beginPath(); ctx.arc(-4,-2,2,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(6,-2,2,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-3,-2,1.8,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(5,-2,1.8,0,Math.PI*2); ctx.fill();
 
     ctx.restore();
   }
@@ -762,13 +761,13 @@
   function drawBottom(){
     ctx.fillStyle = COLORS.orange;
     ctx.font = 'bold 18px monospace';
-    ctx.fillText('1ST', 360, H - 42);
-    ctx.fillText(String(score).padStart(5,'0'), 470, H - 42);
+    ctx.fillText('1ST', 360, H - 40);
+    ctx.fillText(String(score).padStart(5,'0'), 470, H - 40);
 
     for(let i=0;i<lives;i++){
       ctx.fillStyle = COLORS.yellow;
       ctx.beginPath();
-      ctx.arc(42 + i * 32, H - 62, 12, 0, Math.PI * 2);
+      ctx.arc(42 + i * 32, H - 60, 11, 0, Math.PI * 2);
       ctx.fill();
     }
   }
@@ -782,19 +781,18 @@
     ctx.textAlign = 'center';
 
     ctx.fillStyle = COLORS.yellow;
-    ctx.font = 'bold 42px Arial';
-    ctx.fillText(CHILD_NAME, W/2, H/2 - 70);
+    ctx.font = 'bold 40px Arial';
+    ctx.fillText(CHILD_NAME, W/2, H/2 - 72);
 
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 28px Arial';
-    ctx.fillText('LADY BUG DO ' + CHILD_NAME, W/2, H/2 - 25);
+    ctx.font = 'bold 26px Arial';
+    ctx.fillText('LADY BUG DO ' + CHILD_NAME, W/2, H/2 - 28);
 
-    ctx.font = '20px Arial';
-    ctx.fillText('Pressione ENTER, ESPAÇO ou toque na tela', W/2, H/2 + 20);
+    ctx.font = '19px Arial';
+    ctx.fillText('Pressione ENTER ou toque na tela', W/2, H/2 + 16);
 
-    ctx.font = '18px Arial';
-    ctx.fillText('WASD / SETAS para mover', W/2, H/2 + 55);
-    ctx.fillText('ESPAÇO para girar portinha', W/2, H/2 + 85);
+    ctx.font = '17px Arial';
+    ctx.fillText('WASD / SETAS para mover', W/2, H/2 + 48);
 
     ctx.textAlign = 'start';
   }
@@ -859,16 +857,10 @@
     canvas.focus();
   }
 
-  function rotateAction(){
-    if (!gameStarted && !gameOver) beginGame();
-    rotateNearbyGate();
-    canvas.focus();
-  }
-
   document.addEventListener('keydown', (e) => {
     const k = e.key.toLowerCase();
 
-    if(['arrowleft','arrowright','arrowup','arrowdown','a','s','d','w',' ','enter'].includes(k)){
+    if(['arrowleft','arrowright','arrowup','arrowdown','a','s','d','w','enter',' '].includes(k)){
       e.preventDefault();
     }
 
@@ -882,11 +874,7 @@
     }
 
     if(k === ' '){
-      if(!gameStarted){
-        beginGame();
-      } else {
-        rotateAction();
-      }
+      if(!gameStarted) beginGame();
       return;
     }
 
@@ -908,16 +896,6 @@
       e.preventDefault();
       queueDir(dir);
     });
-  });
-
-  rotateBtn.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    rotateAction();
-  }, { passive:false });
-
-  rotateBtn.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    rotateAction();
   });
 
   canvas.addEventListener('click', () => {
