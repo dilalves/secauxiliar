@@ -6,24 +6,22 @@
   <title>Mini Lady Bug Clone</title>
   <style>
     :root{
-      --bg:#06070a;
-      --panel:#11141b;
-      --pink:#f2a6ff;
-      --green:#53ff6f;
-      --blue:#8ab4ff;
-      --yellow:#ffe55a;
-      --orange:#ff8d2b;
-      --white:#f2f4f8;
-      --danger:#ff5d73;
-      --good:#67f58b;
+      --bg:#05070c;
+      --panel:#111625;
+      --pink:#e89cff;
+      --green:#54ff71;
+      --blue:#8cb8ff;
+      --yellow:#ffe04d;
+      --orange:#ff8e2c;
+      --white:#f2f5fb;
     }
     *{box-sizing:border-box}
     html,body{
       margin:0;
       background:#000;
-      color:var(--white);
+      color:#fff;
       font-family:Arial,Helvetica,sans-serif;
-      height:100%;
+      min-height:100%;
       overflow:hidden;
     }
     .wrap{
@@ -34,51 +32,48 @@
       justify-content:center;
       gap:10px;
       padding:10px;
-      background:
-        radial-gradient(circle at top, #161b27 0%, #050608 45%, #000 100%);
+      background:radial-gradient(circle at top,#12192b 0%,#06080e 45%,#000 100%);
     }
     .topbar{
       width:min(100%,760px);
       display:flex;
       justify-content:space-between;
-      align-items:center;
       gap:10px;
       flex-wrap:wrap;
-      font-weight:700;
-      letter-spacing:.04em;
     }
     .badge{
-      background:linear-gradient(180deg,#1a2030,#0f1219);
-      border:1px solid #283040;
+      background:linear-gradient(180deg,#192235,#0d121d);
+      border:1px solid #2c3650;
       border-radius:12px;
-      padding:8px 12px;
-      box-shadow:0 6px 18px rgba(0,0,0,.35);
+      padding:8px 14px;
+      font-weight:700;
+      box-shadow:0 8px 20px rgba(0,0,0,.35);
+    }
+    canvas{
+      width:min(calc(100vw - 20px),760px);
+      height:auto;
+      aspect-ratio:3/4;
+      background:#000;
+      border:6px solid var(--pink);
+      border-radius:8px;
+      display:block;
+      image-rendering:pixelated;
+      touch-action:none;
+      outline:none;
+      box-shadow:0 24px 50px rgba(0,0,0,.5);
     }
     .hint{
       width:min(100%,760px);
       text-align:center;
-      color:#c8d2e3;
+      color:#c9d5e7;
       font-size:14px;
       line-height:1.4;
-    }
-    canvas{
-      display:block;
-      width:min(calc(100vw - 20px),760px);
-      height:auto;
-      aspect-ratio:3/4;
-      border:6px solid var(--pink);
-      background:#000;
-      image-rendering:pixelated;
-      image-rendering:crisp-edges;
-      box-shadow:0 20px 50px rgba(0,0,0,.45);
-      border-radius:8px;
-      touch-action:none;
     }
     .controls{
       width:min(100%,760px);
       display:grid;
-      grid-template-columns:repeat(3,72px);
-      grid-template-rows:repeat(2,72px);
+      grid-template-columns:repeat(3,78px);
+      grid-template-rows:repeat(3,62px);
       gap:10px;
       justify-content:center;
       user-select:none;
@@ -86,57 +81,57 @@
     .btn{
       border:none;
       border-radius:16px;
-      background:linear-gradient(180deg,#1c2230,#0f1219);
+      background:linear-gradient(180deg,#1d2434,#0e131c);
+      border:1px solid #2f3950;
       color:#fff;
-      font-size:28px;
+      font-size:24px;
       font-weight:700;
-      box-shadow:0 10px 25px rgba(0,0,0,.35);
-      border:1px solid #2c3444;
+      box-shadow:0 10px 24px rgba(0,0,0,.35);
       touch-action:manipulation;
     }
-    .btn:active{transform:translateY(1px) scale(.99)}
+    .btn:active{transform:scale(.98)}
     .up{grid-column:2;grid-row:1}
     .left{grid-column:1;grid-row:2}
-    .down{grid-column:2;grid-row:2}
+    .rotate{grid-column:2;grid-row:2;font-size:14px}
     .right{grid-column:3;grid-row:2}
-    .footer-note{
-      color:#91a0ba;
+    .down{grid-column:2;grid-row:3}
+    .footer{
+      color:#90a0bc;
       font-size:12px;
       text-align:center;
-      max-width:760px;
+      width:min(100%,760px);
     }
     @media (min-width: 880px){
       .controls{display:none}
-      .hint{font-size:15px}
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="badge">PONTOS: <span id="score">0</span></div>
-      <div class="badge">VIDAS: <span id="lives">3</span></div>
-      <div class="badge">FASE: <span id="level">1</span></div>
-    </div>
-
-    <canvas id="game" width="600" height="800" tabindex="0"></canvas>
-
-    <div class="hint">
-      Setas / WASD para mover • <b>Espaço</b> gira a portinha onde você estiver encostando •
-      no tablet use os botões abaixo. Pegue todos os pontinhos e fuja dos inimigos.
-    </div>
-
-    <div class="controls">
-      <button class="btn up" data-dir="up">▲</button>
-      <button class="btn left" data-dir="left">◀</button>
-      <button class="btn down" data-dir="down">▼</button>
-      <button class="btn right" data-dir="right">▶</button>
-    </div>
-
-    <div class="footer-note">
-      Baseado no clima do Lady Bug, mas feito do zero em HTML/CSS/JS. Depois dá para trocar o herói e inimigos por PNGs do seu filho.
-    </div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="badge">PONTOS: <span id="score">0</span></div>
+    <div class="badge">VIDAS: <span id="lives">3</span></div>
+    <div class="badge">FASE: <span id="level">1</span></div>
   </div>
+
+  <canvas id="game" width="600" height="800" tabindex="0"></canvas>
+
+  <div class="hint">
+    Setas ou WASD para mover • Espaço para girar portinha • toque no jogo para ativar som
+  </div>
+
+  <div class="controls">
+    <button class="btn up" data-dir="up">▲</button>
+    <button class="btn left" data-dir="left">◀</button>
+    <button class="btn rotate" id="rotateBtn">GIRAR</button>
+    <button class="btn right" data-dir="right">▶</button>
+    <button class="btn down" data-dir="down">▼</button>
+  </div>
+
+  <div class="footer">
+    Coloque o arquivo <b>filhote.png</b> na mesma pasta do HTML.
+  </div>
+</div>
 
 <script>
 (() => {
@@ -145,66 +140,84 @@
   const scoreEl = document.getElementById('score');
   const livesEl = document.getElementById('lives');
   const levelEl = document.getElementById('level');
-
-  canvas.focus();
-
-    canvas.addEventListener('click', () => {
-    canvas.focus();
-    });
-
-  const imgFilhote = new Image();
-  imgFilhote.src = 'filhote.png';
+  const rotateBtn = document.getElementById('rotateBtn');
 
   const W = canvas.width;
   const H = canvas.height;
   const tile = 50;
   const cols = 12;
-  const rows = 16;
+  const rows = 12;
+  const boardX = 0;
+  const boardY = 120;
 
   const COLORS = {
-    bg:'#000',
-    pink:'#f2a6ff',
-    green:'#53ff6f',
-    blue:'#8ab4ff',
-    white:'#f2f4f8',
-    yellow:'#ffe55a',
-    orange:'#ff8d2b',
+    pink:'#e89cff',
+    green:'#54ff71',
+    blue:'#8cb8ff',
+    white:'#f2f5fb',
+    yellow:'#ffe04d',
+    orange:'#ff8e2c',
     red:'#ff5d73',
-    cyan:'#62e8ff',
-    purple:'#b47aff'
+    cyan:'#69e7ff',
+    purple:'#b487ff'
   };
 
-  // Mapa inspirado no visual labiríntico do Lady Bug.
-  // # = parede sólida
-  // . = item
-  // o = power-up
-  // S = player start
-  // E = enemy start
-  // G = gate rotativa (orientação muda entre horizontal/vertical)
+  const imgFilhote = new Image();
+  imgFilhote.src = 'filhote.png';
+
+  let audioCtx = null;
+  let musicStarted = false;
+  let musicTimer = null;
+
+  function startMusic(){
+    if (musicStarted) return;
+    musicStarted = true;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const notes = [523,659,784,659,523,659,880,784];
+    let i = 0;
+
+    function tick(){
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = notes[i % notes.length];
+      gain.gain.setValueAtTime(0.02, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.12);
+      i++;
+    }
+
+    tick();
+    musicTimer = setInterval(tick, 220);
+  }
+
+  // grade:
+  // # parede
+  // . item
+  // o power
+  // S player
+  // E enemy
+  // G gate
   const rawMap = [
     "############",
-    "#..G...G..o#",
+    "#....G....o#",
     "#.##.##.##.#",
-    "#G..G..G...#",
-    "#.##.##.##.#",
-    "#...#..#...#",
-    "#.#.####.#.#",
-    "#G#..EE..#G#",
-    "#.#.####.#.#",
-    "#...#S.#...#",
-    "#.##.##.##.#",
-    "#...G..G...#",
-    "#.##.##.##.#",
-    "#o.G...G...#",
     "#..........#",
+    "#.##.GG.##.#",
+    "#...E..E...#",
+    "#.##.##.##.#",
+    "#....S.....#",
+    "#.##.GG.##.#",
+    "#..........#",
+    "#o...G.....#",
     "############"
   ];
-
-  let level = 1;
-  let score = 0;
-  let lives = 3;
-  let gameOver = false;
-  let winPulse = 0;
 
   let walls = new Set();
   let pellets = new Set();
@@ -215,409 +228,374 @@
 
   function key(x,y){ return `${x},${y}`; }
 
-  function parseMap() {
+  function parseMap(){
     walls.clear();
     pellets.clear();
     powerUps.clear();
     gates = [];
     enemyStarts = [];
-    for (let y=0; y<rows; y++) {
-      for (let x=0; x<cols; x++) {
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
         const c = rawMap[y][x];
-        if (c === '#') walls.add(key(x,y));
-        if (c === '.' || c === 'S' || c === 'E' || c === 'G') pellets.add(key(x,y));
-        if (c === 'o') powerUps.add(key(x,y));
-        if (c === 'G') gates.push({x,y,orientation: Math.random() > 0.5 ? 'h' : 'v'});
-        if (c === 'S') playerStart = {x,y};
-        if (c === 'E') enemyStarts.push({x,y});
+        if(c === '#') walls.add(key(x,y));
+        if(c === '.') pellets.add(key(x,y));
+        if(c === 'o') powerUps.add(key(x,y));
+        if(c === 'S') playerStart = {x,y};
+        if(c === 'E') enemyStarts.push({x,y});
+        if(c === 'G'){
+          pellets.add(key(x,y));
+          gates.push({x,y,orientation: Math.random() > 0.5 ? 'h' : 'v'});
+        }
       }
     }
   }
 
   parseMap();
 
+  let score = 0;
+  let lives = 3;
+  let level = 1;
+  let gameOver = false;
+  let moveCooldown = 0;
+  let enemyCooldown = 0;
+  let powerTimer = 0;
+
   const player = {
-    x: playerStart.x * tile + tile/2,
-    y: playerStart.y * tile + tile/2,
-    dir: 'right',
-    nextDir: 'right',
-    speed: 2.2,
-    radius: 12,
-    powerTimer: 0,
-    blink: 0
+    x: playerStart.x,
+    y: playerStart.y,
+    dir: null,
+    nextDir: null
   };
 
-  const enemyPalette = [COLORS.red, COLORS.cyan, COLORS.orange, COLORS.purple];
   const enemies = enemyStarts.map((p, i) => ({
-    x: p.x * tile + tile/2,
-    y: p.y * tile + tile/2,
+    x: p.x,
+    y: p.y,
     dir: ['left','right','up','down'][i % 4],
-    speed: 1.6,
-    radius: 14,
-    home: {...p},
-    color: enemyPalette[i % enemyPalette.length],
-    scared: 0
+    color: [COLORS.red, COLORS.cyan, COLORS.orange, COLORS.purple][i % 4],
+    scared: 0,
+    homeX: p.x,
+    homeY: p.y
   }));
 
-  function resetPositions() {
-    player.x = playerStart.x * tile + tile/2;
-    player.y = playerStart.y * tile + tile/2;
-    player.dir = 'left';
-    player.nextDir = 'left';
-    player.powerTimer = 0;
-
+  function resetPositions(){
+    player.x = playerStart.x;
+    player.y = playerStart.y;
+    player.dir = null;
+    player.nextDir = null;
     enemies.forEach((e, i) => {
-      const p = enemyStarts[i % enemyStarts.length];
-      e.x = p.x * tile + tile/2;
-      e.y = p.y * tile + tile/2;
+      const s = enemyStarts[i];
+      e.x = s.x;
+      e.y = s.y;
       e.dir = ['left','right','up','down'][i % 4];
       e.scared = 0;
     });
   }
 
-  function tilePos(px, py){
-    return { tx: Math.floor(px / tile), ty: Math.floor(py / tile) };
+  function delta(dir){
+    if(dir === 'left') return {dx:-1, dy:0};
+    if(dir === 'right') return {dx:1, dy:0};
+    if(dir === 'up') return {dx:0, dy:-1};
+    if(dir === 'down') return {dx:0, dy:1};
+    return {dx:0, dy:0};
   }
 
-  function centeredOnTile(entity) {
-    const cx = ((Math.floor(entity.x / tile) * tile) + tile/2);
-    const cy = ((Math.floor(entity.y / tile) * tile) + tile/2);
-    return Math.abs(entity.x - cx) < 2 && Math.abs(entity.y - cy) < 2;
+  function inWall(x,y){
+    return walls.has(key(x,y));
   }
 
-  function moveDelta(dir, speed){
-    if (dir === 'left') return {dx:-speed, dy:0};
-    if (dir === 'right') return {dx:speed, dy:0};
-    if (dir === 'up') return {dx:0, dy:-speed};
-    return {dx:0, dy:speed};
-  }
-
-  function collidesAt(px, py, radius) {
-    const left = Math.floor((px - radius) / tile);
-    const right = Math.floor((px + radius) / tile);
-    const top = Math.floor((py - radius) / tile);
-    const bottom = Math.floor((py + radius) / tile);
-
-    for (let y = top; y <= bottom; y++) {
-      for (let x = left; x <= right; x++) {
-        if (walls.has(key(x,y))) return true;
-      }
-    }
-
-    for (const g of gates) {
-      const gx = g.x * tile;
-      const gy = g.y * tile;
-      if (g.orientation === 'h') {
-        const rx = gx + 5, ry = gy + tile/2 - 4, rw = tile - 10, rh = 8;
-        if (px + radius > rx && px - radius < rx+rw && py + radius > ry && py - radius < ry+rh) return true;
-      } else {
-        const rx = gx + tile/2 - 4, ry = gy + 5, rw = 8, rh = tile - 10;
-        if (px + radius > rx && px - radius < rx+rw && py + radius > ry && py - radius < ry+rh) return true;
-      }
-    }
+  function gateBlocks(x, y, dir){
+    const gate = gates.find(g => g.x === x && g.y === y);
+    if(!gate) return false;
+    if(gate.orientation === 'h' && (dir === 'up' || dir === 'down')) return true;
+    if(gate.orientation === 'v' && (dir === 'left' || dir === 'right')) return true;
     return false;
   }
 
-  function canMove(entity, dir){
-    const {dx,dy} = moveDelta(dir, entity.speed);
-    return !collidesAt(entity.x + dx, entity.y + dy, entity.radius);
+  function canMove(x, y, dir){
+    const {dx,dy} = delta(dir);
+    const nx = x + dx;
+    const ny = y + dy;
+    if(nx < 0 || ny < 0 || nx >= cols || ny >= rows) return false;
+    if(inWall(nx, ny)) return false;
+    if(gateBlocks(nx, ny, dir)) return false;
+    return true;
   }
 
-  function rotateNearbyGate() {
-    const p = tilePos(player.x, player.y);
+  function rotateNearbyGate(){
     let changed = false;
-    for (const g of gates) {
-      const dist = Math.abs(g.x - p.tx) + Math.abs(g.y - p.ty);
-      if (dist <= 1) {
+    gates.forEach(g => {
+      const dist = Math.abs(g.x - player.x) + Math.abs(g.y - player.y);
+      if(dist <= 1){
         g.orientation = g.orientation === 'h' ? 'v' : 'h';
         changed = true;
       }
-    }
+    });
     return changed;
   }
 
-  function eatThings() {
-    const p = tilePos(player.x, player.y);
-    const k = key(p.tx, p.ty);
-    if (pellets.has(k)) {
+  function eatThings(){
+    const k = key(player.x, player.y);
+    if(pellets.has(k)){
       pellets.delete(k);
       score += 10;
     }
-    if (powerUps.has(k)) {
+    if(powerUps.has(k)){
       powerUps.delete(k);
-      player.powerTimer = 600;
-      enemies.forEach(e => e.scared = 600);
       score += 50;
+      powerTimer = 40;
+      enemies.forEach(e => e.scared = 40);
     }
   }
 
-  function handleLevelClear() {
-    if (pellets.size === 0 && powerUps.size === 0) {
-      level++;
-      score += 200;
-      levelEl.textContent = level;
-      parseMap();
-      resetPositions();
-      enemies.forEach(e => e.speed = Math.min(2.8, e.speed + 0.12));
-      player.speed = Math.min(3, player.speed + 0.05);
-      winPulse = 40;
-    }
-  }
-
-  function distance(a,b){
-    const dx = a.x - b.x;
-    const dy = a.y - b.y;
-    return Math.hypot(dx,dy);
-  }
-
-  function loseLife() {
-    lives--;
-    livesEl.textContent = lives;
-    if (lives <= 0) {
-      gameOver = true;
-    } else {
-      resetPositions();
-    }
-  }
-
-function updatePlayer() {
-  if (centeredOnTile(player) && canMove(player, player.nextDir)) {
-    player.dir = player.nextDir;
-  }
-
-  if (!player.dir) return;
-  if (!canMove(player, player.dir)) return;
-
-  const {dx,dy} = moveDelta(player.dir, player.speed);
-  player.x += dx;
-  player.y += dy;
-
-  if (player.powerTimer > 0) player.powerTimer--;
-  if (winPulse > 0) winPulse--;
-  player.blink++;
-  eatThings();
-}
-
-  function validDirs(entity){
-    return ['left','right','up','down'].filter(d => canMove(entity,d));
+  function enemyValidDirs(e){
+    return ['left','right','up','down'].filter(d => canMove(e.x, e.y, d));
   }
 
   function opposite(dir){
     return ({left:'right', right:'left', up:'down', down:'up'})[dir];
   }
 
-  function chooseEnemyDir(enemy) {
-    let dirs = validDirs(enemy);
-    if (dirs.length === 0) return enemy.dir;
-    if (dirs.length > 1) dirs = dirs.filter(d => d !== opposite(enemy.dir));
-
-    const target = enemy.scared > 0 ? {x: Math.random()*W, y: Math.random()*H} : player;
-
-    dirs.sort((a,b) => {
-      const ma = moveDelta(a, tile);
-      const mb = moveDelta(b, tile);
-      const da = Math.hypot((enemy.x + ma.dx) - target.x, (enemy.y + ma.dy) - target.y);
-      const db = Math.hypot((enemy.x + mb.dx) - target.x, (enemy.y + mb.dy) - target.y);
-      return enemy.scared > 0 ? db - da : da - db;
-    });
-
-    if (Math.random() < 0.18) return dirs[Math.floor(Math.random()*dirs.length)];
-    return dirs[0];
+  function movePlayer(){
+    if(player.nextDir && canMove(player.x, player.y, player.nextDir)){
+      player.dir = player.nextDir;
+    }
+    if(player.dir && canMove(player.x, player.y, player.dir)){
+      const {dx,dy} = delta(player.dir);
+      player.x += dx;
+      player.y += dy;
+      eatThings();
+    }
   }
 
-  function updateEnemies() {
-    enemies.forEach(enemy => {
-      if (centeredOnTile(enemy)) enemy.dir = chooseEnemyDir(enemy);
-      const speed = enemy.scared > 0 ? enemy.speed * 0.7 : enemy.speed;
-      const {dx,dy} = moveDelta(enemy.dir, speed);
+  function moveEnemies(){
+    enemies.forEach(e => {
+      let dirs = enemyValidDirs(e);
+      if(dirs.length === 0) return;
 
-      if (!collidesAt(enemy.x + dx, enemy.y + dy, enemy.radius)) {
-        enemy.x += dx;
-        enemy.y += dy;
-      } else {
-        enemy.dir = chooseEnemyDir(enemy);
+      if(dirs.length > 1){
+        dirs = dirs.filter(d => d !== opposite(e.dir));
+        if(dirs.length === 0) dirs = enemyValidDirs(e);
       }
 
-      if (enemy.scared > 0) enemy.scared--;
+      dirs.sort((a,b) => {
+        const da = delta(a);
+        const db = delta(b);
 
-      if (distance(player, enemy) < player.radius + enemy.radius - 2) {
-        if (enemy.scared > 0) {
+        const ax = e.x + da.dx;
+        const ay = e.y + da.dy;
+        const bx = e.x + db.dx;
+        const by = e.y + db.dy;
+
+        const distA = Math.abs(ax - player.x) + Math.abs(ay - player.y);
+        const distB = Math.abs(bx - player.x) + Math.abs(by - player.y);
+
+        return e.scared > 0 ? distB - distA : distA - distB;
+      });
+
+      if(Math.random() < 0.2){
+        e.dir = dirs[Math.floor(Math.random() * dirs.length)];
+      } else {
+        e.dir = dirs[0];
+      }
+
+      if(canMove(e.x, e.y, e.dir)){
+        const {dx,dy} = delta(e.dir);
+        e.x += dx;
+        e.y += dy;
+      }
+
+      if(e.scared > 0) e.scared--;
+    });
+  }
+
+  function checkCollisions(){
+    enemies.forEach(e => {
+      if(e.x === player.x && e.y === player.y){
+        if(e.scared > 0){
           score += 100;
-          enemy.x = enemy.home.x * tile + tile/2;
-          enemy.y = enemy.home.y * tile + tile/2;
-          enemy.scared = 0;
-        } else if (!gameOver) {
-          loseLife();
+          e.x = e.homeX;
+          e.y = e.homeY;
+          e.scared = 0;
+        } else {
+          lives--;
+          if(lives <= 0){
+            gameOver = true;
+          } else {
+            resetPositions();
+          }
         }
       }
     });
   }
 
-  function drawHeader() {
+  function checkLevelClear(){
+    if(pellets.size === 0 && powerUps.size === 0){
+      level++;
+      parseMap();
+      resetPositions();
+    }
+  }
+
+  function drawHeader(){
     ctx.fillStyle = COLORS.orange;
-    ctx.fillRect(0,0,200,34);
-    ctx.fillStyle = COLORS.yellow;
-    ctx.fillRect(200,0,200,34);
-    ctx.fillStyle = '#2aa9ff';
-    ctx.fillRect(400,0,200,34);
+    ctx.fillRect(0, 0, 200, 38);
+    ctx.fillStyle = '#f0dc5c';
+    ctx.fillRect(200, 0, 200, 38);
+    ctx.fillStyle = '#40a0e8';
+    ctx.fillRect(400, 0, 200, 38);
 
     ctx.fillStyle = '#000';
     ctx.font = 'bold 20px monospace';
-    ctx.fillText('SPECIAL', 32, 24);
-    ctx.fillText('EXTRA', 250, 24);
-    ctx.fillText('x2 x3 x5', 438, 24);
+    ctx.fillText('SPECIAL', 28, 26);
+    ctx.fillText('EXTRA', 255, 26);
+    ctx.fillText('x2 x3 x5', 430, 26);
   }
 
-  function drawBorder() {
-    for (let x = 0; x < W; x += 20) {
+  function drawBorder(){
+    for(let x=0;x<W;x+=20){
       ctx.fillStyle = COLORS.white;
-      ctx.fillRect(x, 38, 16, 16);
-      ctx.fillRect(x, H - 36, 16, 16);
+      ctx.fillRect(x, 42, 16, 16);
+      ctx.fillRect(x, H - 34, 16, 16);
     }
-    for (let y = 38; y < H - 20; y += 20) {
+    for(let y=42;y<H-20;y+=20){
       ctx.fillRect(0, y, 16, 16);
       ctx.fillRect(W - 16, y, 16, 16);
     }
     ctx.strokeStyle = COLORS.pink;
     ctx.lineWidth = 6;
-    ctx.strokeRect(24, 56, W-48, H-120);
+    ctx.strokeRect(24, 60, W - 48, H - 118);
   }
 
-  function drawWalls() {
+  function cellCenter(x,y){
+    return {
+      px: boardX + x * tile + tile / 2,
+      py: boardY + y * tile + tile / 2
+    };
+  }
+
+  function drawWalls(){
     ctx.strokeStyle = COLORS.pink;
     ctx.lineWidth = 6;
     ctx.lineCap = 'square';
 
-    for (let y=0; y<rows; y++) {
-      for (let x=0; x<cols; x++) {
-        if (!walls.has(key(x,y))) continue;
-        const px = x*tile;
-        const py = 60 + y*tile;
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        if(!walls.has(key(x,y))) continue;
+        const px = boardX + x * tile;
+        const py = boardY + y * tile;
 
-        // desenha somente as bordas visíveis da célula
         const leftOpen = !walls.has(key(x-1,y));
         const rightOpen = !walls.has(key(x+1,y));
         const upOpen = !walls.has(key(x,y-1));
         const downOpen = !walls.has(key(x,y+1));
 
-        if (upOpen) {
+        if(upOpen){
           ctx.beginPath();
-          ctx.moveTo(px+10, py+10);
-          ctx.lineTo(px+tile-10, py+10);
+          ctx.moveTo(px+8, py+8);
+          ctx.lineTo(px+tile-8, py+8);
           ctx.stroke();
         }
-        if (downOpen) {
+        if(downOpen){
           ctx.beginPath();
-          ctx.moveTo(px+10, py+tile-10);
-          ctx.lineTo(px+tile-10, py+tile-10);
+          ctx.moveTo(px+8, py+tile-8);
+          ctx.lineTo(px+tile-8, py+tile-8);
           ctx.stroke();
         }
-        if (leftOpen) {
+        if(leftOpen){
           ctx.beginPath();
-          ctx.moveTo(px+10, py+10);
-          ctx.lineTo(px+10, py+tile-10);
+          ctx.moveTo(px+8, py+8);
+          ctx.lineTo(px+8, py+tile-8);
           ctx.stroke();
         }
-        if (rightOpen) {
+        if(rightOpen){
           ctx.beginPath();
-          ctx.moveTo(px+tile-10, py+10);
-          ctx.lineTo(px+tile-10, py+tile-10);
+          ctx.moveTo(px+tile-8, py+8);
+          ctx.lineTo(px+tile-8, py+tile-8);
           ctx.stroke();
         }
       }
     }
   }
 
-function mapToScreen(tx,ty){
-  return {
-    x: tx * tile + tile/2,
-    y: 60 + ty * tile + tile/2
-  };
-}
-
-function worldY(py){
-  return 60 + py;
-}
-
-  function drawPellets() {
+  function drawPellets(){
     pellets.forEach(k => {
-      const [tx,ty] = k.split(',').map(Number);
-      const p = mapToScreen(tx,ty);
+      const [x,y] = k.split(',').map(Number);
+      const p = cellCenter(x,y);
       ctx.fillStyle = COLORS.white;
-      ctx.fillRect(p.x-4,p.y-4,8,8);
+      ctx.fillRect(p.px - 4, p.py - 4, 8, 8);
     });
+
     powerUps.forEach(k => {
-      const [tx,ty] = k.split(',').map(Number);
-      const p = mapToScreen(tx,ty);
-      ctx.fillStyle = winPulse % 8 < 4 ? COLORS.yellow : COLORS.green;
+      const [x,y] = k.split(',').map(Number);
+      const p = cellCenter(x,y);
+      ctx.fillStyle = powerTimer % 8 < 4 ? COLORS.yellow : COLORS.green;
       ctx.beginPath();
-      ctx.arc(p.x,p.y,8,0,Math.PI*2);
+      ctx.arc(p.px, p.py, 8, 0, Math.PI * 2);
       ctx.fill();
     });
   }
 
-  function drawGates() {
+  function drawGates(){
     gates.forEach(g => {
-      const p = mapToScreen(g.x,g.y);
+      const p = cellCenter(g.x, g.y);
       ctx.strokeStyle = COLORS.green;
       ctx.lineWidth = 6;
       ctx.fillStyle = COLORS.blue;
-      if (g.orientation === 'h') {
+
+      if(g.orientation === 'h'){
         ctx.beginPath();
-        ctx.moveTo(p.x-18, p.y);
-        ctx.lineTo(p.x+18, p.y);
+        ctx.moveTo(p.px - 16, p.py);
+        ctx.lineTo(p.px + 16, p.py);
         ctx.stroke();
-        ctx.fillRect(p.x-4,p.y-4,8,8);
       } else {
         ctx.beginPath();
-        ctx.moveTo(p.x, p.y-18);
-        ctx.lineTo(p.x, p.y+18);
+        ctx.moveTo(p.px, p.py - 16);
+        ctx.lineTo(p.px, p.py + 16);
         ctx.stroke();
-        ctx.fillRect(p.x-4,p.y-4,8,8);
       }
+
+      ctx.fillRect(p.px - 4, p.py - 4, 8, 8);
     });
   }
 
-function drawPlayer() {
-  const px = player.x;
-  const py = worldY(player.y);
-  const size = 30;
+  function drawPlayer(){
+    const p = cellCenter(player.x, player.y);
+    const size = 32;
 
-  ctx.save();
-  ctx.translate(px, py);
+    ctx.save();
+    ctx.translate(p.px, p.py);
 
-  if (imgFilhote.complete && imgFilhote.naturalWidth > 0) {
-    ctx.rotate(Math.PI);
-    ctx.drawImage(imgFilhote, -size/2, -size/2, size, size);
-  } else {
-    ctx.fillStyle = COLORS.yellow;
-    ctx.beginPath();
-    ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
-    ctx.fill();
+    if(imgFilhote.complete && imgFilhote.naturalWidth > 0){
+      ctx.drawImage(imgFilhote, -size/2, -size/2, size, size);
+    } else {
+      ctx.fillStyle = COLORS.yellow;
+      ctx.beginPath();
+      ctx.arc(0, 0, 14, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
   }
 
-  ctx.restore();
-}
-
-  function drawEnemy(e) {
-    const px = e.x;
-    const py = worldY(e.y);
+  function drawEnemy(e){
+    const p = cellCenter(e.x, e.y);
     const scared = e.scared > 0;
-    ctx.save();
-    ctx.translate(px,py);
 
-    ctx.fillStyle = scared ? (e.scared % 16 < 8 ? COLORS.blue : COLORS.white) : e.color;
+    ctx.save();
+    ctx.translate(p.px, p.py);
+
+    ctx.fillStyle = scared ? (e.scared % 8 < 4 ? COLORS.blue : COLORS.white) : e.color;
     ctx.beginPath();
     ctx.arc(0,-4,14,Math.PI,0);
     ctx.lineTo(14,10);
-    for (let i=0;i<4;i++) {
-      ctx.lineTo(8 - i*6, i%2===0 ? 4 : 10);
-    }
+    ctx.lineTo(8,4);
+    ctx.lineTo(2,10);
+    ctx.lineTo(-4,4);
+    ctx.lineTo(-10,10);
     ctx.lineTo(-14,10);
     ctx.closePath();
     ctx.fill();
 
-    // olhos
     ctx.fillStyle = '#fff';
     ctx.beginPath(); ctx.arc(-5,-3,4,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(5,-3,4,0,Math.PI*2); ctx.fill();
@@ -628,36 +606,34 @@ function drawPlayer() {
     ctx.restore();
   }
 
-  function drawBottom() {
+  function drawBottom(){
     ctx.fillStyle = COLORS.orange;
     ctx.font = 'bold 18px monospace';
-    ctx.fillText('1ST', 360, H - 44);
-    ctx.fillText(String(score).padStart(5,'0'), 470, H - 44);
+    ctx.fillText('1ST', 360, H - 42);
+    ctx.fillText(String(score).padStart(5,'0'), 470, H - 42);
 
-    for (let i=0; i<lives; i++) {
+    for(let i=0;i<lives;i++){
       ctx.fillStyle = COLORS.yellow;
       ctx.beginPath();
-      ctx.moveTo(42 + i*34, H - 68);
-      ctx.arc(42 + i*34, H - 68, 12, 0.25, Math.PI*2 - 0.25);
-      ctx.closePath();
+      ctx.arc(42 + i * 32, H - 62, 12, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
-  function drawOverlay() {
-    if (!gameOver) return;
+  function drawOverlay(){
+    if(!gameOver) return;
     ctx.fillStyle = 'rgba(0,0,0,.72)';
     ctx.fillRect(0,0,W,H);
     ctx.fillStyle = '#fff';
     ctx.textAlign = 'center';
-    ctx.font = 'bold 42px Arial';
+    ctx.font = 'bold 40px Arial';
     ctx.fillText('FIM DE JOGO', W/2, H/2 - 10);
     ctx.font = '20px Arial';
-    ctx.fillText('Toque ou aperte Enter para recomeçar', W/2, H/2 + 30);
+    ctx.fillText('Toque ou aperte Enter para recomeçar', W/2, H/2 + 28);
     ctx.textAlign = 'start';
   }
 
-  function draw() {
+  function draw(){
     ctx.clearRect(0,0,W,H);
     drawHeader();
     drawBorder();
@@ -670,71 +646,107 @@ function drawPlayer() {
     drawOverlay();
   }
 
-  function updateUI() {
+  function updateUI(){
     scoreEl.textContent = score;
     livesEl.textContent = lives;
     levelEl.textContent = level;
   }
 
-  function step() {
-    if (!gameOver) {
-      updatePlayer();
-      updateEnemies();
-      handleLevelClear();
-      updateUI();
-    }
-    draw();
-    requestAnimationFrame(step);
-  }
-
-  function restartGame() {
+  function restartGame(){
     score = 0;
     lives = 3;
     level = 1;
     gameOver = false;
+    powerTimer = 0;
     parseMap();
     resetPositions();
-    enemies.forEach((e, i) => {
-      e.speed = 1.6 + i*0.03;
-    });
-    player.speed = 2.2;
     updateUI();
   }
 
-  window.addEventListener('keydown', (e) => {
+  function queueDir(dir){
+    startMusic();
+    canvas.focus();
+    player.nextDir = dir;
+  }
+
+  function rotateAction(){
+    startMusic();
+    canvas.focus();
+    rotateNearbyGate();
+  }
+
+  document.addEventListener('keydown', (e) => {
     const k = e.key.toLowerCase();
-    if (k === 'arrowleft' || k === 'a') player.nextDir = 'left';
-    else if (k === 'arrowright' || k === 'd') player.nextDir = 'right';
-    else if (k === 'arrowup' || k === 'w') player.nextDir = 'up';
-    else if (k === 'arrowdown' || k === 's') player.nextDir = 'down';
-    else if (k === ' '){
+
+    if(['arrowleft','arrowright','arrowup','arrowdown','a','s','d','w',' ','enter'].includes(k)){
       e.preventDefault();
-      rotateNearbyGate();
-    } else if (k === 'enter' && gameOver) {
-      restartGame();
     }
-  }, {passive:false});
 
-document.querySelectorAll('[data-dir]').forEach(btn => {
-  const dir = btn.getAttribute('data-dir');
-
-  btn.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    player.nextDir = dir;
-  }, { passive: false });
-
-  btn.addEventListener('mousedown', () => {
-    player.nextDir = dir;
+    if(k === 'arrowleft' || k === 'a') queueDir('left');
+    else if(k === 'arrowright' || k === 'd') queueDir('right');
+    else if(k === 'arrowup' || k === 'w') queueDir('up');
+    else if(k === 'arrowdown' || k === 's') queueDir('down');
+    else if(k === ' ') rotateAction();
+    else if(k === 'enter' && gameOver) restartGame();
   });
-});
+
+  document.querySelectorAll('[data-dir]').forEach(btn => {
+    const dir = btn.getAttribute('data-dir');
+    btn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      queueDir(dir);
+    }, { passive:false });
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      queueDir(dir);
+    });
+  });
+
+  rotateBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    rotateAction();
+  }, { passive:false });
+
+  rotateBtn.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    rotateAction();
+  });
 
   canvas.addEventListener('click', () => {
-    if (gameOver) restartGame();
-    else rotateNearbyGate();
+    startMusic();
+    canvas.focus();
+    if(gameOver) restartGame();
   });
 
+  function gameLoop(){
+    if(!gameOver){
+      if(moveCooldown <= 0){
+        movePlayer();
+        moveCooldown = 8;
+      } else {
+        moveCooldown--;
+      }
+
+      if(enemyCooldown <= 0){
+        moveEnemies();
+        enemyCooldown = 10;
+      } else {
+        enemyCooldown--;
+      }
+
+      if(powerTimer > 0) powerTimer--;
+      checkCollisions();
+      checkLevelClear();
+      updateUI();
+    }
+
+    draw();
+    requestAnimationFrame(gameLoop);
+  }
+
   updateUI();
-  step();
+  canvas.focus();
+  gameLoop();
 })();
 </script>
 </body>
