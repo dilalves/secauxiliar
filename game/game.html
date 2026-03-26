@@ -6,21 +6,20 @@
   <title>Lady Bug do Filhote</title>
   <style>
     :root{
-      --pink:#e8a0ff;
-      --green:#53ff6f;
-      --blue:#95b8ff;
-      --yellow:#ffe34d;
-      --orange:#ff912c;
+      --pink:#e7a6ff;
+      --green:#45ff63;
+      --blue:#9fb7ff;
+      --yellow:#ffe34a;
+      --orange:#ff8f2c;
       --white:#f3f6fb;
-      --red:#ff5f79;
-      --cyan:#6fe7ff;
-      --purple:#b48cff;
+      --red:#ff6078;
+      --cyan:#69e6ff;
+      --purple:#b889ff;
       --bg1:#12192b;
-      --bg2:#05070c;
+      --bg2:#05070b;
     }
 
     *{box-sizing:border-box}
-
     html,body{
       margin:0;
       background:#000;
@@ -50,7 +49,7 @@
     }
 
     .badge{
-      background:linear-gradient(180deg,#192235,#0d121d);
+      background:linear-gradient(180deg,#182235,#0d121d);
       border:1px solid #2c3650;
       border-radius:12px;
       padding:8px 14px;
@@ -131,7 +130,7 @@
   <canvas id="game" width="600" height="800" tabindex="0"></canvas>
 
   <div class="hint">
-    Setas ou WASD para mover • as portinhas giram automaticamente • toque na tela para começar
+    Setas ou WASD para mover • as portinhas giram sozinhas ao passar • toque na tela para começar
   </div>
 
   <div class="controls">
@@ -142,14 +141,13 @@
   </div>
 
   <div class="footer">
-    Deixe o arquivo <b>filhote.png</b> na mesma pasta do HTML.  
-    Troque o nome na variável <b>CHILD_NAME</b> dentro do código.
+    Coloque <b>filhote.png</b> na mesma pasta do HTML e altere a variável <b>CHILD_NAME</b>.
   </div>
 </div>
 
 <script>
 (() => {
-  const CHILD_NAME = "JOÃO PEDRO"; // <- troque aqui
+  const CHILD_NAME = "JOÃO PEDRO"; // troque aqui
 
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
@@ -157,142 +155,180 @@
   const livesEl = document.getElementById('lives');
   const levelEl = document.getElementById('level');
 
-  const W = canvas.width;
-  const H = canvas.height;
-
-  const tile = 50;
-  const cols = 12;
-  const rows = 12;
-  const boardX = 0;
-  const boardY = 120;
-
-  const COLORS = {
-    pink:'#e8a0ff',
-    green:'#53ff6f',
-    blue:'#95b8ff',
-    white:'#f3f6fb',
-    yellow:'#ffe34d',
-    orange:'#ff912c',
-    red:'#ff5f79',
-    cyan:'#6fe7ff',
-    purple:'#b48cff'
-  };
-
   const imgFilhote = new Image();
   imgFilhote.src = 'filhote.png';
 
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // área jogável
+  const boardX = 58;
+  const boardY = 92;
+  const cell = 60;
+  const cols = 8;
+  const rows = 10;
+
+  const COLORS = {
+    pink:'#e7a6ff',
+    green:'#45ff63',
+    blue:'#9fb7ff',
+    white:'#f3f6fb',
+    yellow:'#ffe34a',
+    orange:'#ff8f2c',
+    red:'#ff6078',
+    cyan:'#69e6ff',
+    purple:'#b889ff'
+  };
+
+  // =========================
+  // ÁUDIO
+  // =========================
   let audioCtx = null;
   let musicStarted = false;
   let musicStep = 0;
   let musicTimer = null;
 
   function ensureAudio(){
-    if (!audioCtx) {
+    if(!audioCtx){
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
   }
 
-  function beep(freq, duration = 0.08, volume = 0.02, type = 'square') {
-    if (!audioCtx) return;
+  function beep(freq, duration=0.08, volume=0.018, type='square'){
+    if(!audioCtx) return;
     const now = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-
     osc.type = type;
     osc.frequency.setValueAtTime(freq, now);
-
     gain.gain.setValueAtTime(volume, now);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(now);
     osc.stop(now + duration);
   }
 
-  function sfxEat(){ beep(1050, 0.03, 0.014, 'square'); }
+  function sfxEat(){ beep(1080,0.025,0.012,'square'); }
   function sfxPower(){
-    beep(720, 0.07, 0.02, 'square');
-    setTimeout(() => beep(980, 0.08, 0.02, 'square'), 50);
+    beep(760,0.07,0.02,'square');
+    setTimeout(()=>beep(980,0.08,0.02,'square'),45);
   }
-  function sfxRotate(){ beep(420, 0.04, 0.018, 'triangle'); }
-  function sfxHit(){ beep(210, 0.18, 0.03, 'sawtooth'); }
+  function sfxRotate(){ beep(420,0.035,0.015,'triangle'); }
+  function sfxHit(){ beep(210,0.18,0.03,'sawtooth'); }
   function sfxEnemyEaten(){
-    beep(900, 0.06, 0.02, 'square');
-    setTimeout(() => beep(1200, 0.06, 0.02, 'square'), 45);
+    beep(900,0.06,0.02,'square');
+    setTimeout(()=>beep(1200,0.06,0.02,'square'),45);
   }
 
   function startMusic(){
-    if (musicStarted) return;
+    if(musicStarted) return;
     ensureAudio();
     musicStarted = true;
 
+    // um tema simples mais "arcade"
     const melody = [
-      523,659,784,659,
-      587,698,880,784,
-      523,659,784,659,
-      494,587,698,587
+      659,784,880,784,
+      659,784,988,880,
+      659,784,880,784,
+      587,659,698,659
     ];
 
     musicTimer = setInterval(() => {
       const note = melody[musicStep % melody.length];
-      const type = (musicStep % 4 === 0) ? 'square' : 'triangle';
-      beep(note, 0.11, 0.016, type);
+      const type = musicStep % 3 === 0 ? 'square' : 'triangle';
+      beep(note, 0.095, 0.015, type);
       if (musicStep % 8 === 4) {
-        setTimeout(() => beep(note / 2, 0.06, 0.01, 'square'), 40);
+        setTimeout(() => beep(note/2, 0.05, 0.009, 'square'), 38);
       }
       musicStep++;
-    }, 190);
+    }, 180);
   }
 
-  const rawMap = [
-    "############",
-    "#....G....o#",
-    "#.##.##.##.#",
-    "#..........#",
-    "#.##.GG.##.#",
-    "#...E..E...#",
-    "#.##.##.##.#",
-    "#....S.....#",
-    "#.##.GG.##.#",
-    "#..........#",
-    "#o...G.....#",
-    "############"
+  // =========================
+  // MAPA "ESTILO LADY BUG"
+  // grid de interseções
+  // =========================
+  const H_EDGES = new Set(); // "x,y" = aresta horizontal entre (x,y) e (x+1,y)
+  const V_EDGES = new Set(); // "x,y" = aresta vertical entre (x,y) e (x,y+1)
+  const PELLETS = new Set(); // pellets em interseções
+  const POWER = new Set();   // power pellets
+  const GATES = [];          // portas nas arestas
+  const ENEMY_STARTS = [
+    {x:3,y:4},
+    {x:4,y:4}
   ];
+  const PLAYER_START = {x:4,y:5};
 
-  let walls = new Set();
-  let pellets = new Set();
-  let powerUps = new Set();
-  let gates = [];
-  let enemyStarts = [];
-  let playerStart = {x:1,y:1};
+  function edgeKey(x,y){ return `${x},${y}`; }
+  function nodeKey(x,y){ return `${x},${y}`; }
 
-  function key(x,y){ return `${x},${y}`; }
+  function addH(x,y){ H_EDGES.add(edgeKey(x,y)); }
+  function addV(x,y){ V_EDGES.add(edgeKey(x,y)); }
 
-  function parseMap(){
-    walls.clear();
-    pellets.clear();
-    powerUps.clear();
-    gates = [];
-    enemyStarts = [];
+  // bordas
+  for(let x=0;x<cols-1;x++){ addH(x,0); addH(x,rows-1); }
+  for(let y=0;y<rows-1;y++){ addV(0,y); addV(cols-1,y); }
 
-    for(let y=0;y<rows;y++){
-      for(let x=0;x<cols;x++){
-        const c = rawMap[y][x];
-        if(c === '#') walls.add(key(x,y));
-        if(c === '.') pellets.add(key(x,y));
-        if(c === 'o') powerUps.add(key(x,y));
-        if(c === 'S') playerStart = {x,y};
-        if(c === 'E') enemyStarts.push({x,y});
-        if(c === 'G'){
-          pellets.add(key(x,y));
-          gates.push({ x, y, orientation: Math.random() > 0.5 ? 'h' : 'v' });
-        }
-      }
+  // linhas internas aproximando o original
+  // horizontais
+  addH(0,1); addH(1,1); addH(2,1); addH(3,1); addH(4,1); addH(5,1); addH(6,1);
+  addH(1,2); addH(3,2); addH(4,2); addH(5,2);
+  addH(0,4); addH(5,4);
+  addH(2,5); addH(3,5); addH(4,5);
+  addH(0,7); addH(1,7); addH(4,7); addH(5,7); addH(6,7);
+  addH(0,8); addH(1,8); addH(4,8); addH(5,8);
+
+  // verticais
+  addV(0,1); addV(0,2); addV(0,4); addV(0,5);
+  addV(1,0); addV(1,2); addV(1,3); addV(1,5);
+  addV(2,1); addV(2,2); addV(2,3); addV(2,4); addV(2,6);
+  addV(3,2); addV(3,3); addV(3,5);
+  addV(4,2); addV(4,4); addV(4,6);
+  addV(5,1); addV(5,2); addV(5,4); addV(5,5);
+  addV(6,0); addV(6,2); addV(6,4); addV(6,7);
+  addV(7,1); addV(7,2); addV(7,4); addV(7,5);
+
+  // pellets em quase todos os nós conectados
+  function nodeHasConnection(x,y){
+    return H_EDGES.has(edgeKey(x,y)) ||
+           H_EDGES.has(edgeKey(x-1,y)) ||
+           V_EDGES.has(edgeKey(x,y)) ||
+           V_EDGES.has(edgeKey(x,y-1));
+  }
+
+  for(let y=0;y<rows;y++){
+    for(let x=0;x<cols;x++){
+      if(nodeHasConnection(x,y)) PELLETS.add(nodeKey(x,y));
     }
   }
 
-  parseMap();
+  // tira pellets do start
+  PELLETS.delete(nodeKey(PLAYER_START.x, PLAYER_START.y));
+  ENEMY_STARTS.forEach(e => PELLETS.delete(nodeKey(e.x, e.y)));
+
+  POWER.add(nodeKey(0,7));
+  POWER.add(nodeKey(6,1));
+
+  // portas mais parecidas com o original
+  // orientation: 'v' = barra verde vertical em aresta vertical
+  // orientation: 'h' = barra verde horizontal em aresta horizontal
+  GATES.push({type:'v', x:0, y:1, state:'open'});
+  GATES.push({type:'v', x:2, y:1, state:'open'});
+  GATES.push({type:'v', x:5, y:1, state:'open'});
+  GATES.push({type:'v', x:2, y:3, state:'open'});
+  GATES.push({type:'v', x:5, y:4, state:'open'});
+  GATES.push({type:'v', x:6, y:7, state:'open'});
+
+  GATES.push({type:'h', x:1, y:2, state:'open'});
+  GATES.push({type:'h', x:4, y:2, state:'open'});
+  GATES.push({type:'h', x:5, y:4, state:'open'});
+  GATES.push({type:'h', x:3, y:5, state:'open'});
+  GATES.push({type:'h', x:2, y:7, state:'open'});
+  GATES.push({type:'h', x:0, y:8, state:'open'});
+
+  let pellets = new Set(PELLETS);
+  let powerUps = new Set(POWER);
 
   let score = 0;
   let lives = 3;
@@ -302,20 +338,20 @@
   let powerTimer = 0;
 
   const player = {
-    x: playerStart.x,
-    y: playerStart.y,
-    fromX: playerStart.x,
-    fromY: playerStart.y,
-    toX: playerStart.x,
-    toY: playerStart.y,
+    x: PLAYER_START.x,
+    y: PLAYER_START.y,
+    fromX: PLAYER_START.x,
+    fromY: PLAYER_START.y,
+    toX: PLAYER_START.x,
+    toY: PLAYER_START.y,
     dir: null,
     nextDir: null,
     moving: false,
     progress: 0,
-    speed: 0.17
+    speed: 0.16
   };
 
-  const enemies = enemyStarts.map((p, i) => ({
+  const enemies = ENEMY_STARTS.map((p, i) => ({
     x: p.x,
     y: p.y,
     fromX: p.x,
@@ -325,7 +361,7 @@
     dir: ['left','right','up','down'][i % 4],
     moving: false,
     progress: 0,
-    speed: 0.035,
+    speed: 0.045,
     color: [COLORS.red, COLORS.cyan, COLORS.orange, COLORS.purple][i % 4],
     scared: 0,
     homeX: p.x,
@@ -333,25 +369,22 @@
   }));
 
   function resetPositions(){
-    player.x = playerStart.x;
-    player.y = playerStart.y;
-    player.fromX = playerStart.x;
-    player.fromY = playerStart.y;
-    player.toX = playerStart.x;
-    player.toY = playerStart.y;
+    player.x = PLAYER_START.x;
+    player.y = PLAYER_START.y;
+    player.fromX = PLAYER_START.x;
+    player.fromY = PLAYER_START.y;
+    player.toX = PLAYER_START.x;
+    player.toY = PLAYER_START.y;
     player.dir = null;
     player.nextDir = null;
     player.moving = false;
     player.progress = 0;
 
     enemies.forEach((e, i) => {
-      const s = enemyStarts[i];
-      e.x = s.x;
-      e.y = s.y;
-      e.fromX = s.x;
-      e.fromY = s.y;
-      e.toX = s.x;
-      e.toY = s.y;
+      const s = ENEMY_STARTS[i];
+      e.x = s.x; e.y = s.y;
+      e.fromX = s.x; e.fromY = s.y;
+      e.toX = s.x; e.toY = s.y;
       e.dir = ['left','right','up','down'][i % 4];
       e.moving = false;
       e.progress = 0;
@@ -359,56 +392,87 @@
     });
   }
 
+  function resetBoard(){
+    pellets = new Set(PELLETS);
+    powerUps = new Set(POWER);
+    GATES.forEach(g => g.state = 'open');
+    resetPositions();
+  }
+
   function delta(dir){
-    if(dir === 'left') return {dx:-1, dy:0};
-    if(dir === 'right') return {dx:1, dy:0};
-    if(dir === 'up') return {dx:0, dy:-1};
-    if(dir === 'down') return {dx:0, dy:1};
-    return {dx:0, dy:0};
+    if(dir === 'left') return {dx:-1,dy:0};
+    if(dir === 'right') return {dx:1,dy:0};
+    if(dir === 'up') return {dx:0,dy:-1};
+    if(dir === 'down') return {dx:0,dy:1};
+    return {dx:0,dy:0};
   }
 
-  function inWall(x,y){
-    return walls.has(key(x,y));
-  }
+  function gateAllows(type, x, y, dir){
+    const gate = GATES.find(g => g.type === type && g.x === x && g.y === y);
+    if(!gate) return true;
 
-  function gateAt(x,y){
-    return gates.find(g => g.x === x && g.y === y);
-  }
+    // dinâmica parecida: ao chegar, a porta gira para o eixo do movimento
+    if(type === 'h'){
+      if(dir === 'left' || dir === 'right'){
+        if(gate.state !== 'open'){
+          gate.state = 'open';
+          sfxRotate();
+        }
+        return true;
+      } else {
+        if(gate.state !== 'closed'){
+          gate.state = 'closed';
+          sfxRotate();
+        }
+        return false;
+      }
+    }
 
-  function gateBlocks(x, y, dir){
-    const gate = gateAt(x,y);
-    if(!gate) return false;
-    if(gate.orientation === 'h' && (dir === 'up' || dir === 'down')) return true;
-    if(gate.orientation === 'v' && (dir === 'left' || dir === 'right')) return true;
-    return false;
-  }
+    if(type === 'v'){
+      if(dir === 'up' || dir === 'down'){
+        if(gate.state !== 'open'){
+          gate.state = 'open';
+          sfxRotate();
+        }
+        return true;
+      } else {
+        if(gate.state !== 'closed'){
+          gate.state = 'closed';
+          sfxRotate();
+        }
+        return false;
+      }
+    }
 
-  function canMove(x, y, dir){
-    const {dx,dy} = delta(dir);
-    const nx = x + dx;
-    const ny = y + dy;
-    if(nx < 0 || ny < 0 || nx >= cols || ny >= rows) return false;
-    if(inWall(nx, ny)) return false;
-    if(gateBlocks(nx, ny, dir)) return false;
     return true;
   }
 
-  function autoRotateGateForDirection(x, y, dir){
-    const gate = gateAt(x, y);
-    if(!gate) return false;
-
-    const wanted = (dir === 'left' || dir === 'right') ? 'v' : 'h';
-
-    if(gate.orientation !== wanted){
-      gate.orientation = wanted;
-      sfxRotate();
-      return true;
+  function canMove(x,y,dir){
+    if(dir === 'left'){
+      if(x <= 0) return false;
+      if(!H_EDGES.has(edgeKey(x-1,y))) return false;
+      return gateAllows('h', x-1, y, dir);
+    }
+    if(dir === 'right'){
+      if(x >= cols-1) return false;
+      if(!H_EDGES.has(edgeKey(x,y))) return false;
+      return gateAllows('h', x, y, dir);
+    }
+    if(dir === 'up'){
+      if(y <= 0) return false;
+      if(!V_EDGES.has(edgeKey(x,y-1))) return false;
+      return gateAllows('v', x, y-1, dir);
+    }
+    if(dir === 'down'){
+      if(y >= rows-1) return false;
+      if(!V_EDGES.has(edgeKey(x,y))) return false;
+      return gateAllows('v', x, y, dir);
     }
     return false;
   }
 
   function eatThings(){
-    const k = key(player.x, player.y);
+    const k = nodeKey(player.x, player.y);
 
     if(pellets.has(k)){
       pellets.delete(k);
@@ -425,12 +489,8 @@
     }
   }
 
-  function enemyValidDirs(e){
-    return ['left','right','up','down'].filter(d => canMove(e.x, e.y, d));
-  }
-
   function opposite(dir){
-    return ({left:'right', right:'left', up:'down', down:'up'})[dir];
+    return ({left:'right',right:'left',up:'down',down:'up'})[dir];
   }
 
   function startStep(entity, dir){
@@ -445,7 +505,7 @@
   }
 
   function updatePlayer(){
-    if (!gameStarted) return;
+    if(!gameStarted) return;
 
     if(player.moving){
       player.progress += player.speed;
@@ -462,50 +522,43 @@
     const tryDir = player.nextDir || player.dir;
     if(!tryDir) return;
 
-    const {dx,dy} = delta(tryDir);
-    const nx = player.x + dx;
-    const ny = player.y + dy;
-
-    autoRotateGateForDirection(nx, ny, tryDir);
-
     if(canMove(player.x, player.y, tryDir)){
       startStep(player, tryDir);
       player.dir = tryDir;
     }
   }
 
+  function validDirsForEnemy(e){
+    return ['left','right','up','down'].filter(d => canMove(e.x,e.y,d));
+  }
+
   function chooseEnemyDir(e){
-    let dirs = enemyValidDirs(e);
+    let dirs = validDirsForEnemy(e);
     if(dirs.length === 0) return null;
 
     if(dirs.length > 1){
       dirs = dirs.filter(d => d !== opposite(e.dir));
-      if(dirs.length === 0) dirs = enemyValidDirs(e);
+      if(dirs.length === 0) dirs = validDirsForEnemy(e);
     }
 
     dirs.sort((a,b) => {
       const da = delta(a);
       const db = delta(b);
-
-      const ax = e.x + da.dx;
-      const ay = e.y + da.dy;
-      const bx = e.x + db.dx;
-      const by = e.y + db.dy;
-
+      const ax = e.x + da.dx, ay = e.y + da.dy;
+      const bx = e.x + db.dx, by = e.y + db.dy;
       const distA = Math.abs(ax - player.x) + Math.abs(ay - player.y);
       const distB = Math.abs(bx - player.x) + Math.abs(by - player.y);
-
       return e.scared > 0 ? distB - distA : distA - distB;
     });
 
-    if (Math.random() < 0.25) {
-      return dirs[Math.floor(Math.random() * dirs.length)];
+    if(Math.random() < 0.25){
+      return dirs[Math.floor(Math.random()*dirs.length)];
     }
     return dirs[0];
   }
 
   function updateEnemies(){
-    if (!gameStarted) return;
+    if(!gameStarted) return;
 
     enemies.forEach(e => {
       if(e.moving){
@@ -526,29 +579,22 @@
   }
 
   function currentEntityCell(entity){
-    if (!entity.moving) {
-      return {x: entity.x, y: entity.y};
-    }
+    if(!entity.moving) return {x:entity.x,y:entity.y};
     return entity.progress < 0.5
-      ? {x: entity.fromX, y: entity.fromY}
-      : {x: entity.toX, y: entity.toY};
+      ? {x:entity.fromX,y:entity.fromY}
+      : {x:entity.toX,y:entity.toY};
   }
 
   function checkCollisions(){
     const pCell = currentEntityCell(player);
-
     enemies.forEach(e => {
       const eCell = currentEntityCell(e);
-
       if(eCell.x === pCell.x && eCell.y === pCell.y){
         if(e.scared > 0){
           score += 100;
-          e.x = e.homeX;
-          e.y = e.homeY;
-          e.fromX = e.homeX;
-          e.fromY = e.homeY;
-          e.toX = e.homeX;
-          e.toY = e.homeY;
+          e.x = e.homeX; e.y = e.homeY;
+          e.fromX = e.homeX; e.fromY = e.homeY;
+          e.toX = e.homeX; e.toY = e.homeY;
           e.moving = false;
           e.progress = 0;
           e.scared = 0;
@@ -570,99 +616,104 @@
   function checkLevelClear(){
     if(pellets.size === 0 && powerUps.size === 0){
       level++;
-      parseMap();
-      resetPositions();
+      resetBoard();
     }
   }
 
-  function lerp(a,b,t){
-    return a + (b-a) * t;
-  }
+  function lerp(a,b,t){ return a + (b-a)*t; }
 
-  function cellCenterFromCoords(x,y){
+  function nodeToPixel(x,y){
     return {
-      px: boardX + x * tile + tile / 2,
-      py: boardY + y * tile + tile / 2
+      px: boardX + x * cell,
+      py: boardY + y * cell
     };
   }
 
   function entityPixel(entity){
     const x = entity.moving ? lerp(entity.fromX, entity.toX, entity.progress) : entity.x;
     const y = entity.moving ? lerp(entity.fromY, entity.toY, entity.progress) : entity.y;
-    return cellCenterFromCoords(x,y);
+    return nodeToPixel(x,y);
   }
 
+  // =========================
+  // DESENHO
+  // =========================
   function drawHeader(){
     ctx.fillStyle = COLORS.orange;
-    ctx.fillRect(0, 0, 200, 38);
+    ctx.fillRect(90, 0, 180, 38);
     ctx.fillStyle = '#f0dc5c';
-    ctx.fillRect(200, 0, 200, 38);
+    ctx.fillRect(270, 0, 180, 38);
     ctx.fillStyle = '#40a0e8';
-    ctx.fillRect(400, 0, 200, 38);
+    ctx.fillRect(450, 0, 150, 38);
 
     ctx.fillStyle = '#000';
     ctx.font = 'bold 20px monospace';
-    ctx.fillText('SPECIAL', 28, 26);
-    ctx.fillText('EXTRA', 255, 26);
-    ctx.fillText('x2 x3 x5', 430, 26);
+    ctx.fillText('SPECIAL', 108, 26);
+    ctx.fillText('EXTRA', 322, 26);
+    ctx.fillText('x2 x3 x5', 485, 26);
   }
 
   function drawBorder(){
-    for(let x=0;x<W;x+=20){
+    for(let x=96;x<596;x+=18){
       ctx.fillStyle = COLORS.white;
-      ctx.fillRect(x, 42, 14, 14);
-      ctx.fillRect(x, H - 32, 14, 14);
+      ctx.fillRect(x, 44, 14, 14);
+      ctx.fillRect(x, 742, 14, 14);
     }
-    for(let y=42;y<H-18;y+=20){
-      ctx.fillRect(0, y, 14, 14);
-      ctx.fillRect(W - 14, y, 14, 14);
+    for(let y=44;y<758;y+=18){
+      ctx.fillRect(96, y, 14, 14);
+      ctx.fillRect(584, y, 14, 14);
     }
+
+    // laterais verdes superiores como no original
+    for(let x=96;x<220;x+=18){
+      ctx.fillStyle = COLORS.green;
+      ctx.fillRect(x, 44, 14, 14);
+    }
+
+    for(let x=0;x<7;x++){
+      ctx.fillStyle = COLORS.green;
+      ctx.fillRect(584, 44 + x*18, 14, 14);
+      ctx.fillRect(96, 44 + x*18, 14, 14);
+    }
+
     ctx.strokeStyle = COLORS.pink;
     ctx.lineWidth = 4;
-    ctx.strokeRect(24, 60, W - 48, H - 116);
+    ctx.strokeRect(114, 78, 430, 616);
   }
 
-  function drawWalls(){
+  function drawPaths(){
     ctx.strokeStyle = COLORS.pink;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.lineCap = 'butt';
 
+    H_EDGES.forEach(k => {
+      const [x,y] = k.split(',').map(Number);
+      const a = nodeToPixel(x,y);
+      const b = nodeToPixel(x+1,y);
+      ctx.beginPath();
+      ctx.moveTo(a.px, a.py);
+      ctx.lineTo(b.px, b.py);
+      ctx.stroke();
+    });
+
+    V_EDGES.forEach(k => {
+      const [x,y] = k.split(',').map(Number);
+      const a = nodeToPixel(x,y);
+      const b = nodeToPixel(x,y+1);
+      ctx.beginPath();
+      ctx.moveTo(a.px, a.py);
+      ctx.lineTo(b.px, b.py);
+      ctx.stroke();
+    });
+  }
+
+  function drawNodes(){
     for(let y=0;y<rows;y++){
       for(let x=0;x<cols;x++){
-        if(!walls.has(key(x,y))) continue;
-
-        const px = boardX + x * tile;
-        const py = boardY + y * tile;
-
-        const leftOpen = !walls.has(key(x-1,y));
-        const rightOpen = !walls.has(key(x+1,y));
-        const upOpen = !walls.has(key(x,y-1));
-        const downOpen = !walls.has(key(x,y+1));
-
-        if(upOpen){
-          ctx.beginPath();
-          ctx.moveTo(px+10, py+10);
-          ctx.lineTo(px+tile-10, py+10);
-          ctx.stroke();
-        }
-        if(downOpen){
-          ctx.beginPath();
-          ctx.moveTo(px+10, py+tile-10);
-          ctx.lineTo(px+tile-10, py+tile-10);
-          ctx.stroke();
-        }
-        if(leftOpen){
-          ctx.beginPath();
-          ctx.moveTo(px+10, py+10);
-          ctx.lineTo(px+10, py+tile-10);
-          ctx.stroke();
-        }
-        if(rightOpen){
-          ctx.beginPath();
-          ctx.moveTo(px+tile-10, py+10);
-          ctx.lineTo(px+tile-10, py+tile-10);
-          ctx.stroke();
-        }
+        if(!nodeHasConnection(x,y)) continue;
+        const p = nodeToPixel(x,y);
+        ctx.fillStyle = COLORS.blue;
+        ctx.fillRect(p.px - 4, p.py - 4, 8, 8);
       }
     }
   }
@@ -670,48 +721,80 @@
   function drawPellets(){
     pellets.forEach(k => {
       const [x,y] = k.split(',').map(Number);
-      const p = cellCenterFromCoords(x,y);
+      const p = nodeToPixel(x,y);
       ctx.fillStyle = COLORS.white;
-      ctx.fillRect(p.px - 3, p.py - 3, 6, 6);
+      ctx.beginPath();
+      ctx.arc(p.px, p.py, 2.5, 0, Math.PI*2);
+      ctx.fill();
     });
 
     powerUps.forEach(k => {
       const [x,y] = k.split(',').map(Number);
-      const p = cellCenterFromCoords(x,y);
+      const p = nodeToPixel(x,y);
       ctx.fillStyle = powerTimer % 30 < 15 ? COLORS.yellow : COLORS.green;
       ctx.beginPath();
-      ctx.arc(p.px, p.py, 7, 0, Math.PI * 2);
+      ctx.arc(p.px, p.py, 7, 0, Math.PI*2);
       ctx.fill();
     });
   }
 
   function drawGates(){
-    gates.forEach(g => {
-      const p = cellCenterFromCoords(g.x,g.y);
-
+    GATES.forEach(g => {
       ctx.strokeStyle = COLORS.green;
-      ctx.lineWidth = 4;
-      ctx.fillStyle = COLORS.blue;
+      ctx.lineWidth = 5;
+      const p = nodeToPixel(g.x, g.y);
 
-      if(g.orientation === 'h'){
-        ctx.beginPath();
-        ctx.moveTo(p.px - 17, p.py);
-        ctx.lineTo(p.px + 17, p.py);
-        ctx.stroke();
-      } else {
-        ctx.beginPath();
-        ctx.moveTo(p.px, p.py - 17);
-        ctx.lineTo(p.px, p.py + 17);
-        ctx.stroke();
+      if(g.type === 'h'){
+        const p2 = nodeToPixel(g.x+1, g.y);
+        const midX = (p.px + p2.px) / 2;
+        const midY = p.py;
+
+        if(g.state === 'open'){
+          // horizontal aberta
+          ctx.beginPath();
+          ctx.moveTo(midX - 18, midY);
+          ctx.lineTo(midX + 18, midY);
+          ctx.stroke();
+        } else {
+          // gira e fica vertical
+          ctx.beginPath();
+          ctx.moveTo(midX, midY - 18);
+          ctx.lineTo(midX, midY + 18);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = COLORS.blue;
+        ctx.fillRect(midX - 3, midY - 3, 6, 6);
       }
 
-      ctx.fillRect(p.px - 3, p.py - 3, 6, 6);
+      if(g.type === 'v'){
+        const p2 = nodeToPixel(g.x, g.y+1);
+        const midX = p.px;
+        const midY = (p.py + p2.py) / 2;
+
+        if(g.state === 'open'){
+          // vertical aberta
+          ctx.beginPath();
+          ctx.moveTo(midX, midY - 18);
+          ctx.lineTo(midX, midY + 18);
+          ctx.stroke();
+        } else {
+          // gira e fica horizontal
+          ctx.beginPath();
+          ctx.moveTo(midX - 18, midY);
+          ctx.lineTo(midX + 18, midY);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = COLORS.blue;
+        ctx.fillRect(midX - 3, midY - 3, 6, 6);
+      }
     });
   }
 
   function drawPlayer(){
     const p = entityPixel(player);
-    const size = 32;
+    const size = 34;
 
     ctx.save();
     ctx.translate(p.px, p.py);
@@ -735,7 +818,7 @@
     ctx.save();
     ctx.translate(p.px, p.py);
 
-    ctx.fillStyle = scared ? (Math.floor(Date.now()/140) % 2 ? COLORS.blue : COLORS.white) : e.color;
+    ctx.fillStyle = scared ? (Math.floor(Date.now()/140)%2 ? COLORS.blue : COLORS.white) : e.color;
     ctx.beginPath();
     ctx.arc(0,-4,13,Math.PI,0);
     ctx.lineTo(13,9);
@@ -749,8 +832,8 @@
     ctx.fill();
 
     ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(-4,-3,3.6,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(4,-3,3.6,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-4,-3,3.5,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4,-3,3.5,0,Math.PI*2); ctx.fill();
     ctx.fillStyle = '#111';
     ctx.beginPath(); ctx.arc(-3,-2,1.8,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(5,-2,1.8,0,Math.PI*2); ctx.fill();
@@ -761,48 +844,51 @@
   function drawBottom(){
     ctx.fillStyle = COLORS.orange;
     ctx.font = 'bold 18px monospace';
-    ctx.fillText('1ST', 360, H - 40);
-    ctx.fillText(String(score).padStart(5,'0'), 470, H - 40);
+    ctx.fillText('1ST', 420, 735);
+    ctx.fillText(String(score).padStart(6,'0'), 500, 735);
 
     for(let i=0;i<lives;i++){
       ctx.fillStyle = COLORS.yellow;
       ctx.beginPath();
-      ctx.arc(42 + i * 32, H - 60, 11, 0, Math.PI * 2);
+      ctx.arc(140 + i*34, 730, 11, 0, Math.PI*2);
       ctx.fill();
     }
+
+    ctx.fillStyle = COLORS.orange;
+    ctx.font = 'bold 18px monospace';
+    ctx.fillText('TOP', 160, 780);
+    ctx.fillText('UNIVERSAL', 260, 780);
+    ctx.fillText('10000', 470, 780);
+
+    ctx.fillStyle = COLORS.green;
+    ctx.fillText('8500', 162, 806);
   }
 
   function drawStartOverlay(){
-    if (gameStarted || gameOver) return;
+    if(gameStarted || gameOver) return;
 
-    ctx.fillStyle = 'rgba(0,0,0,.72)';
+    ctx.fillStyle = 'rgba(0,0,0,.68)';
     ctx.fillRect(0,0,W,H);
 
     ctx.textAlign = 'center';
-
     ctx.fillStyle = COLORS.yellow;
     ctx.font = 'bold 40px Arial';
-    ctx.fillText(CHILD_NAME, W/2, H/2 - 72);
+    ctx.fillText(CHILD_NAME, W/2, H/2 - 65);
 
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 26px Arial';
-    ctx.fillText('LADY BUG DO ' + CHILD_NAME, W/2, H/2 - 28);
+    ctx.font = 'bold 24px Arial';
+    ctx.fillText('LADY BUG DO ' + CHILD_NAME, W/2, H/2 - 20);
 
-    ctx.font = '19px Arial';
-    ctx.fillText('Pressione ENTER ou toque na tela', W/2, H/2 + 16);
-
-    ctx.font = '17px Arial';
-    ctx.fillText('WASD / SETAS para mover', W/2, H/2 + 48);
-
+    ctx.font = '18px Arial';
+    ctx.fillText('Pressione ENTER ou toque na tela', W/2, H/2 + 22);
+    ctx.fillText('WASD / SETAS para mover', W/2, H/2 + 50);
     ctx.textAlign = 'start';
   }
 
   function drawGameOver(){
     if(!gameOver) return;
-
     ctx.fillStyle = 'rgba(0,0,0,.78)';
     ctx.fillRect(0,0,W,H);
-
     ctx.textAlign = 'center';
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 40px Arial';
@@ -816,9 +902,10 @@
     ctx.clearRect(0,0,W,H);
     drawHeader();
     drawBorder();
-    drawWalls();
-    drawPellets();
+    drawPaths();
+    drawNodes();
     drawGates();
+    drawPellets();
     drawPlayer();
     enemies.forEach(drawEnemy);
     drawBottom();
@@ -839,8 +926,7 @@
     gameOver = false;
     gameStarted = false;
     powerTimer = 0;
-    parseMap();
-    resetPositions();
+    resetBoard();
     updateUI();
   }
 
@@ -852,7 +938,7 @@
   }
 
   function queueDir(dir){
-    if (!gameStarted && !gameOver) beginGame();
+    if(!gameStarted && !gameOver) beginGame();
     player.nextDir = dir;
     canvas.focus();
   }
@@ -865,11 +951,8 @@
     }
 
     if(k === 'enter'){
-      if(gameOver){
-        restartGame();
-      } else if(!gameStarted){
-        beginGame();
-      }
+      if(gameOver) restartGame();
+      else if(!gameStarted) beginGame();
       return;
     }
 
@@ -886,12 +969,10 @@
 
   document.querySelectorAll('[data-dir]').forEach(btn => {
     const dir = btn.getAttribute('data-dir');
-
     btn.addEventListener('touchstart', (e) => {
       e.preventDefault();
       queueDir(dir);
-    }, { passive:false });
-
+    }, {passive:false});
     btn.addEventListener('mousedown', (e) => {
       e.preventDefault();
       queueDir(dir);
@@ -899,11 +980,8 @@
   });
 
   canvas.addEventListener('click', () => {
-    if(gameOver){
-      restartGame();
-    } else if(!gameStarted){
-      beginGame();
-    }
+    if(gameOver) restartGame();
+    else if(!gameStarted) beginGame();
     canvas.focus();
   });
 
