@@ -146,6 +146,9 @@
   const livesEl = document.getElementById('lives');
   const levelEl = document.getElementById('level');
 
+  const imgFilhote = new Image();
+  imgFilhote.src = 'filhote.png';
+
   const W = canvas.width;
   const H = canvas.height;
   const tile = 50;
@@ -568,25 +571,33 @@
     });
   }
 
-  function drawPlayer() {
-    const px = player.x;
-    const py = worldY(player.y);
+function drawPlayer() {
+  const px = player.x;
+  const py = worldY(player.y);
+
+  ctx.save();
+  ctx.translate(px, py);
+
+  const angle = {right:0, left:Math.PI, up:-Math.PI/2, down:Math.PI/2}[player.dir];
+  ctx.rotate(angle);
+
+  const size = 34;
+
+  if (imgFilhote.complete && imgFilhote.naturalWidth > 0) {
+    ctx.drawImage(imgFilhote, -size/2, -size/2, size, size);
+  } else {
+    // fallback enquanto a imagem não carregar
     const mouth = Math.abs(Math.sin(player.blink * 0.18)) * 0.55;
-
-    ctx.save();
-    ctx.translate(px, py);
-    const angle = {right:0, left:Math.PI, up:-Math.PI/2, down:Math.PI/2}[player.dir];
-    ctx.rotate(angle);
-
     ctx.fillStyle = player.powerTimer > 0 && (player.powerTimer % 10 < 5) ? COLORS.green : COLORS.yellow;
     ctx.beginPath();
     ctx.moveTo(0,0);
     ctx.arc(0,0,player.radius, mouth, Math.PI*2 - mouth);
     ctx.closePath();
     ctx.fill();
-
-    ctx.restore();
   }
+
+  ctx.restore();
+}
 
   function drawEnemy(e) {
     const px = e.x;
