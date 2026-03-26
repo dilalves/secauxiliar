@@ -550,7 +550,36 @@ document.getElementById('btnGerarLink').addEventListener('click', async () => {
 
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(data.url);
-      alert(texto + '\n\nO link já foi copiado.');
+
+      // Mensagem amigável para o usuário, informando que o link foi copiado
+      Swal.fire({
+        title: 'Link gerado com sucesso',
+        html: `
+          <div style="text-align:left">
+            <b>Evento:</b> ${data.evento}<br>
+            <b>Expira em:</b> ${data.expires_at}<br><br>
+            
+            <div style="
+              background:#f4f8fe;
+              border:1px solid #dce7f6;
+              padding:10px;
+              border-radius:8px;
+              word-break:break-all;
+              font-size:13px;
+            ">
+              ${data.url}
+            </div>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonText: 'OK',
+        showCancelButton: true,
+        cancelButtonText: 'Abrir link',
+      }).then((result) => {
+        if (result.dismiss === Swal.DismissReason.cancel) {
+          window.open(data.url, '_blank');
+        }
+      });
     } else {
       prompt('Copie o link abaixo:', data.url);
     }
