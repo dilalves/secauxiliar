@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Mini LadyBug Clone</title>
+<style>
+body{
+  margin:0;
+  background:black;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+canvas{
+  background:#000;
+  border:4px solid #4caf50;
+}
+</style>
+</head>
+
+<body>
+<canvas id="game" width="420" height="420"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const tile = 20;
+const rows = 21;
+const cols = 21;
+
+/* 0 = chão, 1 = parede */
+const map = [
+"111111111111111111111",
+"100000000100000000001",
+"101111110101111110101",
+"101000010001000010101",
+"101011011111011010101",
+"100010000000000010001",
+"111010111111101011111",
+"100000100010001000001",
+"101110101010101011101",
+"100010000P000000010001",
+"101110101010101011101",
+"100000100010001000001",
+"111010111111101011111",
+"100010000000000010001",
+"101011011111011010101",
+"101000010001000010101",
+"101111110101111110101",
+"100000000100000000001",
+"111111111111111111111"
+];
+
+let player = {x:1,y:1};
+let enemy = {x:19,y:17};
+let score = 0;
+
+/* coleta */
+let dots = [];
+
+for(let y=0;y<map.length;y++){
+  for(let x=0;x<map[y].length;x++){
+    if(map[y][x] === "0"){
+      dots.push({x,y});
+    }
+  }
+}
+
+function draw(){
+  ctx.clearRect(0,0,420,420);
+
+  // mapa
+  for(let y=0;y<map.length;y++){
+    for(let x=0;x<map[y].length;x++){
+      if(map[y][x] === "1"){
+        ctx.fillStyle="#1976d2";
+        ctx.fillRect(x*tile,y*tile,tile,tile);
+      }
+    }
+  }
+
+  // bolinhas
+  ctx.fillStyle="yellow";
+  dots.forEach(d=>{
+    ctx.beginPath();
+    ctx.arc(d.x*tile+10,d.y*tile+10,3,0,Math.PI*2);
+    ctx.fill();
+  });
+
+  // jogador
+  ctx.fillStyle="lime";
+  ctx.beginPath();
+  ctx.arc(player.x*tile+10,player.y*tile+10,8,0,Math.PI*2);
+  ctx.fill();
+
+  // inimigo
+  ctx.fillStyle="red";
+  ctx.beginPath();
+  ctx.arc(enemy.x*tile+10,enemy.y*tile+10,8,0,Math.PI*2);
+  ctx.fill();
+
+  // score
+  ctx.fillStyle="white";
+  ctx.fillText("Pontos: "+score,10,410);
+}
+
+function movePlayer(dx,dy){
+  let nx = player.x+dx;
+  let ny = player.y+dy;
+  if(map[ny][nx] !== "1"){
+    player.x = nx;
+    player.y = ny;
+
+    dots = dots.filter(d=>{
+      if(d.x===player.x && d.y===player.y){
+        score++;
+        return false;
+      }
+      return true;
+    });
+  }
+}
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowUp") movePlayer(0,-1);
+  if(e.key==="ArrowDown") movePlayer(0,1);
+  if(e.key==="ArrowLeft") movePlayer(-1,0);
+  if(e.key==="ArrowRight") movePlayer(1,0);
+});
+
+/* inimigo simples */
+function moveEnemy(){
+  let dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+  let d = dirs[Math.floor(Math.random()*dirs.length)];
+  let nx = enemy.x+d[0];
+  let ny = enemy.y+d[1];
+  if(map[ny][nx] !== "1"){
+    enemy.x = nx;
+    enemy.y = ny;
+  }
+
+  if(enemy.x===player.x && enemy.y===player.y){
+    alert("Pegou! Pontos: "+score);
+    location.reload();
+  }
+}
+
+setInterval(()=>{
+  moveEnemy();
+  draw();
+},250);
+
+draw();
+</script>
+</body>
+</html>
