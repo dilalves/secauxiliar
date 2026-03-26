@@ -242,7 +242,7 @@
     dir: 'right',
     nextDir: 'right',
     speed: 2.2,
-    radius: 15,
+    radius: 12,
     powerTimer: 0,
     blink: 0
   };
@@ -492,7 +492,7 @@ function updatePlayer() {
       for (let x=0; x<cols; x++) {
         if (!walls.has(key(x,y))) continue;
         const px = x*tile;
-        const py = 60 + y*tile*0.86;
+        const py = 60 + y*tile;
 
         // desenha somente as bordas visíveis da célula
         const leftOpen = !walls.has(key(x-1,y));
@@ -528,17 +528,16 @@ function updatePlayer() {
     }
   }
 
-  function mapToScreen(tx,ty){
-    return {
-      x: tx * tile + tile/2,
-      y: 60 + ty * tile*0.86 + tile/2
-    };
-  }
+function mapToScreen(tx,ty){
+  return {
+    x: tx * tile + tile/2,
+    y: 60 + ty * tile + tile/2
+  };
+}
 
-  function worldY(py){
-    // compressão vertical leve para lembrar arcade antigo
-    return 60 + py * 0.86;
-  }
+function worldY(py){
+  return 60 + py;
+}
 
   function drawPellets() {
     pellets.forEach(k => {
@@ -582,13 +581,13 @@ function updatePlayer() {
 function drawPlayer() {
   const px = player.x;
   const py = worldY(player.y);
-  const size = 40;
+  const size = 30;
 
   ctx.save();
   ctx.translate(px, py);
 
   if (imgFilhote.complete && imgFilhote.naturalWidth > 0) {
-    ctx.rotate(Math.PI); // gira 180 graus
+    ctx.rotate(Math.PI);
     ctx.drawImage(imgFilhote, -size/2, -size/2, size, size);
   } else {
     ctx.fillStyle = COLORS.yellow;
