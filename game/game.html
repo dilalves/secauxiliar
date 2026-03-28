@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Mini Lady Bug Clone - Melhorado</title>
+  <title>Lady Bug Clone - Versão Melhorada</title>
   <style>
     :root{
       --bg:#05070c;
@@ -133,7 +133,7 @@
   <canvas id="game" width="600" height="800" tabindex="0"></canvas>
 
   <div class="hint">
-    Setas ou WASD para mover • Portas giram automaticamente ao passar • Toque no jogo para ativar som
+    Setas ou WASD para mover • Portas giram automaticamente • Espaço para girar manualmente
   </div>
 
   <div class="controls">
@@ -145,14 +145,13 @@
   </div>
 
   <div class="footer">
-    Coloque o arquivo <b>filhote.png</b> na mesma pasta do HTML.  
-    Edite a variável <b>CHILD_NAME</b> no código.
+    Lady Bug Clone - Coma todos os pontinhos para passar de fase!
   </div>
 </div>
 
 <script>
 (() => {
-  const CHILD_NAME = "JOÃO PEDRO";
+  const CHILD_NAME = "JOGADOR";
 
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
@@ -187,7 +186,6 @@
 
   let audioCtx = null;
   let musicStarted = false;
-  let musicStep = 0;
   let musicTimer = null;
 
   function ensureAudio(){
@@ -215,25 +213,32 @@
   }
 
   function sfxEat() {
-    beep(950, 0.04, 0.015, 'square');
+    beep(1000, 0.03, 0.012, 'square');
   }
 
   function sfxPower() {
-    beep(700, 0.08, 0.02, 'square');
-    setTimeout(() => beep(1000, 0.10, 0.02, 'square'), 60);
+    beep(600, 0.06, 0.018, 'square');
+    setTimeout(() => beep(900, 0.08, 0.018, 'square'), 50);
   }
 
   function sfxRotate() {
-    beep(550, 0.06, 0.025, 'triangle');
+    beep(450, 0.05, 0.02, 'sine');
   }
 
   function sfxHit() {
-    beep(220, 0.18, 0.03, 'sawtooth');
+    beep(180, 0.15, 0.025, 'sawtooth');
   }
 
   function sfxEnemyEaten() {
-    beep(850, 0.08, 0.025, 'square');
-    setTimeout(() => beep(1100, 0.08, 0.02, 'square'), 60);
+    beep(800, 0.06, 0.02, 'square');
+    setTimeout(() => beep(1200, 0.06, 0.018, 'square'), 50);
+  }
+
+  function sfxLevelComplete() {
+    beep(523, 0.12, 0.02, 'square');
+    setTimeout(() => beep(659, 0.12, 0.02, 'square'), 120);
+    setTimeout(() => beep(784, 0.12, 0.02, 'square'), 240);
+    setTimeout(() => beep(1047, 0.20, 0.02, 'square'), 360);
   }
 
   function startMusic(){
@@ -242,29 +247,30 @@
     musicStarted = true;
 
     const melody = [
-      {note: 523, duration: 0.15},
-      {note: 659, duration: 0.15},
-      {note: 784, duration: 0.15},
-      {note: 659, duration: 0.15},
-      {note: 523, duration: 0.15},
-      {note: 587, duration: 0.15},
-      {note: 659, duration: 0.30},
-      {note: 784, duration: 0.15},
-      {note: 880, duration: 0.15},
-      {note: 988, duration: 0.15},
-      {note: 880, duration: 0.15},
-      {note: 784, duration: 0.15},
-      {note: 659, duration: 0.15},
-      {note: 784, duration: 0.30},
+      {note: 659, duration: 0.12},
+      {note: 784, duration: 0.12},
+      {note: 880, duration: 0.12},
+      {note: 784, duration: 0.12},
+      {note: 659, duration: 0.12},
+      {note: 523, duration: 0.12},
+      {note: 659, duration: 0.24},
+      
+      {note: 784, duration: 0.12},
+      {note: 880, duration: 0.12},
+      {note: 988, duration: 0.12},
+      {note: 880, duration: 0.12},
+      {note: 784, duration: 0.12},
+      {note: 659, duration: 0.12},
+      {note: 784, duration: 0.24},
     ];
 
     let stepIndex = 0;
     
     function playNextNote() {
-      if (!audioCtx) return;
+      if (!audioCtx || !musicStarted) return;
       
       const step = melody[stepIndex % melody.length];
-      beep(step.note, step.duration, 0.015, 'square');
+      beep(step.note, step.duration * 0.8, 0.012, 'square');
       
       stepIndex++;
       musicTimer = setTimeout(playNextNote, step.duration * 1000);
@@ -294,6 +300,7 @@
   let gates = [];
   let enemyStarts = [];
   let playerStart = {x:1,y:1};
+  let totalPellets = 0;
 
   function key(x,y){ return `${x},${y}`; }
 
@@ -323,6 +330,8 @@
         }
       }
     }
+    
+    totalPellets = pellets.size + powerUps.size;
   }
 
   parseMap();
@@ -332,6 +341,8 @@
   let level = 1;
   let gameOver = false;
   let gameStarted = false;
+  let levelTransition = false;
+  let transitionTimer = 0;
 
   let powerTimer = 0;
 
@@ -346,7 +357,7 @@
     nextDir: null,
     moving: false,
     progress: 0,
-    speed: 0.08
+    speed: 0.06
   };
 
   const enemies = enemyStarts.map((p, i) => ({
@@ -359,7 +370,7 @@
     dir: ['left','right','up','down'][i % 4],
     moving: false,
     progress: 0,
-    speed: 0.04,
+    speed: 0.035,
     color: [COLORS.red, COLORS.cyan, COLORS.orange, COLORS.purple][i % 4],
     scared: 0,
     homeX: p.x,
@@ -437,7 +448,7 @@
   function updateGateRotations(){
     gates.forEach(g => {
       if(g.rotating){
-        g.rotationProgress += 0.12;
+        g.rotationProgress += 0.15;
         if(g.rotationProgress >= 1){
           g.rotationProgress = 0;
           g.rotating = false;
@@ -472,8 +483,8 @@
     if(powerUps.has(k)){
       powerUps.delete(k);
       score += 50;
-      powerTimer = 420;
-      enemies.forEach(e => e.scared = 420);
+      powerTimer = 350;
+      enemies.forEach(e => e.scared = 350);
       sfxPower();
     }
   }
@@ -498,7 +509,7 @@
   }
 
   function updatePlayer(){
-    if (!gameStarted) return;
+    if (!gameStarted || levelTransition) return;
 
     if(player.moving){
       player.progress += player.speed;
@@ -528,7 +539,7 @@
     if(dirs.length === 0) return null;
 
     if(dirs.length > 1){
-      dirs = dirs.filter(d => d !== opposite(e.dir)) || dirs;
+      dirs = dirs.filter(d => d !== opposite(e.dir));
       if(dirs.length === 0) dirs = enemyValidDirs(e);
     }
 
@@ -547,18 +558,18 @@
       return e.scared > 0 ? distB - distA : distA - distB;
     });
 
-    if (Math.random() < 0.22) {
+    if (Math.random() < 0.18) {
       return dirs[Math.floor(Math.random() * dirs.length)];
     }
     return dirs[0];
   }
 
   function updateEnemies(){
-    if (!gameStarted) return;
+    if (!gameStarted || levelTransition) return;
 
     enemies.forEach(e => {
       if(e.moving){
-        e.progress += e.speed;
+        e.progress += e.speed * (1 + level * 0.05);
         if(e.progress >= 1){
           e.progress = 1;
           e.x = e.toX;
@@ -591,7 +602,7 @@
 
       if(eCell.x === pCell.x && eCell.y === pCell.y){
         if(e.scared > 0){
-          score += 100;
+          score += 200;
           e.x = e.homeX;
           e.y = e.homeY;
           e.fromX = e.homeX;
@@ -617,11 +628,25 @@
   }
 
   function checkLevelClear(){
-    if(pellets.size === 0 && powerUps.size === 0){
-      level++;
-      parseMap();
-      resetPositions();
+    if(pellets.size === 0 && powerUps.size === 0 && !levelTransition){
+      levelTransition = true;
+      transitionTimer = 120;
+      sfxLevelComplete();
     }
+  }
+
+  function nextLevel(){
+    level++;
+    score += 1000;
+    parseMap();
+    resetPositions();
+    levelTransition = false;
+    transitionTimer = 0;
+    
+    player.speed = Math.min(0.06 + level * 0.005, 0.12);
+    enemies.forEach(e => {
+      e.speed = Math.min(0.035 + level * 0.003, 0.08);
+    });
   }
 
   function lerp(a,b,t){
@@ -653,7 +678,7 @@
     ctx.font = 'bold 20px monospace';
     ctx.fillText('SPECIAL', 28, 26);
     ctx.fillText('EXTRA', 255, 26);
-    ctx.fillText('x2 x3 x5', 430, 26);
+    ctx.fillText('BONUS', 435, 26);
   }
 
   function drawBorder(){
@@ -726,9 +751,10 @@
     powerUps.forEach(k => {
       const [x,y] = k.split(',').map(Number);
       const p = cellCenterFromCoords(x,y);
+      const pulse = Math.sin(Date.now() / 150) * 0.3 + 0.7;
       ctx.fillStyle = powerTimer % 30 < 15 ? COLORS.yellow : COLORS.green;
       ctx.beginPath();
-      ctx.arc(p.px, p.py, 8, 0, Math.PI * 2);
+      ctx.arc(p.px, p.py, 7 + pulse * 2, 0, Math.PI * 2);
       ctx.fill();
     });
   }
@@ -750,24 +776,24 @@
 
       if(g.orientation === 'h'){
         ctx.beginPath();
-        ctx.moveTo(-16, 0);
-        ctx.lineTo(16, 0);
+        ctx.moveTo(-18, 0);
+        ctx.lineTo(18, 0);
         ctx.stroke();
       } else {
         ctx.beginPath();
-        ctx.moveTo(0, -16);
-        ctx.lineTo(0, 16);
+        ctx.moveTo(0, -18);
+        ctx.lineTo(0, 18);
         ctx.stroke();
       }
 
-      ctx.fillRect(-4, -4, 8, 8);
+      ctx.fillRect(-5, -5, 10, 10);
       ctx.restore();
     });
   }
 
   function drawPlayer(){
     const p = entityPixel(player);
-    const size = 32;
+    const size = 30;
 
     ctx.save();
     ctx.translate(p.px, p.py);
@@ -777,7 +803,13 @@
     } else {
       ctx.fillStyle = COLORS.yellow;
       ctx.beginPath();
-      ctx.arc(0, 0, 14, 0, Math.PI * 2);
+      ctx.arc(0, 0, 13, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.arc(-4, -3, 2, 0, Math.PI * 2);
+      ctx.arc(4, -3, 2, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -791,24 +823,27 @@
     ctx.save();
     ctx.translate(p.px, p.py);
 
-    ctx.fillStyle = scared ? (Math.floor(Date.now()/120) % 2 ? COLORS.blue : COLORS.white) : e.color;
+    ctx.fillStyle = scared ? (Math.floor(Date.now()/100) % 2 ? COLORS.blue : COLORS.white) : e.color;
     ctx.beginPath();
-    ctx.arc(0,-4,14,Math.PI,0);
-    ctx.lineTo(14,10);
-    ctx.lineTo(8,4);
-    ctx.lineTo(2,10);
-    ctx.lineTo(-4,4);
-    ctx.lineTo(-10,10);
-    ctx.lineTo(-14,10);
+    ctx.arc(0,-4,13,Math.PI,0);
+    ctx.lineTo(13,9);
+    ctx.lineTo(9,3);
+    ctx.lineTo(4,9);
+    ctx.lineTo(0,3);
+    ctx.lineTo(-4,9);
+    ctx.lineTo(-9,3);
+    ctx.lineTo(-13,9);
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(-5,-3,4,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(5,-3,4,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#111';
-    ctx.beginPath(); ctx.arc(-4,-2,2,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(6,-2,2,0,Math.PI*2); ctx.fill();
+    if(!scared){
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(-5,-3,4,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(5,-3,4,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#111';
+      ctx.beginPath(); ctx.arc(-4,-2,2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(6,-2,2,0,Math.PI*2); ctx.fill();
+    }
 
     ctx.restore();
   }
@@ -816,13 +851,13 @@
   function drawBottom(){
     ctx.fillStyle = COLORS.orange;
     ctx.font = 'bold 18px monospace';
-    ctx.fillText('1ST', 360, H - 42);
-    ctx.fillText(String(score).padStart(5,'0'), 470, H - 42);
+    ctx.fillText('1UP', 50, H - 42);
+    ctx.fillText(String(score).padStart(6,'0'), 140, H - 42);
 
-    for(let i=0;i<lives;i++){
+    for(let i=0;i<Math.min(lives, 5);i++){
       ctx.fillStyle = COLORS.yellow;
       ctx.beginPath();
-      ctx.arc(42 + i * 32, H - 62, 12, 0, Math.PI * 2);
+      ctx.arc(450 + i * 28, H - 48, 11, 0, Math.PI * 2);
       ctx.fill();
     }
   }
@@ -830,41 +865,70 @@
   function drawStartOverlay(){
     if (gameStarted || gameOver) return;
 
-    ctx.fillStyle = 'rgba(0,0,0,.72)';
+    ctx.fillStyle = 'rgba(0,0,0,.75)';
     ctx.fillRect(0,0,W,H);
 
     ctx.textAlign = 'center';
 
     ctx.fillStyle = COLORS.yellow;
-    ctx.font = 'bold 42px Arial';
-    ctx.fillText(CHILD_NAME, W/2, H/2 - 70);
+    ctx.font = 'bold 48px Arial';
+    ctx.fillText('LADY BUG', W/2, H/2 - 80);
 
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 28px Arial';
-    ctx.fillText('LADY BUG DO ' + CHILD_NAME, W/2, H/2 - 25);
+    ctx.font = 'bold 24px Arial';
+    ctx.fillText('Clone do Arcade Clássico', W/2, H/2 - 35);
 
     ctx.font = '20px Arial';
-    ctx.fillText('Pressione ENTER, ESPAÇO ou toque na tela', W/2, H/2 + 20);
+    ctx.fillText('Pressione ENTER ou ESPAÇO', W/2, H/2 + 20);
 
-    ctx.font = '18px Arial';
-    ctx.fillText('WASD / SETAS para mover', W/2, H/2 + 55);
-    ctx.fillText('Portas giram automaticamente!', W/2, H/2 + 85);
+    ctx.font = '16px Arial';
+    ctx.fillStyle = COLORS.cyan;
+    ctx.fillText('WASD / Setas para mover', W/2, H/2 + 60);
+    ctx.fillText('Coma todos os pontinhos!', W/2, H/2 + 85);
+    ctx.fillText('Portas giram automaticamente', W/2, H/2 + 110);
 
+    ctx.textAlign = 'start';
+  }
+
+  function drawLevelTransition(){
+    if(!levelTransition) return;
+
+    ctx.fillStyle = 'rgba(0,0,0,.85)';
+    ctx.fillRect(0,0,W,H);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = COLORS.yellow;
+    ctx.font = 'bold 52px Arial';
+    
+    const flash = Math.floor(transitionTimer / 15) % 2;
+    if(flash === 0){
+      ctx.fillText('FASE ' + level + ' COMPLETA!', W/2, H/2 - 20);
+    }
+    
+    ctx.fillStyle = COLORS.green;
+    ctx.font = '28px Arial';
+    ctx.fillText('+1000 BÔNUS', W/2, H/2 + 30);
+    
     ctx.textAlign = 'start';
   }
 
   function drawGameOver(){
     if(!gameOver) return;
 
-    ctx.fillStyle = 'rgba(0,0,0,.78)';
+    ctx.fillStyle = 'rgba(0,0,0,.85)';
     ctx.fillRect(0,0,W,H);
 
     ctx.textAlign = 'center';
+    ctx.fillStyle = COLORS.red;
+    ctx.font = 'bold 48px Arial';
+    ctx.fillText('GAME OVER', W/2, H/2 - 20);
+    
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 40px Arial';
-    ctx.fillText('FIM DE JOGO', W/2, H/2 - 10);
-    ctx.font = '22px Arial';
-    ctx.fillText('Pressione ENTER ou toque para recomeçar', W/2, H/2 + 30);
+    ctx.font = '24px Arial';
+    ctx.fillText('Pontuação Final: ' + score, W/2, H/2 + 25);
+    
+    ctx.font = '20px Arial';
+    ctx.fillText('Pressione ENTER para recomeçar', W/2, H/2 + 65);
     ctx.textAlign = 'start';
   }
 
@@ -879,6 +943,7 @@
     enemies.forEach(drawEnemy);
     drawBottom();
     drawStartOverlay();
+    drawLevelTransition();
     drawGameOver();
   }
 
@@ -894,9 +959,13 @@
     level = 1;
     gameOver = false;
     gameStarted = false;
+    levelTransition = false;
+    transitionTimer = 0;
     powerTimer = 0;
     parseMap();
     resetPositions();
+    player.speed = 0.06;
+    enemies.forEach(e => e.speed = 0.035);
     updateUI();
   }
 
@@ -985,6 +1054,14 @@
 
   function update(){
     if(gameOver) return;
+
+    if(levelTransition){
+      transitionTimer--;
+      if(transitionTimer <= 0){
+        nextLevel();
+      }
+      return;
+    }
 
     if(powerTimer > 0) powerTimer--;
 
