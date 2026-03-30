@@ -1,588 +1,1087 @@
-<!doctype html>
-<html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lady Bug Clone - Full Game</title>
-  <style>
-    :root{
-      --bg:#05060b;
-      --panel:#11131b;
-      --frame:#2b3150;
-      --text:#e8edf7;
-      --sub:#96a1bf;
-      --accent:#f4c430;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:radial-gradient(circle at top, #1a2040 0%, #090a12 42%, #05060b 100%);
-      color:var(--text);
-      font-family:Arial, Helvetica, sans-serif;
-      overflow:hidden;
-    }
-    .stage{
-      min-height:100vh;
-      display:grid;
-      place-items:center;
-      padding:14px;
-    }
-    .game-shell{
-      width:min(96vw, 860px);
-      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:22px;
-      box-shadow:0 24px 60px rgba(0,0,0,.38);
-      padding:18px 18px 14px;
-      display:grid;
-      gap:12px;
-      justify-items:center;
-    }
-    .scorebar{
-      width:100%;
-      max-width:720px;
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      font-weight:700;
-      font-size:14px;
-      letter-spacing:.06em;
-      color:#f8f0b3;
-    }
-    .screen-wrap{
-      position:relative;
-      width:min(90vw, 672px);
-    }
-    canvas{
-      display:block;
-      width:100%;
-      aspect-ratio:224/256;
-      image-rendering:pixelated;
-      image-rendering:crisp-edges;
-      border:6px solid #2b3150;
-      border-radius:14px;
-      background:#02040a;
-      box-shadow:0 0 0 4px #111527 inset, 0 24px 60px rgba(0,0,0,.45);
-      outline:none;
-    }
-    .overlay{
-      position:absolute;
-      inset:0;
-      display:grid;
-      place-items:center;
-      padding:16px;
-      background:linear-gradient(180deg, rgba(2,4,10,.18), rgba(2,4,10,.55));
-      border-radius:14px;
-      pointer-events:none;
-      transition:opacity .18s ease;
-    }
-    .overlay.hidden{opacity:0}
-    .start-card{
-      max-width:420px;
-      text-align:center;
-      background:rgba(8,12,24,.88);
-      border:1px solid rgba(255,255,255,.1);
-      border-radius:18px;
-      padding:18px 16px;
-      box-shadow:0 18px 44px rgba(0,0,0,.35);
-    }
-    .start-card h1{
-      margin:0 0 10px;
-      font-size:30px;
-      line-height:1;
-      color:#fff2a6;
-    }
-    .start-card p{
-      margin:8px 0;
-      color:#c4d0f4;
-      line-height:1.45;
-      font-size:14px;
-    }
-    .kbd{
-      display:inline-block;
-      min-width:34px;
-      padding:6px 8px;
-      margin:0 3px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.14);
-      background:#1a223d;
-      color:#fff;
-      font-weight:700;
-      font-size:13px;
-    }
-    .cta{
-      margin-top:10px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      padding:10px 14px;
-      border-radius:999px;
-      background:#f3c529;
-      color:#111;
-      font-weight:800;
-      box-shadow:0 8px 20px rgba(243,197,41,.28);
-    }
-    .footer{
-      font-size:12px;
-      color:#8e98ba;
-      text-align:center;
-      line-height:1.45;
-      min-height:16px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>LADY BUG - Arcade</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:#000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  font-family: 'Courier New', monospace;
+  overflow:hidden;
+}
+#wrapper {
+  display:flex;
+  gap:0;
+  align-items:flex-start;
+}
+#left-panel, #right-panel {
+  width:120px;
+  color:#fff;
+  padding:8px 4px;
+  font-size:11px;
+  text-align:center;
+}
+.panel-label {
+  color:#f00;
+  font-size:11px;
+  letter-spacing:2px;
+  margin-bottom:4px;
+}
+.panel-value {
+  color:#ff0;
+  font-size:18px;
+  font-weight:bold;
+  letter-spacing:1px;
+  margin-bottom:12px;
+}
+.lives-row {
+  display:flex;
+  justify-content:center;
+  gap:4px;
+  margin:4px 0;
+}
+canvas {
+  display:block;
+  image-rendering:pixelated;
+  border:2px solid #444;
+}
+#gameCanvas { cursor:none; }
+</style>
 </head>
 <body>
-  <main class="stage">
-    <section class="game-shell">
-      <div class="scorebar">
-        <span id="scoreLabel">SCORE 00000</span>
-        <span id="statusLabel">READY!</span>
-        <span id="livesLabel">LIVES 3</span>
-      </div>
-
-      <div class="screen-wrap">
-        <canvas id="game" width="224" height="256" tabindex="0"></canvas>
-        <div class="overlay" id="startOverlay">
-          <div class="start-card">
-            <h1>LADY BUG</h1>
-            <p>Agora sem texto lateral. Abre direto no jogo.</p>
-            <p>Use <span class="kbd">←</span><span class="kbd">→</span><span class="kbd">↑</span><span class="kbd">↓</span> ou <span class="kbd">W</span><span class="kbd">A</span><span class="kbd">S</span><span class="kbd">D</span>.</p>
-            <p><span class="kbd">ESPAÇO</span> reinicia a fase.</p>
-            <div class="cta">Clique aqui ou pressione qualquer tecla para jogar</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="footer" id="footerTip">Toque numa porta amarela para girar o corredor.</div>
-    </section>
-  </main>
+<div id="wrapper">
+  <div id="left-panel">
+    <div class="panel-label">1UP</div>
+    <div class="panel-value" id="score1">000000</div>
+    <div class="panel-label">HIGH</div>
+    <div class="panel-value" id="hi-score">030000</div>
+    <div style="margin-top:20px; color:#0f0; font-size:10px;">LEVEL</div>
+    <div class="panel-value" id="level-disp">1</div>
+    <div style="color:#f80; font-size:10px; margin-top:10px;">LIVES</div>
+    <div class="lives-row" id="lives-display"></div>
+  </div>
+  <canvas id="gameCanvas" width="256" height="256"></canvas>
+  <div id="right-panel">
+    <div style="color:#0ff; font-size:10px; margin-bottom:6px;">CONTROLS</div>
+    <div style="color:#888; font-size:9px; line-height:1.8;">
+      ↑↓←→<br>Move<br><br>
+      SPACE<br>Pause<br><br>
+      ENTER<br>Start
+    </div>
+    <div style="margin-top:20px; color:#f0f; font-size:10px;">BONUS</div>
+    <div class="panel-value" id="bonus-disp" style="font-size:13px;">7</div>
+    <div id="bonus-letters" style="margin-top:4px;"></div>
+  </div>
+</div>
 
 <script>
-(() => {
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
+// ============================================================
+// LADY BUG - Arcade Clone
+// Based on Universal 1981 arcade game
+// ============================================================
 
-  const scoreLabel = document.getElementById('scoreLabel');
-  const livesLabel = document.getElementById('livesLabel');
-  const statusLabel = document.getElementById('statusLabel');
-  const startOverlay = document.getElementById('startOverlay');
-  const footerTip = document.getElementById('footerTip');
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = 256, H = 256;
 
-  const W = 224, H = 256;
-  const CELL = 16;
+// ─── COLORS ──────────────────────────────────────────────────
+const PAL = {
+  black:    '#000000',
+  white:    '#ffffff',
+  red:      '#ff2020',
+  green:    '#00cc00',
+  yellow:   '#ffff00',
+  blue:     '#2040ff',
+  cyan:     '#00ffff',
+  magenta:  '#ff00ff',
+  orange:   '#ff8800',
+  dkgreen:  '#007700',
+  dkred:    '#aa0000',
+  gray:     '#888888',
+  ltgray:   '#cccccc',
+  pink:     '#ff88aa',
+  tan:      '#cc8844',
+  purple:   '#8800cc',
+};
 
-  const COLORS = {
-    bg: '#02040a',
-    maze: '#8cb7ff',
-    mazeGlow: '#2f5cff',
-    dot: '#f8f8f8',
-    door: '#f3c529',
-    bugBox: '#9ae5ff',
-    text: '#f8e99a',
-    skull: '#ffd9e8'
-  };
+// ─── MAZE DEFINITION ─────────────────────────────────────────
+// 16x16 cell maze (each cell = 14px, + 2px border)
+// Cell types: 0=path, 1=wall, 2=gate(H), 3=gate(V)
+// The Lady Bug maze is a fixed single-screen maze
+// Faithful to the original: 16x14 playfield
 
-  const MAZE = [
-    '00000000000000',
-    '01111111111110',
-    '01011001101110',
-    '01101101101110',
-    '01000000000110',
-    '01101111101110',
-    '01001000010110',
-    '01111000011110',
-    '00001000010000',
-    '01111000011110',
-    '01001000010110',
-    '01101111101110',
-    '01000000000110',
-    '01101101101110',
-    '01100100010010',
-    '01111111111110',
-  ].map(r => r.split('').map(n => n === '1'));
+const COLS = 16, ROWS = 14;
+const CW = 16, CH = 16; // cell pixel size
 
-  const bugBox = { x: 5, y: 6, w: 4, h: 4 };
-  const bonusCells = [{x:1,y:1},{x:12,y:1},{x:1,y:15},{x:12,y:15}];
-  const doors = [
-    {x:3,y:2,o:'v'}, {x:10,y:2,o:'v'},
-    {x:5,y:5,o:'h'}, {x:8,y:5,o:'h'},
-    {x:3,y:7,o:'v'}, {x:10,y:7,o:'v'},
-    {x:3,y:10,o:'v'}, {x:10,y:10,o:'v'},
-    {x:5,y:11,o:'h'}, {x:8,y:11,o:'h'},
-    {x:3,y:13,o:'v'}, {x:10,y:13,o:'v'}
+// Maze walls encoded as bit flags per cell: N=1,E=2,S=4,W=8
+// Build maze from template string
+// '.' = open, '#' = wall block, 'G' = gate cell
+const MAZE_TEMPLATE = [
+  '################',
+  '#..............#',
+  '#.##.##G##.##.#',
+  '#.#............#',
+  '#.#.##.##.##.#.#',
+  '#..............#',
+  '#.##G##.##G##.#',
+  '#.#............#',
+  '#.#.##.##.##.#.#',
+  '#..............#',
+  '#.##.##G##.##.#',
+  '#..............#',
+  '#.#.##.##.##.#.#',
+  '################',
+];
+
+// ─── GAME STATE ──────────────────────────────────────────────
+let state = 'title'; // 'title','playing','paused','dead','gameover','levelclear'
+let score = 0, hiScore = 30000, lives = 3, level = 1;
+let stateTimer = 0;
+
+// Bonus letters: "LADYBUG"
+const BONUS_WORD = 'LADYBUG';
+let bonusCollected = [];
+
+// ─── MAZE DATA ───────────────────────────────────────────────
+// Represent maze as passability grid
+// maze[row][col] = { path:bool, gate:bool, gateOpen:bool, dot:bool, powerDot:bool }
+let maze = [];
+let gates = []; // list of gate cells
+
+function initMaze() {
+  maze = [];
+  gates = [];
+  bonusCollected = [];
+
+  // Define a proper 16x14 maze matching the original Lady Bug layout
+  // Using a custom design faithful to the original's topology
+  // W=wall segment. Each cell stores walls as NESW bits
+  // We use a simpler approach: store as passable cells with dots
+
+  // Original Lady Bug maze simplified to a functional grid
+  // 1=wall, 0=dot path, 2=big dot, 3=gate
+  const M = [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,1],
+    [1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1],
+    [1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1],
+    [1,0,1,0,1,1,0,1,0,1,1,0,1,0,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,3,1,1,0,1,1,3,1,1,0,1,1],
+    [1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1],
+    [1,0,1,0,1,1,0,1,0,1,1,0,1,0,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,0,1,1,3,1,1,0,1,1,0,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,0,1,1,0,1,0,1,1,0,1,0,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   ];
 
-  const dirVec = {
-    left: {x:-1,y:0}, right:{x:1,y:0}, up:{x:0,y:-1}, down:{x:0,y:1}
-  };
-  const opposite = {left:'right', right:'left', up:'down', down:'up'};
-  const input = { left:false, right:false, up:false, down:false };
-
-  let dots = new Set();
-  let skulls = new Set();
-  let bonusTaken = new Set();
-  let score = 0;
-  let lives = 3;
-  let phaseCleared = false;
-  let gameOver = false;
-  let blink = 0;
-  let started = false;
-
-  function keyCell(x,y){ return `${x},${y}`; }
-
-  function initCollectibles(){
-    dots.clear(); skulls.clear(); bonusTaken.clear();
-    for(let y=0; y<MAZE.length; y++){
-      for(let x=0; x<MAZE[0].length; x++){
-        if(!MAZE[y][x]) continue;
-        if(x>=bugBox.x && x<bugBox.x+bugBox.w && y>=bugBox.y && y<bugBox.y+bugBox.h) continue;
-        dots.add(keyCell(x,y));
+  for (let r = 0; r < ROWS; r++) {
+    maze[r] = [];
+    for (let c = 0; c < COLS; c++) {
+      const v = M[r][c];
+      const cell = {
+        wall: v === 1,
+        gate: v === 3,
+        gateOpen: false,
+        dot: v === 0 || v === 2,
+        power: v === 2,
+      };
+      if (cell.gate) {
+        gates.push({r, c, open: false, timer: 0, color: 0});
+        cell.dot = false;
       }
+      maze[r][c] = cell;
     }
-    ['4,4','9,4','4,12','9,12'].forEach(k => { dots.delete(k); skulls.add(k); });
-    bonusCells.forEach(c => dots.delete(keyCell(c.x,c.y)));
   }
 
-  function cellCenter(x,y){ return {x:x*CELL+CELL/2, y:y*CELL+CELL/2}; }
-  function worldToCell(px,py){ return {x:Math.floor(px/CELL), y:Math.floor(py/CELL)}; }
-  function insideMaze(x,y){ return y>=0 && y<MAZE.length && x>=0 && x<MAZE[0].length; }
-  function walkable(x,y){ return insideMaze(x,y) && MAZE[y][x]; }
+  // Assign gate colors cycling through: red, blue, yellow
+  const gateColors = [PAL.red, PAL.blue, PAL.yellow, PAL.green, PAL.magenta, PAL.cyan];
+  gates.forEach((g, i) => {
+    g.colorVal = gateColors[i % gateColors.length];
+    g.open = false;
+    g.timer = 0;
+    g.rotAngle = 0;
+  });
+}
 
-  function doorBetween(ax, ay, bx, by){
-    const mx = Math.min(ax,bx), my = Math.min(ay,by);
-    if(ax !== bx) return doors.find(d => d.o === 'v' && d.x === mx && d.y === ay);
-    if(ay !== by) return doors.find(d => d.o === 'h' && d.x === ax && d.y === my);
-    return null;
+// Count remaining dots
+function countDots() {
+  let n = 0;
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (maze[r][c].dot) n++;
+  return n;
+}
+
+// ─── PLAYER ──────────────────────────────────────────────────
+const PLAYER_SPEED = 0.07; // cells per frame
+let player = {};
+
+function initPlayer() {
+  player = {
+    r: 7.0, c: 7.0,    // floating position (center cell)
+    dir: 0,            // 0=R,1=D,2=L,3=U
+    nextDir: 0,
+    moving: false,
+    frame: 0,
+    frameTimer: 0,
+    dead: false,
+    deathTimer: 0,
+    invincible: 0,
+  };
+}
+
+// ─── ENEMIES ─────────────────────────────────────────────────
+// Lady Bug has: beetles (chase), spiders (patrol), bugs (random)
+let enemies = [];
+
+const ENEMY_TYPES = {
+  BEETLE: { color: PAL.red,    speed: 0.055, score: 100 },
+  SPIDER: { color: PAL.blue,   speed: 0.045, score: 150 },
+  FLY:    { color: PAL.yellow, speed: 0.060, score: 200 },
+  SNAIL:  { color: PAL.cyan,   speed: 0.035, score: 300 },
+};
+const TYPE_LIST = ['BEETLE','SPIDER','FLY','SNAIL'];
+
+function spawnEnemy(type, r, c) {
+  const t = ENEMY_TYPES[type];
+  return {
+    type, r: r+0.0, c: c+0.0,
+    dir: Math.floor(Math.random()*4),
+    speed: t.speed + (level-1)*0.003,
+    color: t.color,
+    score: t.score,
+    frame: 0,
+    frameTimer: 0,
+    frightened: false,
+    frightenTimer: 0,
+    dead: false,
+    deathTimer: 0,
+  };
+}
+
+function initEnemies() {
+  enemies = [];
+  // Spawn based on level (up to 4 enemies at once)
+  const count = Math.min(2 + Math.floor((level-1)/2), 5);
+  const spawnPoints = [[1,1],[1,14],[12,1],[12,14],[3,7]];
+  for (let i = 0; i < count; i++) {
+    const sp = spawnPoints[i % spawnPoints.length];
+    const t = TYPE_LIST[i % TYPE_LIST.length];
+    enemies.push(spawnEnemy(t, sp[0], sp[1]));
+  }
+}
+
+// ─── COLLECTIBLES (Bonus letters/symbols) ────────────────────
+let collectibles = [];
+
+function initCollectibles() {
+  collectibles = [];
+  // Place LADYBUG letters in random open cells
+  const openCells = [];
+  for (let r=1; r<ROWS-1; r++)
+    for (let c=1; c<COLS-1; c++)
+      if (!maze[r][c].wall && !maze[r][c].gate) openCells.push({r,c});
+
+  // Shuffle and place
+  for (let i = openCells.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [openCells[i],openCells[j]] = [openCells[j],openCells[i]];
   }
 
-  function canMoveCell(ax, ay, dir){
-    const v = dirVec[dir];
-    const bx = ax + v.x, by = ay + v.y;
-    if(!walkable(bx, by)) return false;
-    const door = doorBetween(ax, ay, bx, by);
-    if(!door) return true;
-    return door.o === (ax !== bx ? 'v' : 'h');
+  const hearts = Math.min(2, openCells.length);
+  for (let i = 0; i < hearts; i++) {
+    collectibles.push({...openCells[i], type:'heart', collected:false});
   }
 
-  function tryRotateDoor(entity){
-    const cell = worldToCell(entity.x, entity.y);
-    const center = cellCenter(cell.x, cell.y);
-    if(Math.hypot(entity.x-center.x, entity.y-center.y) > 3) return;
-    const door = doors.find(d => d.x === cell.x && d.y === cell.y);
-    if(!door) return;
-    door.o = door.o === 'h' ? 'v' : 'h';
+  // Place one bonus symbol
+  if (openCells.length > hearts) {
+    const sym = ['★','♣','♦'][Math.floor(Math.random()*3)];
+    collectibles.push({...openCells[hearts], type:'symbol', sym, collected:false});
+  }
+}
+
+// ─── INPUT ───────────────────────────────────────────────────
+const keys = {};
+document.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (e.code === 'ArrowLeft')  { player.nextDir = 2; e.preventDefault(); }
+  if (e.code === 'ArrowRight') { player.nextDir = 0; e.preventDefault(); }
+  if (e.code === 'ArrowDown')  { player.nextDir = 1; e.preventDefault(); }
+  if (e.code === 'ArrowUp')    { player.nextDir = 3; e.preventDefault(); }
+  if (e.code === 'Enter' || e.code === 'Space') {
+    e.preventDefault();
+    if (state === 'title' || state === 'gameover') startGame();
+    else if (state === 'playing') state = 'paused';
+    else if (state === 'paused')  state = 'playing';
+  }
+});
+document.addEventListener('keyup', e => { keys[e.code] = false; });
+
+// ─── DIRECTION VECTORS ───────────────────────────────────────
+const DR = [0, 1, 0,-1]; // row delta for dir 0=R,1=D,2=L,3=U
+const DC = [1, 0,-1, 0];
+
+function canMove(r, c, dir) {
+  const nr = r + DR[dir];
+  const nc = c + DC[dir];
+  if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) return false;
+  if (maze[Math.round(nr)][Math.round(nc)].wall) return false;
+  if (maze[Math.round(nr)][Math.round(nc)].gate && !maze[Math.round(nr)][Math.round(nc)].gateOpen) return false;
+  return true;
+}
+
+function cellCanMove(r, c, dir) {
+  const nr = Math.floor(r) + DR[dir];
+  const nc = Math.floor(c) + DC[dir];
+  if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) return false;
+  if (maze[nr][nc].wall) return false;
+  if (maze[nr][nc].gate && !maze[nr][nc].gateOpen) return false;
+  return true;
+}
+
+// ─── GAME INIT ───────────────────────────────────────────────
+function startGame() {
+  score = 0;
+  lives = 3;
+  level = 1;
+  startLevel();
+  state = 'playing';
+  updateHUD();
+}
+
+function startLevel() {
+  initMaze();
+  initPlayer();
+  initEnemies();
+  initCollectibles();
+  bonusCollected = [];
+  stateTimer = 0;
+  updateHUD();
+}
+
+function updateHUD() {
+  document.getElementById('score1').textContent = String(score).padStart(6,'0');
+  document.getElementById('hi-score').textContent = String(hiScore).padStart(6,'0');
+  document.getElementById('level-disp').textContent = level;
+  document.getElementById('bonus-disp').textContent = BONUS_WORD.length - bonusCollected.length;
+
+  // Lives icons
+  const ld = document.getElementById('lives-display');
+  ld.innerHTML = '';
+  for (let i = 0; i < lives; i++) {
+    const c = document.createElement('canvas');
+    c.width = 14; c.height = 14;
+    drawLadybugIcon(c.getContext('2d'), 7, 7, 5);
+    ld.appendChild(c);
   }
 
-  function makeSpritePainter(kind, primary, secondary){
-    return function(x,y,dir,phase=0){
-      ctx.save();
-      ctx.translate(x,y);
-      const angle = dir === 'right' ? 0 : dir === 'down' ? Math.PI/2 : dir === 'left' ? Math.PI : -Math.PI/2;
-      ctx.rotate(angle);
-      ctx.translate(-8,-8);
-      ctx.fillStyle = primary;
-      ctx.strokeStyle = '#161616';
-      ctx.lineWidth = 1;
-      if(kind === 'player'){
-        ctx.beginPath(); ctx.ellipse(8,8,6,7,0,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = secondary; ctx.fillRect(5,3,6,10);
-        ctx.fillStyle = '#111'; ctx.fillRect(7,2,2,12);
-        if(phase%2===0){
-          ctx.fillRect(1,4,4,2); ctx.fillRect(11,4,4,2); ctx.fillRect(1,10,4,2); ctx.fillRect(11,10,4,2);
-        } else {
-          ctx.fillRect(0,5,5,2); ctx.fillRect(11,5,5,2); ctx.fillRect(0,9,5,2); ctx.fillRect(11,9,5,2);
-        }
-        ctx.fillStyle = '#111'; ctx.fillRect(12,6,2,2);
+  // Bonus letters remaining
+  const bl = document.getElementById('bonus-letters');
+  bl.innerHTML = '';
+  BONUS_WORD.split('').forEach((ch, i) => {
+    const span = document.createElement('span');
+    span.textContent = ch;
+    span.style.cssText = `font-size:10px; font-weight:bold; color:${bonusCollected.includes(i) ? '#888' : '#ff0'}; display:inline-block; width:14px;`;
+    bl.appendChild(span);
+  });
+}
+
+// ─── MOVEMENT HELPERS ────────────────────────────────────────
+function moveEntity(ent, speed) {
+  const gr = Math.round(ent.r);
+  const gc = Math.round(ent.c);
+  const dr = ent.r - gr;
+  const dc = ent.c - gc;
+  const aligned = Math.abs(dr) < 0.15 && Math.abs(dc) < 0.15;
+
+  if (aligned) {
+    // Try requested direction
+    if (cellCanMove(gr, gc, ent.dir)) {
+      ent.r += DR[ent.dir] * speed;
+      ent.c += DC[ent.dir] * speed;
+    } else {
+      // Snap to grid
+      ent.r = gr; ent.c = gc;
+    }
+  } else {
+    // Continue in current direction
+    ent.r += DR[ent.dir] * speed;
+    ent.c += DC[ent.dir] * speed;
+    // Snap if we overshoot
+    const ngr = Math.round(ent.r);
+    const ngc = Math.round(ent.c);
+    if (Math.abs(ent.r - ngr) < speed && Math.abs(ent.c - ngc) < speed) {
+      ent.r = ngr; ent.c = ngc;
+    }
+  }
+
+  // Wrap around (tunnel)
+  if (ent.c < 0) ent.c = COLS - 1;
+  if (ent.c >= COLS) ent.c = 0;
+}
+
+// Enemy AI
+function updateEnemy(e) {
+  if (e.dead) { e.deathTimer--; return; }
+
+  const gr = Math.round(e.r);
+  const gc = Math.round(e.c);
+  const dr = e.r - gr;
+  const dc = e.c - gc;
+  const aligned = Math.abs(dr) < 0.15 && Math.abs(dc) < 0.15;
+
+  if (aligned) {
+    // At a junction: pick new direction
+    const possible = [0,1,2,3].filter(d => cellCanMove(gr,gc,d));
+    if (possible.length > 0) {
+      // Don't reverse unless no other option
+      const norev = possible.filter(d => d !== ((e.dir+2)%4));
+      const choices = norev.length > 0 ? norev : possible;
+
+      if (e.frightened) {
+        // Random movement when frightened
+        e.dir = choices[Math.floor(Math.random()*choices.length)];
       } else {
-        ctx.beginPath(); ctx.ellipse(8,8,6,6,0,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = secondary; ctx.fillRect(4,4,8,8);
-        ctx.fillStyle = '#111';
-        ctx.fillRect(1,5,4,2); ctx.fillRect(11,5,4,2); ctx.fillRect(1,9,4,2); ctx.fillRect(11,9,4,2);
-        if(phase%2===0){ ctx.fillRect(6,1,1,3); ctx.fillRect(9,1,1,3); }
-        else { ctx.fillRect(5,1,1,3); ctx.fillRect(10,1,1,3); }
-        ctx.fillStyle = '#fff'; ctx.fillRect(11,6,2,2);
+        // Chase with some randomness
+        const pr = Math.round(player.r);
+        const pc = Math.round(player.c);
+        if (Math.random() < 0.65 + level*0.02) {
+          // Move toward player
+          let best = choices[0];
+          let bestDist = Infinity;
+          choices.forEach(d => {
+            const nr = gr + DR[d];
+            const nc = gc + DC[d];
+            const dist = Math.abs(nr-pr) + Math.abs(nc-pc);
+            if (dist < bestDist) { bestDist = dist; best = d; }
+          });
+          e.dir = best;
+        } else {
+          e.dir = choices[Math.floor(Math.random()*choices.length)];
+        }
       }
-      ctx.restore();
-    };
+    }
   }
 
-  const drawPlayerSprite = makeSpritePainter('player', '#df2e2e', '#f7ca24');
-  const enemyPainters = [
-    makeSpritePainter('enemy', '#62d96b', '#1f8cff'),
-    makeSpritePainter('enemy', '#ff7f44', '#ffd44d'),
-    makeSpritePainter('enemy', '#ff57c5', '#66e0ff')
-  ];
+  const spd = e.frightened ? e.speed * 0.6 : e.speed;
+  moveEntity(e, spd);
 
-  const player = {x:0,y:0,dir:'left',wanted:'left',speed:1.5,anim:0};
-  const enemies = [];
+  // Animation
+  e.frameTimer++;
+  if (e.frameTimer > 8) { e.frameTimer = 0; e.frame = (e.frame+1)%2; }
 
-  function resetActors(){
-    let p = cellCenter(7,14);
-    player.x = p.x; player.y = p.y; player.dir = 'left'; player.wanted='left'; player.anim=0;
-    enemies.length = 0;
-    [
-      {cell:[6,8], dir:'up', speed:1.05},
-      {cell:[7,8], dir:'down', speed:0.95},
-      {cell:[8,8], dir:'left', speed:1.10}
-    ].forEach((e,i) => {
-      const c = cellCenter(e.cell[0], e.cell[1]);
-      enemies.push({x:c.x,y:c.y,dir:e.dir,wanted:e.dir,speed:e.speed,anim:0,painter:enemyPainters[i]});
+  // Frighten timer
+  if (e.frightened) {
+    e.frightenTimer--;
+    if (e.frightenTimer <= 0) e.frightened = false;
+  }
+}
+
+// ─── DRAWING ─────────────────────────────────────────────────
+function drawLadybugIcon(c2d, x, y, r) {
+  // Body
+  c2d.fillStyle = PAL.red;
+  c2d.beginPath();
+  c2d.ellipse(x, y+1, r*0.7, r, 0, 0, Math.PI*2);
+  c2d.fill();
+  // Head
+  c2d.fillStyle = PAL.black;
+  c2d.beginPath();
+  c2d.arc(x, y-r*0.7, r*0.45, 0, Math.PI*2);
+  c2d.fill();
+  // Spots
+  c2d.fillStyle = PAL.black;
+  c2d.beginPath(); c2d.arc(x-r*0.3, y+r*0.2, r*0.2, 0, Math.PI*2); c2d.fill();
+  c2d.beginPath(); c2d.arc(x+r*0.3, y+r*0.2, r*0.2, 0, Math.PI*2); c2d.fill();
+  c2d.beginPath(); c2d.arc(x, y+r*0.6, r*0.2, 0, Math.PI*2); c2d.fill();
+  // Center line
+  c2d.strokeStyle = PAL.black;
+  c2d.lineWidth = 0.8;
+  c2d.beginPath(); c2d.moveTo(x,y-r*0.3); c2d.lineTo(x,y+r*0.9); c2d.stroke();
+}
+
+function drawPlayer() {
+  if (player.dead) {
+    // Death animation
+    const t = player.deathTimer / 60;
+    const px = player.c * CW + CW/2 + 1;
+    const py = player.r * CH + CH/2 + 1;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, t);
+    ctx.translate(px, py);
+    ctx.rotate((1-t) * Math.PI * 3);
+    ctx.scale(1+t*0.5, 1+t*0.5);
+    drawLadybugIcon(ctx, 0, 0, 5);
+    ctx.restore();
+    return;
+  }
+  if (player.invincible > 0 && Math.floor(player.invincible/4)%2 === 0) return;
+
+  const px = player.c * CW + CW/2 + 1;
+  const py = player.r * CH + CH/2 + 1;
+  ctx.save();
+  ctx.translate(px, py);
+
+  // Rotate to face direction
+  const angles = [0, Math.PI/2, Math.PI, -Math.PI/2]; // R,D,L,U
+  ctx.rotate(angles[player.dir]);
+
+  // Draw ladybug
+  // Body (red ellipse)
+  ctx.fillStyle = PAL.red;
+  ctx.beginPath();
+  ctx.ellipse(0, 1, 4, 5.5, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Head (black circle)
+  ctx.fillStyle = PAL.black;
+  ctx.beginPath();
+  ctx.arc(0, -5, 3.2, 0, Math.PI*2);
+  ctx.fill();
+
+  // Eyes
+  ctx.fillStyle = PAL.white;
+  ctx.beginPath(); ctx.arc(-1.5, -5.5, 1, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1.5, -5.5, 1, 0, Math.PI*2); ctx.fill();
+
+  // Spots
+  ctx.fillStyle = PAL.black;
+  ctx.beginPath(); ctx.arc(-2.5, 0, 1.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(2.5, 0, 1.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, 2.5, 1.5, 0, Math.PI*2); ctx.fill();
+
+  // Center line
+  ctx.strokeStyle = PAL.black;
+  ctx.lineWidth = 0.7;
+  ctx.beginPath(); ctx.moveTo(0,-4); ctx.lineTo(0,5.5); ctx.stroke();
+
+  // Antennae
+  ctx.strokeStyle = PAL.black; ctx.lineWidth=0.8;
+  ctx.beginPath(); ctx.moveTo(-1.5,-7.5); ctx.lineTo(-3,-10); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(1.5,-7.5); ctx.lineTo(3,-10); ctx.stroke();
+  ctx.fillStyle=PAL.white;
+  ctx.beginPath(); ctx.arc(-3,-10,1,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(3,-10,1,0,Math.PI*2); ctx.fill();
+
+  ctx.restore();
+}
+
+function drawEnemy(e) {
+  if (e.dead) return;
+  const px = e.c * CW + CW/2 + 1;
+  const py = e.r * CH + CH/2 + 1;
+  ctx.save();
+  ctx.translate(px, py);
+
+  const ang = [0, Math.PI/2, Math.PI, -Math.PI/2][e.dir];
+  ctx.rotate(ang);
+
+  if (e.frightened) {
+    // Frightened: blue flashing
+    const flash = e.frightenTimer < 80 && Math.floor(e.frightenTimer/8)%2===0;
+    ctx.fillStyle = flash ? PAL.white : '#0000ff';
+  } else {
+    ctx.fillStyle = e.color;
+  }
+
+  // Draw based on type
+  switch(e.type) {
+    case 'BEETLE':
+      // Oval body
+      ctx.beginPath(); ctx.ellipse(0,0,4,5.5,0,0,Math.PI*2); ctx.fill();
+      // Head
+      ctx.fillStyle = PAL.black;
+      ctx.beginPath(); ctx.arc(0,-5,3,0,Math.PI*2); ctx.fill();
+      // Eyes
+      ctx.fillStyle = PAL.red;
+      ctx.beginPath(); ctx.arc(-1.5,-5.5,1,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(1.5,-5.5,1,0,Math.PI*2); ctx.fill();
+      break;
+    case 'SPIDER':
+      // Round body
+      ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
+      // Legs
+      ctx.strokeStyle = e.frightened ? '#0000ff' : e.color;
+      ctx.lineWidth=1;
+      for(let i=0;i<4;i++){
+        const a = (i/4)*Math.PI;
+        ctx.beginPath(); ctx.moveTo(-4*Math.cos(a),-4*Math.sin(a));
+        ctx.lineTo(-7*Math.cos(a)-e.frame,-7*Math.sin(a)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(4*Math.cos(a),-4*Math.sin(a));
+        ctx.lineTo(7*Math.cos(a)+e.frame,-7*Math.sin(a)); ctx.stroke();
+      }
+      ctx.fillStyle=PAL.black;
+      ctx.beginPath(); ctx.arc(-2,-1,1.5,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(2,-1,1.5,0,Math.PI*2); ctx.fill();
+      break;
+    case 'FLY':
+      // Body
+      ctx.beginPath(); ctx.ellipse(0,0,3,5,0,0,Math.PI*2); ctx.fill();
+      // Wings
+      ctx.fillStyle = e.frightened ? '#8888ff' : PAL.ltgray;
+      ctx.globalAlpha = 0.7;
+      const wy = e.frame===0 ? -2 : -3;
+      ctx.beginPath(); ctx.ellipse(-5,wy,3,2,Math.PI*0.3,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(5,wy,3,2,-Math.PI*0.3,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = PAL.black;
+      ctx.beginPath(); ctx.arc(0,-4.5,2,0,Math.PI*2); ctx.fill();
+      break;
+    case 'SNAIL':
+      // Shell spiral
+      ctx.beginPath();
+      ctx.arc(0,0,5,0,Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle=PAL.black; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*1.5); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,1.5,0,Math.PI*1.5); ctx.stroke();
+      // Eyes on stalks
+      ctx.strokeStyle=e.frightened?'#0000ff':e.color; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(-2,-4); ctx.lineTo(-2,-7); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(2,-4); ctx.lineTo(2,-7); ctx.stroke();
+      ctx.fillStyle=PAL.black;
+      ctx.beginPath(); ctx.arc(-2,-7,1.2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(2,-7,1.2,0,Math.PI*2); ctx.fill();
+      break;
+  }
+  ctx.restore();
+}
+
+function drawGate(g) {
+  const x = g.c * CW + 1;
+  const y = g.r * CH + 1;
+  const cx = x + CW/2, cy = y + CH/2;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  if (g.open) {
+    // Open gate: rotating segments
+    g.rotAngle = (g.rotAngle || 0) + 0.08;
+    ctx.rotate(g.rotAngle);
+  }
+
+  // Gate appearance: two rectangles forming a spinning gate
+  ctx.fillStyle = g.colorVal || PAL.red;
+  ctx.fillRect(-CW/2+2, -2, CW-4, 4); // horizontal bar
+  if (!g.open) {
+    ctx.fillRect(-2, -CH/2+2, 4, CH-4); // vertical bar (when closed)
+  }
+
+  ctx.restore();
+}
+
+function drawDot(r, c) {
+  const x = c * CW + CW/2 + 1;
+  const y = r * CH + CH/2 + 1;
+  ctx.fillStyle = PAL.white;
+  ctx.beginPath();
+  ctx.arc(x, y, 1.5, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawCollectible(col) {
+  if (col.collected) return;
+  const x = col.c * CW + CW/2 + 1;
+  const y = col.r * CH + CH/2 + 1;
+  const t = Date.now()/600;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(1 + 0.12*Math.sin(t), 1 + 0.12*Math.sin(t));
+  if (col.type === 'heart') {
+    ctx.fillStyle = PAL.pink;
+    ctx.font = 'bold 10px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('♥', 0, 1);
+  } else {
+    ctx.fillStyle = PAL.yellow;
+    ctx.font = 'bold 10px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(col.sym, 0, 1);
+  }
+  ctx.restore();
+}
+
+function drawMaze() {
+  // Background
+  ctx.fillStyle = PAL.black;
+  ctx.fillRect(0, 0, W, H);
+
+  // Border
+  ctx.strokeStyle = '#0033aa';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1, 1, W-2, H-2);
+
+  // Draw walls as blue grid
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = maze[r][c];
+      const x = c * CW + 1;
+      const y = r * CH + 1;
+      if (cell.wall) {
+        // Draw wall block
+        ctx.fillStyle = '#0033aa';
+        ctx.fillRect(x, y, CW, CH);
+        // Highlight border
+        ctx.fillStyle = '#0055dd';
+        ctx.fillRect(x+1, y+1, CW-2, 2);
+        ctx.fillRect(x+1, y+1, 2, CH-2);
+      } else if (cell.gate) {
+        drawGate(gates.find(g => g.r===r && g.c===c) || {r,c,open:false,colorVal:PAL.red,rotAngle:0});
+      } else if (cell.dot) {
+        drawDot(r, c);
+      }
+    }
+  }
+
+  // Draw collectibles
+  collectibles.forEach(drawCollectible);
+}
+
+// ─── SCORE POPUP ─────────────────────────────────────────────
+let popups = [];
+function addPopup(x, y, text, color) {
+  popups.push({x, y, text, color, timer:60, vy:-0.5});
+}
+function updatePopups() {
+  popups = popups.filter(p => p.timer > 0);
+  popups.forEach(p => {
+    p.timer--;
+    p.y += p.vy;
+    ctx.save();
+    ctx.globalAlpha = p.timer/60;
+    ctx.fillStyle = p.color || PAL.yellow;
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.text, p.x, p.y);
+    ctx.restore();
+  });
+}
+
+// ─── AUDIO ───────────────────────────────────────────────────
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function beep(freq, dur, type='square', vol=0.15) {
+  try {
+    const ac = getAudio();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ac.currentTime);
+    gain.gain.setValueAtTime(vol, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+    osc.start(); osc.stop(ac.currentTime + dur);
+  } catch(e){}
+}
+function playDot() { beep(880, 0.04, 'square', 0.08); }
+function playDeath() {
+  [400,350,300,250,200,150].forEach((f,i) => {
+    setTimeout(() => beep(f, 0.1, 'sawtooth', 0.2), i*80);
+  });
+}
+function playEat() { beep(600, 0.08, 'sine', 0.2); beep(900, 0.06, 'sine', 0.15); }
+function playLevelUp() {
+  [523,659,784,1047].forEach((f,i) => setTimeout(()=>beep(f,0.15,'sine',0.2),i*120));
+}
+function playGate() { beep(440,0.05,'triangle',0.15); beep(550,0.05,'triangle',0.12); }
+
+// ─── MAIN UPDATE ─────────────────────────────────────────────
+function update() {
+  if (state !== 'playing') {
+    stateTimer++;
+    if (state === 'dead') {
+      if (stateTimer > 90) {
+        if (lives <= 0) { state = 'gameover'; stateTimer=0; }
+        else { startLevel(); state='playing'; }
+      }
+      player.deathTimer = 60 - stateTimer;
+      return;
+    }
+    if (state === 'levelclear') {
+      if (stateTimer > 90) { level++; startLevel(); state='playing'; }
+      return;
+    }
+    return;
+  }
+
+  // ─── PLAYER UPDATE ─────────────────────────────────────────
+  if (!player.dead) {
+    const gr = Math.round(player.r);
+    const gc = Math.round(player.c);
+    const dr = player.r - gr;
+    const dc = player.c - gc;
+    const aligned = Math.abs(dr) < 0.15 && Math.abs(dc) < 0.15;
+
+    if (aligned) {
+      // Try to change direction
+      if (cellCanMove(gr, gc, player.nextDir)) {
+        player.dir = player.nextDir;
+      }
+    }
+
+    if (cellCanMove(Math.round(player.r), Math.round(player.c), player.dir)) {
+      player.r += DR[player.dir] * PLAYER_SPEED;
+      player.c += DC[player.dir] * PLAYER_SPEED;
+      // Snap
+      const ngr = Math.round(player.r);
+      const ngc = Math.round(player.c);
+      if (Math.abs(player.r - ngr) < PLAYER_SPEED && Math.abs(player.c - ngc) < PLAYER_SPEED) {
+        player.r = ngr; player.c = ngc;
+      }
+    } else {
+      player.r = Math.round(player.r);
+      player.c = Math.round(player.c);
+    }
+    // Wrap
+    if (player.c < 0) player.c = COLS-1;
+    if (player.c >= COLS) player.c = 0;
+
+    // Invincibility
+    if (player.invincible > 0) player.invincible--;
+
+    // Pick up dots
+    const pr = Math.round(player.r);
+    const pc = Math.round(player.c);
+    if (pr>=0&&pr<ROWS&&pc>=0&&pc<COLS&&maze[pr][pc].dot) {
+      maze[pr][pc].dot = false;
+      score += 10;
+      playDot();
+      if (score > hiScore) hiScore = score;
+      // Check win
+      if (countDots() === 0) {
+        state = 'levelclear';
+        stateTimer = 0;
+        playLevelUp();
+        return;
+      }
+      updateHUD();
+    }
+
+    // Check gate collision (walk through open gate → toggle it)
+    if (pr>=0&&pr<ROWS&&pc>=0&&pc<COLS&&maze[pr][pc].gate) {
+      const g = gates.find(g=>g.r===pr&&g.c===pc);
+      if (g && !g._justToggled) {
+        g.open = !g.open;
+        maze[pr][pc].gateOpen = g.open;
+        g._justToggled = true;
+        setTimeout(()=>{if(g)g._justToggled=false;}, 400);
+        playGate();
+        score += 50;
+        updateHUD();
+      }
+    }
+
+    // Collect bonus items
+    collectibles.forEach(col => {
+      if (col.collected) return;
+      const dist = Math.abs(player.r - col.r) + Math.abs(player.c - col.c);
+      if (dist < 0.7) {
+        col.collected = true;
+        if (col.type === 'heart') {
+          score += 500;
+          addPopup(col.c*CW+CW/2, col.r*CH, '500', PAL.pink);
+          playEat();
+          if (lives < 5) { lives++; }
+          // Frighten all enemies
+          enemies.forEach(e => { e.frightened=true; e.frightenTimer=200; });
+        } else {
+          score += 1000;
+          addPopup(col.c*CW+CW/2, col.r*CH, '1000', PAL.yellow);
+          playEat();
+        }
+        if (score > hiScore) hiScore = score;
+        updateHUD();
+      }
+    });
+
+    player.frameTimer++;
+    if (player.frameTimer > 6) { player.frameTimer=0; player.frame=(player.frame+1)%2; }
+  }
+
+  // ─── ENEMY UPDATE ──────────────────────────────────────────
+  enemies.forEach(e => updateEnemy(e));
+
+  // ─── COLLISION ─────────────────────────────────────────────
+  if (!player.dead && player.invincible === 0) {
+    enemies.forEach(e => {
+      if (e.dead) return;
+      const dist = Math.abs(player.r - e.r) + Math.abs(player.c - e.c);
+      if (dist < 0.8) {
+        if (e.frightened) {
+          // Eat enemy
+          e.dead = true;
+          e.deathTimer = 60;
+          score += e.score * (level > 1 ? 2 : 1);
+          addPopup(e.c*CW+CW/2, e.r*CH, String(e.score), PAL.cyan);
+          playEat();
+          if (score > hiScore) hiScore = score;
+          updateHUD();
+          // Respawn after delay
+          setTimeout(() => {
+            const idx = enemies.indexOf(e);
+            if (idx !== -1) {
+              const sp = [[1,1],[1,14],[12,1],[12,14]][Math.floor(Math.random()*4)];
+              enemies[idx] = spawnEnemy(e.type, sp[0], sp[1]);
+            }
+          }, 3000);
+        } else {
+          // Player dies
+          player.dead = true;
+          player.deathTimer = 60;
+          lives--;
+          state = 'dead';
+          stateTimer = 0;
+          playDeath();
+          updateHUD();
+        }
+      }
     });
   }
 
-  function updateHud(){
-    scoreLabel.textContent = `SCORE ${String(score).padStart(5,'0')}`;
-    livesLabel.textContent = `LIVES ${lives}`;
+  // Remove dead enemies from rendering after timer
+  enemies.forEach(e => { if(e.dead && e.deathTimer > 0) e.deathTimer--; });
+}
+
+// ─── RENDER ──────────────────────────────────────────────────
+function render() {
+  ctx.clearRect(0,0,W,H);
+  drawMaze();
+
+  // Draw enemies
+  enemies.forEach(drawEnemy);
+  drawPlayer();
+  updatePopups();
+
+  // Overlay screens
+  if (state === 'title') drawTitle();
+  else if (state === 'paused') drawPause();
+  else if (state === 'gameover') drawGameOver();
+  else if (state === 'levelclear') drawLevelClear();
+}
+
+function drawTitle() {
+  ctx.fillStyle = 'rgba(0,0,0,0.75)';
+  ctx.fillRect(0,0,W,H);
+
+  // Scanlines effect
+  for (let y=0; y<H; y+=4) {
+    ctx.fillStyle='rgba(0,0,0,0.3)';
+    ctx.fillRect(0,y,W,2);
   }
 
-  function resetLevel(full=false){
-    if(full){ score = 0; lives = 3; gameOver = false; }
-    phaseCleared = false;
-    initCollectibles();
-    resetActors();
-    statusLabel.textContent = 'READY!';
-    updateHud();
+  ctx.textAlign='center';
+  ctx.fillStyle=PAL.yellow;
+  ctx.font='bold 22px "Courier New"';
+  ctx.fillText('LADY BUG', W/2, 60);
+
+  ctx.fillStyle=PAL.red;
+  ctx.font='bold 8px monospace';
+  ctx.fillText('© 1981 UNIVERSAL', W/2, 75);
+
+  // Draw big ladybug
+  ctx.save();
+  ctx.translate(W/2, 130);
+  ctx.scale(3,3);
+  drawLadybugIcon(ctx, 0, 0, 8);
+  ctx.restore();
+
+  ctx.fillStyle=PAL.white;
+  ctx.font='bold 9px monospace';
+  const flash = Math.floor(Date.now()/500)%2===0;
+  if (flash) ctx.fillText('PRESS ENTER TO START', W/2, 190);
+
+  ctx.fillStyle=PAL.cyan;
+  ctx.font='8px monospace';
+  ctx.fillText('ARROWS = MOVE', W/2, 215);
+  ctx.fillText('SPACE = PAUSE', W/2, 226);
+
+  ctx.fillStyle=PAL.gray;
+  ctx.font='7px monospace';
+  ctx.fillText('HIGH: ' + String(hiScore).padStart(6,'0'), W/2, 248);
+}
+
+function drawPause() {
+  ctx.fillStyle='rgba(0,0,0,0.6)';
+  ctx.fillRect(50,100,156,50);
+  ctx.strokeStyle=PAL.yellow;
+  ctx.lineWidth=2;
+  ctx.strokeRect(50,100,156,50);
+  ctx.fillStyle=PAL.yellow;
+  ctx.font='bold 16px monospace';
+  ctx.textAlign='center';
+  ctx.fillText('PAUSED', W/2, 132);
+}
+
+function drawGameOver() {
+  ctx.fillStyle='rgba(0,0,0,0.8)';
+  ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center';
+  ctx.fillStyle=PAL.red;
+  ctx.font='bold 20px "Courier New"';
+  ctx.fillText('GAME OVER', W/2, 100);
+  ctx.fillStyle=PAL.yellow;
+  ctx.font='11px monospace';
+  ctx.fillText('SCORE: ' + String(score).padStart(6,'0'), W/2, 125);
+  if (score >= hiScore) {
+    ctx.fillStyle=PAL.cyan;
+    ctx.font='bold 10px monospace';
+    ctx.fillText('NEW HIGH SCORE!', W/2, 142);
   }
+  const flash = Math.floor(Date.now()/600)%2===0;
+  ctx.fillStyle=PAL.white;
+  ctx.font='9px monospace';
+  if (flash) ctx.fillText('PRESS ENTER TO PLAY AGAIN', W/2, 170);
+}
 
-  function moveEntity(entity, isPlayer=false){
-    const cell = worldToCell(entity.x, entity.y);
-    const center = cellCenter(cell.x, cell.y);
-    const nearCenter = Math.hypot(entity.x-center.x, entity.y-center.y) < 2.2;
+function drawLevelClear() {
+  ctx.fillStyle='rgba(0,0,0,0.7)';
+  ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center';
+  ctx.fillStyle=PAL.green;
+  ctx.font='bold 16px monospace';
+  ctx.fillText('LEVEL CLEAR!', W/2, 110);
+  ctx.fillStyle=PAL.yellow;
+  ctx.font='11px monospace';
+  ctx.fillText('LEVEL ' + level + ' COMPLETE', W/2, 130);
+  ctx.fillStyle=PAL.white;
+  ctx.font='9px monospace';
+  ctx.fillText('BONUS: ' + (level*500), W/2, 148);
+}
 
-    if(nearCenter){
-      entity.x = center.x; entity.y = center.y;
-      if(isPlayer) tryRotateDoor(entity);
-      if(canMoveCell(cell.x, cell.y, entity.wanted)) entity.dir = entity.wanted;
-      if(!canMoveCell(cell.x, cell.y, entity.dir)) return;
-    }
+// ─── GAME LOOP ───────────────────────────────────────────────
+let lastTime = 0;
+function loop(ts) {
+  // Update gate animations
+  gates.forEach(g => {
+    if (g.open) g.rotAngle = (g.rotAngle||0) + 0.08;
+  });
 
-    const v = dirVec[entity.dir];
-    entity.x += v.x * entity.speed;
-    entity.y += v.y * entity.speed;
-    entity.anim += 1;
-  }
+  update();
+  render();
+  requestAnimationFrame(loop);
+}
 
-  function chooseEnemyDir(enemy){
-    const cell = worldToCell(enemy.x, enemy.y);
-    const center = cellCenter(cell.x, cell.y);
-    if(Math.hypot(enemy.x-center.x, enemy.y-center.y) > 2.2) return;
-    const options = ['left','right','up','down'].filter(d => d !== opposite[enemy.dir] && canMoveCell(cell.x, cell.y, d));
-    if(!options.length){ enemy.wanted = opposite[enemy.dir]; return; }
-    let best = options[0], bestScore = Infinity;
-    for(const d of options){
-      const v = dirVec[d];
-      const target = cellCenter(cell.x + v.x, cell.y + v.y);
-      const dist = Math.hypot(player.x - target.x, player.y - target.y);
-      const score = dist + Math.random()*5;
-      if(score < bestScore){ best = d; bestScore = score; }
-    }
-    enemy.wanted = best;
-  }
-
-  function collectAtPlayer(){
-    const c = worldToCell(player.x, player.y);
-    const k = keyCell(c.x, c.y);
-    if(dots.delete(k)){ score += 10; updateHud(); }
-    if(skulls.has(k)){ skulls.delete(k); loseLife(); return; }
-    bonusCells.forEach((b,i) => {
-      if(c.x===b.x && c.y===b.y && !bonusTaken.has(i)){
-        bonusTaken.add(i); score += 250; updateHud();
-      }
-    });
-    if(dots.size === 0 && !phaseCleared){
-      phaseCleared = true;
-      statusLabel.textContent = 'CLEAR!';
-      setTimeout(() => resetLevel(false), 900);
-    }
-  }
-
-  function loseLife(){
-    if(gameOver) return;
-    lives -= 1;
-    updateHud();
-    if(lives <= 0){ gameOver = true; statusLabel.textContent = 'GAME OVER'; }
-    else { statusLabel.textContent = 'OUCH!'; resetActors(); }
-  }
-
-  function checkEnemyHit(){
-    for(const e of enemies){
-      if(Math.hypot(player.x-e.x, player.y-e.y) < 10){ loseLife(); break; }
-    }
-  }
-
-  function drawBackground(){
-    ctx.fillStyle = COLORS.bg;
-    ctx.fillRect(0,0,W,H);
-
-    for(let y=0; y<MAZE.length; y++){
-      for(let x=0; x<MAZE[0].length; x++){
-        if(!MAZE[y][x]) continue;
-        const c = cellCenter(x,y);
-        const open = {
-          left: canMoveCell(x,y,'left'),
-          right: canMoveCell(x,y,'right'),
-          up: canMoveCell(x,y,'up'),
-          down: canMoveCell(x,y,'down')
-        };
-        ctx.strokeStyle = COLORS.mazeGlow;
-        ctx.lineWidth = 8;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        if(open.left){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x-CELL/2, c.y); }
-        if(open.right){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x+CELL/2, c.y); }
-        if(open.up){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x, c.y-CELL/2); }
-        if(open.down){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x, c.y+CELL/2); }
-        ctx.stroke();
-
-        ctx.strokeStyle = COLORS.maze;
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        if(open.left){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x-CELL/2, c.y); }
-        if(open.right){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x+CELL/2, c.y); }
-        if(open.up){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x, c.y-CELL/2); }
-        if(open.down){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x, c.y+CELL/2); }
-        ctx.stroke();
-      }
-    }
-
-    const bx = bugBox.x*CELL, by = bugBox.y*CELL, bw = bugBox.w*CELL, bh = bugBox.h*CELL;
-    ctx.strokeStyle = '#173f73';
-    ctx.lineWidth = 8;
-    ctx.strokeRect(bx+4, by+4, bw-8, bh-8);
-    ctx.strokeStyle = COLORS.bugBox;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(bx+4, by+4, bw-8, bh-8);
-    ctx.fillStyle = '#0a1834';
-    ctx.fillRect(bx+5, by+5, bw-10, bh-10);
-
-    for(const d of doors){
-      const c = cellCenter(d.x,d.y);
-      ctx.save();
-      ctx.translate(c.x,c.y);
-      ctx.rotate(d.o === 'h' ? 0 : Math.PI/2);
-      ctx.strokeStyle = '#a64500';
-      ctx.lineWidth = 7;
-      ctx.beginPath(); ctx.moveTo(-7,0); ctx.lineTo(7,0); ctx.stroke();
-      ctx.strokeStyle = COLORS.door;
-      ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(-7,0); ctx.lineTo(7,0); ctx.stroke();
-      ctx.restore();
-    }
-  }
-
-  function drawCollectibles(){
-    for(const k of dots){
-      const [x,y] = k.split(',').map(Number);
-      const c = cellCenter(x,y);
-      ctx.fillStyle = COLORS.dot;
-      ctx.beginPath(); ctx.arc(c.x, c.y, 2, 0, Math.PI*2); ctx.fill();
-    }
-
-    if((blink>>4)%2===0){
-      bonusCells.forEach((b,i) => {
-        if(bonusTaken.has(i)) return;
-        const c = cellCenter(b.x,b.y);
-        ctx.fillStyle = '#ff79c8';
-        ctx.beginPath(); ctx.arc(c.x, c.y, 5, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ffe56d';
-        ctx.fillRect(c.x-1, c.y-7, 2, 4);
-      });
-    }
-
-    for(const k of skulls){
-      const [x,y] = k.split(',').map(Number);
-      const c = cellCenter(x,y);
-      ctx.fillStyle = COLORS.skull;
-      ctx.beginPath(); ctx.arc(c.x, c.y-1, 4, 0, Math.PI*2); ctx.fill();
-      ctx.fillRect(c.x-3, c.y+2, 6, 4);
-      ctx.fillStyle = '#111';
-      ctx.fillRect(c.x-2, c.y-2, 1, 1); ctx.fillRect(c.x+1, c.y-2, 1, 1);
-    }
-  }
-
-  function drawActors(){
-    drawPlayerSprite(player.x, player.y, player.dir, Math.floor(player.anim/8));
-    for(const e of enemies) e.painter(e.x, e.y, e.dir, Math.floor(e.anim/8));
-  }
-
-  function drawOverlayTexts(){
-    ctx.fillStyle = COLORS.text;
-    ctx.font = 'bold 10px Arial';
-    ctx.fillText('1UP', 12, 10);
-    ctx.fillText(String(score).padStart(5,'0'), 12, 20);
-    ctx.fillText('LADY BUG', 130, 10);
-
-    if(gameOver){
-      ctx.fillStyle = 'rgba(0,0,0,.65)';
-      ctx.fillRect(0,0,W,H);
-      ctx.fillStyle = '#ffd64a';
-      ctx.font = 'bold 18px Arial';
-      ctx.fillText('GAME OVER', 57, 122);
-      ctx.font = 'bold 10px Arial';
-      ctx.fillText('APERTE ESPAÇO PARA RECOMEÇAR', 26, 142);
-    }
-  }
-
-  function loop(){
-    blink++;
-    if(started && !gameOver && !phaseCleared){
-      statusLabel.textContent = 'GO!';
-      if(input.left) player.wanted = 'left';
-      else if(input.right) player.wanted = 'right';
-      else if(input.up) player.wanted = 'up';
-      else if(input.down) player.wanted = 'down';
-
-      moveEntity(player, true);
-      collectAtPlayer();
-      enemies.forEach(e => { chooseEnemyDir(e); moveEntity(e, false); });
-      checkEnemyHit();
-    }
-
-    drawBackground();
-    drawCollectibles();
-    drawActors();
-    drawOverlayTexts();
-    requestAnimationFrame(loop);
-  }
-
-  function startGame(){
-    started = true;
-    startOverlay.classList.add('hidden');
-    canvas.focus();
-    footerTip.textContent = 'Agora vai: setas/WASD movem. Espaço reinicia.';
-    setTimeout(() => { startOverlay.style.display = 'none'; }, 180);
-  }
-
-  function onDown(e){
-    const k = e.key.toLowerCase();
-    if(['arrowleft','arrowright','arrowup','arrowdown',' ','a','s','d','w'].includes(k)) e.preventDefault();
-    if(!started) startGame();
-    if(k === 'arrowleft' || k === 'a') input.left = true;
-    if(k === 'arrowright' || k === 'd') input.right = true;
-    if(k === 'arrowup' || k === 'w') input.up = true;
-    if(k === 'arrowdown' || k === 's') input.down = true;
-    if(k === ' ') resetLevel(true);
-  }
-
-  function onUp(e){
-    const k = e.key.toLowerCase();
-    if(k === 'arrowleft' || k === 'a') input.left = false;
-    if(k === 'arrowright' || k === 'd') input.right = false;
-    if(k === 'arrowup' || k === 'w') input.up = false;
-    if(k === 'arrowdown' || k === 's') input.down = false;
-  }
-
-  window.addEventListener('keydown', onDown, {passive:false});
-  window.addEventListener('keyup', onUp);
-  startOverlay.addEventListener('click', startGame);
-  canvas.addEventListener('click', startGame);
-
-  resetLevel(true);
-  loop();
-})();
+// ─── BOOTSTRAP ───────────────────────────────────────────────
+initMaze();
+initPlayer();
+initEnemies();
+initCollectibles();
+updateHUD();
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
