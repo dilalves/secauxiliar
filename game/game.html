@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lady Bug Clone - HTML Prototype</title>
+  <title>Lady Bug Clone - Full Game</title>
   <style>
     :root{
-      --bg:#07070c;
+      --bg:#05060b;
       --panel:#11131b;
       --frame:#2b3150;
       --text:#e8edf7;
@@ -14,43 +14,29 @@
       --accent:#f4c430;
     }
     *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      min-height:100vh;
-      display:grid;
-      place-items:center;
       background:radial-gradient(circle at top, #1a2040 0%, #090a12 42%, #05060b 100%);
       color:var(--text);
       font-family:Arial, Helvetica, sans-serif;
-    }
-    .wrap{
-      width:min(100%, 980px);
-      display:grid;
-      gap:18px;
-      padding:24px;
-      grid-template-columns: minmax(320px, 420px) 1fr;
-      align-items:start;
-    }
-    .panel{
-      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:20px;
-      box-shadow:0 24px 60px rgba(0,0,0,.35);
       overflow:hidden;
     }
-    .meta{padding:20px 20px 18px}
-    h1{margin:0 0 10px;font-size:28px;line-height:1.05}
-    .meta p{margin:0 0 10px;color:var(--sub);line-height:1.45}
-    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-    .chip{padding:8px 10px;border-radius:999px;background:#191f35;border:1px solid rgba(255,255,255,.08);font-size:13px;color:#d6def8}
-    .controls{padding:0 20px 20px;display:grid;gap:10px}
-    .card{background:#0b0f1d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px}
-    .card b{display:block;margin-bottom:8px}
-    .small{font-size:13px;color:var(--sub);line-height:1.45}
-    .game-shell{
-      padding:18px;
+    .stage{
+      min-height:100vh;
       display:grid;
-      gap:14px;
+      place-items:center;
+      padding:14px;
+    }
+    .game-shell{
+      width:min(96vw, 860px);
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:22px;
+      box-shadow:0 24px 60px rgba(0,0,0,.38);
+      padding:18px 18px 14px;
+      display:grid;
+      gap:12px;
       justify-items:center;
     }
     .scorebar{
@@ -64,8 +50,13 @@
       letter-spacing:.06em;
       color:#f8f0b3;
     }
-    canvas{
+    .screen-wrap{
+      position:relative;
       width:min(90vw, 672px);
+    }
+    canvas{
+      display:block;
+      width:100%;
       aspect-ratio:224/256;
       image-rendering:pixelated;
       image-rendering:crisp-edges;
@@ -73,53 +64,100 @@
       border-radius:14px;
       background:#02040a;
       box-shadow:0 0 0 4px #111527 inset, 0 24px 60px rgba(0,0,0,.45);
+      outline:none;
     }
-    .footer{font-size:12px;color:#8e98ba;text-align:center;line-height:1.45}
-    @media (max-width: 860px){
-      .wrap{grid-template-columns:1fr}
+    .overlay{
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      padding:16px;
+      background:linear-gradient(180deg, rgba(2,4,10,.18), rgba(2,4,10,.55));
+      border-radius:14px;
+      pointer-events:none;
+      transition:opacity .18s ease;
+    }
+    .overlay.hidden{opacity:0}
+    .start-card{
+      max-width:420px;
+      text-align:center;
+      background:rgba(8,12,24,.88);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:18px;
+      padding:18px 16px;
+      box-shadow:0 18px 44px rgba(0,0,0,.35);
+    }
+    .start-card h1{
+      margin:0 0 10px;
+      font-size:30px;
+      line-height:1;
+      color:#fff2a6;
+    }
+    .start-card p{
+      margin:8px 0;
+      color:#c4d0f4;
+      line-height:1.45;
+      font-size:14px;
+    }
+    .kbd{
+      display:inline-block;
+      min-width:34px;
+      padding:6px 8px;
+      margin:0 3px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.14);
+      background:#1a223d;
+      color:#fff;
+      font-weight:700;
+      font-size:13px;
+    }
+    .cta{
+      margin-top:10px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:999px;
+      background:#f3c529;
+      color:#111;
+      font-weight:800;
+      box-shadow:0 8px 20px rgba(243,197,41,.28);
+    }
+    .footer{
+      font-size:12px;
+      color:#8e98ba;
+      text-align:center;
+      line-height:1.45;
+      min-height:16px;
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <section class="panel">
-      <div class="meta">
-        <h1>Lady Bug em HTML</h1>
-        <p>Esse protótipo foi refeito para ficar <b>bem mais perto da vibe do original</b>: proporção de tela arcade, labirinto com linhas finas, portas rotativas, bug box central, inimigos com cara retrô e movimentação estilo caça no corredor.</p>
-        <p>Não é emulação 1:1 da ROM. É uma <b>recriação jogável em HTML5</b>, inspirada nos gráficos e no layout do Lady Bug.</p>
-        <div class="chips">
-          <span class="chip">224 x 256</span>
-          <span class="chip">Portas giratórias</span>
-          <span class="chip">Visual retrô</span>
-          <span class="chip">HTML puro</span>
-        </div>
-      </div>
-      <div class="controls">
-        <div class="card">
-          <b>Controles</b>
-          <div class="small">Setas ou WASD para mover.<br>Espaço para reiniciar a fase.<br>Encoste na portinha amarela para ela girar e abrir outro caminho.</div>
-        </div>
-        <div class="card">
-          <b>O que ficou mais próximo do original</b>
-          <div class="small">Tela vertical arcade, trilhas finas, pontos no corredor, bônus piscando, caixa central dos insetos e a lógica de portas que muda o fluxo da perseguição.</div>
-        </div>
-        <div class="card">
-          <b>Próximo passo que dá pra fazer</b>
-          <div class="small">Trocar os sprites pelo João e pelos bichinhos, adicionar título animado, músicas 8-bit e desenhar uma fase ainda mais fiel ao mapa real do Lady Bug.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel game-shell">
+  <main class="stage">
+    <section class="game-shell">
       <div class="scorebar">
         <span id="scoreLabel">SCORE 00000</span>
         <span id="statusLabel">READY!</span>
         <span id="livesLabel">LIVES 3</span>
       </div>
-      <canvas id="game" width="224" height="256"></canvas>
-      <div class="footer">Dica: atraia o inimigo até a porta e vire o corredor na cara dele. É aí que começa a ficar com jeitão de Lady Bug mesmo.</div>
+
+      <div class="screen-wrap">
+        <canvas id="game" width="224" height="256" tabindex="0"></canvas>
+        <div class="overlay" id="startOverlay">
+          <div class="start-card">
+            <h1>LADY BUG</h1>
+            <p>Agora sem texto lateral. Abre direto no jogo.</p>
+            <p>Use <span class="kbd">←</span><span class="kbd">→</span><span class="kbd">↑</span><span class="kbd">↓</span> ou <span class="kbd">W</span><span class="kbd">A</span><span class="kbd">S</span><span class="kbd">D</span>.</p>
+            <p><span class="kbd">ESPAÇO</span> reinicia a fase.</p>
+            <div class="cta">Clique aqui ou pressione qualquer tecla para jogar</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer" id="footerTip">Toque numa porta amarela para girar o corredor.</div>
     </section>
-  </div>
+  </main>
 
 <script>
 (() => {
@@ -127,12 +165,14 @@
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
-  const W = 224, H = 256;
-  const CELL = 16;
-  const HUD_TOP = 16;
   const scoreLabel = document.getElementById('scoreLabel');
   const livesLabel = document.getElementById('livesLabel');
   const statusLabel = document.getElementById('statusLabel');
+  const startOverlay = document.getElementById('startOverlay');
+  const footerTip = document.getElementById('footerTip');
+
+  const W = 224, H = 256;
+  const CELL = 16;
 
   const COLORS = {
     bg: '#02040a',
@@ -140,7 +180,6 @@
     mazeGlow: '#2f5cff',
     dot: '#f8f8f8',
     door: '#f3c529',
-    doorAccent: '#ff8a00',
     bugBox: '#9ae5ff',
     text: '#f8e99a',
     skull: '#ffd9e8'
@@ -166,25 +205,20 @@
   ].map(r => r.split('').map(n => n === '1'));
 
   const bugBox = { x: 5, y: 6, w: 4, h: 4 };
-
-  const bonusCells = [
-    {x:1, y:1}, {x:12, y:1}, {x:1, y:15}, {x:12, y:15}
-  ];
-
+  const bonusCells = [{x:1,y:1},{x:12,y:1},{x:1,y:15},{x:12,y:15}];
   const doors = [
-    {x:3, y:2, o:'v'}, {x:10, y:2, o:'v'},
-    {x:5, y:5, o:'h'}, {x:8, y:5, o:'h'},
-    {x:3, y:7, o:'v'}, {x:10, y:7, o:'v'},
-    {x:3, y:10, o:'v'}, {x:10, y:10, o:'v'},
-    {x:5, y:11, o:'h'}, {x:8, y:11, o:'h'},
-    {x:3, y:13, o:'v'}, {x:10, y:13, o:'v'}
+    {x:3,y:2,o:'v'}, {x:10,y:2,o:'v'},
+    {x:5,y:5,o:'h'}, {x:8,y:5,o:'h'},
+    {x:3,y:7,o:'v'}, {x:10,y:7,o:'v'},
+    {x:3,y:10,o:'v'}, {x:10,y:10,o:'v'},
+    {x:5,y:11,o:'h'}, {x:8,y:11,o:'h'},
+    {x:3,y:13,o:'v'}, {x:10,y:13,o:'v'}
   ];
 
   const dirVec = {
     left: {x:-1,y:0}, right:{x:1,y:0}, up:{x:0,y:-1}, down:{x:0,y:1}
   };
   const opposite = {left:'right', right:'left', up:'down', down:'up'};
-
   const input = { left:false, right:false, up:false, down:false };
 
   let dots = new Set();
@@ -195,13 +229,12 @@
   let phaseCleared = false;
   let gameOver = false;
   let blink = 0;
+  let started = false;
 
   function keyCell(x,y){ return `${x},${y}`; }
 
   function initCollectibles(){
-    dots.clear();
-    skulls.clear();
-    bonusTaken.clear();
+    dots.clear(); skulls.clear(); bonusTaken.clear();
     for(let y=0; y<MAZE.length; y++){
       for(let x=0; x<MAZE[0].length; x++){
         if(!MAZE[y][x]) continue;
@@ -213,24 +246,15 @@
     bonusCells.forEach(c => dots.delete(keyCell(c.x,c.y)));
   }
 
-  function cellCenter(x,y){
-    return {x:x*CELL+CELL/2, y:y*CELL+CELL/2};
-  }
-  function worldToCell(px,py){
-    return {x:Math.floor(px/CELL), y:Math.floor(py/CELL)};
-  }
-
+  function cellCenter(x,y){ return {x:x*CELL+CELL/2, y:y*CELL+CELL/2}; }
+  function worldToCell(px,py){ return {x:Math.floor(px/CELL), y:Math.floor(py/CELL)}; }
   function insideMaze(x,y){ return y>=0 && y<MAZE.length && x>=0 && x<MAZE[0].length; }
   function walkable(x,y){ return insideMaze(x,y) && MAZE[y][x]; }
 
   function doorBetween(ax, ay, bx, by){
     const mx = Math.min(ax,bx), my = Math.min(ay,by);
-    if(ax !== bx){
-      return doors.find(d => d.o === 'v' && d.x === mx && d.y === ay);
-    }
-    if(ay !== by){
-      return doors.find(d => d.o === 'h' && d.x === ax && d.y === my);
-    }
+    if(ax !== bx) return doors.find(d => d.o === 'v' && d.x === mx && d.y === ay);
+    if(ay !== by) return doors.find(d => d.o === 'h' && d.x === ax && d.y === my);
     return null;
   }
 
@@ -241,11 +265,6 @@
     const door = doorBetween(ax, ay, bx, by);
     if(!door) return true;
     return door.o === (ax !== bx ? 'v' : 'h');
-  }
-
-  function nearestDoor(entity){
-    const cell = worldToCell(entity.x, entity.y);
-    return doors.find(d => d.x === cell.x && d.y === cell.y);
   }
 
   function tryRotateDoor(entity){
@@ -268,36 +287,22 @@
       ctx.strokeStyle = '#161616';
       ctx.lineWidth = 1;
       if(kind === 'player'){
-        ctx.fillStyle = primary;
-        ctx.beginPath();
-        ctx.ellipse(8,8,6,7,0,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = secondary;
-        ctx.fillRect(5,3,6,10);
-        ctx.fillStyle = '#111';
-        ctx.fillRect(7,2,2,12);
+        ctx.beginPath(); ctx.ellipse(8,8,6,7,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = secondary; ctx.fillRect(5,3,6,10);
+        ctx.fillStyle = '#111'; ctx.fillRect(7,2,2,12);
         if(phase%2===0){
-          ctx.fillRect(1,4,4,2); ctx.fillRect(11,4,4,2);
-          ctx.fillRect(1,10,4,2); ctx.fillRect(11,10,4,2);
+          ctx.fillRect(1,4,4,2); ctx.fillRect(11,4,4,2); ctx.fillRect(1,10,4,2); ctx.fillRect(11,10,4,2);
         } else {
-          ctx.fillRect(0,5,5,2); ctx.fillRect(11,5,5,2);
-          ctx.fillRect(0,9,5,2); ctx.fillRect(11,9,5,2);
+          ctx.fillRect(0,5,5,2); ctx.fillRect(11,5,5,2); ctx.fillRect(0,9,5,2); ctx.fillRect(11,9,5,2);
         }
-        ctx.fillStyle = '#111';
-        ctx.fillRect(12,6,2,2);
+        ctx.fillStyle = '#111'; ctx.fillRect(12,6,2,2);
       } else {
-        ctx.fillStyle = primary;
-        ctx.beginPath();
-        ctx.ellipse(8,8,6,6,0,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = secondary;
-        ctx.fillRect(4,4,8,8);
+        ctx.beginPath(); ctx.ellipse(8,8,6,6,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = secondary; ctx.fillRect(4,4,8,8);
         ctx.fillStyle = '#111';
-        ctx.fillRect(1,5,4,2); ctx.fillRect(11,5,4,2);
-        ctx.fillRect(1,9,4,2); ctx.fillRect(11,9,4,2);
-        if(phase%2===0){
-          ctx.fillRect(6,1,1,3); ctx.fillRect(9,1,1,3);
-        } else {
-          ctx.fillRect(5,1,1,3); ctx.fillRect(10,1,1,3);
-        }
+        ctx.fillRect(1,5,4,2); ctx.fillRect(11,5,4,2); ctx.fillRect(1,9,4,2); ctx.fillRect(11,9,4,2);
+        if(phase%2===0){ ctx.fillRect(6,1,1,3); ctx.fillRect(9,1,1,3); }
+        else { ctx.fillRect(5,1,1,3); ctx.fillRect(10,1,1,3); }
         ctx.fillStyle = '#fff'; ctx.fillRect(11,6,2,2);
       }
       ctx.restore();
@@ -328,6 +333,11 @@
     });
   }
 
+  function updateHud(){
+    scoreLabel.textContent = `SCORE ${String(score).padStart(5,'0')}`;
+    livesLabel.textContent = `LIVES ${lives}`;
+  }
+
   function resetLevel(full=false){
     if(full){ score = 0; lives = 3; gameOver = false; }
     phaseCleared = false;
@@ -337,11 +347,6 @@
     updateHud();
   }
 
-  function updateHud(){
-    scoreLabel.textContent = `SCORE ${String(score).padStart(5,'0')}`;
-    livesLabel.textContent = `LIVES ${lives}`;
-  }
-
   function moveEntity(entity, isPlayer=false){
     const cell = worldToCell(entity.x, entity.y);
     const center = cellCenter(cell.x, cell.y);
@@ -349,9 +354,7 @@
 
     if(nearCenter){
       entity.x = center.x; entity.y = center.y;
-      if(isPlayer){
-        tryRotateDoor(entity);
-      }
+      if(isPlayer) tryRotateDoor(entity);
       if(canMoveCell(cell.x, cell.y, entity.wanted)) entity.dir = entity.wanted;
       if(!canMoveCell(cell.x, cell.y, entity.dir)) return;
     }
@@ -367,17 +370,13 @@
     const center = cellCenter(cell.x, cell.y);
     if(Math.hypot(enemy.x-center.x, enemy.y-center.y) > 2.2) return;
     const options = ['left','right','up','down'].filter(d => d !== opposite[enemy.dir] && canMoveCell(cell.x, cell.y, d));
-    if(!options.length){
-      enemy.wanted = opposite[enemy.dir];
-      return;
-    }
+    if(!options.length){ enemy.wanted = opposite[enemy.dir]; return; }
     let best = options[0], bestScore = Infinity;
     for(const d of options){
       const v = dirVec[d];
       const target = cellCenter(cell.x + v.x, cell.y + v.y);
       const dist = Math.hypot(player.x - target.x, player.y - target.y);
-      const jitter = Math.random() * 5;
-      const score = dist + jitter;
+      const score = dist + Math.random()*5;
       if(score < bestScore){ best = d; bestScore = score; }
     }
     enemy.wanted = best;
@@ -387,16 +386,10 @@
     const c = worldToCell(player.x, player.y);
     const k = keyCell(c.x, c.y);
     if(dots.delete(k)){ score += 10; updateHud(); }
-    if(skulls.has(k)){
-      skulls.delete(k);
-      loseLife();
-      return;
-    }
+    if(skulls.has(k)){ skulls.delete(k); loseLife(); return; }
     bonusCells.forEach((b,i) => {
       if(c.x===b.x && c.y===b.y && !bonusTaken.has(i)){
-        bonusTaken.add(i);
-        score += 250;
-        updateHud();
+        bonusTaken.add(i); score += 250; updateHud();
       }
     });
     if(dots.size === 0 && !phaseCleared){
@@ -410,21 +403,13 @@
     if(gameOver) return;
     lives -= 1;
     updateHud();
-    if(lives <= 0){
-      gameOver = true;
-      statusLabel.textContent = 'GAME OVER';
-    } else {
-      statusLabel.textContent = 'OUCH!';
-      resetActors();
-    }
+    if(lives <= 0){ gameOver = true; statusLabel.textContent = 'GAME OVER'; }
+    else { statusLabel.textContent = 'OUCH!'; resetActors(); }
   }
 
   function checkEnemyHit(){
     for(const e of enemies){
-      if(Math.hypot(player.x-e.x, player.y-e.y) < 10){
-        loseLife();
-        break;
-      }
+      if(Math.hypot(player.x-e.x, player.y-e.y) < 10){ loseLife(); break; }
     }
   }
 
@@ -463,7 +448,6 @@
       }
     }
 
-    // bug box
     const bx = bugBox.x*CELL, by = bugBox.y*CELL, bw = bugBox.w*CELL, bh = bugBox.h*CELL;
     ctx.strokeStyle = '#173f73';
     ctx.lineWidth = 8;
@@ -474,7 +458,6 @@
     ctx.fillStyle = '#0a1834';
     ctx.fillRect(bx+5, by+5, bw-10, bh-10);
 
-    // doors
     for(const d of doors){
       const c = cellCenter(d.x,d.y);
       ctx.save();
@@ -482,14 +465,10 @@
       ctx.rotate(d.o === 'h' ? 0 : Math.PI/2);
       ctx.strokeStyle = '#a64500';
       ctx.lineWidth = 7;
-      ctx.beginPath();
-      ctx.moveTo(-7,0); ctx.lineTo(7,0);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-7,0); ctx.lineTo(7,0); ctx.stroke();
       ctx.strokeStyle = COLORS.door;
       ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-7,0); ctx.lineTo(7,0);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-7,0); ctx.lineTo(7,0); ctx.stroke();
       ctx.restore();
     }
   }
@@ -499,16 +478,15 @@
       const [x,y] = k.split(',').map(Number);
       const c = cellCenter(x,y);
       ctx.fillStyle = COLORS.dot;
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, 2, 0, Math.PI*2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(c.x, c.y, 2, 0, Math.PI*2); ctx.fill();
     }
+
     if((blink>>4)%2===0){
       bonusCells.forEach((b,i) => {
         if(bonusTaken.has(i)) return;
         const c = cellCenter(b.x,b.y);
         ctx.fillStyle = '#ff79c8';
-        ctx.beginPath(); ctx.arc(c.x,c.y,5,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(c.x, c.y, 5, 0, Math.PI*2); ctx.fill();
         ctx.fillStyle = '#ffe56d';
         ctx.fillRect(c.x-1, c.y-7, 2, 4);
       });
@@ -521,19 +499,16 @@
       ctx.beginPath(); ctx.arc(c.x, c.y-1, 4, 0, Math.PI*2); ctx.fill();
       ctx.fillRect(c.x-3, c.y+2, 6, 4);
       ctx.fillStyle = '#111';
-      ctx.fillRect(c.x-2, c.y-2, 1, 1);
-      ctx.fillRect(c.x+1, c.y-2, 1, 1);
+      ctx.fillRect(c.x-2, c.y-2, 1, 1); ctx.fillRect(c.x+1, c.y-2, 1, 1);
     }
   }
 
   function drawActors(){
     drawPlayerSprite(player.x, player.y, player.dir, Math.floor(player.anim/8));
-    for(const e of enemies){
-      e.painter(e.x, e.y, e.dir, Math.floor(e.anim/8));
-    }
+    for(const e of enemies) e.painter(e.x, e.y, e.dir, Math.floor(e.anim/8));
   }
 
-  function drawOverlay(){
+  function drawOverlayTexts(){
     ctx.fillStyle = COLORS.text;
     ctx.font = 'bold 10px Arial';
     ctx.fillText('1UP', 12, 10);
@@ -551,9 +526,9 @@
     }
   }
 
-  function step(){
+  function loop(){
     blink++;
-    if(!gameOver && !phaseCleared){
+    if(started && !gameOver && !phaseCleared){
       statusLabel.textContent = 'GO!';
       if(input.left) player.wanted = 'left';
       else if(input.right) player.wanted = 'right';
@@ -569,28 +544,44 @@
     drawBackground();
     drawCollectibles();
     drawActors();
-    drawOverlay();
-    requestAnimationFrame(step);
+    drawOverlayTexts();
+    requestAnimationFrame(loop);
   }
 
-  addEventListener('keydown', (e) => {
+  function startGame(){
+    started = true;
+    startOverlay.classList.add('hidden');
+    canvas.focus();
+    footerTip.textContent = 'Agora vai: setas/WASD movem. Espaço reinicia.';
+    setTimeout(() => { startOverlay.style.display = 'none'; }, 180);
+  }
+
+  function onDown(e){
     const k = e.key.toLowerCase();
+    if(['arrowleft','arrowright','arrowup','arrowdown',' ','a','s','d','w'].includes(k)) e.preventDefault();
+    if(!started) startGame();
     if(k === 'arrowleft' || k === 'a') input.left = true;
     if(k === 'arrowright' || k === 'd') input.right = true;
     if(k === 'arrowup' || k === 'w') input.up = true;
     if(k === 'arrowdown' || k === 's') input.down = true;
-    if(k === ' '){ resetLevel(true); }
-  });
-  addEventListener('keyup', (e) => {
+    if(k === ' ') resetLevel(true);
+  }
+
+  function onUp(e){
     const k = e.key.toLowerCase();
     if(k === 'arrowleft' || k === 'a') input.left = false;
     if(k === 'arrowright' || k === 'd') input.right = false;
     if(k === 'arrowup' || k === 'w') input.up = false;
     if(k === 'arrowdown' || k === 's') input.down = false;
-  });
+  }
+
+  window.addEventListener('keydown', onDown, {passive:false});
+  window.addEventListener('keyup', onUp);
+  startOverlay.addEventListener('click', startGame);
+  canvas.addEventListener('click', startGame);
 
   resetLevel(true);
-  step();
+  loop();
 })();
 </script>
 </body>
