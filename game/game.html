@@ -2,1086 +2,595 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Lady Bug Clone - Versão Melhorada</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lady Bug Clone - HTML Prototype</title>
   <style>
     :root{
-      --bg:#05070c;
-      --panel:#111625;
-      --pink:#e89cff;
-      --green:#54ff71;
-      --blue:#8cb8ff;
-      --yellow:#ffe04d;
-      --orange:#ff8e2c;
-      --white:#f2f5fb;
-      --red:#ff5d73;
-      --cyan:#69e7ff;
-      --purple:#b487ff;
+      --bg:#07070c;
+      --panel:#11131b;
+      --frame:#2b3150;
+      --text:#e8edf7;
+      --sub:#96a1bf;
+      --accent:#f4c430;
     }
-
     *{box-sizing:border-box}
-
-    html,body{
+    body{
       margin:0;
-      background:#000;
-      color:#fff;
-      font-family:Arial,Helvetica,sans-serif;
-      min-height:100%;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      background:radial-gradient(circle at top, #1a2040 0%, #090a12 42%, #05060b 100%);
+      color:var(--text);
+      font-family:Arial, Helvetica, sans-serif;
+    }
+    .wrap{
+      width:min(100%, 980px);
+      display:grid;
+      gap:18px;
+      padding:24px;
+      grid-template-columns: minmax(320px, 420px) 1fr;
+      align-items:start;
+    }
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;
+      box-shadow:0 24px 60px rgba(0,0,0,.35);
       overflow:hidden;
     }
-
-    .wrap{
-      min-height:100dvh;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      padding:10px;
-      background:radial-gradient(circle at top,#12192b 0%,#06080e 45%,#000 100%);
+    .meta{padding:20px 20px 18px}
+    h1{margin:0 0 10px;font-size:28px;line-height:1.05}
+    .meta p{margin:0 0 10px;color:var(--sub);line-height:1.45}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .chip{padding:8px 10px;border-radius:999px;background:#191f35;border:1px solid rgba(255,255,255,.08);font-size:13px;color:#d6def8}
+    .controls{padding:0 20px 20px;display:grid;gap:10px}
+    .card{background:#0b0f1d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px}
+    .card b{display:block;margin-bottom:8px}
+    .small{font-size:13px;color:var(--sub);line-height:1.45}
+    .game-shell{
+      padding:18px;
+      display:grid;
+      gap:14px;
+      justify-items:center;
     }
-
-    .topbar{
-      width:min(100%,760px);
+    .scorebar{
+      width:100%;
+      max-width:720px;
       display:flex;
       justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .badge{
-      background:linear-gradient(180deg,#192235,#0d121d);
-      border:1px solid #2c3650;
-      border-radius:12px;
-      padding:8px 14px;
+      gap:12px;
       font-weight:700;
-      box-shadow:0 8px 20px rgba(0,0,0,.35);
-    }
-
-    canvas{
-      width:min(calc(100vw - 20px),760px);
-      height:auto;
-      aspect-ratio:3/4;
-      background:#000;
-      border:6px solid var(--pink);
-      border-radius:8px;
-      display:block;
-      image-rendering:pixelated;
-      touch-action:none;
-      outline:none;
-      box-shadow:0 24px 50px rgba(0,0,0,.5);
-    }
-
-    .hint{
-      width:min(100%,760px);
-      text-align:center;
-      color:#c9d5e7;
       font-size:14px;
-      line-height:1.4;
+      letter-spacing:.06em;
+      color:#f8f0b3;
     }
-
-    .controls{
-      width:min(100%,760px);
-      display:grid;
-      grid-template-columns:repeat(3,78px);
-      grid-template-rows:repeat(3,62px);
-      gap:10px;
-      justify-content:center;
-      user-select:none;
+    canvas{
+      width:min(90vw, 672px);
+      aspect-ratio:224/256;
+      image-rendering:pixelated;
+      image-rendering:crisp-edges;
+      border:6px solid #2b3150;
+      border-radius:14px;
+      background:#02040a;
+      box-shadow:0 0 0 4px #111527 inset, 0 24px 60px rgba(0,0,0,.45);
     }
-
-    .btn{
-      border:none;
-      border-radius:16px;
-      background:linear-gradient(180deg,#1d2434,#0e131c);
-      border:1px solid #2f3950;
-      color:#fff;
-      font-size:24px;
-      font-weight:700;
-      box-shadow:0 10px 24px rgba(0,0,0,.35);
-      touch-action:manipulation;
-    }
-
-    .btn:active{transform:scale(.98)}
-
-    .up{grid-column:2;grid-row:1}
-    .left{grid-column:1;grid-row:2}
-    .rotate{grid-column:2;grid-row:2;font-size:14px}
-    .right{grid-column:3;grid-row:2}
-    .down{grid-column:2;grid-row:3}
-
-    .footer{
-      color:#90a0bc;
-      font-size:12px;
-      text-align:center;
-      width:min(100%,760px);
-    }
-
-    @media (min-width: 880px){
-      .controls{display:none}
+    .footer{font-size:12px;color:#8e98ba;text-align:center;line-height:1.45}
+    @media (max-width: 860px){
+      .wrap{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <div class="badge">PONTOS: <span id="score">0</span></div>
-    <div class="badge">VIDAS: <span id="lives">3</span></div>
-    <div class="badge">FASE: <span id="level">1</span></div>
-  </div>
+  <div class="wrap">
+    <section class="panel">
+      <div class="meta">
+        <h1>Lady Bug em HTML</h1>
+        <p>Esse protótipo foi refeito para ficar <b>bem mais perto da vibe do original</b>: proporção de tela arcade, labirinto com linhas finas, portas rotativas, bug box central, inimigos com cara retrô e movimentação estilo caça no corredor.</p>
+        <p>Não é emulação 1:1 da ROM. É uma <b>recriação jogável em HTML5</b>, inspirada nos gráficos e no layout do Lady Bug.</p>
+        <div class="chips">
+          <span class="chip">224 x 256</span>
+          <span class="chip">Portas giratórias</span>
+          <span class="chip">Visual retrô</span>
+          <span class="chip">HTML puro</span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="card">
+          <b>Controles</b>
+          <div class="small">Setas ou WASD para mover.<br>Espaço para reiniciar a fase.<br>Encoste na portinha amarela para ela girar e abrir outro caminho.</div>
+        </div>
+        <div class="card">
+          <b>O que ficou mais próximo do original</b>
+          <div class="small">Tela vertical arcade, trilhas finas, pontos no corredor, bônus piscando, caixa central dos insetos e a lógica de portas que muda o fluxo da perseguição.</div>
+        </div>
+        <div class="card">
+          <b>Próximo passo que dá pra fazer</b>
+          <div class="small">Trocar os sprites pelo João e pelos bichinhos, adicionar título animado, músicas 8-bit e desenhar uma fase ainda mais fiel ao mapa real do Lady Bug.</div>
+        </div>
+      </div>
+    </section>
 
-  <canvas id="game" width="600" height="800" tabindex="0"></canvas>
-
-  <div class="hint">
-    Setas ou WASD para mover • Portas giram automaticamente • Espaço para girar manualmente
+    <section class="panel game-shell">
+      <div class="scorebar">
+        <span id="scoreLabel">SCORE 00000</span>
+        <span id="statusLabel">READY!</span>
+        <span id="livesLabel">LIVES 3</span>
+      </div>
+      <canvas id="game" width="224" height="256"></canvas>
+      <div class="footer">Dica: atraia o inimigo até a porta e vire o corredor na cara dele. É aí que começa a ficar com jeitão de Lady Bug mesmo.</div>
+    </section>
   </div>
-
-  <div class="controls">
-    <button class="btn up" data-dir="up">▲</button>
-    <button class="btn left" data-dir="left">◀</button>
-    <button class="btn rotate" id="rotateBtn">GIRAR</button>
-    <button class="btn right" data-dir="right">▶</button>
-    <button class="btn down" data-dir="down">▼</button>
-  </div>
-
-  <div class="footer">
-    Lady Bug Clone - Coma todos os pontinhos para passar de fase!
-  </div>
-</div>
 
 <script>
 (() => {
-  const CHILD_NAME = "JOGADOR";
-
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
-  const scoreEl = document.getElementById('score');
-  const livesEl = document.getElementById('lives');
-  const levelEl = document.getElementById('level');
-  const rotateBtn = document.getElementById('rotateBtn');
+  ctx.imageSmoothingEnabled = false;
 
-  const W = canvas.width;
-  const H = canvas.height;
-
-  const tile = 50;
-  const cols = 12;
-  const rows = 12;
-  const boardX = 0;
-  const boardY = 120;
+  const W = 224, H = 256;
+  const CELL = 16;
+  const HUD_TOP = 16;
+  const scoreLabel = document.getElementById('scoreLabel');
+  const livesLabel = document.getElementById('livesLabel');
+  const statusLabel = document.getElementById('statusLabel');
 
   const COLORS = {
-    pink:'#e89cff',
-    green:'#54ff71',
-    blue:'#8cb8ff',
-    white:'#f2f5fb',
-    yellow:'#ffe04d',
-    orange:'#ff8e2c',
-    red:'#ff5d73',
-    cyan:'#69e7ff',
-    purple:'#b487ff'
+    bg: '#02040a',
+    maze: '#8cb7ff',
+    mazeGlow: '#2f5cff',
+    dot: '#f8f8f8',
+    door: '#f3c529',
+    doorAccent: '#ff8a00',
+    bugBox: '#9ae5ff',
+    text: '#f8e99a',
+    skull: '#ffd9e8'
   };
 
-  const imgFilhote = new Image();
-  imgFilhote.src = 'filhote.png';
+  const MAZE = [
+    '00000000000000',
+    '01111111111110',
+    '01011001101110',
+    '01101101101110',
+    '01000000000110',
+    '01101111101110',
+    '01001000010110',
+    '01111000011110',
+    '00001000010000',
+    '01111000011110',
+    '01001000010110',
+    '01101111101110',
+    '01000000000110',
+    '01101101101110',
+    '01100100010010',
+    '01111111111110',
+  ].map(r => r.split('').map(n => n === '1'));
 
-  let audioCtx = null;
-  let musicStarted = false;
-  let musicTimer = null;
+  const bugBox = { x: 5, y: 6, w: 4, h: 4 };
 
-  function ensureAudio(){
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-  }
-
-  function beep(freq, duration = 0.10, volume = 0.02, type = 'square') {
-    if (!audioCtx) return;
-    const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, now);
-
-    gain.gain.setValueAtTime(volume, now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + duration);
-  }
-
-  function sfxEat() {
-    beep(1000, 0.03, 0.012, 'square');
-  }
-
-  function sfxPower() {
-    beep(600, 0.06, 0.018, 'square');
-    setTimeout(() => beep(900, 0.08, 0.018, 'square'), 50);
-  }
-
-  function sfxRotate() {
-    beep(450, 0.05, 0.02, 'sine');
-  }
-
-  function sfxHit() {
-    beep(180, 0.15, 0.025, 'sawtooth');
-  }
-
-  function sfxEnemyEaten() {
-    beep(800, 0.06, 0.02, 'square');
-    setTimeout(() => beep(1200, 0.06, 0.018, 'square'), 50);
-  }
-
-  function sfxLevelComplete() {
-    beep(523, 0.12, 0.02, 'square');
-    setTimeout(() => beep(659, 0.12, 0.02, 'square'), 120);
-    setTimeout(() => beep(784, 0.12, 0.02, 'square'), 240);
-    setTimeout(() => beep(1047, 0.20, 0.02, 'square'), 360);
-  }
-
-  function startMusic(){
-    if (musicStarted) return;
-    ensureAudio();
-    musicStarted = true;
-
-    const melody = [
-      {note: 659, duration: 0.12},
-      {note: 784, duration: 0.12},
-      {note: 880, duration: 0.12},
-      {note: 784, duration: 0.12},
-      {note: 659, duration: 0.12},
-      {note: 523, duration: 0.12},
-      {note: 659, duration: 0.24},
-      
-      {note: 784, duration: 0.12},
-      {note: 880, duration: 0.12},
-      {note: 988, duration: 0.12},
-      {note: 880, duration: 0.12},
-      {note: 784, duration: 0.12},
-      {note: 659, duration: 0.12},
-      {note: 784, duration: 0.24},
-    ];
-
-    let stepIndex = 0;
-    
-    function playNextNote() {
-      if (!audioCtx || !musicStarted) return;
-      
-      const step = melody[stepIndex % melody.length];
-      beep(step.note, step.duration * 0.8, 0.012, 'square');
-      
-      stepIndex++;
-      musicTimer = setTimeout(playNextNote, step.duration * 1000);
-    }
-
-    playNextNote();
-  }
-
-  const rawMap = [
-    "############",
-    "#....G....o#",
-    "#.##.##.##.#",
-    "#..........#",
-    "#.##.GG.##.#",
-    "#...E..E...#",
-    "#.##.##.##.#",
-    "#....S.....#",
-    "#.##.GG.##.#",
-    "#..........#",
-    "#o...G.....#",
-    "############"
+  const bonusCells = [
+    {x:1, y:1}, {x:12, y:1}, {x:1, y:15}, {x:12, y:15}
   ];
 
-  let walls = new Set();
-  let pellets = new Set();
-  let powerUps = new Set();
-  let gates = [];
-  let enemyStarts = [];
-  let playerStart = {x:1,y:1};
-  let totalPellets = 0;
+  const doors = [
+    {x:3, y:2, o:'v'}, {x:10, y:2, o:'v'},
+    {x:5, y:5, o:'h'}, {x:8, y:5, o:'h'},
+    {x:3, y:7, o:'v'}, {x:10, y:7, o:'v'},
+    {x:3, y:10, o:'v'}, {x:10, y:10, o:'v'},
+    {x:5, y:11, o:'h'}, {x:8, y:11, o:'h'},
+    {x:3, y:13, o:'v'}, {x:10, y:13, o:'v'}
+  ];
 
-  function key(x,y){ return `${x},${y}`; }
+  const dirVec = {
+    left: {x:-1,y:0}, right:{x:1,y:0}, up:{x:0,y:-1}, down:{x:0,y:1}
+  };
+  const opposite = {left:'right', right:'left', up:'down', down:'up'};
 
-  function parseMap(){
-    walls.clear();
-    pellets.clear();
-    powerUps.clear();
-    gates = [];
-    enemyStarts = [];
+  const input = { left:false, right:false, up:false, down:false };
 
-    for(let y=0;y<rows;y++){
-      for(let x=0;x<cols;x++){
-        const c = rawMap[y][x];
-        if(c === '#') walls.add(key(x,y));
-        if(c === '.') pellets.add(key(x,y));
-        if(c === 'o') powerUps.add(key(x,y));
-        if(c === 'S') playerStart = {x,y};
-        if(c === 'E') enemyStarts.push({x,y});
-        if(c === 'G'){
-          pellets.add(key(x,y));
-          gates.push({
-            x,y,
-            orientation: Math.random() > 0.5 ? 'h' : 'v',
-            rotating: false,
-            rotationProgress: 0
-          });
-        }
-      }
-    }
-    
-    totalPellets = pellets.size + powerUps.size;
-  }
-
-  parseMap();
-
+  let dots = new Set();
+  let skulls = new Set();
+  let bonusTaken = new Set();
   let score = 0;
   let lives = 3;
-  let level = 1;
+  let phaseCleared = false;
   let gameOver = false;
-  let gameStarted = false;
-  let levelTransition = false;
-  let transitionTimer = 0;
+  let blink = 0;
 
-  let powerTimer = 0;
+  function keyCell(x,y){ return `${x},${y}`; }
 
-  const player = {
-    x: playerStart.x,
-    y: playerStart.y,
-    fromX: playerStart.x,
-    fromY: playerStart.y,
-    toX: playerStart.x,
-    toY: playerStart.y,
-    dir: null,
-    nextDir: null,
-    moving: false,
-    progress: 0,
-    speed: 0.06
-  };
-
-  const enemies = enemyStarts.map((p, i) => ({
-    x: p.x,
-    y: p.y,
-    fromX: p.x,
-    fromY: p.y,
-    toX: p.x,
-    toY: p.y,
-    dir: ['left','right','up','down'][i % 4],
-    moving: false,
-    progress: 0,
-    speed: 0.035,
-    color: [COLORS.red, COLORS.cyan, COLORS.orange, COLORS.purple][i % 4],
-    scared: 0,
-    homeX: p.x,
-    homeY: p.y
-  }));
-
-  function resetPositions(){
-    player.x = playerStart.x;
-    player.y = playerStart.y;
-    player.fromX = playerStart.x;
-    player.fromY = playerStart.y;
-    player.toX = playerStart.x;
-    player.toY = playerStart.y;
-    player.dir = null;
-    player.nextDir = null;
-    player.moving = false;
-    player.progress = 0;
-
-    enemies.forEach((e, i) => {
-      const s = enemyStarts[i];
-      e.x = s.x;
-      e.y = s.y;
-      e.fromX = s.x;
-      e.fromY = s.y;
-      e.toX = s.x;
-      e.toY = s.y;
-      e.dir = ['left','right','up','down'][i % 4];
-      e.moving = false;
-      e.progress = 0;
-      e.scared = 0;
-    });
-  }
-
-  function delta(dir){
-    if(dir === 'left') return {dx:-1, dy:0};
-    if(dir === 'right') return {dx:1, dy:0};
-    if(dir === 'up') return {dx:0, dy:-1};
-    if(dir === 'down') return {dx:0, dy:1};
-    return {dx:0, dy:0};
-  }
-
-  function inWall(x,y){
-    return walls.has(key(x,y));
-  }
-
-  function gateBlocks(x, y, dir){
-    const gate = gates.find(g => g.x === x && g.y === y);
-    if(!gate) return false;
-    if(gate.orientation === 'h' && (dir === 'up' || dir === 'down')) return true;
-    if(gate.orientation === 'v' && (dir === 'left' || dir === 'right')) return true;
-    return false;
-  }
-
-  function canMove(x, y, dir){
-    const {dx,dy} = delta(dir);
-    const nx = x + dx;
-    const ny = y + dy;
-    if(nx < 0 || ny < 0 || nx >= cols || ny >= rows) return false;
-    if(inWall(nx, ny)) return false;
-    if(gateBlocks(nx, ny, dir)) return false;
-    return true;
-  }
-
-  function autoRotateGates(){
-    gates.forEach(g => {
-      const dist = Math.abs(g.x - player.x) + Math.abs(g.y - player.y);
-      if(dist === 0 && !g.rotating){
-        g.rotating = true;
-        g.rotationProgress = 0;
-        sfxRotate();
+  function initCollectibles(){
+    dots.clear();
+    skulls.clear();
+    bonusTaken.clear();
+    for(let y=0; y<MAZE.length; y++){
+      for(let x=0; x<MAZE[0].length; x++){
+        if(!MAZE[y][x]) continue;
+        if(x>=bugBox.x && x<bugBox.x+bugBox.w && y>=bugBox.y && y<bugBox.y+bugBox.h) continue;
+        dots.add(keyCell(x,y));
       }
-    });
-  }
-
-  function updateGateRotations(){
-    gates.forEach(g => {
-      if(g.rotating){
-        g.rotationProgress += 0.15;
-        if(g.rotationProgress >= 1){
-          g.rotationProgress = 0;
-          g.rotating = false;
-          g.orientation = g.orientation === 'h' ? 'v' : 'h';
-        }
-      }
-    });
-  }
-
-  function rotateNearbyGate(){
-    let changed = false;
-    gates.forEach(g => {
-      const dist = Math.abs(g.x - player.x) + Math.abs(g.y - player.y);
-      if(dist <= 1 && !g.rotating){
-        g.rotating = true;
-        g.rotationProgress = 0;
-        changed = true;
-      }
-    });
-    if (changed) sfxRotate();
-  }
-
-  function eatThings(){
-    const k = key(player.x, player.y);
-
-    if(pellets.has(k)){
-      pellets.delete(k);
-      score += 10;
-      sfxEat();
     }
+    ['4,4','9,4','4,12','9,12'].forEach(k => { dots.delete(k); skulls.add(k); });
+    bonusCells.forEach(c => dots.delete(keyCell(c.x,c.y)));
+  }
 
-    if(powerUps.has(k)){
-      powerUps.delete(k);
-      score += 50;
-      powerTimer = 350;
-      enemies.forEach(e => e.scared = 350);
-      sfxPower();
+  function cellCenter(x,y){
+    return {x:x*CELL+CELL/2, y:y*CELL+CELL/2};
+  }
+  function worldToCell(px,py){
+    return {x:Math.floor(px/CELL), y:Math.floor(py/CELL)};
+  }
+
+  function insideMaze(x,y){ return y>=0 && y<MAZE.length && x>=0 && x<MAZE[0].length; }
+  function walkable(x,y){ return insideMaze(x,y) && MAZE[y][x]; }
+
+  function doorBetween(ax, ay, bx, by){
+    const mx = Math.min(ax,bx), my = Math.min(ay,by);
+    if(ax !== bx){
+      return doors.find(d => d.o === 'v' && d.x === mx && d.y === ay);
     }
-  }
-
-  function enemyValidDirs(e){
-    return ['left','right','up','down'].filter(d => canMove(e.x, e.y, d));
-  }
-
-  function opposite(dir){
-    return ({left:'right', right:'left', up:'down', down:'up'})[dir];
-  }
-
-  function startStep(entity, dir){
-    const {dx,dy} = delta(dir);
-    entity.fromX = entity.x;
-    entity.fromY = entity.y;
-    entity.toX = entity.x + dx;
-    entity.toY = entity.y + dy;
-    entity.dir = dir;
-    entity.moving = true;
-    entity.progress = 0;
-  }
-
-  function updatePlayer(){
-    if (!gameStarted || levelTransition) return;
-
-    if(player.moving){
-      player.progress += player.speed;
-      if(player.progress >= 1){
-        player.progress = 1;
-        player.x = player.toX;
-        player.y = player.toY;
-        player.moving = false;
-        eatThings();
-        autoRotateGates();
-      }
-      return;
+    if(ay !== by){
+      return doors.find(d => d.o === 'h' && d.x === ax && d.y === my);
     }
-
-    if(player.nextDir && canMove(player.x, player.y, player.nextDir)){
-      startStep(player, player.nextDir);
-      return;
-    }
-
-    if(player.dir && canMove(player.x, player.y, player.dir)){
-      startStep(player, player.dir);
-    }
+    return null;
   }
 
-  function chooseEnemyDir(e){
-    let dirs = enemyValidDirs(e);
-    if(dirs.length === 0) return null;
-
-    if(dirs.length > 1){
-      dirs = dirs.filter(d => d !== opposite(e.dir));
-      if(dirs.length === 0) dirs = enemyValidDirs(e);
-    }
-
-    dirs.sort((a,b) => {
-      const da = delta(a);
-      const db = delta(b);
-
-      const ax = e.x + da.dx;
-      const ay = e.y + da.dy;
-      const bx = e.x + db.dx;
-      const by = e.y + db.dy;
-
-      const distA = Math.abs(ax - player.x) + Math.abs(ay - player.y);
-      const distB = Math.abs(bx - player.x) + Math.abs(by - player.y);
-
-      return e.scared > 0 ? distB - distA : distA - distB;
-    });
-
-    if (Math.random() < 0.18) {
-      return dirs[Math.floor(Math.random() * dirs.length)];
-    }
-    return dirs[0];
+  function canMoveCell(ax, ay, dir){
+    const v = dirVec[dir];
+    const bx = ax + v.x, by = ay + v.y;
+    if(!walkable(bx, by)) return false;
+    const door = doorBetween(ax, ay, bx, by);
+    if(!door) return true;
+    return door.o === (ax !== bx ? 'v' : 'h');
   }
 
-  function updateEnemies(){
-    if (!gameStarted || levelTransition) return;
-
-    enemies.forEach(e => {
-      if(e.moving){
-        e.progress += e.speed * (1 + level * 0.05);
-        if(e.progress >= 1){
-          e.progress = 1;
-          e.x = e.toX;
-          e.y = e.toY;
-          e.moving = false;
-        }
-      } else {
-        const dir = chooseEnemyDir(e);
-        if(dir) startStep(e, dir);
-      }
-
-      if(e.scared > 0) e.scared--;
-    });
+  function nearestDoor(entity){
+    const cell = worldToCell(entity.x, entity.y);
+    return doors.find(d => d.x === cell.x && d.y === cell.y);
   }
 
-  function currentEntityCell(entity){
-    if (!entity.moving) {
-      return {x: entity.x, y: entity.y};
-    }
-    return entity.progress < 0.5
-      ? {x: entity.fromX, y: entity.fromY}
-      : {x: entity.toX, y: entity.toY};
+  function tryRotateDoor(entity){
+    const cell = worldToCell(entity.x, entity.y);
+    const center = cellCenter(cell.x, cell.y);
+    if(Math.hypot(entity.x-center.x, entity.y-center.y) > 3) return;
+    const door = doors.find(d => d.x === cell.x && d.y === cell.y);
+    if(!door) return;
+    door.o = door.o === 'h' ? 'v' : 'h';
   }
 
-  function checkCollisions(){
-    const pCell = currentEntityCell(player);
-
-    enemies.forEach(e => {
-      const eCell = currentEntityCell(e);
-
-      if(eCell.x === pCell.x && eCell.y === pCell.y){
-        if(e.scared > 0){
-          score += 200;
-          e.x = e.homeX;
-          e.y = e.homeY;
-          e.fromX = e.homeX;
-          e.fromY = e.homeY;
-          e.toX = e.homeX;
-          e.toY = e.homeY;
-          e.moving = false;
-          e.progress = 0;
-          e.scared = 0;
-          sfxEnemyEaten();
+  function makeSpritePainter(kind, primary, secondary){
+    return function(x,y,dir,phase=0){
+      ctx.save();
+      ctx.translate(x,y);
+      const angle = dir === 'right' ? 0 : dir === 'down' ? Math.PI/2 : dir === 'left' ? Math.PI : -Math.PI/2;
+      ctx.rotate(angle);
+      ctx.translate(-8,-8);
+      ctx.fillStyle = primary;
+      ctx.strokeStyle = '#161616';
+      ctx.lineWidth = 1;
+      if(kind === 'player'){
+        ctx.fillStyle = primary;
+        ctx.beginPath();
+        ctx.ellipse(8,8,6,7,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = secondary;
+        ctx.fillRect(5,3,6,10);
+        ctx.fillStyle = '#111';
+        ctx.fillRect(7,2,2,12);
+        if(phase%2===0){
+          ctx.fillRect(1,4,4,2); ctx.fillRect(11,4,4,2);
+          ctx.fillRect(1,10,4,2); ctx.fillRect(11,10,4,2);
         } else {
-          lives--;
-          sfxHit();
-          if(lives <= 0){
-            gameOver = true;
-            gameStarted = false;
-          } else {
-            resetPositions();
-          }
+          ctx.fillRect(0,5,5,2); ctx.fillRect(11,5,5,2);
+          ctx.fillRect(0,9,5,2); ctx.fillRect(11,9,5,2);
         }
+        ctx.fillStyle = '#111';
+        ctx.fillRect(12,6,2,2);
+      } else {
+        ctx.fillStyle = primary;
+        ctx.beginPath();
+        ctx.ellipse(8,8,6,6,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = secondary;
+        ctx.fillRect(4,4,8,8);
+        ctx.fillStyle = '#111';
+        ctx.fillRect(1,5,4,2); ctx.fillRect(11,5,4,2);
+        ctx.fillRect(1,9,4,2); ctx.fillRect(11,9,4,2);
+        if(phase%2===0){
+          ctx.fillRect(6,1,1,3); ctx.fillRect(9,1,1,3);
+        } else {
+          ctx.fillRect(5,1,1,3); ctx.fillRect(10,1,1,3);
+        }
+        ctx.fillStyle = '#fff'; ctx.fillRect(11,6,2,2);
       }
-    });
-  }
-
-  function checkLevelClear(){
-    if(pellets.size === 0 && powerUps.size === 0 && !levelTransition){
-      levelTransition = true;
-      transitionTimer = 120;
-      sfxLevelComplete();
-    }
-  }
-
-  function nextLevel(){
-    level++;
-    score += 1000;
-    parseMap();
-    resetPositions();
-    levelTransition = false;
-    transitionTimer = 0;
-    
-    player.speed = Math.min(0.06 + level * 0.005, 0.12);
-    enemies.forEach(e => {
-      e.speed = Math.min(0.035 + level * 0.003, 0.08);
-    });
-  }
-
-  function lerp(a,b,t){
-    return a + (b-a) * t;
-  }
-
-  function cellCenterFromCoords(x,y){
-    return {
-      px: boardX + x * tile + tile / 2,
-      py: boardY + y * tile + tile / 2
+      ctx.restore();
     };
   }
 
-  function entityPixel(entity){
-    const x = entity.moving ? lerp(entity.fromX, entity.toX, entity.progress) : entity.x;
-    const y = entity.moving ? lerp(entity.fromY, entity.toY, entity.progress) : entity.y;
-    return cellCenterFromCoords(x,y);
-  }
+  const drawPlayerSprite = makeSpritePainter('player', '#df2e2e', '#f7ca24');
+  const enemyPainters = [
+    makeSpritePainter('enemy', '#62d96b', '#1f8cff'),
+    makeSpritePainter('enemy', '#ff7f44', '#ffd44d'),
+    makeSpritePainter('enemy', '#ff57c5', '#66e0ff')
+  ];
 
-  function drawHeader(){
-    ctx.fillStyle = COLORS.orange;
-    ctx.fillRect(0, 0, 200, 38);
-    ctx.fillStyle = '#f0dc5c';
-    ctx.fillRect(200, 0, 200, 38);
-    ctx.fillStyle = '#40a0e8';
-    ctx.fillRect(400, 0, 200, 38);
+  const player = {x:0,y:0,dir:'left',wanted:'left',speed:1.5,anim:0};
+  const enemies = [];
 
-    ctx.fillStyle = '#000';
-    ctx.font = 'bold 20px monospace';
-    ctx.fillText('SPECIAL', 28, 26);
-    ctx.fillText('EXTRA', 255, 26);
-    ctx.fillText('BONUS', 435, 26);
-  }
-
-  function drawBorder(){
-    for(let x=0;x<W;x+=20){
-      ctx.fillStyle = COLORS.white;
-      ctx.fillRect(x, 42, 16, 16);
-      ctx.fillRect(x, H - 34, 16, 16);
-    }
-    for(let y=42;y<H-20;y+=20){
-      ctx.fillRect(0, y, 16, 16);
-      ctx.fillRect(W - 16, y, 16, 16);
-    }
-    ctx.strokeStyle = COLORS.pink;
-    ctx.lineWidth = 6;
-    ctx.strokeRect(24, 60, W - 48, H - 118);
-  }
-
-  function drawWalls(){
-    ctx.strokeStyle = COLORS.pink;
-    ctx.lineWidth = 6;
-    ctx.lineCap = 'square';
-
-    for(let y=0;y<rows;y++){
-      for(let x=0;x<cols;x++){
-        if(!walls.has(key(x,y))) continue;
-        const px = boardX + x * tile;
-        const py = boardY + y * tile;
-
-        const leftOpen = !walls.has(key(x-1,y));
-        const rightOpen = !walls.has(key(x+1,y));
-        const upOpen = !walls.has(key(x,y-1));
-        const downOpen = !walls.has(key(x,y+1));
-
-        if(upOpen){
-          ctx.beginPath();
-          ctx.moveTo(px+8, py+8);
-          ctx.lineTo(px+tile-8, py+8);
-          ctx.stroke();
-        }
-        if(downOpen){
-          ctx.beginPath();
-          ctx.moveTo(px+8, py+tile-8);
-          ctx.lineTo(px+tile-8, py+tile-8);
-          ctx.stroke();
-        }
-        if(leftOpen){
-          ctx.beginPath();
-          ctx.moveTo(px+8, py+8);
-          ctx.lineTo(px+8, py+tile-8);
-          ctx.stroke();
-        }
-        if(rightOpen){
-          ctx.beginPath();
-          ctx.moveTo(px+tile-8, py+8);
-          ctx.lineTo(px+tile-8, py+tile-8);
-          ctx.stroke();
-        }
-      }
-    }
-  }
-
-  function drawPellets(){
-    pellets.forEach(k => {
-      const [x,y] = k.split(',').map(Number);
-      const p = cellCenterFromCoords(x,y);
-      ctx.fillStyle = COLORS.white;
-      ctx.fillRect(p.px - 4, p.py - 4, 8, 8);
-    });
-
-    powerUps.forEach(k => {
-      const [x,y] = k.split(',').map(Number);
-      const p = cellCenterFromCoords(x,y);
-      const pulse = Math.sin(Date.now() / 150) * 0.3 + 0.7;
-      ctx.fillStyle = powerTimer % 30 < 15 ? COLORS.yellow : COLORS.green;
-      ctx.beginPath();
-      ctx.arc(p.px, p.py, 7 + pulse * 2, 0, Math.PI * 2);
-      ctx.fill();
+  function resetActors(){
+    let p = cellCenter(7,14);
+    player.x = p.x; player.y = p.y; player.dir = 'left'; player.wanted='left'; player.anim=0;
+    enemies.length = 0;
+    [
+      {cell:[6,8], dir:'up', speed:1.05},
+      {cell:[7,8], dir:'down', speed:0.95},
+      {cell:[8,8], dir:'left', speed:1.10}
+    ].forEach((e,i) => {
+      const c = cellCenter(e.cell[0], e.cell[1]);
+      enemies.push({x:c.x,y:c.y,dir:e.dir,wanted:e.dir,speed:e.speed,anim:0,painter:enemyPainters[i]});
     });
   }
 
-  function drawGates(){
-    gates.forEach(g => {
-      const p = cellCenterFromCoords(g.x,g.y);
-      ctx.strokeStyle = COLORS.green;
-      ctx.lineWidth = 6;
-      ctx.fillStyle = COLORS.blue;
+  function resetLevel(full=false){
+    if(full){ score = 0; lives = 3; gameOver = false; }
+    phaseCleared = false;
+    initCollectibles();
+    resetActors();
+    statusLabel.textContent = 'READY!';
+    updateHud();
+  }
 
-      ctx.save();
-      ctx.translate(p.px, p.py);
-      
-      if(g.rotating){
-        const angle = g.rotationProgress * Math.PI / 2;
-        ctx.rotate(angle);
+  function updateHud(){
+    scoreLabel.textContent = `SCORE ${String(score).padStart(5,'0')}`;
+    livesLabel.textContent = `LIVES ${lives}`;
+  }
+
+  function moveEntity(entity, isPlayer=false){
+    const cell = worldToCell(entity.x, entity.y);
+    const center = cellCenter(cell.x, cell.y);
+    const nearCenter = Math.hypot(entity.x-center.x, entity.y-center.y) < 2.2;
+
+    if(nearCenter){
+      entity.x = center.x; entity.y = center.y;
+      if(isPlayer){
+        tryRotateDoor(entity);
       }
-
-      if(g.orientation === 'h'){
-        ctx.beginPath();
-        ctx.moveTo(-18, 0);
-        ctx.lineTo(18, 0);
-        ctx.stroke();
-      } else {
-        ctx.beginPath();
-        ctx.moveTo(0, -18);
-        ctx.lineTo(0, 18);
-        ctx.stroke();
-      }
-
-      ctx.fillRect(-5, -5, 10, 10);
-      ctx.restore();
-    });
-  }
-
-  function drawPlayer(){
-    const p = entityPixel(player);
-    const size = 30;
-
-    ctx.save();
-    ctx.translate(p.px, p.py);
-
-    if(imgFilhote.complete && imgFilhote.naturalWidth > 0){
-      ctx.drawImage(imgFilhote, -size/2, -size/2, size, size);
-    } else {
-      ctx.fillStyle = COLORS.yellow;
-      ctx.beginPath();
-      ctx.arc(0, 0, 13, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.arc(-4, -3, 2, 0, Math.PI * 2);
-      ctx.arc(4, -3, 2, 0, Math.PI * 2);
-      ctx.fill();
+      if(canMoveCell(cell.x, cell.y, entity.wanted)) entity.dir = entity.wanted;
+      if(!canMoveCell(cell.x, cell.y, entity.dir)) return;
     }
 
-    ctx.restore();
+    const v = dirVec[entity.dir];
+    entity.x += v.x * entity.speed;
+    entity.y += v.y * entity.speed;
+    entity.anim += 1;
   }
 
-  function drawEnemy(e){
-    const p = entityPixel(e);
-    const scared = e.scared > 0;
-
-    ctx.save();
-    ctx.translate(p.px, p.py);
-
-    ctx.fillStyle = scared ? (Math.floor(Date.now()/100) % 2 ? COLORS.blue : COLORS.white) : e.color;
-    ctx.beginPath();
-    ctx.arc(0,-4,13,Math.PI,0);
-    ctx.lineTo(13,9);
-    ctx.lineTo(9,3);
-    ctx.lineTo(4,9);
-    ctx.lineTo(0,3);
-    ctx.lineTo(-4,9);
-    ctx.lineTo(-9,3);
-    ctx.lineTo(-13,9);
-    ctx.closePath();
-    ctx.fill();
-
-    if(!scared){
-      ctx.fillStyle = '#fff';
-      ctx.beginPath(); ctx.arc(-5,-3,4,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(5,-3,4,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#111';
-      ctx.beginPath(); ctx.arc(-4,-2,2,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(6,-2,2,0,Math.PI*2); ctx.fill();
-    }
-
-    ctx.restore();
-  }
-
-  function drawBottom(){
-    ctx.fillStyle = COLORS.orange;
-    ctx.font = 'bold 18px monospace';
-    ctx.fillText('1UP', 50, H - 42);
-    ctx.fillText(String(score).padStart(6,'0'), 140, H - 42);
-
-    for(let i=0;i<Math.min(lives, 5);i++){
-      ctx.fillStyle = COLORS.yellow;
-      ctx.beginPath();
-      ctx.arc(450 + i * 28, H - 48, 11, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  function drawStartOverlay(){
-    if (gameStarted || gameOver) return;
-
-    ctx.fillStyle = 'rgba(0,0,0,.75)';
-    ctx.fillRect(0,0,W,H);
-
-    ctx.textAlign = 'center';
-
-    ctx.fillStyle = COLORS.yellow;
-    ctx.font = 'bold 48px Arial';
-    ctx.fillText('LADY BUG', W/2, H/2 - 80);
-
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 24px Arial';
-    ctx.fillText('Clone do Arcade Clássico', W/2, H/2 - 35);
-
-    ctx.font = '20px Arial';
-    ctx.fillText('Pressione ENTER ou ESPAÇO', W/2, H/2 + 20);
-
-    ctx.font = '16px Arial';
-    ctx.fillStyle = COLORS.cyan;
-    ctx.fillText('WASD / Setas para mover', W/2, H/2 + 60);
-    ctx.fillText('Coma todos os pontinhos!', W/2, H/2 + 85);
-    ctx.fillText('Portas giram automaticamente', W/2, H/2 + 110);
-
-    ctx.textAlign = 'start';
-  }
-
-  function drawLevelTransition(){
-    if(!levelTransition) return;
-
-    ctx.fillStyle = 'rgba(0,0,0,.85)';
-    ctx.fillRect(0,0,W,H);
-
-    ctx.textAlign = 'center';
-    ctx.fillStyle = COLORS.yellow;
-    ctx.font = 'bold 52px Arial';
-    
-    const flash = Math.floor(transitionTimer / 15) % 2;
-    if(flash === 0){
-      ctx.fillText('FASE ' + level + ' COMPLETA!', W/2, H/2 - 20);
-    }
-    
-    ctx.fillStyle = COLORS.green;
-    ctx.font = '28px Arial';
-    ctx.fillText('+1000 BÔNUS', W/2, H/2 + 30);
-    
-    ctx.textAlign = 'start';
-  }
-
-  function drawGameOver(){
-    if(!gameOver) return;
-
-    ctx.fillStyle = 'rgba(0,0,0,.85)';
-    ctx.fillRect(0,0,W,H);
-
-    ctx.textAlign = 'center';
-    ctx.fillStyle = COLORS.red;
-    ctx.font = 'bold 48px Arial';
-    ctx.fillText('GAME OVER', W/2, H/2 - 20);
-    
-    ctx.fillStyle = '#fff';
-    ctx.font = '24px Arial';
-    ctx.fillText('Pontuação Final: ' + score, W/2, H/2 + 25);
-    
-    ctx.font = '20px Arial';
-    ctx.fillText('Pressione ENTER para recomeçar', W/2, H/2 + 65);
-    ctx.textAlign = 'start';
-  }
-
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    drawHeader();
-    drawBorder();
-    drawWalls();
-    drawPellets();
-    drawGates();
-    drawPlayer();
-    enemies.forEach(drawEnemy);
-    drawBottom();
-    drawStartOverlay();
-    drawLevelTransition();
-    drawGameOver();
-  }
-
-  function updateUI(){
-    scoreEl.textContent = score;
-    livesEl.textContent = lives;
-    levelEl.textContent = level;
-  }
-
-  function restartGame(){
-    score = 0;
-    lives = 3;
-    level = 1;
-    gameOver = false;
-    gameStarted = false;
-    levelTransition = false;
-    transitionTimer = 0;
-    powerTimer = 0;
-    parseMap();
-    resetPositions();
-    player.speed = 0.06;
-    enemies.forEach(e => e.speed = 0.035);
-    updateUI();
-  }
-
-  function beginGame(){
-    ensureAudio();
-    startMusic();
-    gameStarted = true;
-    canvas.focus();
-  }
-
-  function queueDir(dir){
-    if (!gameStarted && !gameOver) beginGame();
-    player.nextDir = dir;
-    canvas.focus();
-  }
-
-  function rotateAction(){
-    if (!gameStarted && !gameOver) beginGame();
-    rotateNearbyGate();
-    canvas.focus();
-  }
-
-  document.addEventListener('keydown', (e) => {
-    const k = e.key.toLowerCase();
-
-    if(['arrowleft','arrowright','arrowup','arrowdown','a','s','d','w',' ','enter'].includes(k)){
-      e.preventDefault();
-    }
-
-    if(k === 'enter'){
-      if(gameOver){
-        restartGame();
-      } else if(!gameStarted){
-        beginGame();
-      }
+  function chooseEnemyDir(enemy){
+    const cell = worldToCell(enemy.x, enemy.y);
+    const center = cellCenter(cell.x, cell.y);
+    if(Math.hypot(enemy.x-center.x, enemy.y-center.y) > 2.2) return;
+    const options = ['left','right','up','down'].filter(d => d !== opposite[enemy.dir] && canMoveCell(cell.x, cell.y, d));
+    if(!options.length){
+      enemy.wanted = opposite[enemy.dir];
       return;
     }
+    let best = options[0], bestScore = Infinity;
+    for(const d of options){
+      const v = dirVec[d];
+      const target = cellCenter(cell.x + v.x, cell.y + v.y);
+      const dist = Math.hypot(player.x - target.x, player.y - target.y);
+      const jitter = Math.random() * 5;
+      const score = dist + jitter;
+      if(score < bestScore){ best = d; bestScore = score; }
+    }
+    enemy.wanted = best;
+  }
 
-    if(k === ' '){
-      if(!gameStarted){
-        beginGame();
-      } else {
-        rotateAction();
-      }
+  function collectAtPlayer(){
+    const c = worldToCell(player.x, player.y);
+    const k = keyCell(c.x, c.y);
+    if(dots.delete(k)){ score += 10; updateHud(); }
+    if(skulls.has(k)){
+      skulls.delete(k);
+      loseLife();
       return;
     }
-
-    if(k === 'arrowleft' || k === 'a') queueDir('left');
-    else if(k === 'arrowright' || k === 'd') queueDir('right');
-    else if(k === 'arrowup' || k === 'w') queueDir('up');
-    else if(k === 'arrowdown' || k === 's') queueDir('down');
-  });
-
-  document.querySelectorAll('[data-dir]').forEach(btn => {
-    const dir = btn.getAttribute('data-dir');
-
-    btn.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      queueDir(dir);
-    }, { passive:false });
-
-    btn.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      queueDir(dir);
+    bonusCells.forEach((b,i) => {
+      if(c.x===b.x && c.y===b.y && !bonusTaken.has(i)){
+        bonusTaken.add(i);
+        score += 250;
+        updateHud();
+      }
     });
-  });
-
-  rotateBtn.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    rotateAction();
-  }, { passive:false });
-
-  rotateBtn.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    rotateAction();
-  });
-
-  canvas.addEventListener('click', () => {
-    if(gameOver){
-      restartGame();
-    } else if(!gameStarted){
-      beginGame();
+    if(dots.size === 0 && !phaseCleared){
+      phaseCleared = true;
+      statusLabel.textContent = 'CLEAR!';
+      setTimeout(() => resetLevel(false), 900);
     }
-    canvas.focus();
-  });
+  }
 
-  function update(){
+  function loseLife(){
     if(gameOver) return;
+    lives -= 1;
+    updateHud();
+    if(lives <= 0){
+      gameOver = true;
+      statusLabel.textContent = 'GAME OVER';
+    } else {
+      statusLabel.textContent = 'OUCH!';
+      resetActors();
+    }
+  }
 
-    if(levelTransition){
-      transitionTimer--;
-      if(transitionTimer <= 0){
-        nextLevel();
+  function checkEnemyHit(){
+    for(const e of enemies){
+      if(Math.hypot(player.x-e.x, player.y-e.y) < 10){
+        loseLife();
+        break;
       }
-      return;
+    }
+  }
+
+  function drawBackground(){
+    ctx.fillStyle = COLORS.bg;
+    ctx.fillRect(0,0,W,H);
+
+    for(let y=0; y<MAZE.length; y++){
+      for(let x=0; x<MAZE[0].length; x++){
+        if(!MAZE[y][x]) continue;
+        const c = cellCenter(x,y);
+        const open = {
+          left: canMoveCell(x,y,'left'),
+          right: canMoveCell(x,y,'right'),
+          up: canMoveCell(x,y,'up'),
+          down: canMoveCell(x,y,'down')
+        };
+        ctx.strokeStyle = COLORS.mazeGlow;
+        ctx.lineWidth = 8;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        if(open.left){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x-CELL/2, c.y); }
+        if(open.right){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x+CELL/2, c.y); }
+        if(open.up){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x, c.y-CELL/2); }
+        if(open.down){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x, c.y+CELL/2); }
+        ctx.stroke();
+
+        ctx.strokeStyle = COLORS.maze;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        if(open.left){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x-CELL/2, c.y); }
+        if(open.right){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x+CELL/2, c.y); }
+        if(open.up){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x, c.y-CELL/2); }
+        if(open.down){ ctx.moveTo(c.x, c.y); ctx.lineTo(c.x, c.y+CELL/2); }
+        ctx.stroke();
+      }
     }
 
-    if(powerTimer > 0) powerTimer--;
+    // bug box
+    const bx = bugBox.x*CELL, by = bugBox.y*CELL, bw = bugBox.w*CELL, bh = bugBox.h*CELL;
+    ctx.strokeStyle = '#173f73';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(bx+4, by+4, bw-8, bh-8);
+    ctx.strokeStyle = COLORS.bugBox;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(bx+4, by+4, bw-8, bh-8);
+    ctx.fillStyle = '#0a1834';
+    ctx.fillRect(bx+5, by+5, bw-10, bh-10);
 
-    updatePlayer();
-    updateEnemies();
-    updateGateRotations();
-    checkCollisions();
-    checkLevelClear();
-    updateUI();
+    // doors
+    for(const d of doors){
+      const c = cellCenter(d.x,d.y);
+      ctx.save();
+      ctx.translate(c.x,c.y);
+      ctx.rotate(d.o === 'h' ? 0 : Math.PI/2);
+      ctx.strokeStyle = '#a64500';
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(-7,0); ctx.lineTo(7,0);
+      ctx.stroke();
+      ctx.strokeStyle = COLORS.door;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-7,0); ctx.lineTo(7,0);
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
-  function gameLoop(){
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
+  function drawCollectibles(){
+    for(const k of dots){
+      const [x,y] = k.split(',').map(Number);
+      const c = cellCenter(x,y);
+      ctx.fillStyle = COLORS.dot;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, 2, 0, Math.PI*2);
+      ctx.fill();
+    }
+    if((blink>>4)%2===0){
+      bonusCells.forEach((b,i) => {
+        if(bonusTaken.has(i)) return;
+        const c = cellCenter(b.x,b.y);
+        ctx.fillStyle = '#ff79c8';
+        ctx.beginPath(); ctx.arc(c.x,c.y,5,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffe56d';
+        ctx.fillRect(c.x-1, c.y-7, 2, 4);
+      });
+    }
+
+    for(const k of skulls){
+      const [x,y] = k.split(',').map(Number);
+      const c = cellCenter(x,y);
+      ctx.fillStyle = COLORS.skull;
+      ctx.beginPath(); ctx.arc(c.x, c.y-1, 4, 0, Math.PI*2); ctx.fill();
+      ctx.fillRect(c.x-3, c.y+2, 6, 4);
+      ctx.fillStyle = '#111';
+      ctx.fillRect(c.x-2, c.y-2, 1, 1);
+      ctx.fillRect(c.x+1, c.y-2, 1, 1);
+    }
   }
 
-  updateUI();
-  canvas.focus();
-  gameLoop();
+  function drawActors(){
+    drawPlayerSprite(player.x, player.y, player.dir, Math.floor(player.anim/8));
+    for(const e of enemies){
+      e.painter(e.x, e.y, e.dir, Math.floor(e.anim/8));
+    }
+  }
+
+  function drawOverlay(){
+    ctx.fillStyle = COLORS.text;
+    ctx.font = 'bold 10px Arial';
+    ctx.fillText('1UP', 12, 10);
+    ctx.fillText(String(score).padStart(5,'0'), 12, 20);
+    ctx.fillText('LADY BUG', 130, 10);
+
+    if(gameOver){
+      ctx.fillStyle = 'rgba(0,0,0,.65)';
+      ctx.fillRect(0,0,W,H);
+      ctx.fillStyle = '#ffd64a';
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('GAME OVER', 57, 122);
+      ctx.font = 'bold 10px Arial';
+      ctx.fillText('APERTE ESPAÇO PARA RECOMEÇAR', 26, 142);
+    }
+  }
+
+  function step(){
+    blink++;
+    if(!gameOver && !phaseCleared){
+      statusLabel.textContent = 'GO!';
+      if(input.left) player.wanted = 'left';
+      else if(input.right) player.wanted = 'right';
+      else if(input.up) player.wanted = 'up';
+      else if(input.down) player.wanted = 'down';
+
+      moveEntity(player, true);
+      collectAtPlayer();
+      enemies.forEach(e => { chooseEnemyDir(e); moveEntity(e, false); });
+      checkEnemyHit();
+    }
+
+    drawBackground();
+    drawCollectibles();
+    drawActors();
+    drawOverlay();
+    requestAnimationFrame(step);
+  }
+
+  addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase();
+    if(k === 'arrowleft' || k === 'a') input.left = true;
+    if(k === 'arrowright' || k === 'd') input.right = true;
+    if(k === 'arrowup' || k === 'w') input.up = true;
+    if(k === 'arrowdown' || k === 's') input.down = true;
+    if(k === ' '){ resetLevel(true); }
+  });
+  addEventListener('keyup', (e) => {
+    const k = e.key.toLowerCase();
+    if(k === 'arrowleft' || k === 'a') input.left = false;
+    if(k === 'arrowright' || k === 'd') input.right = false;
+    if(k === 'arrowup' || k === 'w') input.up = false;
+    if(k === 'arrowdown' || k === 's') input.down = false;
+  });
+
+  resetLevel(true);
+  step();
 })();
 </script>
 </body>
