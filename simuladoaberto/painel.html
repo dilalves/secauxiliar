@@ -293,8 +293,8 @@
 
           <button
             type="button"
-            data-page="paginas/conferir_correspondencia.html"
-            onclick="abrir('paginas/conferir_correspondencia.html', this)">
+            data-page="https://apisec.secauxiliar.com.br/sim_adm/conferir_correspondencia.php"
+            onclick="abrir('https://apisec.secauxiliar.com.br/sim_adm/conferir_correspondencia.php', this)">
             Conferir Correspondências
           </button>
 
@@ -355,9 +355,17 @@
     function fecharSubmenus(){
     }
 
+ //   function abrir(pagina, botao = null){
+ //     const frame = document.getElementById('frame');
+ //     frame.src = pagina + '?v=' + Date.now();
+ //     marcarAtivo(botao);
+ //     fecharSubmenus();
+ //   }
+
     function abrir(pagina, botao = null){
       const frame = document.getElementById('frame');
-      frame.src = pagina + '?v=' + Date.now();
+      const separador = pagina.includes('?') ? '&' : '?';
+      frame.src = pagina + separador + 'v=' + Date.now();
       marcarAtivo(botao);
       fecharSubmenus();
     }
