@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administrativo • Cadastrar Correspondências</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <style>
+    body { background: #f6f8fb; }
+    header.page {
+      background: #0b3b78;
+      color: white;
+      padding: 16px 24px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .fixed-header { position: sticky; top: 0; z-index: 99; }
+    .card-form { padding: 20px; border-radius: 12px; }
+    .table-wrap { max-height: 65vh; overflow: auto; margin-top: 24px; }
+    table td, table th { padding: 8px; }
+    .acoes-topo {
+      display: flex;
+      gap: 10px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+    .info-box {
+      background: #eef4fb;
+      border: 1px solid #d7e4f5;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 12px;
+      color: #0b3b78;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<header class="page fixed-header">
+  Administrativo → Cadastro de Correspondência de Questões
+</header>
+
+<div class="container">
+  <div class="card white card-form">
+    <form id="formCorrespondencia">
+      <div class="row">
+        <div class="input-field col s12 m4">
+          <input id="evento" name="evento" type="text" required>
+          <label for="evento">Evento (ex: FUV0925)</label>
+        </div>
+
+        <div class="input-field col s12 m4">
+          <input id="codigo" name="codigo" type="text" required>
+          <label for="codigo">Código da Versão Original</label>
+        </div>
+
+        <div class="input-field col s12 m4">
+          <input id="codigo_canonico" name="codigo_canonico" type="text" required>
+          <label for="codigo_canonico">Código da Versão Canônica</label>
+        </div>
+      </div>
+
+      <div class="acoes-topo">
+        <button id="btnCarregarQuestoes" class="btn blue darken-3 waves-effect waves-light" type="button">
+          Carregar questões do canônico
+        </button>
+      </div>
+
+      <div id="infoCanonico" class="info-box" style="display:none;"></div>
+
+      <div class="table-wrap">
+        <table class="highlight striped">
+          <thead>
+            <tr>
+              <th>Questão Original</th>
+              <th>Questão Canônica</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaCorrespondencias"></tbody>
+        </table>
+      </div>
+
+      <div class="center-align" style="margin-top: 24px;">
+        <button class="btn blue darken-3 waves-effect waves-light" type="submit">Salvar Correspondências</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const API_BASE = "https://apisec.secauxiliar.com.br/sim_adm";
+
+  const tabela = document.getElementById('tabelaCorrespondencias');
+  const infoCanonico = document.getElementById('infoCanonico');
+  const btnCarregarQuestoes = document.getElementById('btnCarregarQuestoes');
+
+  function montarTabela(questoes) {
+    tabela.innerHTML = '';
+
+    questoes.forEach((q) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          ${q}
+          <input type="hidden" name="questao[]" value="${q}">
+        </td>
+        <td>
+          <input type="number" name="questao_canonica[]" min="1" required>
+        </td>
+      `;
+      tabela.appendChild(tr);
+    });
+  }
+
+  btnCarregarQuestoes.addEventListener('click', async () => {
+    const evento = document.getElementById('evento').value.trim();
+    const codigoCanonico = document.getElementById('codigo_canonico').value.trim();
+
+    if (!evento || !codigoCanonico) {
+      M.toast({ html: 'Preencha evento e código canônico.', classes: 'red' });
+      return;
+    }
+
+    try {
+      const url = `${API_BASE}/buscar_questoes_canonico.php?evento=${encodeURIComponent(evento)}&codigo_canonico=${encodeURIComponent(codigoCanonico)}`;
+      const resp = await fetch(url);
+      const raw = await resp.text();
+      console.log('BUSCAR CANONICO RAW:', raw);
+
+      let json;
+      try {
+        json = JSON.parse(raw);
+      } catch (e) {
+        throw new Error('Resposta inválida do servidor: ' + raw);
+      }
+
+      if (!resp.ok || !json.ok) {
+        throw new Error(json.message || `HTTP ${resp.status}`);
+      }
+
+      const questoes = json.questoes || [];
+      if (!Array.isArray(questoes) || questoes.length === 0) {
+        throw new Error('Nenhuma questão encontrada no gabarito canônico.');
+      }
+
+      montarTabela(questoes);
+
+      infoCanonico.style.display = 'block';
+      infoCanonico.textContent = `Canônico carregado: ${json.evento} / ${json.codigo_canonico} — ${json.quantidade} questões.`;
+
+      M.toast({ html: 'Questões do canônico carregadas.', classes: 'green' });
+
+    } catch (err) {
+      infoCanonico.style.display = 'none';
+      tabela.innerHTML = '';
+      M.toast({ html: 'Erro ao carregar: ' + err.message, classes: 'red' });
+      console.error(err);
+    }
+  });
+
+  document.getElementById('formCorrespondencia').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+
+    try {
+      const fd = new FormData(form);
+
+      const resp = await fetch(`${API_BASE}/cadastrar_correspondencia.php`, {
+        method: 'POST',
+        body: fd
+      });
+
+      const raw = await resp.text();
+      console.log('CADASTRO CORRESP RAW:', raw);
+
+      let json;
+      try {
+        json = JSON.parse(raw);
+      } catch (e) {
+        throw new Error('Resposta inválida do servidor: ' + raw);
+      }
+
+      if (!json.ok) throw new Error(json.message || 'Erro inesperado');
+
+      M.toast({ html: 'Correspondências salvas com sucesso!', classes: 'green' });
+
+    } catch (err) {
+      M.toast({ html: 'Erro ao salvar: ' + err.message, classes: 'red' });
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
