@@ -7,12 +7,22 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <style>
     body { background: #f6f8fb; }
-    header.page { background: #0b3b78; color: white; padding: 16px 24px; font-size: 20px; font-weight: bold; }
+    header.page {
+      background: #0b3b78;
+      color: white;
+      padding: 16px 24px;
+      font-size: 20px;
+      font-weight: bold;
+    }
     .fixed-header { position: sticky; top: 0; z-index: 99; }
     .card-form { padding: 20px; border-radius: 12px; }
     .input-field input[type="file"] { margin-top: 10px; }
     .table-wrap { max-height: 65vh; overflow: auto; margin-top: 24px; }
     table td, table th { padding: 8px; }
+    .status-cell a {
+      font-weight: 600;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
@@ -38,14 +48,14 @@
       <div class="table-wrap">
         <table class="highlight striped">
           <thead>
-          <tr>
-            <th>Questão</th>
-            <th>Disciplina</th>
-            <th>Gabarito</th>
-            <th>Imagem (resolução)</th>
-            <th>Status / Link</th>
-          </tr>
-        </thead>
+            <tr>
+              <th>Questão</th>
+              <th>Disciplina</th>
+              <th>Gabarito</th>
+              <th>Imagem (resolução)</th>
+              <th>Status / Link</th>
+            </tr>
+          </thead>
           <tbody id="tabelaQuestoes">
             <!-- Preenche automaticamente -->
           </tbody>
@@ -63,6 +73,7 @@
   const API_BASE = "https://apisec.secauxiliar.com.br/sim_adm";
 
   const tabela = document.getElementById('tabelaQuestoes');
+
   for (let i = 1; i <= 90; i++) {
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -78,8 +89,8 @@
     tabela.appendChild(row);
   }
 
-    // Auto-upload ao escolher arquivo (pré-upload)
-    tabela.addEventListener('change', async (ev) => {
+  // Auto-upload ao escolher arquivo (pré-upload)
+  tabela.addEventListener('change', async (ev) => {
     const input = ev.target;
     if (input.type !== 'file') return;
 
@@ -94,11 +105,11 @@
     const hiddenLink = tr.querySelector('input[name="imagem_link[]"]');
 
     if (!evento || !codigo || !questao) {
-        status.textContent = 'preencha evento/código/questão';
-        status.classList.remove('green-text');
-        status.classList.add('red-text');
-        input.value = '';
-        return;
+      status.textContent = 'preencha evento/código/questão';
+      status.classList.remove('green-text');
+      status.classList.add('red-text');
+      input.value = '';
+      return;
     }
 
     status.textContent = 'enviando...';
@@ -111,75 +122,102 @@
     fd.append('imagem', file, file.name);
 
     try {
-        const resp = await fetch(`${API_BASE}/upload_imagem_gabarito.php?debug=1`, {
+      const resp = await fetch(`${API_BASE}/upload_imagem_gabarito.php?debug=1`, {
         method: 'POST',
         body: fd
-        });
+      });
 
-        const raw = await resp.text();
-        console.log('UPLOAD RAW:', raw);
+      const raw = await resp.text();
+      console.log('UPLOAD RAW:', raw);
 
-        let json;
-        try {
+      let json;
+      try {
         json = JSON.parse(raw);
-        } catch (e) {
+      } catch (e) {
         throw new Error('Resposta inválida do servidor: ' + raw);
-        }
+      }
 
-        if (!resp.ok || !json.ok) {
+      if (!resp.ok || !json.ok) {
         throw new Error(json.message || json.error || `HTTP ${resp.status}`);
-        }
+      }
 
-        const link = json.data?.link || json.data?.view || json.data?.download || '';
-        hiddenLink.value = link;
+      const link =
+        json?.data?.link ||
+        json?.data?.view ||
+        json?.data?.download ||
+        json?.link ||
+        '';
 
-        if (link) {
-        status.innerHTML = `<a href="${link}" target="_blank">link</a>`;
-        } else {
-        status.textContent = 'upload sem link';
-        }
+      hiddenLink.value = link;
 
-        status.classList.remove('red-text');
-        status.classList.add('green-text');
+      console.log('LINK RESOLVIDO:', link);
+      console.log('JSON UPLOAD:', json);
+
+      if (link && link.trim() !== '') {
+        status.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer">🔗 ver imagem</a>`;
+      } else {
+        status.textContent = 'link não retornado';
+      }
+
+      status.classList.remove('red-text');
+      status.classList.add('green-text');
 
     } catch (err) {
-        status.textContent = 'erro no upload';
-        status.classList.remove('green-text');
-        status.classList.add('red-text');
-        console.error(err);
+      status.textContent = 'erro no upload';
+      status.classList.remove('green-text');
+      status.classList.add('red-text');
+      console.error(err);
     }
-    });
+  });
 
   // Submit final — manda só metadados + links (sem re-enviar imagem)
   document.getElementById('formCadastro').addEventListener('submit', async (e) => {
     e.preventDefault();
+
     const form = e.target;
     const btn  = form.querySelector('button[type="submit"]');
     btn.disabled = true;
 
-    // monta FormData completo (inclui imagem_link[])
     const fd = new FormData(form);
 
-    // IMPORTANTE: para não re-subir arquivos, zere os file inputs
-    // (o PHP vai usar imagem_link[] que já está no fd)
+    // não reenvia os arquivos no submit final
     for (const input of form.querySelectorAll('input[type="file"]')) {
-      input.disabled = true; // browsers não enviam inputs disabled
+      input.disabled = true;
     }
 
     try {
-      const resp = await fetch(`${API_BASE}/cadastrar_gabarito.php`, { method:'POST', body: fd });
-      const json = await resp.json();
-      if (!resp.ok || !json.ok) throw new Error(json.message || `HTTP ${resp.status}`);
+      const resp = await fetch(`${API_BASE}/cadastrar_gabarito.php`, {
+        method: 'POST',
+        body: fd
+      });
+
+      const raw = await resp.text();
+      console.log('CADASTRO RAW:', raw);
+
+      let json;
+      try {
+        json = JSON.parse(raw);
+      } catch (e) {
+        throw new Error('Resposta inválida do cadastro: ' + raw);
+      }
+
+      if (!resp.ok || !json.ok) {
+        throw new Error(json.message || json.error || `HTTP ${resp.status}`);
+      }
+
       M.toast({ html: 'Gabarito salvo com sucesso!', classes: 'green' });
+
     } catch (err) {
       M.toast({ html: 'Erro ao salvar: ' + err.message, classes: 'red' });
+      console.error(err);
     } finally {
-      for (const input of form.querySelectorAll('input[type="file"]')) input.disabled = false;
+      for (const input of form.querySelectorAll('input[type="file"]')) {
+        input.disabled = false;
+      }
       btn.disabled = false;
     }
   });
 </script>
-
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 </body>
