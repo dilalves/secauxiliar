@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administrativo • Cadastramento da Versão Canônica</title>
+  <title>Cadastramento de Gabaritos - Canônico</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <style>
     body { background: #f6f8fb; }
@@ -11,7 +11,7 @@
       background: #0b3b78;
       color: white;
       padding: 16px 24px;
-      font-size: 20px;
+      font-size: 14px;
       font-weight: bold;
     }
     .fixed-header { position: sticky; top: 0; z-index: 99; }
@@ -22,6 +22,18 @@
     .status-cell a {
       font-weight: 600;
       text-decoration: none;
+    }
+    .acoes-topo{
+      display:flex;
+      gap:10px;
+      align-items:end;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+    .btn-small-custom{
+      height:44px;
+      line-height:44px;
+      padding:0 16px;
     }
   </style>
 </head>
@@ -35,13 +47,27 @@
   <div class="card white card-form">
     <form id="formCadastro" enctype="multipart/form-data">
       <div class="row">
-        <div class="input-field col s6">
+        <div class="input-field col s12 m4">
           <input id="evento" name="evento" type="text" required>
           <label for="evento">Evento (ex: enem0925)</label>
         </div>
-        <div class="input-field col s6">
+
+        <div class="input-field col s12 m4">
           <input id="codigo" name="codigo" type="text" required>
           <label for="codigo">Código da Versão Canônica (ex: 25000101)</label>
+        </div>
+
+        <div class="input-field col s12 m2">
+          <input id="quantidadeQuestoes" name="quantidade_questoes" type="number" min="1" max="200" value="90" required>
+          <label for="quantidadeQuestoes" class="active">Qtd. de testes</label>
+        </div>
+
+        <div class="col s12 m2">
+          <div class="acoes-topo">
+            <button id="btnMontarTabela" class="btn blue darken-3 waves-effect waves-light btn-small-custom" type="button">
+              Montar tabela
+            </button>
+          </div>
         </div>
       </div>
 
@@ -73,21 +99,71 @@
   const API_BASE = "https://apisec.secauxiliar.com.br/sim_adm";
 
   const tabela = document.getElementById('tabelaQuestoes');
+  const inputQtd = document.getElementById('quantidadeQuestoes');
+  const btnMontarTabela = document.getElementById('btnMontarTabela');
 
-  for (let i = 1; i <= 90; i++) {
+  function criarLinhaQuestao(i) {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${i}<input type="hidden" name="questao[]" value="${i}" /></td>
-      <td><input type="text" name="disciplina[]" required></td>
-      <td><input type="text" name="gabarito[]" maxlength="1" required></td>
+      <td>
+        ${i}
+        <input type="hidden" name="questao[]" value="${i}" />
+      </td>
+      <td>
+        <input type="text" name="disciplina[]">
+      </td>
+      <td>
+        <input type="text" name="gabarito[]" maxlength="1">
+      </td>
       <td>
         <input type="file" name="imagem[]" accept="image/*,.tif,.tiff,.pdf" data-q="${i}">
         <input type="hidden" name="imagem_link[]" />
       </td>
       <td class="status-cell grey-text text-darken-1">aguardando</td>
     `;
-    tabela.appendChild(row);
+    return row;
   }
+
+  function montarTabela(quantidade) {
+    tabela.innerHTML = '';
+
+    for (let i = 1; i <= quantidade; i++) {
+      tabela.appendChild(criarLinhaQuestao(i));
+    }
+  }
+
+  function getQuantidadeValida() {
+    const qtd = parseInt(inputQtd.value, 10);
+
+    if (isNaN(qtd) || qtd <= 0) {
+      M.toast({ html: 'Informe uma quantidade válida de testes.', classes: 'red' });
+      inputQtd.focus();
+      return null;
+    }
+
+    if (qtd > 200) {
+      M.toast({ html: 'Quantidade muito alta. Limite máximo: 200.', classes: 'red' });
+      inputQtd.focus();
+      return null;
+    }
+
+    return qtd;
+  }
+
+  btnMontarTabela.addEventListener('click', () => {
+    const qtd = getQuantidadeValida();
+    if (!qtd) return;
+    montarTabela(qtd);
+  });
+
+  inputQtd.addEventListener('change', () => {
+    const qtd = getQuantidadeValida();
+    if (!qtd) return;
+    montarTabela(qtd);
+  });
+
+  // Monta a tabela inicial com o valor padrão
+  montarTabela(parseInt(inputQtd.value, 10) || 90);
 
   // Auto-upload ao escolher arquivo (pré-upload)
   tabela.addEventListener('change', async (ev) => {
@@ -122,56 +198,56 @@
     fd.append('imagem', file, file.name);
 
     try {
-    const resp = await fetch(`${API_BASE}/upload_imagem_gabarito.php?debug=1`, {
+      const resp = await fetch(`${API_BASE}/upload_imagem_gabarito.php?debug=1`, {
         method: 'POST',
         body: fd
-    });
+      });
 
-    const raw = await resp.text();
-    console.log('UPLOAD RAW:', raw);
+      const raw = await resp.text();
+      console.log('UPLOAD RAW:', raw);
 
-    let json;
-    try {
+      let json;
+      try {
         json = JSON.parse(raw);
-    } catch (e) {
+      } catch (e) {
         throw new Error('Resposta inválida do servidor: ' + raw);
-    }
+      }
 
-    if (!resp.ok || !json.ok) {
+      if (!resp.ok || !json.ok) {
         throw new Error(json.message || json.error || `HTTP ${resp.status}`);
-    }
+      }
 
-    const key =
+      const key =
         json?.data?.key ||
         json?.data?.id ||
         json?.key ||
         json?.id ||
         '';
 
-    const link = key
+      const link = key
         ? `${API_BASE}/ver_imagem_gabarito.php?key=${encodeURIComponent(key)}&evento=${encodeURIComponent(evento)}`
         : '';
 
-    hiddenLink.value = link;
+      hiddenLink.value = link;
 
-    console.log('KEY RESOLVIDA:', key);
-    console.log('LINK VISUALIZAÇÃO:', link);
-    console.log('JSON UPLOAD:', json);
+      console.log('KEY RESOLVIDA:', key);
+      console.log('LINK VISUALIZAÇÃO:', link);
+      console.log('JSON UPLOAD:', json);
 
-    if (link && link.trim() !== '') {
+      if (link && link.trim() !== '') {
         status.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer">🔗 ver imagem</a>`;
-    } else {
+      } else {
         status.textContent = 'link não retornado';
-    }
+      }
 
-    status.classList.remove('red-text');
-    status.classList.add('green-text');
+      status.classList.remove('red-text');
+      status.classList.add('green-text');
 
     } catch (err) {
-    status.textContent = 'erro no upload';
-    status.classList.remove('green-text');
-    status.classList.add('red-text');
-    console.error(err);
+      status.textContent = 'erro no upload';
+      status.classList.remove('green-text');
+      status.classList.add('red-text');
+      console.error(err);
     }
   });
 
@@ -182,6 +258,16 @@
     const form = e.target;
     const btn  = form.querySelector('button[type="submit"]');
     btn.disabled = true;
+
+    const evento = document.getElementById('evento').value.trim();
+    const codigo = document.getElementById('codigo').value.trim();
+    const qtd    = getQuantidadeValida();
+
+    if (!evento || !codigo || !qtd) {
+      M.toast({ html: 'Preencha evento, código e quantidade de testes.', classes: 'red' });
+      btn.disabled = false;
+      return;
+    }
 
     const fd = new FormData(form);
 
