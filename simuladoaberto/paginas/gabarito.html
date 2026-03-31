@@ -122,54 +122,56 @@
     fd.append('imagem', file, file.name);
 
     try {
-      const resp = await fetch(`${API_BASE}/upload_imagem_gabarito.php?debug=1`, {
+    const resp = await fetch(`${API_BASE}/upload_imagem_gabarito.php?debug=1`, {
         method: 'POST',
         body: fd
-      });
+    });
 
-      const raw = await resp.text();
-      console.log('UPLOAD RAW:', raw);
+    const raw = await resp.text();
+    console.log('UPLOAD RAW:', raw);
 
-      let json;
-      try {
+    let json;
+    try {
         json = JSON.parse(raw);
-      } catch (e) {
+    } catch (e) {
         throw new Error('Resposta inválida do servidor: ' + raw);
-      }
+    }
 
-      if (!resp.ok || !json.ok) {
+    if (!resp.ok || !json.ok) {
         throw new Error(json.message || json.error || `HTTP ${resp.status}`);
-      }
+    }
 
-      const key =
+    const key =
         json?.data?.key ||
         json?.data?.id ||
+        json?.key ||
+        json?.id ||
         '';
 
-      const link = key
-        ? `${API_BASE}/ver_imagem_gabarito.php?key=${encodeURIComponent(key)}`
+    const link = key
+        ? `${API_BASE}/ver_imagem_gabarito.php?key=${encodeURIComponent(key)}&evento=${encodeURIComponent(evento)}`
         : '';
 
-      hiddenLink.value = link;
+    hiddenLink.value = link;
 
-      console.log('KEY RESOLVIDA:', key);
-      console.log('LINK VISUALIZAÇÃO:', link);
-      console.log('JSON UPLOAD:', json);
+    console.log('KEY RESOLVIDA:', key);
+    console.log('LINK VISUALIZAÇÃO:', link);
+    console.log('JSON UPLOAD:', json);
 
-      if (link && link.trim() !== '') {
+    if (link && link.trim() !== '') {
         status.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer">🔗 ver imagem</a>`;
-      } else {
+    } else {
         status.textContent = 'link não retornado';
-      }
+    }
 
-      status.classList.remove('red-text');
-      status.classList.add('green-text');
+    status.classList.remove('red-text');
+    status.classList.add('green-text');
 
     } catch (err) {
-      status.textContent = 'erro no upload';
-      status.classList.remove('green-text');
-      status.classList.add('red-text');
-      console.error(err);
+    status.textContent = 'erro no upload';
+    status.classList.remove('green-text');
+    status.classList.add('red-text');
+    console.error(err);
     }
   });
 
