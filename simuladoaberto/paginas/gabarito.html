@@ -78,29 +78,31 @@
     tabela.appendChild(row);
   }
 
-  // Auto-upload ao escolher arquivo (pré-upload)
-  tabela.addEventListener('change', async (ev) => {
+    // Auto-upload ao escolher arquivo (pré-upload)
+    tabela.addEventListener('change', async (ev) => {
     const input = ev.target;
     if (input.type !== 'file') return;
+
     const file = input.files && input.files[0];
     if (!file) return;
 
     const tr = input.closest('tr');
     const status = tr.querySelector('.status-cell');
-    const questao = tr.querySelector('input[name="questao[]"]').value;
+    const questao = tr.querySelector('input[name="questao[]"]').value.trim();
     const evento  = document.getElementById('evento').value.trim();
     const codigo  = document.getElementById('codigo').value.trim();
     const hiddenLink = tr.querySelector('input[name="imagem_link[]"]');
 
-    if (!evento || !codigo) {
-      status.textContent = 'preencha evento/código';
-      status.classList.add('red-text');
-      input.value = '';
-      return;
+    if (!evento || !codigo || !questao) {
+        status.textContent = 'preencha evento/código/questão';
+        status.classList.remove('green-text');
+        status.classList.add('red-text');
+        input.value = '';
+        return;
     }
 
     status.textContent = 'enviando...';
-    status.classList.remove('red-text','green-text');
+    status.classList.remove('red-text', 'green-text');
 
     const fd = new FormData();
     fd.append('evento', evento);
@@ -109,21 +111,44 @@
     fd.append('imagem', file, file.name);
 
     try {
-      const resp = await fetch(`${API_BASE}/upload_imagem_gabarito.php`, { method:'POST', body: fd });
-      const json = await resp.json();
-      if (!resp.ok || !json.ok) throw new Error(json.message || `HTTP ${resp.status}`);
+        const resp = await fetch(`${API_BASE}/upload_imagem_gabarito.php?debug=1`, {
+        method: 'POST',
+        body: fd
+        });
 
-      const link = json.data.link || json.data.view || json.data.download;
-      hiddenLink.value = link;
+        const raw = await resp.text();
+        console.log('UPLOAD RAW:', raw);
 
-      status.innerHTML = `<a href="${link}" target="_blank">link</a>`;
-      status.classList.add('green-text');
+        let json;
+        try {
+        json = JSON.parse(raw);
+        } catch (e) {
+        throw new Error('Resposta inválida do servidor: ' + raw);
+        }
+
+        if (!resp.ok || !json.ok) {
+        throw new Error(json.message || json.error || `HTTP ${resp.status}`);
+        }
+
+        const link = json.data?.link || json.data?.view || json.data?.download || '';
+        hiddenLink.value = link;
+
+        if (link) {
+        status.innerHTML = `<a href="${link}" target="_blank">link</a>`;
+        } else {
+        status.textContent = 'upload sem link';
+        }
+
+        status.classList.remove('red-text');
+        status.classList.add('green-text');
+
     } catch (err) {
-      status.textContent = 'erro no upload';
-      status.classList.add('red-text');
-      console.error(err);
+        status.textContent = 'erro no upload';
+        status.classList.remove('green-text');
+        status.classList.add('red-text');
+        console.error(err);
     }
-  });
+    });
 
   // Submit final — manda só metadados + links (sem re-enviar imagem)
   document.getElementById('formCadastro').addEventListener('submit', async (e) => {
