@@ -81,7 +81,7 @@
       <td><input type="text" name="disciplina[]" required></td>
       <td><input type="text" name="gabarito[]" maxlength="1" required></td>
       <td>
-        <input type="file" name="imagem[]" accept="image/*" data-q="${i}">
+        <input type="file" name="imagem[]" accept="image/*,.tif,.tiff,.pdf" data-q="${i}">
         <input type="hidden" name="imagem_link[]" />
       </td>
       <td class="status-cell grey-text text-darken-1">aguardando</td>
@@ -141,16 +141,19 @@
         throw new Error(json.message || json.error || `HTTP ${resp.status}`);
       }
 
-      const link =
-        json?.data?.link ||
-        json?.data?.view ||
-        json?.data?.download ||
-        json?.link ||
+      const key =
+        json?.data?.key ||
+        json?.data?.id ||
         '';
+
+      const link = key
+        ? `${API_BASE}/ver_imagem_gabarito.php?key=${encodeURIComponent(key)}`
+        : '';
 
       hiddenLink.value = link;
 
-      console.log('LINK RESOLVIDO:', link);
+      console.log('KEY RESOLVIDA:', key);
+      console.log('LINK VISUALIZAÇÃO:', link);
       console.log('JSON UPLOAD:', json);
 
       if (link && link.trim() !== '') {
