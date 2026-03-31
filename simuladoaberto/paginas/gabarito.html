@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administrativo • Cadastramento da Versão Canônica</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <style>
+    body { background: #f6f8fb; }
+    header.page { background: #0b3b78; color: white; padding: 16px 24px; font-size: 20px; font-weight: bold; }
+    .fixed-header { position: sticky; top: 0; z-index: 99; }
+    .card-form { padding: 20px; border-radius: 12px; }
+    .input-field input[type="file"] { margin-top: 10px; }
+    .table-wrap { max-height: 65vh; overflow: auto; margin-top: 24px; }
+    table td, table th { padding: 8px; }
+  </style>
+</head>
+<body>
+
+<header class="page fixed-header">
+  Administrativo → Cadastramento da Versão Canônica
+</header>
+
+<div class="container">
+  <div class="card white card-form">
+    <form id="formCadastro" enctype="multipart/form-data">
+      <div class="row">
+        <div class="input-field col s6">
+          <input id="evento" name="evento" type="text" required>
+          <label for="evento">Evento (ex: enem0925)</label>
+        </div>
+        <div class="input-field col s6">
+          <input id="codigo" name="codigo" type="text" required>
+          <label for="codigo">Código da Versão Canônica (ex: 25000101)</label>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="highlight striped">
+          <thead>
+          <tr>
+            <th>Questão</th>
+            <th>Disciplina</th>
+            <th>Gabarito</th>
+            <th>Imagem (resolução)</th>
+            <th>Status / Link</th>
+          </tr>
+        </thead>
+          <tbody id="tabelaQuestoes">
+            <!-- Preenche automaticamente -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="center-align" style="margin-top: 24px;">
+        <button class="btn blue darken-3 waves-effect waves-light" type="submit">Salvar Gabarito</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const API_BASE = "https://apisec.secauxiliar.com.br/sim_adm";
+
+  const tabela = document.getElementById('tabelaQuestoes');
+  for (let i = 1; i <= 90; i++) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${i}<input type="hidden" name="questao[]" value="${i}" /></td>
+      <td><input type="text" name="disciplina[]" required></td>
+      <td><input type="text" name="gabarito[]" maxlength="1" required></td>
+      <td>
+        <input type="file" name="imagem[]" accept="image/*" data-q="${i}">
+        <input type="hidden" name="imagem_link[]" />
+      </td>
+      <td class="status-cell grey-text text-darken-1">aguardando</td>
+    `;
+    tabela.appendChild(row);
+  }
+
+  // Auto-upload ao escolher arquivo (pré-upload)
+  tabela.addEventListener('change', async (ev) => {
+    const input = ev.target;
+    if (input.type !== 'file') return;
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    const tr = input.closest('tr');
+    const status = tr.querySelector('.status-cell');
+    const questao = tr.querySelector('input[name="questao[]"]').value;
+    const evento  = document.getElementById('evento').value.trim();
+    const codigo  = document.getElementById('codigo').value.trim();
+    const hiddenLink = tr.querySelector('input[name="imagem_link[]"]');
+
+    if (!evento || !codigo) {
+      status.textContent = 'preencha evento/código';
+      status.classList.add('red-text');
+      input.value = '';
+      return;
+    }
+
+    status.textContent = 'enviando...';
+    status.classList.remove('red-text','green-text');
+
+    const fd = new FormData();
+    fd.append('evento', evento);
+    fd.append('codigo', codigo);
+    fd.append('questao', questao);
+    fd.append('imagem', file, file.name);
+
+    try {
+      const resp = await fetch(`${API_BASE}/upload_imagem_gabarito.php`, { method:'POST', body: fd });
+      const json = await resp.json();
+      if (!resp.ok || !json.ok) throw new Error(json.message || `HTTP ${resp.status}`);
+
+      const link = json.data.link || json.data.view || json.data.download;
+      hiddenLink.value = link;
+
+      status.innerHTML = `<a href="${link}" target="_blank">link</a>`;
+      status.classList.add('green-text');
+    } catch (err) {
+      status.textContent = 'erro no upload';
+      status.classList.add('red-text');
+      console.error(err);
+    }
+  });
+
+  // Submit final — manda só metadados + links (sem re-enviar imagem)
+  document.getElementById('formCadastro').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const btn  = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+
+    // monta FormData completo (inclui imagem_link[])
+    const fd = new FormData(form);
+
+    // IMPORTANTE: para não re-subir arquivos, zere os file inputs
+    // (o PHP vai usar imagem_link[] que já está no fd)
+    for (const input of form.querySelectorAll('input[type="file"]')) {
+      input.disabled = true; // browsers não enviam inputs disabled
+    }
+
+    try {
+      const resp = await fetch(`${API_BASE}/cadastrar_gabarito.php`, { method:'POST', body: fd });
+      const json = await resp.json();
+      if (!resp.ok || !json.ok) throw new Error(json.message || `HTTP ${resp.status}`);
+      M.toast({ html: 'Gabarito salvo com sucesso!', classes: 'green' });
+    } catch (err) {
+      M.toast({ html: 'Erro ao salvar: ' + err.message, classes: 'red' });
+    } finally {
+      for (const input of form.querySelectorAll('input[type="file"]')) input.disabled = false;
+      btn.disabled = false;
+    }
+  });
+</script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
