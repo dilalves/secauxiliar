@@ -346,10 +346,9 @@
     .col-status{ width:96px; }
     .col-acoes{ width:150px; }
 
-    .pend-col-insc{ width:110px; }
-    .pend-col-cor{ width:90px; }
-    .pend-col-conf{ width:95px; }
-    .pend-col-acoes{ width:140px; }
+    .pend-col-insc{ width:120px; }
+    .pend-col-cor{ width:95px; }
+    .pend-col-acoes{ width:150px; }
 
     @media (max-width: 1200px){
       .layout{
@@ -401,7 +400,6 @@
     </div>
 
     <div class="layout">
-      <!-- ESQUERDA -->
       <div class="card" style="margin:0;">
         <div class="panel-title">
           <h3>Lotes</h3>
@@ -432,7 +430,6 @@
         </div>
       </div>
 
-      <!-- DIREITA -->
       <div class="card" style="margin:0;">
         <div class="panel-title">
           <h3>Pendências</h3>
@@ -457,12 +454,11 @@
                 <th class="pend-col-insc">INSCRIÇÃO</th>
                 <th class="pend-col-cor">CORPROVA</th>
                 <th>ARQUIVO_ORIGEM</th>
-                <th class="pend-col-conf">CONFERIDO</th>
                 <th class="pend-col-acoes">AÇÕES</th>
               </tr>
             </thead>
             <tbody id="tbodyPendencias">
-              <tr><td colspan="5" class="vazio">Nenhum lote selecionado.</td></tr>
+              <tr><td colspan="4" class="vazio">Nenhum lote selecionado.</td></tr>
             </tbody>
           </table>
         </div>
@@ -577,7 +573,7 @@
     try {
       infoEvento.textContent = `Carregando lotes do evento ${evento}...`;
       tbodyLotes.innerHTML = `<tr><td colspan="11" class="loading">Carregando lotes...</td></tr>`;
-      tbodyPendencias.innerHTML = `<tr><td colspan="5" class="vazio">Nenhum lote selecionado.</td></tr>`;
+      tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Nenhum lote selecionado.</td></tr>`;
       infoPendencias.textContent = 'Selecione um lote à esquerda para visualizar as pendências manuais.';
       contextoLote.style.display = 'none';
       linhaSelecionada = null;
@@ -664,7 +660,7 @@
     const pendenciasQtd = Number(row.pendencias || 0);
 
     infoPendencias.textContent = `Carregando pendências do lote FTP ${ftp} (${dia})...`;
-    tbodyPendencias.innerHTML = `<tr><td colspan="5" class="loading">Carregando pendências...</td></tr>`;
+    tbodyPendencias.innerHTML = `<tr><td colspan="4" class="loading">Carregando pendências...</td></tr>`;
 
     try {
       const data = await fetchJson(`${URL_PENDENCIAS}?dia=${encodeURIComponent(dia)}&ftp=${encodeURIComponent(ftp)}`);
@@ -679,14 +675,14 @@
       infoPendencias.textContent = `${data.total || 0} pendência(s) encontrada(s) para este lote.`;
     } catch (err) {
       Swal.fire('Erro', err.message || 'Falha ao carregar pendências.', 'error');
-      tbodyPendencias.innerHTML = `<tr><td colspan="5" class="vazio">Erro ao carregar pendências.</td></tr>`;
+      tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Erro ao carregar pendências.</td></tr>`;
       contextoLote.style.display = 'none';
     }
   }
 
   function montarTabelaPendencias(rows) {
     if (!rows.length) {
-      tbodyPendencias.innerHTML = `<tr><td colspan="5" class="vazio">Nenhuma pendência encontrada para este lote.</td></tr>`;
+      tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Nenhuma pendência encontrada para este lote.</td></tr>`;
       return;
     }
 
@@ -695,7 +691,6 @@
         <td class="mono">${escapeHtml(r.INSCRICAO)}</td>
         <td>${escapeHtml(r.CORPROVA)}</td>
         <td class="mono">${escapeHtml(r.arquivo_origem)}</td>
-        <td>${escapeHtml(r.CONFERIDO ?? '')}</td>
         <td>
           <div class="acoes">
             <button type="button" class="btn-mini view" onclick="verImagem('${escapeHtml(r.arquivo_origem)}')">Ver imagem</button>
