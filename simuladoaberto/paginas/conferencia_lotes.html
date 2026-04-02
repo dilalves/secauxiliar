@@ -344,7 +344,7 @@
     .col-dif{ width:82px; }
     .col-pend{ width:92px; }
     .col-status{ width:96px; }
-    .col-acoes{ width:150px; }
+    .col-acoes{ width:90px; }
 
     .pend-col-insc{ width:120px; }
     .pend-col-cor{ width:95px; }
@@ -603,46 +603,46 @@
     rsAptos.textContent = totalAptos;
   }
 
-  function montarTabelaLotes(rows, evento) {
-    if (!rows.length) {
-      tbodyLotes.innerHTML = `<tr><td colspan="11" class="vazio">Nenhum lote encontrado.</td></tr>`;
-      return;
-    }
-
-    tbodyLotes.innerHTML = rows.map((r, idx) => {
-      const diff = Number(r.diferenca || 0);
-      const pend = Number(r.pendencias || 0);
-      const ok = !!r.ok_habilitado;
-
-      const diffHtml = diff === 0 ? chipNumero(diff, 'ok') : chipNumero(diff, 'bad');
-      const pendHtml = pend === 0 ? chipNumero(pend, 'ok') : chipNumero(pend, 'warn');
-
-      const okBtn = ok
-        ? `<button type="button" class="btn-mini ok" onclick="event.stopPropagation(); avisoOkLote('${escapeHtml(String(r.id))}', '${escapeHtml(String(r.ftp))}')">OK lote</button>`
-        : `<button type="button" class="btn-mini block" onclick="event.stopPropagation();" title="Só habilita quando diferença = 0 e pendências = 0">OK lote</button>`;
-
-      return `
-        <tr class="row-click" data-idx="${idx}" onclick="selecionarLote(${idx})">
-          <td>${escapeHtml(r.data_reg)}</td>
-          <td>${escapeHtml(r.id_und)}</td>
-          <td>${escapeHtml(r.lote)}</td>
-          <td class="mono">${escapeHtml(r.ftp)}</td>
-          <td>${escapeHtml(r.qnt)}</td>
-          <td>${escapeHtml(r.dia)}</td>
-          <td>${escapeHtml(r.quantidade_processada_real)}</td>
-          <td>${diffHtml}</td>
-          <td>${pendHtml}</td>
-          <td>${chipStatus(r.status)}</td>
-          <td>
-            <div class="acoes">
-              <button type="button" class="btn-mini view" onclick="event.stopPropagation(); selecionarLote(${idx})">Pendências</button>
-              ${okBtn}
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
+ function montarTabelaLotes(rows, evento) {
+  if (!rows.length) {
+    tbodyLotes.innerHTML = `<tr><td colspan="11" class="vazio">Nenhum lote encontrado.</td></tr>`;
+    return;
   }
+
+  tbodyLotes.innerHTML = rows.map((r, idx) => {
+    const diff = Number(r.diferenca || 0);
+    const pend = Number(r.pendencias || 0);
+    const ok = !!r.ok_habilitado;
+
+    const diffHtml = diff === 0 ? chipNumero(diff, 'ok') : chipNumero(diff, 'bad');
+    const pendHtml = pend === 0 ? chipNumero(pend, 'ok') : chipNumero(pend, 'warn');
+
+    const okBtn = ok
+      ? `<button type="button" class="btn-mini ok" onclick="event.stopPropagation(); avisoOkLote('${escapeHtml(String(r.id))}', '${escapeHtml(String(r.ftp))}')">OK lote</button>`
+      : `<button type="button" class="btn-mini block" onclick="event.stopPropagation();" title="Só habilita quando diferença = 0 e pendências = 0">OK lote</button>`;
+
+    return `
+      <tr class="row-click" data-idx="${idx}" onclick="selecionarLote(${idx})">
+        <td>${escapeHtml(r.data_reg)}</td>
+        <td>${escapeHtml(r.id_und)}</td>
+        <td>${escapeHtml(r.lote)}</td>
+        <td class="mono">${escapeHtml(r.ftp)}</td>
+        <td>${escapeHtml(r.qnt)}</td>
+        <td>${escapeHtml(r.dia)}</td>
+        <td>${escapeHtml(r.quantidade_processada_real)}</td>
+        <td>${diffHtml}</td>
+        <td>${pendHtml}</td>
+        <td>${chipStatus(r.status)}</td>
+        <td>
+          <div class="acoes">
+            ${okBtn}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
 
   async function selecionarLote(idx) {
     const row = lotesCache[idx];
