@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    :root{
+      --bg:#f8fbff;
+      --card:#ffffff;
+      --line:#d9e5f2;
+      --text:#10233f;
+      --muted:#64748b;
+      --primary:#0b3b78;
+      --chip:#e8f0fb;
+      --ok-bg:#dcfce7;
+      --ok-tx:#166534;
+      --warn-bg:#fef3c7;
+      --warn-tx:#92400e;
+      --bad-bg:#fee2e2;
+      --bad-tx:#991b1b;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      padding:18px;
+      font-family:system-ui, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+
+    h2{
+      margin:0;
+      font-size:24px;
+      color:var(--primary);
+    }
+
+    .sub{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      box-shadow:0 8px 24px rgba(11,59,120,.05);
+      margin-bottom:16px;
+    }
+
+    .filtros{
+      display:flex;
+      gap:12px;
+      align-items:end;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .campo{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:260px;
+    }
+
+    label{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    select, button{
+      height:40px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      padding:0 12px;
+      font-size:14px;
+    }
+
+    button{
+      background:var(--primary);
+      color:#fff;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    button:hover{
+      filter:brightness(1.05);
+    }
+
+    button:disabled{
+      cursor:not-allowed;
+      opacity:.65;
+      filter:none;
+    }
+
+    .btn-sec{
+      background:#e8f0fb;
+      color:var(--primary);
+      border:1px solid #cfe0f5;
+    }
+
+    .info-bar{
+      margin-bottom:12px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .resumo{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .resumo-card{
+      min-width:220px;
+      background:#f4f8fe;
+      border:1px solid #dce7f6;
+      border-radius:12px;
+      padding:12px 14px;
+    }
+
+    .resumo-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    .resumo-valor{
+      margin-top:6px;
+      font-size:26px;
+      font-weight:800;
+      color:var(--primary);
+    }
+
+    .tabela-wrap{
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1360px;
+    }
+
+    th, td{
+      padding:10px 12px;
+      border-bottom:1px solid #edf2f7;
+      text-align:left;
+      vertical-align:top;
+      font-size:14px;
+    }
+
+    th{
+      position:sticky;
+      top:0;
+      background:#f2f7fd;
+      color:#17345d;
+      z-index:1;
+      white-space:nowrap;
+    }
+
+    tr:hover td{
+      background:#fafcff;
+    }
+
+    tr.row-click{
+      cursor:pointer;
+    }
+
+    tr.selected td{
+      background:#eef5ff !important;
+    }
+
+    .chip{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      background:#e8f0fb;
+      color:#17406e;
+      white-space:nowrap;
+    }
+
+    .chip-ok{
+      background:var(--ok-bg);
+      color:var(--ok-tx);
+    }
+
+    .chip-warn{
+      background:var(--warn-bg);
+      color:var(--warn-tx);
+    }
+
+    .chip-bad{
+      background:var(--bad-bg);
+      color:var(--bad-tx);
+    }
+
+    .acoes{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .btn-mini{
+      height:32px;
+      padding:0 10px;
+      border-radius:8px;
+      font-size:12px;
+      font-weight:700;
+      border:none;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .btn-mini.view{
+      background:#e8f0fb;
+      color:#17406e;
+      border:1px solid #cfe0f5;
+    }
+
+    .btn-mini.edit{
+      background:#fff7ed;
+      color:#b45309;
+      border:1px solid #fdba74;
+    }
+
+    .btn-mini.ok{
+      background:#dcfce7;
+      color:#166534;
+      border:1px solid #86efac;
+    }
+
+    .btn-mini.block{
+      background:#eef2f7;
+      color:#64748b;
+      border:1px solid #d7e0ea;
+      cursor:not-allowed;
+    }
+
+    .vazio{
+      padding:26px;
+      text-align:center;
+      color:var(--muted);
+    }
+
+    .helper{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .mono{
+      font-family:Consolas, monospace;
+    }
+
+    .loading{
+      padding:18px;
+      color:var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top">
+    <div>
+      <h2>Conferência de Lotes</h2>
+      <div class="sub">Controle de leitura, pendências manuais e liberação de lote</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="filtros">
+      <div class="campo">
+        <label for="evento">Evento</label>
+        <select id="evento"></select>
+      </div>
+
+      <div>
+        <button id="btnFiltrar">Filtrar</button>
+      </div>
+    </div>
+
+    <div class="info-bar" id="infoEvento">Selecione um evento para carregar os lotes.</div>
+
+    <div class="resumo" id="resumo">
+      <div class="resumo-card">
+        <div class="resumo-label">Lotes</div>
+        <div class="resumo-valor" id="rsLotes">0</div>
+      </div>
+      <div class="resumo-card">
+        <div class="resumo-label">Pendências</div>
+        <div class="resumo-valor" id="rsPend">0</div>
+      </div>
+      <div class="resumo-card">
+        <div class="resumo-label">Diferença total</div>
+        <div class="resumo-valor" id="rsDif">0</div>
+      </div>
+      <div class="resumo-card">
+        <div class="resumo-label">Lotes aptos</div>
+        <div class="resumo-valor" id="rsAptos">0</div>
+      </div>
+    </div>
+
+    <div class="tabela-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>DATA REG</th>
+            <th>UND</th>
+            <th>LOTE</th>
+            <th>FTP</th>
+            <th>QNT</th>
+            <th>DIA</th>
+            <th>PROCESSADAS</th>
+            <th>DIFERENÇA</th>
+            <th>PENDÊNCIAS</th>
+            <th>STATUS</th>
+            <th>AÇÕES</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyLotes">
+          <tr><td colspan="12" class="vazio">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="info-bar" id="infoPendencias">
+      Selecione um lote acima para visualizar as pendências manuais.
+    </div>
+
+    <div class="tabela-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>DIA</th>
+            <th>EVENTO</th>
+            <th>LOTE</th>
+            <th>UND</th>
+            <th>INSCRIÇÃO</th>
+            <th>CORPROVA</th>
+            <th>ARQUIVO_ORIGEM</th>
+            <th>CONFERIDO</th>
+            <th>AÇÕES</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyPendencias">
+          <tr><td colspan="10" class="vazio">Nenhum lote selecionado.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+  const API_BASE = 'https://apisec.secauxiliar.com.br/sim_adm';
+  const URL_EVENTOS = `${API_BASE}/listar_eventos_conferencia.php`;
+  const URL_LOTES = `${API_BASE}/listar_lotes_conferencia.php`;
+  const URL_PENDENCIAS = `${API_BASE}/listar_pendencias_lote.php`;
+
+  const elEvento = document.getElementById('evento');
+  const btnFiltrar = document.getElementById('btnFiltrar');
+  const tbodyLotes = document.getElementById('tbodyLotes');
+  const tbodyPendencias = document.getElementById('tbodyPendencias');
+  const infoEvento = document.getElementById('infoEvento');
+  const infoPendencias = document.getElementById('infoPendencias');
+
+  const rsLotes = document.getElementById('rsLotes');
+  const rsPend = document.getElementById('rsPend');
+  const rsDif = document.getElementById('rsDif');
+  const rsAptos = document.getElementById('rsAptos');
+
+  let lotesCache = [];
+  let linhaSelecionada = null;
+
+  function chipStatus(status) {
+    const s = String(status || '').toUpperCase();
+    let cls = 'chip';
+    if (s === 'FINALIZADO' || s === 'PROCESSADO') cls += ' chip-ok';
+    else if (s === 'RECUSADO') cls += ' chip-bad';
+    else cls += ' chip-warn';
+    return `<span class="${cls}">${escapeHtml(status || '')}</span>`;
+  }
+
+  function chipNumero(valor, tipo = 'ok') {
+    let cls = 'chip';
+    if (tipo === 'ok') cls += ' chip-ok';
+    else if (tipo === 'bad') cls += ' chip-bad';
+    else cls += ' chip-warn';
+    return `<span class="${cls}">${escapeHtml(String(valor))}</span>`;
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  async function fetchJson(url) {
+    const resp = await fetch(url, {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    const data = await resp.json().catch(() => null);
+
+    if (!resp.ok || !data || data.ok !== true) {
+      throw new Error(data?.msg || 'Erro na requisição.');
+    }
+
+    return data;
+  }
+
+  async function carregarEventos() {
+    try {
+      elEvento.innerHTML = '<option>Carregando...</option>';
+
+      const data = await fetchJson(URL_EVENTOS);
+      const rows = data.rows || [];
+
+      elEvento.innerHTML = '';
+
+      if (!rows.length) {
+        elEvento.innerHTML = '<option value="">Nenhum evento encontrado</option>';
+        return;
+      }
+
+      rows.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.evento;
+        opt.textContent = r.evento;
+        elEvento.appendChild(opt);
+      });
+
+      await carregarLotes();
+    } catch (err) {
+      Swal.fire('Erro', err.message || 'Falha ao carregar eventos.', 'error');
+      elEvento.innerHTML = '<option value="">Erro ao carregar</option>';
+    }
+  }
+
+  async function carregarLotes() {
+    const evento = elEvento.value?.trim();
+
+    if (!evento) {
+      tbodyLotes.innerHTML = `<tr><td colspan="12" class="vazio">Selecione um evento.</td></tr>`;
+      return;
+    }
+
+    try {
+      infoEvento.textContent = `Carregando lotes do evento ${evento}...`;
+      tbodyLotes.innerHTML = `<tr><td colspan="12" class="loading">Carregando lotes...</td></tr>`;
+      tbodyPendencias.innerHTML = `<tr><td colspan="10" class="vazio">Nenhum lote selecionado.</td></tr>`;
+      infoPendencias.textContent = 'Selecione um lote acima para visualizar as pendências manuais.';
+      linhaSelecionada = null;
+
+      const data = await fetchJson(`${URL_LOTES}?evento=${encodeURIComponent(evento)}`);
+      lotesCache = data.rows || [];
+
+      montarResumo(lotesCache);
+      montarTabelaLotes(lotesCache, evento);
+
+      infoEvento.textContent = `${data.total || 0} lote(s) encontrado(s) para o evento ${evento}.`;
+    } catch (err) {
+      Swal.fire('Erro', err.message || 'Falha ao carregar lotes.', 'error');
+      tbodyLotes.innerHTML = `<tr><td colspan="12" class="vazio">Erro ao carregar lotes.</td></tr>`;
+    }
+  }
+
+  function montarResumo(rows) {
+    const totalLotes = rows.length;
+    const totalPend = rows.reduce((s, r) => s + Number(r.pendencias || 0), 0);
+    const totalDif = rows.reduce((s, r) => s + Number(r.diferenca || 0), 0);
+    const totalAptos = rows.filter(r => !!r.ok_habilitado).length;
+
+    rsLotes.textContent = totalLotes;
+    rsPend.textContent = totalPend;
+    rsDif.textContent = totalDif;
+    rsAptos.textContent = totalAptos;
+  }
+
+  function montarTabelaLotes(rows, evento) {
+    if (!rows.length) {
+      tbodyLotes.innerHTML = `<tr><td colspan="12" class="vazio">Nenhum lote encontrado.</td></tr>`;
+      return;
+    }
+
+    tbodyLotes.innerHTML = rows.map((r, idx) => {
+      const diff = Number(r.diferenca || 0);
+      const pend = Number(r.pendencias || 0);
+      const ok = !!r.ok_habilitado;
+
+      const diffHtml = diff === 0 ? chipNumero(diff, 'ok') : chipNumero(diff, 'bad');
+      const pendHtml = pend === 0 ? chipNumero(pend, 'ok') : chipNumero(pend, 'warn');
+
+      const okBtn = ok
+        ? `<button type="button" class="btn-mini ok" onclick="event.stopPropagation(); avisoOkLote('${escapeHtml(String(r.id))}', '${escapeHtml(String(r.ftp))}')">OK lote</button>`
+        : `<button type="button" class="btn-mini block" onclick="event.stopPropagation();" title="Só habilita quando diferença = 0 e pendências = 0">OK lote</button>`;
+
+      return `
+        <tr class="row-click" data-idx="${idx}" onclick="selecionarLote(${idx})">
+          <td>${escapeHtml(r.id)}</td>
+          <td>${escapeHtml(r.data_reg)}</td>
+          <td>${escapeHtml(r.id_und)}</td>
+          <td>${escapeHtml(r.lote)}</td>
+          <td class="mono">${escapeHtml(r.ftp)}</td>
+          <td>${escapeHtml(r.qnt)}</td>
+          <td>${escapeHtml(r.dia)}</td>
+          <td>${escapeHtml(r.quantidade_processada_real)}</td>
+          <td>${diffHtml}</td>
+          <td>${pendHtml}</td>
+          <td>${chipStatus(r.status)}</td>
+          <td>
+            <div class="acoes">
+              <button type="button" class="btn-mini view" onclick="event.stopPropagation(); selecionarLote(${idx})">Ver pendências</button>
+              ${okBtn}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function selecionarLote(idx) {
+    const row = lotesCache[idx];
+    if (!row) return;
+
+    linhaSelecionada = idx;
+
+    [...tbodyLotes.querySelectorAll('tr')].forEach(tr => tr.classList.remove('selected'));
+    const tr = tbodyLotes.querySelector(`tr[data-idx="${idx}"]`);
+    if (tr) tr.classList.add('selected');
+
+    const dia = String(row.dia || '').trim();
+    const ftp = String(row.ftp || '').trim();
+    const evento = String(elEvento.value || '').trim();
+
+    infoPendencias.textContent = `Carregando pendências do lote FTP ${ftp} (${dia})...`;
+    tbodyPendencias.innerHTML = `<tr><td colspan="10" class="loading">Carregando pendências...</td></tr>`;
+
+    try {
+      const data = await fetchJson(`${URL_PENDENCIAS}?dia=${encodeURIComponent(dia)}&ftp=${encodeURIComponent(ftp)}`);
+      montarTabelaPendencias(data.rows || []);
+      infoPendencias.textContent = `Evento: ${evento} | Dia: ${dia} | FTP/Lote: ${ftp} | Pendências: ${data.total || 0}`;
+    } catch (err) {
+      Swal.fire('Erro', err.message || 'Falha ao carregar pendências.', 'error');
+      tbodyPendencias.innerHTML = `<tr><td colspan="10" class="vazio">Erro ao carregar pendências.</td></tr>`;
+    }
+  }
+
+  function montarTabelaPendencias(rows) {
+    if (!rows.length) {
+      tbodyPendencias.innerHTML = `<tr><td colspan="10" class="vazio">Nenhuma pendência encontrada para este lote.</td></tr>`;
+      return;
+    }
+
+    tbodyPendencias.innerHTML = rows.map(r => `
+      <tr>
+        <td>${escapeHtml(r.id)}</td>
+        <td>${escapeHtml(r.dia)}</td>
+        <td>${escapeHtml(r.evento)}</td>
+        <td>${escapeHtml(r.lote)}</td>
+        <td>${escapeHtml(r.unidade)}</td>
+        <td class="mono">${escapeHtml(r.INSCRICAO)}</td>
+        <td>${escapeHtml(r.CORPROVA)}</td>
+        <td class="mono">${escapeHtml(r.arquivo_origem)}</td>
+        <td>${escapeHtml(r.CONFERIDO ?? '')}</td>
+        <td>
+          <div class="acoes">
+            <button type="button" class="btn-mini view" onclick="verImagem('${escapeHtml(r.arquivo_origem)}')">Ver imagem</button>
+            <button type="button" class="btn-mini edit" onclick="corrigirLinha(${Number(r.id)}, '${escapeHtml(r.dia)}')">Corrigir</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function verImagem(arquivoOrigem) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Ver imagem',
+      html: `Abrir imagem do arquivo:<br><strong>${arquivoOrigem}</strong><br><br>Vamos ligar esse botão ao Cloudflare no próximo passo.`,
+      confirmButtonText: 'OK'
+    });
+  }
+
+  function corrigirLinha(id, dia) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Correção manual',
+      html: `Linha ID <strong>${id}</strong> (${dia})<br><br>Vamos ligar este botão ao PHP de edição manual na próxima etapa.`,
+      confirmButtonText: 'OK'
+    });
+  }
+
+  function avisoOkLote(id, ftp) {
+    Swal.fire({
+      icon: 'success',
+      title: 'Lote apto',
+      html: `Lote ID <strong>${id}</strong> / FTP <strong>${ftp}</strong> está apto para OK.<br><br>Vamos ligar este botão ao backend na próxima etapa.`,
+      confirmButtonText: 'OK'
+    });
+  }
+
+  btnFiltrar.addEventListener('click', carregarLotes);
+  document.addEventListener('DOMContentLoaded', carregarEventos);
+</script>
+
+</body>
+</html>
