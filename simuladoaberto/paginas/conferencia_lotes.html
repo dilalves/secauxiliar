@@ -128,15 +128,16 @@
     }
 
     .resumo-card{
-      min-width:220px;
+      min-width:180px;
       background:#f4f8fe;
       border:1px solid #dce7f6;
       border-radius:12px;
       padding:12px 14px;
+      flex:1;
     }
 
     .resumo-label{
-      font-size:12px;
+      font-size:11px;
       color:var(--muted);
       font-weight:700;
       text-transform:uppercase;
@@ -145,9 +146,36 @@
 
     .resumo-valor{
       margin-top:6px;
-      font-size:26px;
+      font-size:24px;
       font-weight:800;
       color:var(--primary);
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:60% 40%;
+      gap:16px;
+      align-items:start;
+    }
+
+    .panel-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+
+    .panel-title h3{
+      margin:0;
+      font-size:18px;
+      color:var(--primary);
+    }
+
+    .panel-sub{
+      color:var(--muted);
+      font-size:13px;
     }
 
     .tabela-wrap{
@@ -160,15 +188,15 @@
     table{
       width:100%;
       border-collapse:collapse;
-      min-width:1360px;
+      min-width:100%;
     }
 
     th, td{
-      padding:10px 12px;
+      padding:8px 9px;
       border-bottom:1px solid #edf2f7;
       text-align:left;
-      vertical-align:top;
-      font-size:14px;
+      vertical-align:middle;
+      font-size:13px;
     }
 
     th{
@@ -178,6 +206,7 @@
       color:#17345d;
       z-index:1;
       white-space:nowrap;
+      font-size:12px;
     }
 
     tr:hover td{
@@ -194,9 +223,9 @@
 
     .chip{
       display:inline-block;
-      padding:4px 10px;
+      padding:3px 8px;
       border-radius:999px;
-      font-size:12px;
+      font-size:11px;
       font-weight:700;
       background:#e8f0fb;
       color:#17406e;
@@ -220,15 +249,15 @@
 
     .acoes{
       display:flex;
-      gap:8px;
+      gap:6px;
       flex-wrap:wrap;
     }
 
     .btn-mini{
-      height:32px;
-      padding:0 10px;
+      height:29px;
+      padding:0 9px;
       border-radius:8px;
-      font-size:12px;
+      font-size:11px;
       font-weight:700;
       border:none;
       cursor:pointer;
@@ -261,9 +290,10 @@
     }
 
     .vazio{
-      padding:26px;
+      padding:22px;
       text-align:center;
       color:var(--muted);
+      font-size:13px;
     }
 
     .helper{
@@ -273,11 +303,58 @@
 
     .mono{
       font-family:Consolas, monospace;
+      font-size:12px;
     }
 
     .loading{
       padding:18px;
       color:var(--muted);
+      font-size:13px;
+    }
+
+    .contexto-lote{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    .contexto-item{
+      background:#f4f8fe;
+      border:1px solid #dce7f6;
+      border-radius:999px;
+      padding:5px 10px;
+      font-size:12px;
+      color:#35557f;
+      font-weight:600;
+    }
+
+    .compact td,
+    .compact th{
+      padding:7px 8px;
+    }
+
+    .col-data{ width:140px; }
+    .col-und{ width:54px; }
+    .col-lote{ width:52px; }
+    .col-ftp{ width:78px; }
+    .col-qnt{ width:46px; }
+    .col-dia{ width:44px; }
+    .col-proc{ width:92px; }
+    .col-dif{ width:82px; }
+    .col-pend{ width:92px; }
+    .col-status{ width:96px; }
+    .col-acoes{ width:150px; }
+
+    .pend-col-insc{ width:110px; }
+    .pend-col-cor{ width:90px; }
+    .pend-col-conf{ width:95px; }
+    .pend-col-acoes{ width:140px; }
+
+    @media (max-width: 1200px){
+      .layout{
+        grid-template-columns:1fr;
+      }
     }
   </style>
 </head>
@@ -323,56 +400,73 @@
       </div>
     </div>
 
-    <div class="tabela-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>DATA REG</th>
-            <th>UND</th>
-            <th>LOTE</th>
-            <th>FTP</th>
-            <th>QNT</th>
-            <th>DIA</th>
-            <th>PROCESSADAS</th>
-            <th>DIFERENÇA</th>
-            <th>PENDÊNCIAS</th>
-            <th>STATUS</th>
-            <th>AÇÕES</th>
-          </tr>
-        </thead>
-        <tbody id="tbodyLotes">
-          <tr><td colspan="12" class="vazio">Carregando...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+    <div class="layout">
+      <!-- ESQUERDA -->
+      <div class="card" style="margin:0;">
+        <div class="panel-title">
+          <h3>Lotes</h3>
+          <div class="panel-sub">Clique em um lote para carregar as pendências ao lado.</div>
+        </div>
 
-  <div class="card">
-    <div class="info-bar" id="infoPendencias">
-      Selecione um lote acima para visualizar as pendências manuais.
-    </div>
+        <div class="tabela-wrap">
+          <table class="compact">
+            <thead>
+              <tr>
+                <th class="col-data">DATA REG</th>
+                <th class="col-und">UND</th>
+                <th class="col-lote">LOTE</th>
+                <th class="col-ftp">FTP</th>
+                <th class="col-qnt">QNT</th>
+                <th class="col-dia">DIA</th>
+                <th class="col-proc">PROCESSADAS</th>
+                <th class="col-dif">DIF</th>
+                <th class="col-pend">PEND</th>
+                <th class="col-status">STATUS</th>
+                <th class="col-acoes">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyLotes">
+              <tr><td colspan="11" class="vazio">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-    <div class="tabela-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>DIA</th>
-            <th>EVENTO</th>
-            <th>LOTE</th>
-            <th>UND</th>
-            <th>INSCRIÇÃO</th>
-            <th>CORPROVA</th>
-            <th>ARQUIVO_ORIGEM</th>
-            <th>CONFERIDO</th>
-            <th>AÇÕES</th>
-          </tr>
-        </thead>
-        <tbody id="tbodyPendencias">
-          <tr><td colspan="10" class="vazio">Nenhum lote selecionado.</td></tr>
-        </tbody>
-      </table>
+      <!-- DIREITA -->
+      <div class="card" style="margin:0;">
+        <div class="panel-title">
+          <h3>Pendências</h3>
+          <div class="panel-sub">Conferência manual das imagens do lote selecionado.</div>
+        </div>
+
+        <div class="contexto-lote" id="contextoLote" style="display:none;">
+          <div class="contexto-item" id="ctxEvento">Evento:</div>
+          <div class="contexto-item" id="ctxDia">Dia:</div>
+          <div class="contexto-item" id="ctxFtp">FTP/Lote:</div>
+          <div class="contexto-item" id="ctxPend">Pendências:</div>
+        </div>
+
+        <div class="info-bar" id="infoPendencias">
+          Selecione um lote à esquerda para visualizar as pendências manuais.
+        </div>
+
+        <div class="tabela-wrap">
+          <table class="compact">
+            <thead>
+              <tr>
+                <th class="pend-col-insc">INSCRIÇÃO</th>
+                <th class="pend-col-cor">CORPROVA</th>
+                <th>ARQUIVO_ORIGEM</th>
+                <th class="pend-col-conf">CONFERIDO</th>
+                <th class="pend-col-acoes">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyPendencias">
+              <tr><td colspan="5" class="vazio">Nenhum lote selecionado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -393,6 +487,12 @@
   const rsPend = document.getElementById('rsPend');
   const rsDif = document.getElementById('rsDif');
   const rsAptos = document.getElementById('rsAptos');
+
+  const contextoLote = document.getElementById('contextoLote');
+  const ctxEvento = document.getElementById('ctxEvento');
+  const ctxDia = document.getElementById('ctxDia');
+  const ctxFtp = document.getElementById('ctxFtp');
+  const ctxPend = document.getElementById('ctxPend');
 
   let lotesCache = [];
   let linhaSelecionada = null;
@@ -470,15 +570,16 @@
     const evento = elEvento.value?.trim();
 
     if (!evento) {
-      tbodyLotes.innerHTML = `<tr><td colspan="12" class="vazio">Selecione um evento.</td></tr>`;
+      tbodyLotes.innerHTML = `<tr><td colspan="11" class="vazio">Selecione um evento.</td></tr>`;
       return;
     }
 
     try {
       infoEvento.textContent = `Carregando lotes do evento ${evento}...`;
-      tbodyLotes.innerHTML = `<tr><td colspan="12" class="loading">Carregando lotes...</td></tr>`;
-      tbodyPendencias.innerHTML = `<tr><td colspan="10" class="vazio">Nenhum lote selecionado.</td></tr>`;
-      infoPendencias.textContent = 'Selecione um lote acima para visualizar as pendências manuais.';
+      tbodyLotes.innerHTML = `<tr><td colspan="11" class="loading">Carregando lotes...</td></tr>`;
+      tbodyPendencias.innerHTML = `<tr><td colspan="5" class="vazio">Nenhum lote selecionado.</td></tr>`;
+      infoPendencias.textContent = 'Selecione um lote à esquerda para visualizar as pendências manuais.';
+      contextoLote.style.display = 'none';
       linhaSelecionada = null;
 
       const data = await fetchJson(`${URL_LOTES}?evento=${encodeURIComponent(evento)}`);
@@ -490,7 +591,7 @@
       infoEvento.textContent = `${data.total || 0} lote(s) encontrado(s) para o evento ${evento}.`;
     } catch (err) {
       Swal.fire('Erro', err.message || 'Falha ao carregar lotes.', 'error');
-      tbodyLotes.innerHTML = `<tr><td colspan="12" class="vazio">Erro ao carregar lotes.</td></tr>`;
+      tbodyLotes.innerHTML = `<tr><td colspan="11" class="vazio">Erro ao carregar lotes.</td></tr>`;
     }
   }
 
@@ -508,7 +609,7 @@
 
   function montarTabelaLotes(rows, evento) {
     if (!rows.length) {
-      tbodyLotes.innerHTML = `<tr><td colspan="12" class="vazio">Nenhum lote encontrado.</td></tr>`;
+      tbodyLotes.innerHTML = `<tr><td colspan="11" class="vazio">Nenhum lote encontrado.</td></tr>`;
       return;
     }
 
@@ -526,7 +627,6 @@
 
       return `
         <tr class="row-click" data-idx="${idx}" onclick="selecionarLote(${idx})">
-          <td>${escapeHtml(r.id)}</td>
           <td>${escapeHtml(r.data_reg)}</td>
           <td>${escapeHtml(r.id_und)}</td>
           <td>${escapeHtml(r.lote)}</td>
@@ -539,7 +639,7 @@
           <td>${chipStatus(r.status)}</td>
           <td>
             <div class="acoes">
-              <button type="button" class="btn-mini view" onclick="event.stopPropagation(); selecionarLote(${idx})">Ver pendências</button>
+              <button type="button" class="btn-mini view" onclick="event.stopPropagation(); selecionarLote(${idx})">Pendências</button>
               ${okBtn}
             </div>
           </td>
@@ -561,33 +661,37 @@
     const dia = String(row.dia || '').trim();
     const ftp = String(row.ftp || '').trim();
     const evento = String(elEvento.value || '').trim();
+    const pendenciasQtd = Number(row.pendencias || 0);
 
     infoPendencias.textContent = `Carregando pendências do lote FTP ${ftp} (${dia})...`;
-    tbodyPendencias.innerHTML = `<tr><td colspan="10" class="loading">Carregando pendências...</td></tr>`;
+    tbodyPendencias.innerHTML = `<tr><td colspan="5" class="loading">Carregando pendências...</td></tr>`;
 
     try {
       const data = await fetchJson(`${URL_PENDENCIAS}?dia=${encodeURIComponent(dia)}&ftp=${encodeURIComponent(ftp)}`);
       montarTabelaPendencias(data.rows || []);
-      infoPendencias.textContent = `Evento: ${evento} | Dia: ${dia} | FTP/Lote: ${ftp} | Pendências: ${data.total || 0}`;
+
+      contextoLote.style.display = 'flex';
+      ctxEvento.textContent = `Evento: ${evento}`;
+      ctxDia.textContent = `Dia: ${dia}`;
+      ctxFtp.textContent = `FTP/Lote: ${ftp}`;
+      ctxPend.textContent = `Pendências: ${pendenciasQtd}`;
+
+      infoPendencias.textContent = `${data.total || 0} pendência(s) encontrada(s) para este lote.`;
     } catch (err) {
       Swal.fire('Erro', err.message || 'Falha ao carregar pendências.', 'error');
-      tbodyPendencias.innerHTML = `<tr><td colspan="10" class="vazio">Erro ao carregar pendências.</td></tr>`;
+      tbodyPendencias.innerHTML = `<tr><td colspan="5" class="vazio">Erro ao carregar pendências.</td></tr>`;
+      contextoLote.style.display = 'none';
     }
   }
 
   function montarTabelaPendencias(rows) {
     if (!rows.length) {
-      tbodyPendencias.innerHTML = `<tr><td colspan="10" class="vazio">Nenhuma pendência encontrada para este lote.</td></tr>`;
+      tbodyPendencias.innerHTML = `<tr><td colspan="5" class="vazio">Nenhuma pendência encontrada para este lote.</td></tr>`;
       return;
     }
 
     tbodyPendencias.innerHTML = rows.map(r => `
       <tr>
-        <td>${escapeHtml(r.id)}</td>
-        <td>${escapeHtml(r.dia)}</td>
-        <td>${escapeHtml(r.evento)}</td>
-        <td>${escapeHtml(r.lote)}</td>
-        <td>${escapeHtml(r.unidade)}</td>
         <td class="mono">${escapeHtml(r.INSCRICAO)}</td>
         <td>${escapeHtml(r.CORPROVA)}</td>
         <td class="mono">${escapeHtml(r.arquivo_origem)}</td>
