@@ -348,7 +348,17 @@
 
     .pend-col-insc{ width:120px; }
     .pend-col-cor{ width:95px; }
-    .pend-col-acoes{ width:150px; }
+    .pend-col-acoes{ width:95px; }
+
+    .arq-link{
+    color:#0b3b78;
+    font-weight:700;
+    text-decoration:none;
+    }
+
+    .arq-link:hover{
+    text-decoration:underline;
+    }
 
     @media (max-width: 1200px){
       .layout{
@@ -680,26 +690,30 @@
     }
   }
 
-  function montarTabelaPendencias(rows) {
-    if (!rows.length) {
-      tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Nenhuma pendência encontrada para este lote.</td></tr>`;
-      return;
-    }
-
-    tbodyPendencias.innerHTML = rows.map(r => `
-      <tr>
-        <td class="mono">${escapeHtml(r.INSCRICAO)}</td>
-        <td>${escapeHtml(r.CORPROVA)}</td>
-        <td class="mono">${escapeHtml(r.arquivo_origem)}</td>
-        <td>
-          <div class="acoes">
-            <button type="button" class="btn-mini view" onclick="verImagem('${escapeHtml(r.arquivo_origem)}')">Ver imagem</button>
-            <button type="button" class="btn-mini edit" onclick="corrigirLinha(${Number(r.id)}, '${escapeHtml(r.dia)}')">Corrigir</button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+function montarTabelaPendencias(rows) {
+  if (!rows.length) {
+    tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Nenhuma pendência encontrada para este lote.</td></tr>`;
+    return;
   }
+
+  tbodyPendencias.innerHTML = rows.map(r => `
+    <tr>
+      <td class="mono">${escapeHtml(r.INSCRICAO)}</td>
+      <td>${escapeHtml(r.CORPROVA)}</td>
+      <td class="mono">
+        <a href="javascript:void(0)" class="arq-link" onclick="verImagem('${escapeHtml(r.arquivo_origem)}')">
+            ${escapeHtml(r.arquivo_origem)}
+        </a>
+      </td>
+      <td>
+        <div class="acoes">
+          <button type="button" class="btn-mini edit" onclick="corrigirLinha(${Number(r.id)}, '${escapeHtml(r.dia)}')">Corrigir</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
 
   function verImagem(arquivoOrigem) {
     Swal.fire({
