@@ -52,6 +52,7 @@
       border-radius:14px;
       padding:16px;
       box-shadow:0 8px 24px rgba(11,59,120,.05);
+      margin-bottom:18px;
     }
 
     .filtros{
@@ -101,7 +102,6 @@
       border:1px solid #cfe0f5;
     }
 
-  
     .info-bar{
       margin-bottom:12px;
       color:var(--muted);
@@ -198,6 +198,11 @@
       color:#92400e;
     }
 
+    .status-FALTANTE{
+      background:#fee2e2;
+      color:#991b1b;
+    }
+
     .vazio{
       padding:26px;
       text-align:center;
@@ -205,41 +210,41 @@
     }
 
     .vaga-wrap{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  flex-wrap:wrap;
-}
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      flex-wrap:wrap;
+    }
 
-.vaga-tag{
-  display:inline-block;
-  padding:2px 7px;
-  border-radius:999px;
-  font-size:11px;
-  font-weight:700;
-  line-height:1.2;
-  border:1px solid transparent;
-  white-space:nowrap;
-  cursor:help;
-}
+    .vaga-tag{
+      display:inline-block;
+      padding:2px 7px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      line-height:1.2;
+      border:1px solid transparent;
+      white-space:nowrap;
+      cursor:help;
+    }
 
-.vaga-tag-dif{
-  background:#fff7ed;
-  color:#b45309;
-  border-color:#fdba74;
-}
+    .vaga-tag-dif{
+      background:#fff7ed;
+      color:#b45309;
+      border-color:#fdba74;
+    }
 
-.vaga-tag-miss{
-  background:#f3f4f6;
-  color:#6b7280;
-  border-color:#d1d5db;
-}
+    .vaga-tag-miss{
+      background:#f3f4f6;
+      color:#6b7280;
+      border-color:#d1d5db;
+    }
 
-.vaga-tag-cancel{
-  background:#fee2e2;
-  color:#991b1b;
-  border-color:#fecaca;
-}
+    .vaga-tag-cancel{
+      background:#fee2e2;
+      color:#991b1b;
+      border-color:#fecaca;
+    }
   </style>
 </head>
 <body>
@@ -290,7 +295,6 @@
         <div class="resumo-label">Cidades</div>
         <div class="resumo-valor" id="totalCidades">0</div>
       </div>
-
     </div>
 
     <div class="info-bar" id="infoBar">Carregando...</div>
@@ -302,7 +306,7 @@
             <th>Código</th>
             <th>Unidade</th>
             <th>Metrics</th>
-            <th>Razão Social</th>            
+            <th>Razão Social</th>
             <th>Vagas</th>
             <th>Endereço</th>
             <th>Cidade</th>
@@ -319,16 +323,87 @@
     </div>
   </div>
 
+  <div class="card">
+    <div class="top" style="margin-bottom:10px;">
+      <div>
+        <h2 style="font-size:22px;">Unidades no site sem adesão</h2>
+        <div class="sub">Unidades encontradas no site/relatório, mas sem registro de adesão no evento selecionado</div>
+      </div>
+    </div>
+
+    <div class="resumo">
+      <div class="resumo-card">
+        <div class="resumo-label">Unidades sem adesão</div>
+        <div class="resumo-valor" id="faltantesTotal">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Total de vagas</div>
+        <div class="resumo-valor" id="faltantesVagas">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Total de inscritos</div>
+        <div class="resumo-valor" id="faltantesInscritos">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Estados</div>
+        <div class="resumo-valor" id="faltantesEstados">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Cidades</div>
+        <div class="resumo-valor" id="faltantesCidades">0</div>
+      </div>
+    </div>
+
+    <div class="info-bar" id="infoBarFaltantes">Selecione um evento para consultar.</div>
+
+    <div class="tabela-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Unidade</th>
+            <th>Metrics</th>
+            <th>Razão Social</th>
+            <th>Vagas</th>
+            <th>Inscritos</th>
+            <th>Cidade</th>
+            <th>UF</th>
+            <th>Importado em</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyFaltantes">
+          <tr><td colspan="10" class="vazio">Selecione um evento para conferir unidades sem adesão.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <script>
     const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
+
     const tbody = document.getElementById('tbody');
+    const tbodyFaltantes = document.getElementById('tbodyFaltantes');
     const evento = document.getElementById('evento');
+
     const infoBar = document.getElementById('infoBar');
+    const infoBarFaltantes = document.getElementById('infoBarFaltantes');
+
     const totalAdesoes = document.getElementById('totalAdesoes');
     const totalVagas = document.getElementById('totalVagas');
     const totalInscritos = document.getElementById('totalInscritos');
     const totalEstados = document.getElementById('totalEstados');
     const totalCidades = document.getElementById('totalCidades');
+
+    const faltantesTotal = document.getElementById('faltantesTotal');
+    const faltantesVagas = document.getElementById('faltantesVagas');
+    const faltantesInscritos = document.getElementById('faltantesInscritos');
+    const faltantesEstados = document.getElementById('faltantesEstados');
+    const faltantesCidades = document.getElementById('faltantesCidades');
 
     function esc(v){
       return String(v ?? '')
@@ -340,7 +415,7 @@
 
     function fmtData(v){
       if (!v) return '';
-      const d = new Date(v.replace(' ', 'T'));
+      const d = new Date(String(v).replace(' ', 'T'));
       if (isNaN(d)) return v;
       return d.toLocaleString('pt-BR');
     }
@@ -349,6 +424,38 @@
       const txt = String(v || '').trim();
       const cls = 'status-' + txt.toUpperCase();
       return `<span class="chip ${cls}">${esc(txt || '-')}</span>`;
+    }
+
+    function resetBlocoAdesoes(){
+      totalAdesoes.textContent = '0';
+      totalVagas.textContent = '0';
+      totalInscritos.textContent = '0';
+      totalEstados.textContent = '0';
+      totalCidades.textContent = '0';
+      infoBar.textContent = 'Selecione um evento e clique em Buscar.';
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="11" class="vazio">
+            Selecione um evento para carregar as adesões.
+          </td>
+        </tr>
+      `;
+    }
+
+    function resetBlocoFaltantes(){
+      faltantesTotal.textContent = '0';
+      faltantesVagas.textContent = '0';
+      faltantesInscritos.textContent = '0';
+      faltantesEstados.textContent = '0';
+      faltantesCidades.textContent = '0';
+      infoBarFaltantes.textContent = 'Selecione um evento para consultar.';
+      tbodyFaltantes.innerHTML = `
+        <tr>
+          <td colspan="10" class="vazio">
+            Selecione um evento para conferir unidades sem adesão.
+          </td>
+        </tr>
+      `;
     }
 
     async function carregarEventos(){
@@ -374,19 +481,20 @@
 
     async function carregarAdesoes(){
       if (!evento.value) {
-        infoBar.textContent = 'Selecione um evento para consultar.';
+        resetBlocoAdesoes();
         return;
       }
-        tbody.innerHTML = `<tr><td colspan="11" class="vazio">Carregando...</td></tr>`;
-        infoBar.textContent = 'Carregando...';
-        totalAdesoes.textContent = '0';
-        totalVagas.textContent = '0';
-        totalInscritos.textContent = '0';
-        totalEstados.textContent = '0';
-        totalCidades.textContent = '0';
+
+      tbody.innerHTML = `<tr><td colspan="11" class="vazio">Carregando...</td></tr>`;
+      infoBar.textContent = 'Carregando...';
+      totalAdesoes.textContent = '0';
+      totalVagas.textContent = '0';
+      totalInscritos.textContent = '0';
+      totalEstados.textContent = '0';
+      totalCidades.textContent = '0';
 
       const qs = new URLSearchParams();
-      if (evento.value) qs.set('evento', evento.value);
+      qs.set('evento', evento.value);
 
       const r = await fetch(API + 'api_adesoes_listar.php?' + qs.toString(), {
         credentials:'include',
@@ -402,7 +510,7 @@
       const resumo = data.resumo || {};
 
       totalAdesoes.textContent = Number(resumo.total_adesoes || 0).toLocaleString('pt-BR');
-      totalVagas.textContent   = Number(resumo.total_vagas || 0).toLocaleString('pt-BR');
+      totalVagas.textContent = Number(resumo.total_vagas || 0).toLocaleString('pt-BR');
       totalInscritos.textContent = Number(resumo.total_inscritos || 0).toLocaleString('pt-BR');
       totalEstados.textContent = Number(resumo.total_estados || 0).toLocaleString('pt-BR');
       totalCidades.textContent = Number(resumo.total_cidades || 0).toLocaleString('pt-BR');
@@ -431,173 +539,218 @@
       `).join('');
     }
 
-    document.getElementById('btnBuscar').addEventListener('click', carregarAdesoes);
+    async function carregarUnidadesSemAdesao(){
+      if (!evento.value) {
+        resetBlocoFaltantes();
+        return;
+      }
+
+      tbodyFaltantes.innerHTML = `<tr><td colspan="10" class="vazio">Carregando...</td></tr>`;
+      infoBarFaltantes.textContent = 'Carregando...';
+
+      faltantesTotal.textContent = '0';
+      faltantesVagas.textContent = '0';
+      faltantesInscritos.textContent = '0';
+      faltantesEstados.textContent = '0';
+      faltantesCidades.textContent = '0';
+
+      const qs = new URLSearchParams();
+      qs.set('evento', evento.value);
+
+      const r = await fetch(API + 'api_adesoes_faltantes.php?' + qs.toString(), {
+        credentials:'include',
+        cache:'no-store'
+      });
+      const data = await r.json();
+
+      if (!r.ok || !data.ok) {
+        throw new Error(data.error || 'Falha ao carregar unidades sem adesão');
+      }
+
+      const rows = data.rows || [];
+      const resumo = data.resumo || {};
+
+      faltantesTotal.textContent = Number(resumo.total_unidades || 0).toLocaleString('pt-BR');
+      faltantesVagas.textContent = Number(resumo.total_vagas || 0).toLocaleString('pt-BR');
+      faltantesInscritos.textContent = Number(resumo.total_inscritos || 0).toLocaleString('pt-BR');
+      faltantesEstados.textContent = Number(resumo.total_estados || 0).toLocaleString('pt-BR');
+      faltantesCidades.textContent = Number(resumo.total_cidades || 0).toLocaleString('pt-BR');
+
+      infoBarFaltantes.textContent = `${rows.length} unidade(s) no site sem adesão encontrada(s).`;
+
+      if (!rows.length) {
+        tbodyFaltantes.innerHTML = `<tr><td colspan="10" class="vazio">Nenhuma unidade no site sem adesão para este evento.</td></tr>`;
+        return;
+      }
+
+      tbodyFaltantes.innerHTML = rows.map(r => `
+        <tr>
+          <td>${esc(r.unidade_login || '-')}</td>
+          <td>${esc(r.unidade_nome || '-')}</td>
+          <td>${esc(r.metrics || '-')}</td>
+          <td>${esc(r.razao_social || '-')}</td>
+          <td>${esc(r.vagas ?? 0)}</td>
+          <td>${esc(r.inscritos ?? 0)}</td>
+          <td>${esc(r.cidade || '-')}</td>
+          <td>${esc(r.uf || '-')}</td>
+          <td>${esc(fmtData(r.dt_importacao))}</td>
+          <td><span class="chip status-FALTANTE">Sem adesão</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderVagas(r){
+      const vagas = Number(r.vagas ?? 0);
+      const vagasRel = r.vagas_relatorio;
+      const removidaRelatorio = Number(r.removida_relatorio ?? 0);
+      const vagasDivergentes = Number(r.vagas_divergentes ?? 0) === 1;
+      const status = String(r.status || '').toUpperCase();
+
+      let html = `<span>${esc(vagas)}</span>`;
+
+      if (status === 'AGUARDANDO') {
+        if (vagasDivergentes) {
+          html += `
+            <span class="vaga-tag vaga-tag-dif"
+                  title="Vagas no relatório: ${esc(vagasRel)}">
+              ⚠️
+            </span>
+          `;
+        }
+        return `<span class="vaga-wrap">${html}</span>`;
+      }
+
+      if (vagasRel === null || vagasRel === undefined || vagasRel === '') {
+        html += `
+          <span class="vaga-tag vaga-tag-miss"
+                title="Unidade não localizada no relatório para este evento.">
+            ?
+          </span>
+        `;
+        return `<span class="vaga-wrap">${html}</span>`;
+      }
+
+      if (removidaRelatorio === 1) {
+        html += `
+          <span class="vaga-tag vaga-tag-cancel"
+                title="Unidade marcada como removida/cancelada no relatório. Vagas no relatório: ${esc(vagasRel)}">
+            ⚠️
+          </span>
+        `;
+        return `<span class="vaga-wrap">${html}</span>`;
+      }
+
+      if (vagasDivergentes) {
+        html += `
+          <span class="vaga-tag vaga-tag-dif"
+                title="Vagas no relatório: ${esc(vagasRel)}">
+            ⚠️
+          </span>
+        `;
+      }
+
+      return `<span class="vaga-wrap">${html}</span>`;
+    }
+
+    document.getElementById('btnBuscar').addEventListener('click', async () => {
+      try {
+        await carregarAdesoes();
+        await carregarUnidadesSemAdesao();
+      } catch(e) {
+        console.error(e);
+        alert(e.message || 'Erro ao carregar dados.');
+      }
+    });
 
     document.getElementById('btnLimpar').addEventListener('click', async () => {
       evento.value = '';
+      resetBlocoAdesoes();
+      resetBlocoFaltantes();
+    });
 
-      totalAdesoes.textContent = '0';
-      totalVagas.textContent = '0';
-      totalInscritos.textContent = '0';
-      totalEstados.textContent = '0';
-      totalCidades.textContent = '0';
+    document.getElementById('btnGerarLink').addEventListener('click', async () => {
+      try {
+        if (!evento.value) {
+          alert('Selecione um evento antes de gerar o link.');
+          return;
+        }
 
-      infoBar.textContent = 'Selecione um evento e clique em Buscar.';
-      tbody.innerHTML = `<tr>
-        <td colspan="11" class="vazio">
-          Selecione um evento para carregar as adesões.
-        </td>
-      </tr>`;
+        const fd = new FormData();
+        fd.append('evento', evento.value);
+
+        const r = await fetch(API + 'api_public_link_create.php', {
+          method: 'POST',
+          body: fd,
+          credentials: 'include'
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.error || 'Falha ao gerar link');
+        }
+
+        const titulo = data.reused ? 'Link já existente' : 'Novo link gerado';
+
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(data.url);
+
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              title: titulo,
+              html: `
+                <div style="text-align:left">
+                  <b>Evento:</b> ${data.evento}<br>
+                  <b>Expira em:</b> ${data.expires_at}<br><br>
+                  <div style="
+                    background:#f4f8fe;
+                    border:1px solid #dce7f6;
+                    padding:10px;
+                    border-radius:8px;
+                    word-break:break-all;
+                    font-size:13px;
+                  ">
+                    ${data.url}
+                  </div>
+                  <br>
+                  ${data.reused ? 'O link já existia e foi reaproveitado.' : 'Foi gerado um novo link.'}
+                </div>
+              `,
+              icon: 'success',
+              confirmButtonText: 'OK',
+              showCancelButton: true,
+              cancelButtonText: 'Abrir link'
+            }).then((result) => {
+              if (result.dismiss === Swal.DismissReason.cancel) {
+                window.open(data.url, '_blank');
+              }
+            });
+          } else {
+            alert(`${titulo}\n\nEvento: ${data.evento}\nExpira em: ${data.expires_at}\n\n${data.url}`);
+          }
+        } else {
+          prompt('Copie o link abaixo:', data.url);
+        }
+      } catch(e) {
+        console.error(e);
+        alert(e.message || 'Erro ao gerar link.');
+      }
     });
 
     (async function init(){
       try{
         await carregarEventos();
-
-        infoBar.textContent = 'Selecione um evento e clique em Buscar.';
-        tbody.innerHTML = `<tr>
-          <td colspan="11" class="vazio">
-            Selecione um evento para carregar as adesões.
-          </td>
-        </tr>`;
-
+        resetBlocoAdesoes();
+        resetBlocoFaltantes();
       } catch(e){
         console.error(e);
         infoBar.textContent = 'Erro ao carregar dados.';
         tbody.innerHTML = `<tr><td colspan="11" class="vazio">Erro ao carregar dados.</td></tr>`;
+
+        infoBarFaltantes.textContent = 'Erro ao carregar dados.';
+        tbodyFaltantes.innerHTML = `<tr><td colspan="10" class="vazio">Erro ao carregar dados.</td></tr>`;
       }
     })();
-
-  function renderVagas(r){
-  const vagas = Number(r.vagas ?? 0);
-  const vagasRel = r.vagas_relatorio;
-  const removidaRelatorio = Number(r.removida_relatorio ?? 0);
-  const vagasDivergentes = Number(r.vagas_divergentes ?? 0) === 1;
-  const status = String(r.status || '').toUpperCase();
-
-  let html = `<span>${esc(vagas)}</span>`;
-
-  // Se estiver aguardando, não marca "rel?"
-  if (status === 'AGUARDANDO') {
-    if (vagasDivergentes) {
-      html += `
-        <span class="vaga-tag vaga-tag-dif"
-              title="Vagas no relatório: ${esc(vagasRel)}">
-          ⚠️
-        </span>
-      `;
-    }
-    return `<span class="vaga-wrap">${html}</span>`;
-  }
-
-  // Se não achou no relatório e não está aguardando, aí sim marca
-  if (vagasRel === null || vagasRel === undefined || vagasRel === '') {
-    html += `
-      <span class="vaga-tag vaga-tag-miss"
-            title="Unidade não localizada no relatório para este evento.">
-        ?
-      </span>
-    `;
-    return `<span class="vaga-wrap">${html}</span>`;
-  }
-
-  // Se a unidade estiver removida/cancelada no relatório
-  if (removidaRelatorio === 1) {
-    html += `
-      <span class="vaga-tag vaga-tag-cancel"
-            title="Unidade marcada como removida/cancelada no relatório. Vagas no relatório: ${esc(vagasRel)}">
-        ⚠️
-      </span>
-    `;
-    return `<span class="vaga-wrap">${html}</span>`;
-  }
-
-  // Divergência de vagas
-  if (vagasDivergentes) {
-    html += `
-      <span class="vaga-tag vaga-tag-dif"
-            title="Vagas no relatório: ${esc(vagasRel)}">
-        ⚠️
-      </span>
-    `;
-  }
-
-  return `<span class="vaga-wrap">${html}</span>`;
-}
-
-document.getElementById('btnGerarLink').addEventListener('click', async () => {
-  try {
-    if (!evento.value) {
-      alert('Selecione um evento antes de gerar o link.');
-      return;
-    }
-
-    const fd = new FormData();
-    fd.append('evento', evento.value);
-
-    const r = await fetch(API + 'api_public_link_create.php', {
-      method: 'POST',
-      body: fd,
-      credentials: 'include'
-    });
-
-    const data = await r.json();
-
-    if (!r.ok || !data.ok) {
-      throw new Error(data.error || 'Falha ao gerar link');
-    }
-
-    const texto = `Link gerado com sucesso.\n\nEvento: ${data.evento}\nExpira em: ${data.expires_at}\n\n${data.url}`;
-    const titulo = data.reused ? 'Link já existente' : 'Novo link gerado';
-
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(data.url);
-
-      // Mensagem amigável para o usuário, informando que o link foi copiado
-      if (typeof Swal !== 'undefined') {
-        Swal.fire({
-          title: titulo,
-          html: `
-            <div style="text-align:left">
-              <b>Evento:</b> ${data.evento}<br>
-              <b>Expira em:</b> ${data.expires_at}<br><br>
-              <div style="
-                background:#f4f8fe;
-                border:1px solid #dce7f6;
-                padding:10px;
-                border-radius:8px;
-                word-break:break-all;
-                font-size:13px;
-              ">
-                ${data.url}
-              </div>
-              <br>
-              ${data.reused ? 'O link já existia e foi reaproveitado.' : 'Foi gerado um novo link.'}
-            </div>
-          `,
-          icon: 'success',
-          confirmButtonText: 'OK',
-          showCancelButton: true,
-          cancelButtonText: 'Abrir link'
-        }).then((result) => {
-          if (result.dismiss === Swal.DismissReason.cancel) {
-            window.open(data.url, '_blank');
-          }
-        });
-      } else {
-        alert(
-          `${titulo}\n\nEvento: ${data.evento}\nExpira em: ${data.expires_at}\n\n${data.url}`
-        );
-}
-    } else {
-      prompt('Copie o link abaixo:', data.url);
-    }
-  } catch(e) {
-    console.error(e);
-    alert(e.message || 'Erro ao gerar link.');
-  }
-});
-
   </script>
 </body>
 </html>
