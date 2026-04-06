@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Códigos das Provas</title>
+
+  <style>
+    :root{
+      --bg:#eef4fb;
+      --panel:#f6f9fe;
+      --card:#ffffff;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --line:#dbe6f3;
+      --text:#0f172a;
+      --muted:#64748b;
+      --danger:#b91c1c;
+      --danger-bg:#fee2e2;
+      --ok:#166534;
+      --ok-bg:#dcfce7;
+      --shadow:0 10px 28px rgba(11,59,120,.08);
+    }
+
+    *{ box-sizing:border-box; }
+
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:system-ui,Arial,sans-serif;
+      background:transparent;
+      color:var(--text);
+    }
+
+    body{
+      padding:6px;
+    }
+
+    .page-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .title-wrap h1{
+      margin:0;
+      font-size:24px;
+      color:var(--primary);
+      font-weight:700;
+    }
+
+    .title-wrap p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .badge{
+      background:#e8f0fb;
+      color:#12345b;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 14px;
+      font-size:13px;
+      font-weight:600;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap:18px;
+      align-items:start;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .card-head{
+      padding:16px 18px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+    }
+
+    .card-head h2{
+      margin:0;
+      font-size:18px;
+      color:var(--primary);
+    }
+
+    .card-head p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .card-body{
+      padding:18px;
+    }
+
+    .form-group{
+      margin-bottom:14px;
+    }
+
+    .form-group label{
+      display:block;
+      margin-bottom:6px;
+      font-size:13px;
+      color:#334155;
+      font-weight:600;
+    }
+
+    .form-group input,
+    .form-group select{
+      width:100%;
+      height:42px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:0 12px;
+      font-size:14px;
+      background:#fff;
+      color:var(--text);
+      outline:none;
+      transition:.15s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    .row-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+
+    button{
+      border:none;
+      border-radius:10px;
+      padding:11px 16px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+    }
+
+    .btn-primary:hover{
+      filter:brightness(1.05);
+    }
+
+    .btn-light{
+      background:#e8f0fb;
+      color:#12345b;
+    }
+
+    .btn-light:hover{
+      background:#dbeafe;
+    }
+
+    .btn-danger{
+      background:var(--danger-bg);
+      color:var(--danger);
+    }
+
+    .btn-danger:hover{
+      background:#fecaca;
+    }
+
+    .toolbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .toolbar-left{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      flex:1;
+    }
+
+    .search{
+      min-width:240px;
+      flex:1;
+    }
+
+    .search input,
+    .toolbar select{
+      width:100%;
+      height:42px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:0 12px;
+      font-size:14px;
+      background:#fff;
+      outline:none;
+    }
+
+    .toolbar .mini{
+      min-width:140px;
+      max-width:180px;
+    }
+
+    .status{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:12px;
+      font-size:14px;
+      font-weight:600;
+    }
+
+    .status.ok{
+      display:block;
+      background:var(--ok-bg);
+      color:var(--ok);
+      border:1px solid #bbf7d0;
+    }
+
+    .status.erro{
+      display:block;
+      background:var(--danger-bg);
+      color:var(--danger);
+      border:1px solid #fecaca;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:860px;
+    }
+
+    thead{
+      background:#f8fbff;
+    }
+
+    th, td{
+      padding:13px 14px;
+      border-bottom:1px solid #edf2f7;
+      text-align:left;
+      font-size:14px;
+      vertical-align:middle;
+    }
+
+    th{
+      color:#334155;
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.02em;
+    }
+
+    tbody tr:hover{
+      background:#fafcff;
+    }
+
+    .pill{
+      display:inline-block;
+      background:#eef4ff;
+      color:#1d4ed8;
+      border:1px solid #dbeafe;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .muted{
+      color:var(--muted);
+    }
+
+    .empty{
+      padding:30px 16px;
+      text-align:center;
+      color:var(--muted);
+    }
+
+    .acoes-linha{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .acoes-linha button{
+      padding:8px 12px;
+      font-size:13px;
+      border-radius:9px;
+    }
+
+    .resumo{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .resumo .item{
+      background:#f8fbff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:13px;
+      color:#334155;
+    }
+
+    .resumo .item strong{
+      color:var(--primary);
+      font-size:15px;
+      margin-right:6px;
+    }
+
+    @media (max-width: 980px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+
+      .row-2{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-head">
+    <div class="title-wrap">
+      <h1>Códigos das Provas</h1>
+      <p>Cadastro e manutenção dos códigos utilizados na correção dos simulados.</p>
+    </div>
+    <div class="badge" id="totalBadge">0 registros</div>
+  </div>
+
+  <div id="status" class="status"></div>
+
+  <div class="grid">
+    <section class="card">
+      <div class="card-head">
+        <h2>Cadastro / Edição</h2>
+        <p>Preencha evento, dia, versão/cor e código da prova.</p>
+      </div>
+      <div class="card-body">
+        <form id="formCadastro">
+          <input type="hidden" id="id" value="0">
+
+          <div class="form-group">
+            <label for="evento">Evento</label>
+            <input list="listaEventos" type="text" id="evento" maxlength="20" placeholder="Ex.: ENEM0526" required>
+            <datalist id="listaEventos"></datalist>
+          </div>
+
+          <div class="row-2">
+            <div class="form-group">
+              <label for="dia">Dia</label>
+              <select id="dia" required>
+                <option value="">Selecione</option>
+                <option value="D1">D1</option>
+                <option value="D2">D2</option>
+                <option value="R">R</option>
+                <option value="R1">R1</option>
+                <option value="R2">R2</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="versao">Versão / Cor</label>
+              <input type="text" id="versao" maxlength="15" placeholder="Ex.: AZUL, V1, AMARELO" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cod_prova">Código da prova</label>
+            <input type="text" id="cod_prova" maxlength="10" placeholder="Ex.: 26521" required>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn-primary" id="btnSalvar">Salvar</button>
+            <button type="button" class="btn-light" onclick="limparFormulario()">Novo</button>
+            <button type="button" class="btn-danger" id="btnExcluir" onclick="excluirAtual()" style="display:none;">Excluir</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Códigos cadastrados</h2>
+        <p>Consulta rápida para editar ou excluir registros.</p>
+      </div>
+      <div class="card-body">
+        <div class="resumo" id="resumo">
+          <div class="item"><strong id="resTotal">0</strong> registros</div>
+          <div class="item"><strong id="resEventos">0</strong> eventos</div>
+          <div class="item"><strong id="resDias">0</strong> dias</div>
+        </div>
+
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <div class="search">
+              <input type="text" id="filtroBusca" placeholder="Filtrar por evento, dia, versão ou código..." oninput="renderTabela()">
+            </div>
+
+            <div class="mini">
+              <select id="filtroEvento" onchange="aplicarFiltrosServidor()">
+                <option value="">Todos os eventos</option>
+              </select>
+            </div>
+
+            <div class="mini">
+              <select id="filtroDia" onchange="aplicarFiltrosServidor()">
+                <option value="">Todos os dias</option>
+                <option value="D1">D1</option>
+                <option value="D2">D2</option>
+                <option value="R">R</option>
+                <option value="R1">R1</option>
+                <option value="R2">R2</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-light" onclick="carregarLista()">Atualizar</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Evento</th>
+                <th>Dia</th>
+                <th>Versão</th>
+                <th>Código Prova</th>
+                <th>Criado em</th>
+                <th>Atualizado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <tr><td colspan="8" class="empty">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/sim_adm/codigos_prova_evento.php';
+
+    let registros = [];
+    let resumoAtual = {
+      total_registros: 0,
+      total_eventos: 0,
+      total_dias: 0
+    };
+
+    function mostrarStatus(msg, tipo = 'ok'){
+      const box = document.getElementById('status');
+      box.className = 'status ' + tipo;
+      box.textContent = msg;
+    }
+
+    function esconderStatus(){
+      const box = document.getElementById('status');
+      box.className = 'status';
+      box.textContent = '';
+    }
+
+    function escapeHtml(text){
+      return String(text ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function jsSafe(text){
+      return String(text ?? '').replaceAll("\\", "\\\\").replaceAll("'", "\\'");
+    }
+
+    function formatarDataHora(valor){
+      if (!valor) return '';
+      const dt = new Date(String(valor).replace(' ', 'T'));
+      if (isNaN(dt.getTime())) return valor;
+      return dt.toLocaleString('pt-BR');
+    }
+
+    function limparFormulario(){
+      document.getElementById('formCadastro').reset();
+      document.getElementById('id').value = '0';
+      document.getElementById('btnExcluir').style.display = 'none';
+      document.getElementById('btnSalvar').textContent = 'Salvar';
+      esconderStatus();
+    }
+
+    async function carregarEventos(){
+      try{
+        const r = await fetch(API + '?acao=eventos', {
+          method:'GET',
+          credentials:'include',
+          cache:'no-store'
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.msg || data.message || data.error || 'Erro ao carregar eventos.');
+        }
+
+        const eventos = Array.isArray(data.eventos) ? data.eventos : [];
+
+        const datalist = document.getElementById('listaEventos');
+        const filtroEvento = document.getElementById('filtroEvento');
+
+        datalist.innerHTML = eventos
+          .map(ev => `<option value="${escapeHtml(ev)}"></option>`)
+          .join('');
+
+        const valorAtual = filtroEvento.value;
+        filtroEvento.innerHTML = '<option value="">Todos os eventos</option>' +
+          eventos.map(ev => `<option value="${escapeHtml(ev)}">${escapeHtml(ev)}</option>`).join('');
+
+        if ([...filtroEvento.options].some(o => o.value === valorAtual)) {
+          filtroEvento.value = valorAtual;
+        }
+
+      } catch(err){
+        console.error(err);
+      }
+    }
+
+    function montarQueryListar(){
+      const evento = document.getElementById('filtroEvento').value.trim();
+      const dia = document.getElementById('filtroDia').value.trim();
+
+      const params = new URLSearchParams();
+      params.set('acao', 'listar');
+
+      if (evento) params.set('evento', evento);
+      if (dia) params.set('dia', dia);
+
+      return params.toString();
+    }
+
+    async function carregarLista(){
+      try{
+        esconderStatus();
+
+        const r = await fetch(API + '?' + montarQueryListar(), {
+          method:'GET',
+          credentials:'include',
+          cache:'no-store'
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.msg || data.message || data.error || 'Erro ao carregar lista.');
+        }
+
+        registros = Array.isArray(data.rows) ? data.rows : [];
+        resumoAtual = data.resumo || {
+          total_registros: registros.length,
+          total_eventos: 0,
+          total_dias: 0
+        };
+
+        atualizarResumo();
+        renderTabela();
+
+      } catch(err){
+        console.error(err);
+        document.getElementById('tbody').innerHTML =
+          '<tr><td colspan="8" class="empty">Erro ao carregar os registros.</td></tr>';
+        mostrarStatus(err.message || 'Erro ao carregar.', 'erro');
+      }
+    }
+
+    function aplicarFiltrosServidor(){
+      carregarLista();
+    }
+
+    function atualizarResumo(listaFiltrada = null){
+      const lista = Array.isArray(listaFiltrada) ? listaFiltrada : registros;
+      const eventos = new Set(lista.map(x => (x.evento || '').trim()).filter(Boolean));
+      const dias = new Set(lista.map(x => (x.dia || '').trim()).filter(Boolean));
+
+      document.getElementById('resTotal').textContent = lista.length;
+      document.getElementById('resEventos').textContent = eventos.size || resumoAtual.total_eventos || 0;
+      document.getElementById('resDias').textContent = dias.size || resumoAtual.total_dias || 0;
+      document.getElementById('totalBadge').textContent = `${lista.length} registro${lista.length === 1 ? '' : 's'}`;
+    }
+
+    function renderTabela(){
+      const filtro = (document.getElementById('filtroBusca').value || '').trim().toLowerCase();
+      const tbody = document.getElementById('tbody');
+
+      const lista = registros.filter(item => {
+        const txt = `${item.id || ''} ${item.evento || ''} ${item.dia || ''} ${item.versao || ''} ${item.cod_prova || ''}`.toLowerCase();
+        return txt.includes(filtro);
+      });
+
+      atualizarResumo(lista);
+
+      if (!lista.length){
+        tbody.innerHTML = '<tr><td colspan="8" class="empty">Nenhum registro encontrado.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = lista.map(item => `
+        <tr>
+          <td><strong>${escapeHtml(item.id || '')}</strong></td>
+          <td><span class="pill">${escapeHtml(item.evento || '')}</span></td>
+          <td>${escapeHtml(item.dia || '')}</td>
+          <td>${escapeHtml(item.versao || '')}</td>
+          <td><strong>${escapeHtml(item.cod_prova || '')}</strong></td>
+          <td class="muted">${escapeHtml(formatarDataHora(item.criado_em || ''))}</td>
+          <td class="muted">${escapeHtml(formatarDataHora(item.atualizado_em || ''))}</td>
+          <td>
+            <div class="acoes-linha">
+              <button class="btn-light" onclick="editarRegistro(${Number(item.id)})">Editar</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function editarRegistro(id){
+      const item = registros.find(r => Number(r.id) === Number(id));
+      if (!item) return;
+
+      document.getElementById('id').value = item.id || 0;
+      document.getElementById('evento').value = item.evento || '';
+      document.getElementById('dia').value = item.dia || '';
+      document.getElementById('versao').value = item.versao || '';
+      document.getElementById('cod_prova').value = item.cod_prova || '';
+
+      document.getElementById('btnExcluir').style.display = 'inline-block';
+      document.getElementById('btnSalvar').textContent = 'Salvar alteração';
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      mostrarStatus('Registro carregado para edição.', 'ok');
+    }
+
+    async function excluirAtual(){
+      const id = Number(document.getElementById('id').value || 0);
+      if (!id) {
+        mostrarStatus('Selecione um registro para excluir.', 'erro');
+        return;
+      }
+
+      if (!confirm('Deseja realmente excluir este registro?')) {
+        return;
+      }
+
+      try{
+        const fd = new FormData();
+        fd.append('acao', 'excluir');
+        fd.append('id', String(id));
+
+        const r = await fetch(API, {
+          method:'POST',
+          credentials:'include',
+          body: fd
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.msg || data.message || data.error || 'Erro ao excluir registro.');
+        }
+
+        mostrarStatus(data.message || 'Registro excluído com sucesso.', 'ok');
+        limparFormulario();
+        await carregarEventos();
+        await carregarLista();
+
+      } catch(err){
+        console.error(err);
+        mostrarStatus(err.message || 'Erro ao excluir.', 'erro');
+      }
+    }
+
+    document.getElementById('formCadastro').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+
+      try{
+        esconderStatus();
+
+        const id = Number(document.getElementById('id').value || 0);
+        const evento = document.getElementById('evento').value.trim();
+        const dia = document.getElementById('dia').value.trim().toUpperCase();
+        const versao = document.getElementById('versao').value.trim().toUpperCase();
+        const cod_prova = document.getElementById('cod_prova').value.trim().toUpperCase();
+
+        if (!evento || !dia || !versao || !cod_prova){
+          throw new Error('Preencha evento, dia, versão e código da prova.');
+        }
+
+        const fd = new FormData();
+        fd.append('acao', 'salvar');
+        fd.append('id', String(id));
+        fd.append('evento', evento);
+        fd.append('dia', dia);
+        fd.append('versao', versao);
+        fd.append('cod_prova', cod_prova);
+
+        const r = await fetch(API, {
+          method:'POST',
+          credentials:'include',
+          body: fd
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.msg || data.message || data.error || 'Erro ao salvar registro.');
+        }
+
+        mostrarStatus(data.message || 'Registro salvo com sucesso.', 'ok');
+        limparFormulario();
+        await carregarEventos();
+        await carregarLista();
+
+      } catch(err){
+        console.error(err);
+        mostrarStatus(err.message || 'Erro ao salvar.', 'erro');
+      }
+    });
+
+    async function inicializar(){
+      await carregarEventos();
+      await carregarLista();
+    }
+
+    inicializar();
+  </script>
+</body>
+</html>
