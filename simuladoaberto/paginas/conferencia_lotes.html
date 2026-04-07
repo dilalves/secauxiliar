@@ -1173,27 +1173,21 @@ function buildCropStyle(tipo) {
   }
 
   async function salvarCorrecao(row, tipo, valor) {
-    /*
-      Neste momento deixei em simulação para o front já funcionar visualmente.
-      Quando você quiser, eu já te entrego o PHP para gravar de verdade.
+  const eventoTela = document.getElementById('evento')?.value || row.evento || '';
 
-      Exemplo real:
-      return await fetchJson(URL_SALVAR_CORRECAO, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          id: row.id,
-          dia: row.dia,
-          arquivo_origem: row.arquivo_origem,
-          campo: chaveCampo(tipo),
-          valor
-        })
-      });
-    */
-
-    await new Promise(r => setTimeout(r, 250));
-    return { ok:true };
-  }
+  return await fetchJson(URL_SALVAR_CORRECAO, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      id: row.id,
+      evento: eventoTela,
+      dia: row.dia,
+      arquivo_origem: row.arquivo_origem,
+      campo: chaveCampo(tipo),
+      valor
+    })
+  });
+}
 
   async function marcarConferido(row, tipo) {
     /*
