@@ -1229,30 +1229,30 @@
     return { ok:true };
   }
 
-function verImagem(arquivoOrigem, dia = '') {
-  const evento = encodeURIComponent(document.getElementById('evento').value || '');
-  const url = `${URL_IMAGEM_RECORTE}?arquivo=${encodeURIComponent(arquivoOrigem)}&dia=${encodeURIComponent(dia)}&evento=${evento}&full=1`;
+  function verImagem(arquivoOrigem, dia = '') {
+    const evento = encodeURIComponent(document.getElementById('evento').value || '');
+    const url = `${URL_IMAGEM_RECORTE}?arquivo=${encodeURIComponent(arquivoOrigem)}&dia=${encodeURIComponent(dia)}&evento=${evento}&full=1`;
 
-  Swal.fire({
-    title: 'Imagem completa',
-    width: 1100,
-    html: `
-      <div style="text-align:left;">
-        <div style="margin-bottom:10px;font-size:13px;color:#64748b;">
-          Arquivo: <strong>${escapeHtml(arquivoOrigem)}</strong>
+    Swal.fire({
+      title: 'Imagem completa',
+      width: 1100,
+      html: `
+        <div style="text-align:left;">
+          <div style="margin-bottom:10px;font-size:13px;color:#64748b;">
+            Arquivo: <strong>${escapeHtml(arquivoOrigem)}</strong>
+          </div>
+          <div style="border:1px solid #d7e2f1;border-radius:12px;overflow:hidden;background:#f8fbff;max-height:70vh;">
+            <img
+              src="${url}"
+              alt="Imagem completa"
+              style="width:100%;display:block;"
+              onerror="this.onerror=null;this.parentNode.innerHTML='<div style=&quot;padding:20px;color:#64748b;font-size:13px;&quot;>Não foi possível carregar a imagem completa.</div>';">
+          </div>
         </div>
-        <div style="border:1px solid #d7e2f1;border-radius:12px;overflow:hidden;background:#f8fbff;max-height:70vh;">
-          <img
-            src="${url}"
-            alt="Imagem completa"
-            style="width:100%;display:block;"
-            onerror="this.onerror=null;this.parentNode.innerHTML='<div style=&quot;padding:20px;color:#64748b;font-size:13px;&quot;>Não foi possível carregar a imagem completa.</div>';">
-        </div>
-      </div>
-    `,
-    confirmButtonText: 'Fechar'
-  });
-}
+      `,
+      confirmButtonText: 'Fechar'
+    });
+  }
 
   function avisoOkLote(id, ftp) {
     Swal.fire({
