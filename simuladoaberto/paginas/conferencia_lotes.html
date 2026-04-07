@@ -1069,16 +1069,10 @@ function buildCropStyle(tipo) {
 
             <div class="bloco">
               <div class="bloco-title">Edição manual</div>
-              <div class="campo-edicao">
+                <div class="campo-edicao">
                 <label for="swal-input-valor">${escapeHtml(labelCampo)}</label>
-                <input
-                  id="swal-input-valor"
-                  type="text"
-                  value="${escapeHtml(valorAtualVazioParaInput(valorAtual))}"
-                  placeholder="${escapeHtml(placeholderTipo(tipo))}"
-                  autocomplete="off">
+                ${montarCampoEdicao(row, tipo, valorAtual)}
               </div>
-
               <div class="mini-note" style="margin-top:8px;">
                 Confira o que está marcado na imagem e informe o valor correto.
               </div>
@@ -1257,6 +1251,57 @@ function buildCropStyle(tipo) {
 
   btnFiltrar.addEventListener('click', carregarLotes);
   document.addEventListener('DOMContentLoaded', carregarEventos);
+
+function getTipoEvento(evento) {
+  const ev = String(evento || '').toUpperCase();
+  if (ev.includes('FUVEST')) return 'FUVESTAO';
+  return 'ENEM';
+}
+
+function getOpcoesCorprova(evento, dia) {
+  const tipoEvento = getTipoEvento(evento);
+  const d = String(dia || '').toUpperCase();
+
+  if (tipoEvento === 'FUVESTAO') {
+    return ['V1', 'V2', 'V3', 'V4'];
+  }
+
+  if (d === 'D2') {
+    return ['Amarelo', 'Cinza', 'Azul', 'Verde'];
+  }
+
+  return ['Azul', 'Amarelo', 'Branco', 'Verde'];
+}
+
+function montarCampoEdicao(row, tipo, valorAtual) {
+  if (tipo === 'inscricao') {
+    return `
+      <input
+        id="swal-input-valor"
+        type="text"
+        value="${escapeHtml(valorAtualVazioParaInput(valorAtual))}"
+        placeholder="Digite a inscrição correta"
+        autocomplete="off">
+    `;
+  }
+
+  const eventoTela = document.getElementById('evento')?.value || row.evento || '';
+  const opcoes = getOpcoesCorprova(eventoTela, row.dia);
+  const valorNormalizado = String(valorAtual || '').trim().toUpperCase();
+
+  const optionsHtml = opcoes.map(op => {
+    const selected = op.toUpperCase() === valorNormalizado ? 'selected' : '';
+    return `<option value="${escapeHtml(op)}" ${selected}>${escapeHtml(op)}</option>`;
+  }).join('');
+
+  return `
+    <select id="swal-input-valor" style="width:100%;height:42px;border:1px solid #d9e5f2;border-radius:10px;padding:0 12px;font-size:16px;font-weight:700;background:#fff;color:#10233f;">
+      <option value="">Selecione...</option>
+      ${optionsHtml}
+    </select>
+  `;
+}
+
 </script>
 
 </body>
