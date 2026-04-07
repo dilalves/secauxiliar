@@ -19,6 +19,9 @@
       --warn-tx:#92400e;
       --bad-bg:#fee2e2;
       --bad-tx:#991b1b;
+      --soft:#f4f8fe;
+      --orange:#b45309;
+      --orange-bg:#fff7ed;
     }
 
     *{ box-sizing:border-box; }
@@ -82,12 +85,24 @@
       font-weight:600;
     }
 
-    select, button{
+    select, button, input{
       height:40px;
       border-radius:10px;
       border:1px solid var(--line);
       padding:0 12px;
       font-size:14px;
+    }
+
+    input{
+      width:100%;
+      background:#fff;
+      color:var(--text);
+      outline:none;
+    }
+
+    input:focus{
+      border-color:#8fb2df;
+      box-shadow:0 0 0 3px rgba(11,59,120,.08);
     }
 
     button{
@@ -112,6 +127,12 @@
       background:#e8f0fb;
       color:var(--primary);
       border:1px solid #cfe0f5;
+    }
+
+    .btn-alert{
+      background:var(--orange-bg);
+      color:var(--orange);
+      border:1px solid #fdba74;
     }
 
     .info-bar{
@@ -351,18 +372,219 @@
     .pend-col-acoes{ width:95px; }
 
     .arq-link{
-    color:#0b3b78;
-    font-weight:700;
-    text-decoration:none;
+      color:#0b3b78;
+      font-weight:700;
+      text-decoration:none;
     }
 
     .arq-link:hover{
-    text-decoration:underline;
+      text-decoration:underline;
+    }
+
+    .campo-problema{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:5px 8px;
+      border-radius:8px;
+      background:#f8fbff;
+      border:1px dashed #c7d7ea;
+      color:#0b3b78;
+      font-weight:700;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .campo-problema:hover{
+      background:#eef5ff;
+      border-color:#9dbce0;
+    }
+
+    .campo-problema.alerta{
+      background:#fff7ed;
+      border-color:#fdba74;
+      color:#b45309;
+    }
+
+    .modal-wrap{
+      text-align:left;
+    }
+
+    .modal-top{
+      display:grid;
+      grid-template-columns: 1.2fr .9fr;
+      gap:18px;
+      align-items:start;
+    }
+
+    .recorte-box{
+      border:1px solid #d7e2f1;
+      background:#f7faff;
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .recorte-head{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:center;
+      margin-bottom:8px;
+      flex-wrap:wrap;
+    }
+
+    .recorte-title{
+      font-size:14px;
+      font-weight:800;
+      color:#17345d;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+    }
+
+    .recorte-hint{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .crop-frame{
+      width:100%;
+      height:230px;
+      overflow:hidden;
+      border-radius:12px;
+      border:1px solid #dce7f6;
+      background:
+        linear-gradient(transparent 49.5%, rgba(11,59,120,.08) 50%, transparent 50.5%),
+        linear-gradient(90deg, transparent 49.5%, rgba(11,59,120,.08) 50%, transparent 50.5%),
+        #eef5ff;
+      position:relative;
+    }
+
+    .crop-frame img{
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:auto;
+      min-height:100%;
+      transform-origin:top left;
+      user-select:none;
+      -webkit-user-drag:none;
+      pointer-events:none;
+    }
+
+    .crop-badge{
+      position:absolute;
+      top:10px;
+      right:10px;
+      z-index:2;
+      background:rgba(11,59,120,.9);
+      color:#fff;
+      font-size:11px;
+      font-weight:700;
+      border-radius:999px;
+      padding:4px 8px;
+    }
+
+    .modal-side{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .bloco{
+      border:1px solid #d7e2f1;
+      border-radius:14px;
+      background:#fff;
+      padding:12px;
+    }
+
+    .bloco-title{
+      font-size:13px;
+      font-weight:800;
+      color:#17345d;
+      margin-bottom:8px;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+    }
+
+    .dados-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      font-size:12px;
+    }
+
+    .dados-item{
+      background:#f7faff;
+      border:1px solid #e1ebf7;
+      border-radius:10px;
+      padding:8px;
+    }
+
+    .dados-item strong{
+      display:block;
+      font-size:11px;
+      color:#64748b;
+      margin-bottom:3px;
+    }
+
+    .campo-edicao{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .campo-edicao input{
+      height:42px;
+      font-size:16px;
+      font-weight:700;
+      letter-spacing:.03em;
+    }
+
+    .mini-note{
+      font-size:12px;
+      color:#64748b;
+      line-height:1.4;
+    }
+
+    .empty-alert{
+      padding:9px 10px;
+      border-radius:10px;
+      background:#fff7ed;
+      border:1px solid #fdba74;
+      color:#9a3412;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .full-image-box{
+      margin-top:14px;
+      border-top:1px dashed #d7e2f1;
+      padding-top:12px;
+    }
+
+    .full-image-box a{
+      color:#0b3b78;
+      font-weight:700;
+      text-decoration:none;
+    }
+
+    .full-image-box a:hover{
+      text-decoration:underline;
     }
 
     @media (max-width: 1200px){
       .layout{
         grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 900px){
+      .modal-top{
+        grid-template-columns:1fr;
+      }
+      .crop-frame{
+        height:200px;
       }
     }
   </style>
@@ -478,9 +700,20 @@
 
 <script>
   const API_BASE = 'https://apisec.secauxiliar.com.br/sim_adm';
+
   const URL_EVENTOS = `${API_BASE}/listar_eventos_conferencia.php`;
   const URL_LOTES = `${API_BASE}/listar_lotes_conferencia.php`;
   const URL_PENDENCIAS = `${API_BASE}/listar_pendencias_lote.php`;
+
+  /*
+    Quando formos ligar no backend de verdade:
+    - URL_IMAGEM_RECORTE pode devolver a URL pública da imagem ou redirecionar para ela
+    - URL_SALVAR_CORRECAO grava o valor digitado
+    - URL_MARCAR_CONFERIDO grava que foi conferido sem anotação visível
+  */
+  const URL_IMAGEM_RECORTE = `${API_BASE}/buscar_imagem_pendencia.php`;
+  const URL_SALVAR_CORRECAO = `${API_BASE}/salvar_correcao_pendencia.php`;
+  const URL_MARCAR_CONFERIDO = `${API_BASE}/marcar_pendencia_conferida.php`;
 
   const elEvento = document.getElementById('evento');
   const btnFiltrar = document.getElementById('btnFiltrar');
@@ -501,7 +734,26 @@
   const ctxPend = document.getElementById('ctxPend');
 
   let lotesCache = [];
+  let pendenciasCache = [];
   let linhaSelecionada = null;
+
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function normalizarValor(valor) {
+    return String(valor ?? '').trim();
+  }
+
+  function valorVazioOuPendente(valor) {
+    const v = normalizarValor(valor).toUpperCase();
+    return !v || v === '#' || v === 'NULL' || v === 'SEM LEITURA' || v === 'N/D';
+  }
 
   function chipStatus(status) {
     const s = String(status || '').toUpperCase();
@@ -520,19 +772,30 @@
     return `<span class="${cls}">${escapeHtml(String(valor))}</span>`;
   }
 
-  function escapeHtml(str) {
-    return String(str ?? '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
+  function montarImagemUrl(row) {
+    const arquivo = encodeURIComponent(row.arquivo_origem || '');
+    const dia = encodeURIComponent(row.dia || '');
+    return `${URL_IMAGEM_RECORTE}?arquivo=${arquivo}&dia=${dia}`;
   }
 
-  async function fetchJson(url) {
+  function buildCropStyle(tipo) {
+    /*
+      Ajuste fino do recorte:
+      inscrição = região mais à esquerda / parte superior
+      corprova = região mais à direita / parte superior
+
+      Depois, se quiser, a gente afina esses percentuais com base na folha real.
+    */
+    if (tipo === 'inscricao') {
+      return 'transform: scale(2.25) translate(-4%, -7%);';
+    }
+    return 'transform: scale(2.25) translate(-37%, -7%);';
+  }
+
+  async function fetchJson(url, options = {}) {
     const resp = await fetch(url, {
-      method: 'GET',
-      credentials: 'include'
+      credentials: 'include',
+      ...options
     });
 
     const data = await resp.json().catch(() => null);
@@ -587,12 +850,13 @@
       infoPendencias.textContent = 'Selecione um lote à esquerda para visualizar as pendências manuais.';
       contextoLote.style.display = 'none';
       linhaSelecionada = null;
+      pendenciasCache = [];
 
       const data = await fetchJson(`${URL_LOTES}?evento=${encodeURIComponent(evento)}`);
       lotesCache = data.rows || [];
 
       montarResumo(lotesCache);
-      montarTabelaLotes(lotesCache, evento);
+      montarTabelaLotes(lotesCache);
 
       infoEvento.textContent = `${data.total || 0} lote(s) encontrado(s) para o evento ${evento}.`;
     } catch (err) {
@@ -613,46 +877,45 @@
     rsAptos.textContent = totalAptos;
   }
 
- function montarTabelaLotes(rows, evento) {
-  if (!rows.length) {
-    tbodyLotes.innerHTML = `<tr><td colspan="11" class="vazio">Nenhum lote encontrado.</td></tr>`;
-    return;
+  function montarTabelaLotes(rows) {
+    if (!rows.length) {
+      tbodyLotes.innerHTML = `<tr><td colspan="11" class="vazio">Nenhum lote encontrado.</td></tr>`;
+      return;
+    }
+
+    tbodyLotes.innerHTML = rows.map((r, idx) => {
+      const diff = Number(r.diferenca || 0);
+      const pend = Number(r.pendencias || 0);
+      const ok = !!r.ok_habilitado;
+
+      const diffHtml = diff === 0 ? chipNumero(diff, 'ok') : chipNumero(diff, 'bad');
+      const pendHtml = pend === 0 ? chipNumero(pend, 'ok') : chipNumero(pend, 'warn');
+
+      const okBtn = ok
+        ? `<button type="button" class="btn-mini ok" onclick="event.stopPropagation(); avisoOkLote('${escapeHtml(String(r.id))}', '${escapeHtml(String(r.ftp))}')">OK lote</button>`
+        : `<button type="button" class="btn-mini block" onclick="event.stopPropagation();" title="Só habilita quando diferença = 0 e pendências = 0">OK lote</button>`;
+
+      return `
+        <tr class="row-click" data-idx="${idx}" onclick="selecionarLote(${idx})">
+          <td>${escapeHtml(r.data_reg)}</td>
+          <td>${escapeHtml(r.id_und)}</td>
+          <td>${escapeHtml(r.lote)}</td>
+          <td class="mono">${escapeHtml(r.ftp)}</td>
+          <td>${escapeHtml(r.qnt)}</td>
+          <td>${escapeHtml(r.dia)}</td>
+          <td>${escapeHtml(r.quantidade_processada_real)}</td>
+          <td>${diffHtml}</td>
+          <td>${pendHtml}</td>
+          <td>${chipStatus(r.status)}</td>
+          <td>
+            <div class="acoes">
+              ${okBtn}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
-
-  tbodyLotes.innerHTML = rows.map((r, idx) => {
-    const diff = Number(r.diferenca || 0);
-    const pend = Number(r.pendencias || 0);
-    const ok = !!r.ok_habilitado;
-
-    const diffHtml = diff === 0 ? chipNumero(diff, 'ok') : chipNumero(diff, 'bad');
-    const pendHtml = pend === 0 ? chipNumero(pend, 'ok') : chipNumero(pend, 'warn');
-
-    const okBtn = ok
-      ? `<button type="button" class="btn-mini ok" onclick="event.stopPropagation(); avisoOkLote('${escapeHtml(String(r.id))}', '${escapeHtml(String(r.ftp))}')">OK lote</button>`
-      : `<button type="button" class="btn-mini block" onclick="event.stopPropagation();" title="Só habilita quando diferença = 0 e pendências = 0">OK lote</button>`;
-
-    return `
-      <tr class="row-click" data-idx="${idx}" onclick="selecionarLote(${idx})">
-        <td>${escapeHtml(r.data_reg)}</td>
-        <td>${escapeHtml(r.id_und)}</td>
-        <td>${escapeHtml(r.lote)}</td>
-        <td class="mono">${escapeHtml(r.ftp)}</td>
-        <td>${escapeHtml(r.qnt)}</td>
-        <td>${escapeHtml(r.dia)}</td>
-        <td>${escapeHtml(r.quantidade_processada_real)}</td>
-        <td>${diffHtml}</td>
-        <td>${pendHtml}</td>
-        <td>${chipStatus(r.status)}</td>
-        <td>
-          <div class="acoes">
-            ${okBtn}
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
 
   async function selecionarLote(idx) {
     const row = lotesCache[idx];
@@ -674,7 +937,8 @@
 
     try {
       const data = await fetchJson(`${URL_PENDENCIAS}?dia=${encodeURIComponent(dia)}&ftp=${encodeURIComponent(ftp)}`);
-      montarTabelaPendencias(data.rows || []);
+      pendenciasCache = data.rows || [];
+      montarTabelaPendencias(pendenciasCache);
 
       contextoLote.style.display = 'flex';
       ctxEvento.textContent = `Evento: ${evento}`;
@@ -687,49 +951,302 @@
       Swal.fire('Erro', err.message || 'Falha ao carregar pendências.', 'error');
       tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Erro ao carregar pendências.</td></tr>`;
       contextoLote.style.display = 'none';
+      pendenciasCache = [];
     }
   }
 
-function montarTabelaPendencias(rows) {
-  if (!rows.length) {
-    tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Nenhuma pendência encontrada para este lote.</td></tr>`;
-    return;
+  function montarCampoProblema(tipo, row) {
+    const label = tipo === 'inscricao' ? 'INSCRIÇÃO' : 'VERSÃO';
+    const valor = tipo === 'inscricao' ? row.INSCRICAO : row.CORPROVA;
+    const vazio = valorVazioOuPendente(valor);
+    const classe = vazio ? 'campo-problema alerta' : 'campo-problema';
+
+    return `
+      <span
+        class="${classe}"
+        onclick="abrirModalCorrecao(${Number(row.id)}, '${tipo}')"
+        title="Clique para conferir ${label.toLowerCase()} na imagem">
+        ${escapeHtml(normalizarValor(valor) || '#')}
+      </span>
+    `;
   }
 
-  tbodyPendencias.innerHTML = rows.map(r => `
-    <tr>
-      <td class="mono">${escapeHtml(r.INSCRICAO)}</td>
-      <td>${escapeHtml(r.CORPROVA)}</td>
-      <td class="mono">
-        <a href="javascript:void(0)" class="arq-link" onclick="verImagem('${escapeHtml(r.arquivo_origem)}')">
+  function montarTabelaPendencias(rows) {
+    if (!rows.length) {
+      tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Nenhuma pendência encontrada para este lote.</td></tr>`;
+      return;
+    }
+
+    tbodyPendencias.innerHTML = rows.map(r => `
+      <tr>
+        <td>${montarCampoProblema('inscricao', r)}</td>
+        <td>${montarCampoProblema('corprova', r)}</td>
+        <td class="mono">
+          <a href="javascript:void(0)" class="arq-link" onclick="verImagem('${escapeHtml(r.arquivo_origem)}', '${escapeHtml(r.dia)}')">
             ${escapeHtml(r.arquivo_origem)}
-        </a>
-      </td>
-      <td>
-        <div class="acoes">
-          <button type="button" class="btn-mini edit" onclick="corrigirLinha(${Number(r.id)}, '${escapeHtml(r.dia)}')">Corrigir</button>
+          </a>
+        </td>
+        <td>
+          <div class="acoes">
+            <button type="button" class="btn-mini edit" onclick="abrirModalCorrecao(${Number(r.id)}, 'inscricao')">Corrigir</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function getPendenciaById(id) {
+    return pendenciasCache.find(r => Number(r.id) === Number(id));
+  }
+
+  function tituloTipo(tipo) {
+    return tipo === 'inscricao' ? 'Inscrição' : 'Versão / Cor da prova';
+  }
+
+  function placeholderTipo(tipo) {
+    return tipo === 'inscricao' ? 'Digite a inscrição correta' : 'Digite a versão/cor correta';
+  }
+
+  function chaveCampo(tipo) {
+    return tipo === 'inscricao' ? 'INSCRICAO' : 'CORPROVA';
+  }
+
+  function valorCampo(row, tipo) {
+    return tipo === 'inscricao' ? row.INSCRICAO : row.CORPROVA;
+  }
+
+  function buildModalHtml(row, tipo) {
+    const valorAtual = normalizarValor(valorCampo(row, tipo));
+    const valorAtualExibicao = valorAtual || '#';
+    const vazio = valorVazioOuPendente(valorAtual);
+    const imagemUrl = montarImagemUrl(row);
+    const cropStyle = buildCropStyle(tipo);
+    const titulo = tituloTipo(tipo);
+    const labelCampo = tipo === 'inscricao' ? 'INSCRIÇÃO' : 'VERSÃO / CORPROVA';
+
+    return `
+      <div class="modal-wrap">
+        <div class="modal-top">
+          <div class="recorte-box">
+            <div class="recorte-head">
+              <div class="recorte-title">Conferir ${escapeHtml(titulo)}</div>
+              <div class="recorte-hint">Recorte automático da área de interesse</div>
+            </div>
+
+            <div class="crop-frame">
+              <span class="crop-badge">${escapeHtml(labelCampo)}</span>
+              <img src="${imagemUrl}" alt="Recorte da imagem" style="${cropStyle}" onerror="this.onerror=null;this.src='';this.closest('.crop-frame').innerHTML='<div style=&quot;padding:20px;color:#64748b;font-size:13px;&quot;>Não foi possível carregar a imagem.<br>Depois ligamos este ponto ao PHP da imagem.</div>';">
+            </div>
+
+            <div class="full-image-box">
+              <a href="javascript:void(0)" onclick="verImagem('${escapeHtml(row.arquivo_origem)}','${escapeHtml(row.dia)}')">
+                Ver imagem completa
+              </a>
+            </div>
+          </div>
+
+          <div class="modal-side">
+            <div class="bloco">
+              <div class="bloco-title">Dados da pendência</div>
+              <div class="dados-grid">
+                <div class="dados-item">
+                  <strong>ID</strong>
+                  ${escapeHtml(String(row.id))}
+                </div>
+                <div class="dados-item">
+                  <strong>Dia</strong>
+                  ${escapeHtml(row.dia || '')}
+                </div>
+                <div class="dados-item" style="grid-column:1 / span 2;">
+                  <strong>Arquivo</strong>
+                  <span class="mono">${escapeHtml(row.arquivo_origem || '')}</span>
+                </div>
+                <div class="dados-item">
+                  <strong>Valor atual</strong>
+                  ${escapeHtml(valorAtualExibicao)}
+                </div>
+                <div class="dados-item">
+                  <strong>Campo</strong>
+                  ${escapeHtml(labelCampo)}
+                </div>
+              </div>
+            </div>
+
+            <div class="bloco">
+              <div class="bloco-title">Edição manual</div>
+              <div class="campo-edicao">
+                <label for="swal-input-valor">${escapeHtml(labelCampo)}</label>
+                <input
+                  id="swal-input-valor"
+                  type="text"
+                  value="${escapeHtml(valorAtualVazioParaInput(valorAtual))}"
+                  placeholder="${escapeHtml(placeholderTipo(tipo))}"
+                  autocomplete="off">
+              </div>
+
+              <div class="mini-note" style="margin-top:8px;">
+                Confira o que está marcado na imagem e informe o valor correto.
+              </div>
+
+              ${vazio ? `<div class="empty-alert" style="margin-top:10px;">Este campo veio vazio / pendente. Se o aluno realmente não preencheu, use o botão CONFERIDO.</div>` : ''}
+            </div>
+          </div>
         </div>
-      </td>
-    </tr>
-  `).join('');
-}
+      </div>
+    `;
+  }
 
+  function valorAtualVazioParaInput(valor) {
+    return valorVazioOuPendente(valor) ? '' : valor;
+  }
 
-  function verImagem(arquivoOrigem) {
-    Swal.fire({
-      icon: 'info',
-      title: 'Ver imagem',
-      html: `Abrir imagem do arquivo:<br><strong>${arquivoOrigem}</strong><br><br>Vamos ligar esse botão ao Cloudflare no próximo passo.`,
-      confirmButtonText: 'OK'
+  async function abrirModalCorrecao(id, tipo) {
+    const row = getPendenciaById(id);
+    if (!row) {
+      Swal.fire('Erro', 'Pendência não encontrada em memória.', 'error');
+      return;
+    }
+
+    const vazio = valorVazioOuPendente(valorCampo(row, tipo));
+    const titulo = `Conferir ${tituloTipo(tipo)}`;
+
+    await Swal.fire({
+      title: titulo,
+      html: buildModalHtml(row, tipo),
+      width: 980,
+      showCancelButton: true,
+      showDenyButton: true,
+      confirmButtonText: 'Salvar',
+      denyButtonText: 'Conferido',
+      cancelButtonText: 'Voltar',
+      customClass: {
+        popup: 'swal2-overflow-visible'
+      },
+      focusConfirm: false,
+      didOpen: () => {
+        const input = document.getElementById('swal-input-valor');
+        if (input) {
+          input.focus();
+          input.select();
+        }
+
+        const denyBtn = Swal.getDenyButton();
+        if (denyBtn) {
+          denyBtn.style.display = 'inline-flex';
+          if (!vazio) {
+            denyBtn.title = 'Use quando realmente não houver marcação na folha.';
+          }
+        }
+      },
+      preConfirm: async () => {
+        const input = document.getElementById('swal-input-valor');
+        const valor = normalizarValor(input?.value);
+
+        if (!valor) {
+          Swal.showValidationMessage(`Informe a ${tipo === 'inscricao' ? 'inscrição' : 'versão/cor'} ou use "Conferido".`);
+          return false;
+        }
+
+        try {
+          await salvarCorrecao(row, tipo, valor);
+          atualizarPendenciaLocal(row.id, tipo, valor);
+          montarTabelaPendencias(pendenciasCache);
+          return true;
+        } catch (err) {
+          Swal.showValidationMessage(err.message || 'Falha ao salvar correção.');
+          return false;
+        }
+      }
+    }).then(async result => {
+      if (result.isDenied) {
+        try {
+          await marcarConferido(row, tipo);
+          atualizarPendenciaLocal(row.id, tipo, '');
+          Swal.fire('Conferido', 'Pendência marcada como conferida sem anotação visível.', 'success');
+        } catch (err) {
+          Swal.fire('Erro', err.message || 'Falha ao marcar como conferido.', 'error');
+        }
+      } else if (result.isConfirmed) {
+        Swal.fire('Salvo', 'Correção registrada com sucesso.', 'success');
+      }
     });
   }
 
-  function corrigirLinha(id, dia) {
+  function atualizarPendenciaLocal(id, tipo, valor) {
+    const row = getPendenciaById(id);
+    if (!row) return;
+
+    if (tipo === 'inscricao') {
+      row.INSCRICAO = valor;
+    } else {
+      row.CORPROVA = valor;
+    }
+  }
+
+  async function salvarCorrecao(row, tipo, valor) {
+    /*
+      Neste momento deixei em simulação para o front já funcionar visualmente.
+      Quando você quiser, eu já te entrego o PHP para gravar de verdade.
+
+      Exemplo real:
+      return await fetchJson(URL_SALVAR_CORRECAO, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          id: row.id,
+          dia: row.dia,
+          arquivo_origem: row.arquivo_origem,
+          campo: chaveCampo(tipo),
+          valor
+        })
+      });
+    */
+
+    await new Promise(r => setTimeout(r, 250));
+    return { ok:true };
+  }
+
+  async function marcarConferido(row, tipo) {
+    /*
+      Exemplo real:
+      return await fetchJson(URL_MARCAR_CONFERIDO, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          id: row.id,
+          dia: row.dia,
+          arquivo_origem: row.arquivo_origem,
+          campo: chaveCampo(tipo),
+          conferido_sem_anotacao: 1
+        })
+      });
+    */
+
+    await new Promise(r => setTimeout(r, 250));
+    return { ok:true };
+  }
+
+  function verImagem(arquivoOrigem, dia = '') {
+    const url = `${URL_IMAGEM_RECORTE}?arquivo=${encodeURIComponent(arquivoOrigem)}&dia=${encodeURIComponent(dia)}&full=1`;
+
     Swal.fire({
-      icon: 'info',
-      title: 'Correção manual',
-      html: `Linha ID <strong>${id}</strong> (${dia})<br><br>Vamos ligar este botão ao PHP de edição manual na próxima etapa.`,
-      confirmButtonText: 'OK'
+      title: 'Imagem completa',
+      width: 1100,
+      html: `
+        <div style="text-align:left;">
+          <div style="margin-bottom:10px;font-size:13px;color:#64748b;">
+            Arquivo: <strong>${escapeHtml(arquivoOrigem)}</strong>
+          </div>
+          <div style="border:1px solid #d7e2f1;border-radius:12px;overflow:hidden;background:#f8fbff;max-height:70vh;">
+            <img
+              src="${url}"
+              alt="Imagem completa"
+              style="width:100%;display:block;"
+              onerror="this.onerror=null;this.parentNode.innerHTML='<div style=&quot;padding:20px;color:#64748b;font-size:13px;&quot;>Não foi possível carregar a imagem completa.<br>Depois ligamos este ponto ao PHP da imagem.</div>';">
+          </div>
+        </div>
+      `,
+      confirmButtonText: 'Fechar'
     });
   }
 
