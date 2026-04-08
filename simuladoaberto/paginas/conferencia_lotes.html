@@ -711,6 +711,7 @@
     - URL_SALVAR_CORRECAO grava o valor digitado
     - URL_MARCAR_CONFERIDO grava que foi conferido sem anotação visível
   */
+
   const URL_IMAGEM_RECORTE = `${API_BASE}/buscar_imagem_pendencia.php`;
   const URL_SALVAR_CORRECAO = `${API_BASE}/salvar_correcao_pendencia.php`;
   const URL_MARCAR_CONFERIDO = `${API_BASE}/marcar_pendencia_conferida.php`;
@@ -931,7 +932,9 @@ function buildCropStyle(tipo) {
     tbodyPendencias.innerHTML = `<tr><td colspan="4" class="loading">Carregando pendências...</td></tr>`;
 
     try {
-      const data = await fetchJson(`${URL_PENDENCIAS}?dia=${encodeURIComponent(dia)}&ftp=${encodeURIComponent(ftp)}`);
+      const data = await fetchJson(
+        `${URL_PENDENCIAS}?evento=${encodeURIComponent(evento)}&dia=${encodeURIComponent(dia)}&ftp=${encodeURIComponent(ftp)}`
+      );
       pendenciasCache = data.rows || [];
       montarTabelaPendencias(pendenciasCache);
 
@@ -1138,8 +1141,7 @@ function buildCropStyle(tipo) {
 
         try {
           await salvarCorrecao(row, tipo, valor);
-          atualizarPendenciaLocal(row.id, tipo, valor);
-          montarTabelaPendencias(pendenciasCache);
+          await recarregarLoteSelecionado();
           return true;
         } catch (err) {
           Swal.showValidationMessage(err.message || 'Falha ao salvar correção.');
@@ -1147,19 +1149,25 @@ function buildCropStyle(tipo) {
         }
       }
     }).then(async result => {
-      if (result.isDenied) {
-        try {
-          await marcarConferido(row, tipo);
-          atualizarPendenciaLocal(row.id, tipo, '');
-          Swal.fire('Conferido', 'Pendência marcada como conferida sem anotação visível.', 'success');
-        } catch (err) {
-          Swal.fire('Erro', err.message || 'Falha ao marcar como conferido.', 'error');
-        }
-      } else if (result.isConfirmed) {
+    if (result.isDenied) {
+      try {
+        await marcarConferido(row, tipo);
+        await recarregarLoteSelecionado();
+        Swal.fire('Conferido', 'Pendência marcada como conferida.', 'success');
+      } catch (err) {
+        Swal.fire('Erro', err.message || 'Falha ao marcar como conferido.', 'error');
+      }
+    } else if (result.isConfirmed) {
         Swal.fire('Salvo', 'Correção registrada com sucesso.', 'success');
       }
     });
   }
+
+  async function recarregarLoteSelecionado() {
+  if (linhaSelecionada === null) return;
+  await carregarLotes();
+  await selecionarLote(linhaSelecionada);
+}
 
   function atualizarPendenciaLocal(id, tipo, valor) {
     const row = getPendenciaById(id);
@@ -1189,25 +1197,20 @@ function buildCropStyle(tipo) {
   });
 }
 
-  async function marcarConferido(row, tipo) {
-    /*
-      Exemplo real:
-      return await fetchJson(URL_MARCAR_CONFERIDO, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          id: row.id,
-          dia: row.dia,
-          arquivo_origem: row.arquivo_origem,
-          campo: chaveCampo(tipo),
-          conferido_sem_anotacao: 1
-        })
-      });
-    */
+async function marcarConferido(row, tipo) {
+  const eventoTela = document.getElementById('evento')?.value || row.evento || '';
 
-    await new Promise(r => setTimeout(r, 250));
-    return { ok:true };
-  }
+  return await fetchJson(URL_MARCAR_CONFERIDO, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      evento: eventoTela,
+      dia: row.dia,
+      arquivo_origem: row.arquivo_origem,
+      campo: chaveCampo(tipo)
+    })
+  });
+}
 
   function verImagem(arquivoOrigem, dia = '') {
     const evento = encodeURIComponent(document.getElementById('evento').value || '');
@@ -1254,7 +1257,7 @@ function getTipoEvento(evento) {
 
 function getOpcoesCorprova(evento, dia) {
   const tipoEvento = getTipoEvento(evento);
-  const d = String(dia || '').toUpperCase();
+  const d = String(dia || '').trim().toUpperCase();
 
   if (tipoEvento === 'FUVESTAO') {
     return ['NULO', 'V1', 'V2', 'V3', 'V4'];
