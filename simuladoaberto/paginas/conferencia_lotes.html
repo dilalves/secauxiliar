@@ -1164,10 +1164,18 @@ function buildCropStyle(tipo) {
   }
 
   async function recarregarLoteSelecionado() {
-  if (linhaSelecionada === null) return;
-  await carregarLotes();
-  await selecionarLote(linhaSelecionada);
-}
+    if (linhaSelecionada === null || !lotesCache[linhaSelecionada]) return;
+
+    const loteAtual = lotesCache[linhaSelecionada];
+    const idAtual = String(loteAtual.id);
+
+    await carregarLotes();
+
+    const novoIdx = lotesCache.findIndex(r => String(r.id) === idAtual);
+    if (novoIdx >= 0) {
+      await selecionarLote(novoIdx);
+    }
+  }
 
   function atualizarPendenciaLocal(id, tipo, valor) {
     const row = getPendenciaById(id);
