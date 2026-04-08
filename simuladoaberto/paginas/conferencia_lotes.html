@@ -1101,13 +1101,14 @@ function buildCropStyle(tipo) {
 
     const vazio = valorVazioOuPendente(valorCampo(row, tipo));
     const titulo = `Conferir ${tituloTipo(tipo)}`;
+    const mostrarConferido = (tipo === 'inscricao');
 
     await Swal.fire({
       title: titulo,
       html: buildModalHtml(row, tipo),
       width: 1380,
       showCancelButton: true,
-      showDenyButton: true,
+      showDenyButton: mostrarConferido,
       confirmButtonText: 'Salvar',
       denyButtonText: 'Conferido',
       cancelButtonText: 'Voltar',
@@ -1119,11 +1120,13 @@ function buildCropStyle(tipo) {
         const input = document.getElementById('swal-input-valor');
         if (input) {
           input.focus();
-          input.select();
+          if (typeof input.select === 'function') {
+            input.select();
+          }
         }
 
         const denyBtn = Swal.getDenyButton();
-        if (denyBtn) {
+        if (denyBtn && mostrarConferido) {
           denyBtn.style.display = 'inline-flex';
           if (!vazio) {
             denyBtn.title = 'Use quando realmente não houver marcação na folha.';
@@ -1135,7 +1138,11 @@ function buildCropStyle(tipo) {
         const valor = normalizarValor(input?.value);
 
         if (!valor) {
-          Swal.showValidationMessage(`Informe a ${tipo === 'inscricao' ? 'inscrição' : 'versão/cor'} ou use "Conferido".`);
+          Swal.showValidationMessage(
+            tipo === 'inscricao'
+              ? 'Informe a inscrição ou use "Conferido".'
+              : 'Selecione a versão/cor.'
+          );
           return false;
         }
 
@@ -1149,15 +1156,15 @@ function buildCropStyle(tipo) {
         }
       }
     }).then(async result => {
-    if (result.isDenied) {
-      try {
-        await marcarConferido(row, tipo);
-        await recarregarLoteSelecionado();
-        Swal.fire('Conferido', 'Pendência marcada como conferida.', 'success');
-      } catch (err) {
-        Swal.fire('Erro', err.message || 'Falha ao marcar como conferido.', 'error');
-      }
-    } else if (result.isConfirmed) {
+      if (result.isDenied && mostrarConferido) {
+        try {
+          await marcarConferido(row, tipo);
+          await recarregarLoteSelecionado();
+          Swal.fire('Conferido', 'Pendência marcada como conferida.', 'success');
+        } catch (err) {
+          Swal.fire('Erro', err.message || 'Falha ao marcar como conferido.', 'error');
+        }
+      } else if (result.isConfirmed) {
         Swal.fire('Salvo', 'Correção registrada com sucesso.', 'success');
       }
     });
