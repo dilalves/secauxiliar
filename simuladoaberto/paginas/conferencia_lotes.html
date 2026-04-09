@@ -1116,23 +1116,40 @@ function buildCropStyle(tipo) {
         popup: 'swal2-overflow-visible'
       },
       focusConfirm: false,
-      didOpen: () => {
-        const input = document.getElementById('swal-input-valor');
-        if (input) {
-          input.focus();
-          if (typeof input.select === 'function') {
-            input.select();
-          }
-        }
+    didOpen: () => {
+      const input = document.getElementById('swal-input-valor');
+      if (input) {
+        input.focus();
+        input.select();
+      }
 
-        const denyBtn = Swal.getDenyButton();
-        if (denyBtn && mostrarConferido) {
+      const denyBtn = Swal.getDenyButton();
+
+      if (denyBtn) {
+        const valorAtual = valorCampo(row, tipo);
+        const aindaPendente = valorVazioOuPendente(valorAtual);
+
+        // 👉 REGRA NOVA
+        if (tipo === 'inscricao') {
+          // Para inscrição, só libera se versão já estiver OK
+          const cor = valorCampo(row, 'corprova');
+          const corPendente = valorVazioOuPendente(cor);
+
+          if (corPendente) {
+            denyBtn.style.display = 'none';
+          } else {
+            denyBtn.style.display = 'inline-flex';
+          }
+        } else {
+          // Para versão/cor → mantém comportamento atual
           denyBtn.style.display = 'inline-flex';
-          if (!vazio) {
+
+          if (!aindaPendente) {
             denyBtn.title = 'Use quando realmente não houver marcação na folha.';
           }
         }
-      },
+      }
+    },
       preConfirm: async () => {
         const input = document.getElementById('swal-input-valor');
         const valor = normalizarValor(input?.value);
