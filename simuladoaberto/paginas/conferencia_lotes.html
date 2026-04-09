@@ -705,16 +705,11 @@
   const URL_LOTES = `${API_BASE}/listar_lotes_conferencia.php`;
   const URL_PENDENCIAS = `${API_BASE}/listar_pendencias_lote.php`;
 
-  /*
-    Quando formos ligar no backend de verdade:
-    - URL_IMAGEM_RECORTE pode devolver a URL pública da imagem ou redirecionar para ela
-    - URL_SALVAR_CORRECAO grava o valor digitado
-    - URL_MARCAR_CONFERIDO grava que foi conferido sem anotação visível
-  */
-
   const URL_IMAGEM_RECORTE = `${API_BASE}/buscar_imagem_pendencia.php`;
   const URL_SALVAR_CORRECAO = `${API_BASE}/salvar_correcao_pendencia.php`;
   const URL_MARCAR_CONFERIDO = `${API_BASE}/marcar_pendencia_conferida.php`;
+  const URL_FINALIZAR_LOTE = `${API_BASE}/finalizar_lote.php`;
+
 
   const elEvento = document.getElementById('evento');
   const btnFiltrar = document.getElementById('btnFiltrar');
@@ -895,8 +890,19 @@ function buildCropStyle(tipo) {
       const pendHtml = pend === 0 ? chipNumero(pend, 'ok') : chipNumero(pend, 'warn');
 
       const okBtn = ok
-        ? `<button type="button" class="btn-mini ok" onclick="event.stopPropagation(); avisoOkLote('${escapeHtml(String(r.id))}', '${escapeHtml(String(r.ftp))}')">OK lote</button>`
-        : `<button type="button" class="btn-mini block" onclick="event.stopPropagation();" title="Só habilita quando diferença = 0 e pendências = 0">OK lote</button>`;
+      ? `<button
+            type="button"
+            class="btn-mini ok"
+            onclick="event.stopPropagation(); finalizarLote(${idx})">
+            OK lote
+        </button>`
+      : `<button
+            type="button"
+            class="btn-mini block"
+            onclick="event.stopPropagation();"
+            title="Só habilita quando diferença = 0 e pendências = 0">
+            OK lote
+        </button>`;
 
       return `
         <tr class="row-click" data-idx="${idx}" onclick="selecionarLote(${idx})">
@@ -1276,13 +1282,106 @@ async function marcarConferido(row, tipo) {
     });
   }
 
-  function avisoOkLote(id, ftp) {
-    Swal.fire({
-      icon: 'success',
-      title: 'Lote apto',
-      html: `Lote ID <strong>${id}</strong> / FTP <strong>${ftp}</strong> está apto para OK.<br><br>Vamos ligar este botão ao backend na próxima etapa.`,
-      confirmButtonText: 'OK'
+    async function finalizarLote(idx) {
+    const row = lotesCache[idx];
+    if (!row) {
+      Swal.fire('Erro', 'Lote não encontrado em memória.', 'error');
+      return;
+    }
+
+    const lote = String(row.ftp || '').trim();
+    const unidade = String(row.id_und || '').trim();
+    const evento = String(row.simulado || elEvento.value || '').trim();
+    const dia = String(row.dia || '').trim().toUpperCase();
+
+    if (!lote || !unidade || !evento || !dia) {
+      Swal.fire('Erro', 'Dados insuficientes para finalizar o lote.', 'error');
+      return;
+    }
+
+    const confirm = await Swal.fire({
+      icon: 'question',
+      title: 'Finalizar lote?',
+      html: `
+        <div style="text-align:left;line-height:1.55;">
+          <p><b>Evento:</b> ${escapeHtml(evento)}</p>
+          <p><b>Unidade:</b> ${escapeHtml(unidade)}</p>
+          <p><b>FTP:</b> ${escapeHtml(lote)}</p>
+          <p><b>Dia:</b> ${escapeHtml(dia)}</p>
+          <hr style="border:none;border-top:1px solid #e5edf7;margin:10px 0;">
+          <p>Isso vai:</p>
+          <p>• corrigir os arquivos do lote</p>
+          <p>• gravar os acertos/erros na tabela <b>_corrigido</b></p>
+          <p>• marcar o lote como <b>FINALIZADO</b></p>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Sim, finalizar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#0b3b78'
     });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      Swal.fire({
+        title: 'Finalizando lote...',
+        html: 'Processando correção e fechando o lote.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const data = await fetchJson(URL_FINALIZAR_LOTE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lote,
+          unidade,
+          evento,
+          dia
+        })
+      });
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Lote finalizado ✅',
+        html: `
+          <div style="text-align:left;line-height:1.55;">
+            <p><b>Corrigidos:</b> ${escapeHtml(String(data.corrigidos ?? 0))}</p>
+            <p><b>Origem:</b> ${escapeHtml(data.origem || '')}</p>
+            <p><b>Destino:</b> ${escapeHtml(data.destino || '')}</p>
+            ${
+              Array.isArray(data.arquivos_sem_cod_prova) && data.arquivos_sem_cod_prova.length
+                ? `<p><b>Sem cod_prova:</b> ${escapeHtml(String(data.arquivos_sem_cod_prova.length))}</p>`
+                : ''
+            }
+            ${
+              Array.isArray(data.arquivos_sem_gabarito) && data.arquivos_sem_gabarito.length
+                ? `<p><b>Sem gabarito:</b> ${escapeHtml(String(data.arquivos_sem_gabarito.length))}</p>`
+                : ''
+            }
+          </div>
+        `,
+        confirmButtonColor: '#0b3b78'
+      });
+
+      await carregarLotes();
+
+      const novoIdx = lotesCache.findIndex(r =>
+        String(r.ftp || '').trim() === lote &&
+        String(r.id_und || '').trim() === unidade &&
+        String(r.simulado || '').trim() === evento &&
+        String(r.dia || '').trim().toUpperCase() === dia
+      );
+
+      if (novoIdx >= 0) {
+        await selecionarLote(novoIdx);
+      }
+
+    } catch (err) {
+      Swal.fire('Erro', err.message || 'Falha ao finalizar lote.', 'error');
+    }
   }
 
   btnFiltrar.addEventListener('click', carregarLotes);
