@@ -753,7 +753,14 @@
 
   function valorVazioOuPendente(valor) {
     const v = normalizarValor(valor).toUpperCase();
-    return !v || v === '#' || v === 'NULL' || v === 'SEM LEITURA' || v === 'N/D';
+
+    return (
+      !v ||
+      v === 'NULL' ||
+      v === 'SEM LEITURA' ||
+      v === 'N/D' ||
+      /^#+$/.test(v)
+    );
   }
 
   function chipStatus(status) {
