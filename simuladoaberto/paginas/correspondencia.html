@@ -33,6 +33,12 @@
       color: #0b3b78;
       font-weight: 600;
     }
+    .th-canonico {
+      width: 35%;
+    }
+    .th-versao {
+      width: 65%;
+    }
   </style>
 </head>
 <body>
@@ -73,8 +79,8 @@
         <table class="highlight striped">
           <thead>
             <tr>
-              <th>Questão Original</th>
-              <th>Questão Canônica</th>
+              <th class="th-canonico">Questão Canônica</th>
+              <th class="th-versao">Questão da Versão Original</th>
             </tr>
           </thead>
           <tbody id="tabelaCorrespondencias"></tbody>
@@ -106,7 +112,13 @@
           <input type="hidden" name="questao[]" value="${q}">
         </td>
         <td>
-          <input type="number" name="questao_canonica[]" min="1" required>
+          <input
+            type="number"
+            name="questao_canonica[]"
+            min="1"
+            required
+            placeholder="Informe a questão da versão"
+          >
         </td>
       `;
       tabela.appendChild(tr);
@@ -147,7 +159,7 @@
       montarTabela(questoes);
 
       infoCanonico.style.display = 'block';
-      infoCanonico.textContent = `Canônico carregado: ${json.evento} / ${json.codigo_canonico} — ${json.quantidade} questões.`;
+      infoCanonico.textContent = `Canônico carregado: ${json.evento} / ${json.codigo_canonico} — ${json.quantidade} questões. Preencha à direita os números da versão original.`;
 
       M.toast({ html: 'Questões do canônico carregadas.', classes: 'green' });
 
