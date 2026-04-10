@@ -47,12 +47,12 @@
   <div class="card white card-form">
     <form id="formCadastro" enctype="multipart/form-data">
       <div class="row">
-        <div class="input-field col s12 m4">
+        <div class="input-field col s12 m3">
           <input id="evento" name="evento" type="text" required>
           <label for="evento">Evento (ex: enem0925)</label>
         </div>
 
-        <div class="input-field col s12 m4">
+        <div class="input-field col s12 m3">
           <input id="codigo" name="codigo" type="text" required>
           <label for="codigo">Código da Versão Canônica (ex: 25000101)</label>
         </div>
@@ -60,6 +60,14 @@
         <div class="input-field col s12 m2">
           <input id="quantidadeQuestoes" name="quantidade_questoes" type="number" min="1" max="200" value="90" required>
           <label for="quantidadeQuestoes" class="active">Qtd. de testes</label>
+        </div>
+
+        <div class="input-field col s12 m2">
+          <select id="inicioNumeracao" name="inicio_numeracao">
+            <option value="1" selected>Iniciar em 1</option>
+            <option value="91">Iniciar em 91</option>
+          </select>
+          <label for="inicioNumeracao">Início da numeração</label>
         </div>
 
         <div class="col s12 m2">
@@ -100,14 +108,15 @@
 
   const tabela = document.getElementById('tabelaQuestoes');
   const inputQtd = document.getElementById('quantidadeQuestoes');
+  const inputInicio = document.getElementById('inicioNumeracao');
   const btnMontarTabela = document.getElementById('btnMontarTabela');
 
-  function criarLinhaQuestao(i) {
+  function criarLinhaQuestao(numeroQuestao) {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>
-        ${i}
-        <input type="hidden" name="questao[]" value="${i}" />
+        ${numeroQuestao}
+        <input type="hidden" name="questao[]" value="${numeroQuestao}" />
       </td>
       <td>
         <input type="text" name="disciplina[]">
@@ -116,7 +125,7 @@
         <input type="text" name="gabarito[]" maxlength="1">
       </td>
       <td>
-        <input type="file" name="imagem[]" accept="image/*,.tif,.tiff,.pdf" data-q="${i}">
+        <input type="file" name="imagem[]" accept="image/*,.tif,.tiff,.pdf" data-q="${numeroQuestao}">
         <input type="hidden" name="imagem_link[]" />
       </td>
       <td class="status-cell grey-text text-darken-1">aguardando</td>
@@ -124,11 +133,12 @@
     return row;
   }
 
-  function montarTabela(quantidade) {
+  function montarTabela(quantidade, inicio = 1) {
     tabela.innerHTML = '';
 
-    for (let i = 1; i <= quantidade; i++) {
-      tabela.appendChild(criarLinhaQuestao(i));
+    for (let i = 0; i < quantidade; i++) {
+      const numeroQuestao = inicio + i;
+      tabela.appendChild(criarLinhaQuestao(numeroQuestao));
     }
   }
 
@@ -150,20 +160,40 @@
     return qtd;
   }
 
-  btnMontarTabela.addEventListener('click', () => {
+  function getInicioValido() {
+    const inicio = parseInt(inputInicio.value, 10);
+
+    if (isNaN(inicio) || inicio <= 0) {
+      M.toast({ html: 'Informe um início de numeração válido.', classes: 'red' });
+      return null;
+    }
+
+    return inicio;
+  }
+
+  function remontarTabela() {
     const qtd = getQuantidadeValida();
-    if (!qtd) return;
-    montarTabela(qtd);
+    const inicio = getInicioValido();
+
+    if (!qtd || !inicio) return;
+
+    montarTabela(qtd, inicio);
+  }
+
+  btnMontarTabela.addEventListener('click', () => {
+    remontarTabela();
   });
 
   inputQtd.addEventListener('change', () => {
-    const qtd = getQuantidadeValida();
-    if (!qtd) return;
-    montarTabela(qtd);
+    remontarTabela();
+  });
+
+  inputInicio.addEventListener('change', () => {
+    remontarTabela();
   });
 
   // Monta a tabela inicial com o valor padrão
-  montarTabela(parseInt(inputQtd.value, 10) || 90);
+  montarTabela(parseInt(inputQtd.value, 10) || 90, parseInt(inputInicio.value, 10) || 1);
 
   // Auto-upload ao escolher arquivo (pré-upload)
   tabela.addEventListener('change', async (ev) => {
@@ -262,9 +292,10 @@
     const evento = document.getElementById('evento').value.trim();
     const codigo = document.getElementById('codigo').value.trim();
     const qtd    = getQuantidadeValida();
+    const inicio = getInicioValido();
 
-    if (!evento || !codigo || !qtd) {
-      M.toast({ html: 'Preencha evento, código e quantidade de testes.', classes: 'red' });
+    if (!evento || !codigo || !qtd || !inicio) {
+      M.toast({ html: 'Preencha evento, código, quantidade de testes e início da numeração.', classes: 'red' });
       btn.disabled = false;
       return;
     }
@@ -307,6 +338,10 @@
       }
       btn.disabled = false;
     }
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    M.FormSelect.init(document.querySelectorAll('select'));
   });
 </script>
 
