@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Matriz de Correspondência</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    body{
+      background:#f3f6fb;
+      color:#1f2d3d;
+    }
+
+    .page-wrap{
+      padding:18px;
+    }
+
+    .card-main{
+      border-radius:16px;
+      box-shadow:0 4px 18px rgba(0,0,0,.08);
+      overflow:hidden;
+    }
+
+    .header-strip{
+      padding:14px 18px;
+      background:#fff;
+      border-bottom:1px solid #e7edf5;
+    }
+
+    .chips-wrap{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .info-chip{
+      display:inline-flex;
+      align-items:center;
+      padding:8px 14px;
+      border-radius:999px;
+      background:#edf4ff;
+      color:#204a87;
+      font-weight:600;
+      font-size:14px;
+    }
+
+    .alert-conf{
+      margin-top:10px;
+      background:#fff8e1;
+      border:1px solid #f2cf66;
+      border-radius:12px;
+      padding:14px 16px;
+      color:#8a6d1d;
+    }
+
+    .alert-conf .titulo{
+      font-weight:700;
+      margin-bottom:8px;
+    }
+
+    .table-wrap{
+      background:#fff;
+      padding:12px 12px 18px 12px;
+      overflow:auto;
+      max-height:70vh;
+    }
+
+    table.striped tbody tr:nth-child(odd){
+      background:#fafbfd;
+    }
+
+    table th{
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:#fff;
+      text-align:center;
+      font-weight:700;
+      border-bottom:1px solid #e6edf6;
+    }
+
+    table td{
+      text-align:center;
+      vertical-align:middle;
+      padding:12px 8px;
+      border-bottom:1px solid #eef3f9;
+    }
+
+    .col-gabarito{
+      background:#f7fbff;
+      min-width:180px;
+    }
+
+    .cell-clickable{
+      cursor:pointer;
+      border-radius:8px;
+      transition:.15s ease;
+      display:inline-block;
+      min-width:42px;
+      padding:4px 8px;
+    }
+
+    .cell-clickable:hover{
+      background:#e8f0fe;
+      color:#0d47a1;
+      transform:scale(1.04);
+    }
+
+    .cell-conflict{
+      background:#fff3cd;
+      color:#9a6700;
+      font-weight:700;
+      border:1px solid #f4d58d;
+    }
+
+    .cell-null{
+      color:#b0b8c4;
+      font-style:italic;
+    }
+
+    .gabarito-box{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+
+    .edit-icon{
+      cursor:pointer;
+      color:#1e88e5;
+      font-size:18px;
+    }
+
+    .edit-icon:hover{
+      color:#0d47a1;
+    }
+
+    .modal{
+      border-radius:16px;
+      max-width:520px;
+    }
+
+    .modal .modal-content h5{
+      margin-top:0;
+      font-weight:700;
+    }
+
+    .mini-info{
+      background:#f5f8fc;
+      border:1px solid #e7eef7;
+      border-radius:10px;
+      padding:10px 12px;
+      margin-bottom:14px;
+      line-height:1.6;
+    }
+
+    .btn-flat-red{
+      background:#fff1f1 !important;
+      color:#c62828 !important;
+      border-radius:10px;
+    }
+
+    .btn-main{
+      background:#0b3b78 !important;
+      border-radius:10px;
+    }
+
+    .top-actions{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .loader-box{
+      padding:40px;
+      text-align:center;
+      color:#6b7785;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <div class="card card-main">
+      <div class="header-strip">
+        <div class="top-actions">
+          <div>
+            <h5 style="margin:0;font-weight:700;">Matriz de Correspondência</h5>
+            <div style="color:#6b7785;font-size:14px;">Clique na célula da versão para editar diretamente</div>
+          </div>
+          <a href="painel.html" class="btn grey lighten-4 black-text" style="border-radius:10px;">
+            <i class="material-icons left">arrow_back</i>Voltar
+          </a>
+        </div>
+
+        <div id="chipsWrap" class="chips-wrap"></div>
+        <div id="conflictsBox"></div>
+      </div>
+
+      <div class="table-wrap">
+        <div id="loaderBox" class="loader-box">
+          <div class="preloader-wrapper active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left"><div class="circle"></div></div>
+              <div class="gap-patch"><div class="circle"></div></div>
+              <div class="circle-clipper right"><div class="circle"></div></div>
+            </div>
+          </div>
+          <div style="margin-top:12px;">Carregando matriz...</div>
+        </div>
+
+        <table id="tblMatriz" class="striped highlight responsive-table" style="display:none;">
+          <thead id="theadMatriz"></thead>
+          <tbody id="tbodyMatriz"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Correspondência -->
+  <div id="modalCorresp" class="modal">
+    <div class="modal-content">
+      <h5>Editar correspondência</h5>
+
+      <div class="mini-info" id="infoCorresp"></div>
+
+      <input type="hidden" id="correspId">
+
+      <div class="input-field">
+        <input id="correspQuestaoVersao" type="number" min="1" step="1">
+        <label for="correspQuestaoVersao">Questão na versão</label>
+      </div>
+
+      <p>
+        <label>
+          <input type="checkbox" id="correspAnular" />
+          <span>Anular correspondência (deixar nulo)</span>
+        </label>
+      </p>
+    </div>
+    <div class="modal-footer" style="padding:0 18px 18px 18px;">
+      <button type="button" class="btn-flat btn-flat-red left" onclick="fecharModal('modalCorresp')">Cancelar</button>
+      <button type="button" class="btn btn-main" onclick="salvarCorrespondencia()">Salvar</button>
+    </div>
+  </div>
+
+  <!-- Modal Gabarito -->
+  <div id="modalGabarito" class="modal">
+    <div class="modal-content">
+      <h5>Editar gabarito</h5>
+
+      <div class="mini-info" id="infoGabarito"></div>
+
+      <input type="hidden" id="gabaritoId">
+
+      <div class="input-field">
+        <select id="gabaritoAlternativa">
+          <option value="" disabled selected>Escolha a alternativa</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+        </select>
+        <label>Alternativa correta</label>
+      </div>
+    </div>
+    <div class="modal-footer" style="padding:0 18px 18px 18px;">
+      <button type="button" class="btn-flat btn-flat-red left" onclick="fecharModal('modalGabarito')">Cancelar</button>
+      <button type="button" class="btn btn-main" onclick="salvarGabarito()">Salvar</button>
+    </div>
+  </div>
+
+  <script>
+    const API_LISTAR = 'api/listar_matriz_correspondencia.php';
+    const API_SALVAR_CORRESP = 'api/salvar_correspondencia_item.php';
+    const API_SALVAR_GABARITO = 'api/salvar_gabarito_item.php';
+
+    let DADOS = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      M.AutoInit();
+      await carregarMatriz();
+    });
+
+    function getQS(name, fallback = '') {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name) || fallback;
+    }
+
+    function abrirModal(id) {
+      const el = document.getElementById(id);
+      const instance = M.Modal.getInstance(el) || M.Modal.init(el);
+      instance.open();
+    }
+
+    function fecharModal(id) {
+      const el = document.getElementById(id);
+      const instance = M.Modal.getInstance(el);
+      if (instance) instance.close();
+    }
+
+    async function carregarMatriz() {
+      try {
+        const evento = getQS('evento');
+        const canonico = getQS('canonico');
+
+        const url = `${API_LISTAR}?evento=${encodeURIComponent(evento)}&canonico=${encodeURIComponent(canonico)}`;
+        const resp = await fetch(url, { credentials: 'include' });
+        const json = await resp.json();
+
+        if (!json.ok) {
+          throw new Error(json.error || 'Falha ao carregar matriz.');
+        }
+
+        DADOS = json;
+        renderResumo(json);
+        renderTabela(json);
+
+        document.getElementById('loaderBox').style.display = 'none';
+        document.getElementById('tblMatriz').style.display = '';
+      } catch (err) {
+        console.error(err);
+        document.getElementById('loaderBox').innerHTML = `
+          <div style="color:#c62828;font-weight:600;">Erro ao carregar a matriz</div>
+          <div style="margin-top:8px;color:#6b7785;">${escapeHtml(err.message || 'Erro desconhecido')}</div>
+        `;
+      }
+    }
+
+    function renderResumo(json) {
+      const chipsWrap = document.getElementById('chipsWrap');
+      chipsWrap.innerHTML = `
+        <span class="info-chip">Evento: ${escapeHtml(json.evento)}</span>
+        <span class="info-chip">Código Canônico: ${escapeHtml(String(json.codigo_canonico))}</span>
+        <span class="info-chip">Versões na correspondência: ${json.versoes.length}</span>
+        <span class="info-chip">Questões: ${json.questoes.length}</span>
+        <span class="info-chip">Conflitos: ${json.conflitos.length}</span>
+      `;
+
+      const box = document.getElementById('conflictsBox');
+      if (!json.conflitos.length) {
+        box.innerHTML = '';
+        return;
+      }
+
+      const linhas = json.conflitos.map(c => `
+        <div>
+          Versão <b>${escapeHtml(String(c.codigo_versao))}</b>,
+          questão <b>${escapeHtml(String(c.questao_versao))}</b> repetida —
+          ligada às canônicas: <b>${escapeHtml(c.canonicas.join(', '))}</b>
+        </div>
+      `).join('');
+
+      box.innerHTML = `
+        <div class="alert-conf">
+          <div class="titulo">Foram encontrados conflitos na tabela de correspondências:</div>
+          <div style="font-size:14px;margin-bottom:6px;">
+            Repetição dentro da versão: o mesmo número de questão aparece mais de uma vez na mesma versão.
+          </div>
+          ${linhas}
+        </div>
+      `;
+    }
+
+    function renderTabela(json) {
+      const thead = document.getElementById('theadMatriz');
+      const tbody = document.getElementById('tbodyMatriz');
+
+      thead.innerHTML = `
+        <tr>
+          <th style="min-width:120px;">Questão</th>
+          <th class="col-gabarito">Gabarito<br><small>gabarito_sim_aberto</small></th>
+          ${json.versoes.map(v => `
+            <th style="min-width:140px;">
+              ${escapeHtml(String(v))}<br>
+              <small>Correspondência</small>
+            </th>
+          `).join('')}
+        </tr>
+      `;
+
+      tbody.innerHTML = json.questoes.map(row => {
+        const tdsVersao = json.versoes.map(v => {
+          const cell = row.correspondencias[v] || null;
+
+          if (!cell) {
+            return `
+              <td>
+                <span class="cell-clickable cell-null"
+                      onclick="abrirEdicaoCorresp(null, '${escapeJs(v)}', '${escapeJs(row.questao)}', null, true)">
+                  —
+                </span>
+              </td>
+            `;
+          }
+
+          const classes = [
+            'cell-clickable',
+            cell.conflito ? 'cell-conflict' : '',
+            (cell.questao_versao === null || cell.questao_versao === '') ? 'cell-null' : ''
+          ].filter(Boolean).join(' ');
+
+          const valor = (cell.questao_versao === null || cell.questao_versao === '') ? '—' : cell.questao_versao;
+
+          return `
+            <td>
+              <span class="${classes}"
+                    title="Clique para editar"
+                    onclick="abrirEdicaoCorresp(${cell.id}, '${escapeJs(v)}', '${escapeJs(row.questao)}', '${escapeJs(valor)}', false)">
+                ${escapeHtml(String(valor))}
+              </span>
+            </td>
+          `;
+        }).join('');
+
+        return `
+          <tr>
+            <td><b>${escapeHtml(String(row.questao))}</b></td>
+            <td class="col-gabarito">
+              <div class="gabarito-box">
+                <span><b>${escapeHtml(row.alternativa || '-')}</b></span>
+                <i class="material-icons edit-icon"
+                   title="Editar gabarito"
+                   onclick="abrirEdicaoGabarito(${row.gabarito_id}, '${escapeJs(row.questao)}', '${escapeJs(row.alternativa || '')}')">edit</i>
+              </div>
+            </td>
+            ${tdsVersao}
+          </tr>
+        `;
+      }).join('');
+
+      setTimeout(() => {
+        M.FormSelect.init(document.querySelectorAll('select'));
+        M.updateTextFields();
+      }, 30);
+    }
+
+    function abrirEdicaoCorresp(id, codigoVersao, questaoCanonica, questaoVersao, isNova) {
+      document.getElementById('correspId').value = id || '';
+      document.getElementById('correspQuestaoVersao').value = (questaoVersao && questaoVersao !== '—') ? questaoVersao : '';
+      document.getElementById('correspAnular').checked = false;
+
+      document.getElementById('infoCorresp').innerHTML = `
+        <div><b>Versão:</b> ${escapeHtml(String(codigoVersao))}</div>
+        <div><b>Questão canônica:</b> ${escapeHtml(String(questaoCanonica))}</div>
+        <div><b>Situação:</b> ${isNova ? 'sem correspondência cadastrada' : 'registro existente'}</div>
+      `;
+
+      document.getElementById('modalCorresp').dataset.codigoVersao = codigoVersao;
+      document.getElementById('modalCorresp').dataset.questaoCanonica = questaoCanonica;
+      document.getElementById('modalCorresp').dataset.isNova = isNova ? '1' : '0';
+
+      M.updateTextFields();
+      abrirModal('modalCorresp');
+    }
+
+    function abrirEdicaoGabarito(id, questao, alternativa) {
+      document.getElementById('gabaritoId').value = id;
+      document.getElementById('infoGabarito').innerHTML = `
+        <div><b>Questão canônica:</b> ${escapeHtml(String(questao))}</div>
+      `;
+
+      const select = document.getElementById('gabaritoAlternativa');
+      select.value = alternativa || '';
+      M.FormSelect.init(select);
+      abrirModal('modalGabarito');
+    }
+
+    async function salvarCorrespondencia() {
+      try {
+        const modal = document.getElementById('modalCorresp');
+        const id = document.getElementById('correspId').value.trim();
+        const questaoVersao = document.getElementById('correspQuestaoVersao').value.trim();
+        const anular = document.getElementById('correspAnular').checked;
+        const codigoVersao = modal.dataset.codigoVersao;
+        const questaoCanonica = modal.dataset.questaoCanonica;
+
+        if (!anular && !questaoVersao) {
+          return Swal.fire('Atenção', 'Informe a questão da versão ou marque para anular.', 'warning');
+        }
+
+        const payload = {
+          id: id || null,
+          evento: DADOS.evento,
+          codigo_canonico: DADOS.codigo_canonico,
+          codigo_versao: codigoVersao,
+          questao_canonica: Number(questaoCanonica),
+          questao_versao: anular ? null : Number(questaoVersao)
+        };
+
+        const resp = await fetch(API_SALVAR_CORRESP, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const json = await resp.json();
+        if (!json.ok) {
+          throw new Error(json.error || 'Falha ao salvar correspondência.');
+        }
+
+        fecharModal('modalCorresp');
+        await Swal.fire({
+          icon: 'success',
+          title: 'Correspondência salva',
+          timer: 1100,
+          showConfirmButton: false
+        });
+
+        document.getElementById('tblMatriz').style.display = 'none';
+        document.getElementById('loaderBox').style.display = '';
+        document.getElementById('loaderBox').innerHTML = `
+          <div class="preloader-wrapper active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left"><div class="circle"></div></div>
+              <div class="gap-patch"><div class="circle"></div></div>
+              <div class="circle-clipper right"><div class="circle"></div></div>
+            </div>
+          </div>
+          <div style="margin-top:12px;">Atualizando matriz...</div>
+        `;
+        await carregarMatriz();
+      } catch (err) {
+        console.error(err);
+        Swal.fire('Erro', err.message || 'Erro ao salvar.', 'error');
+      }
+    }
+
+    async function salvarGabarito() {
+      try {
+        const id = document.getElementById('gabaritoId').value.trim();
+        const alternativa = document.getElementById('gabaritoAlternativa').value;
+
+        if (!alternativa) {
+          return Swal.fire('Atenção', 'Escolha a alternativa.', 'warning');
+        }
+
+        const resp = await fetch(API_SALVAR_GABARITO, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, alternativa })
+        });
+
+        const json = await resp.json();
+        if (!json.ok) {
+          throw new Error(json.error || 'Falha ao salvar gabarito.');
+        }
+
+        fecharModal('modalGabarito');
+        await Swal.fire({
+          icon: 'success',
+          title: 'Gabarito salvo',
+          timer: 1100,
+          showConfirmButton: false
+        });
+
+        document.getElementById('tblMatriz').style.display = 'none';
+        document.getElementById('loaderBox').style.display = '';
+        document.getElementById('loaderBox').innerHTML = `
+          <div class="preloader-wrapper active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left"><div class="circle"></div></div>
+              <div class="gap-patch"><div class="circle"></div></div>
+              <div class="circle-clipper right"><div class="circle"></div></div>
+            </div>
+          </div>
+          <div style="margin-top:12px;">Atualizando matriz...</div>
+        `;
+        await carregarMatriz();
+      } catch (err) {
+        console.error(err);
+        Swal.fire('Erro', err.message || 'Erro ao salvar gabarito.', 'error');
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function escapeJs(str) {
+      return String(str ?? '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r');
+    }
+  </script>
+</body>
+</html>
