@@ -170,10 +170,6 @@
       z-index:1;
     }
 
-    .th-num{
-      text-align:center;
-    }
-
     tr:hover td{
       background:#fafcff;
     }
@@ -185,8 +181,12 @@
     }
 
     .num{
-    text-align:center;
-    font-variant-numeric:tabular-nums;
+      text-align:center;
+      font-variant-numeric:tabular-nums;
+    }
+
+    .th-num{
+      text-align:center;
     }
 
     .celular{
@@ -283,11 +283,11 @@
             <th class="th-num" id="thD2">Presentes D2</th>
             <th class="th-num" id="thRed">Presentes Red.</th>
             <th>Resp. Dia 1</th>
-            <th>DDD</th>
-            <th>Celular</th>
+            <th class="th-num">DDD</th>
+            <th class="th-num">Celular</th>
             <th id="thRespD2">Resp. Dia 2</th>
-            <th id="thDddD2">DDD</th>
-            <th id="thCelD2">Celular</th>
+            <th class="th-num" id="thDddD2">DDD</th>
+            <th class="th-num" id="thCelD2">Celular</th>
           </tr>
         </thead>
         <tbody id="tbody">
@@ -324,6 +324,9 @@
     const thRespD2 = document.getElementById('thRespD2');
     const thDddD2 = document.getElementById('thDddD2');
     const thCelD2 = document.getElementById('thCelD2');
+
+    let autoRefreshTimer = null;
+    let carregandoAuto = false;
 
     function esc(v){
       return String(v ?? '')
@@ -385,7 +388,7 @@
     }
 
     function getColspan(mostrarDia2, mostrarRed){
-      let base = 10; // sem D2 e sem Red
+      let base = 10;
       if (mostrarDia2) base += 3;
       if (mostrarRed) base += 1;
       return base;
@@ -413,14 +416,18 @@
       });
     }
 
-    async function carregarContagem(){
+    async function carregarContagem(opcoes = {}){
+      const silencioso = !!opcoes.silencioso;
+
       if (!evento.value) {
         resetTela();
         return;
       }
 
-      infoBar.textContent = 'Carregando...';
-      tbody.innerHTML = `<tr><td colspan="13" class="vazio">Carregando...</td></tr>`;
+      if (!silencioso) {
+        infoBar.textContent = 'Carregando...';
+        tbody.innerHTML = `<tr><td colspan="13" class="vazio">Carregando...</td></tr>`;
+      }
 
       const qs = new URLSearchParams();
       qs.set('evento', evento.value);
@@ -471,13 +478,37 @@
           ${config.mostrarDia2 ? `<td class="num">${n(r.presentes_d2)}</td>` : ``}
           ${config.mostrarRed ? `<td class="num">${n(r.presentes_red)}</td>` : ``}
           <td>${esc(r.resp_dia1_nome)}</td>
-          <td>${esc(r.resp_dia1_ddd)}</td>
-          <td class="celular">${esc(r.resp_dia1_celular)}</td>
+          <td class="num">${esc(r.resp_dia1_ddd)}</td>
+          <td class="num celular">${esc(r.resp_dia1_celular)}</td>
           ${config.mostrarDia2 ? `<td>${esc(r.resp_dia2_nome)}</td>` : ``}
-          ${config.mostrarDia2 ? `<td>${esc(r.resp_dia2_ddd)}</td>` : ``}
-          ${config.mostrarDia2 ? `<td class="celular">${esc(r.resp_dia2_celular)}</td>` : ``}
+          ${config.mostrarDia2 ? `<td class="num">${esc(r.resp_dia2_ddd)}</td>` : ``}
+          ${config.mostrarDia2 ? `<td class="num celular">${esc(r.resp_dia2_celular)}</td>` : ``}
         </tr>
       `).join('');
+    }
+
+    function iniciarAutoRefresh() {
+      pararAutoRefresh();
+
+      autoRefreshTimer = setInterval(async () => {
+        if (!evento.value || carregandoAuto) return;
+
+        try {
+          carregandoAuto = true;
+          await carregarContagem({ silencioso: true });
+        } catch (e) {
+          console.error('Erro no auto refresh:', e);
+        } finally {
+          carregandoAuto = false;
+        }
+      }, 15000);
+    }
+
+    function pararAutoRefresh() {
+      if (autoRefreshTimer) {
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
+      }
     }
 
     document.getElementById('btnBuscar').addEventListener('click', async () => {
@@ -494,10 +525,28 @@
       resetTela();
     });
 
+    document.addEventListener('visibilitychange', async () => {
+      if (document.hidden) {
+        pararAutoRefresh();
+        return;
+      }
+
+      iniciarAutoRefresh();
+
+      if (evento.value) {
+        try {
+          await carregarContagem({ silencioso: true });
+        } catch (e) {
+          console.error('Erro ao atualizar ao voltar para a aba:', e);
+        }
+      }
+    });
+
     (async function init(){
       try{
         await carregarEventos();
         resetTela();
+        iniciarAutoRefresh();
       } catch(e){
         console.error(e);
         infoBar.textContent = 'Erro ao carregar dados.';
