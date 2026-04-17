@@ -150,7 +150,7 @@
     table{
       width:100%;
       border-collapse:collapse;
-      min-width:1700px;
+      min-width:1850px;
     }
 
     th, td{
@@ -159,6 +159,7 @@
       text-align:left;
       vertical-align:top;
       font-size:14px;
+      white-space:nowrap;
     }
 
     th{
@@ -167,7 +168,6 @@
       background:#f2f7fd;
       color:#17345d;
       z-index:1;
-      white-space:nowrap;
     }
 
     tr:hover td{
@@ -187,6 +187,10 @@
 
     .celular{
       white-space:nowrap;
+    }
+
+    .hidden{
+      display:none !important;
     }
 
     @media (max-width: 900px){
@@ -236,11 +240,16 @@
       </div>
 
       <div class="resumo-card">
-        <div class="resumo-label">Presentes D1</div>
-        <div class="resumo-valor" id="kpiD1">0</div>
+        <div class="resumo-label">Total de inscritos</div>
+        <div class="resumo-valor" id="kpiInscritos">0</div>
       </div>
 
       <div class="resumo-card">
+        <div class="resumo-label" id="lblKpiD1">Presentes D1</div>
+        <div class="resumo-valor" id="kpiD1">0</div>
+      </div>
+
+      <div class="resumo-card" id="cardKpiD2">
         <div class="resumo-label">Presentes D2</div>
         <div class="resumo-valor" id="kpiD2">0</div>
       </div>
@@ -265,20 +274,21 @@
             <th>Código</th>
             <th>Unidade</th>
             <th>Vagas</th>
-            <th>Presentes D1</th>
-            <th>Presentes D2</th>
+            <th>Inscritos</th>
+            <th id="thD1">Presentes D1</th>
+            <th id="thD2">Presentes D2</th>
             <th>Presentes Red.</th>
             <th>Resp. Dia 1</th>
             <th>DDD</th>
             <th>Celular</th>
-            <th>Resp. Dia 2</th>
-            <th>DDD</th>
-            <th>Celular</th>
+            <th id="thRespD2">Resp. Dia 2</th>
+            <th id="thDddD2">DDD</th>
+            <th id="thCelD2">Celular</th>
           </tr>
         </thead>
         <tbody id="tbody">
           <tr>
-            <td colspan="12" class="vazio">Selecione um evento para carregar a contagem.</td>
+            <td colspan="13" class="vazio">Selecione um evento para carregar a contagem.</td>
           </tr>
         </tbody>
       </table>
@@ -294,10 +304,20 @@
 
     const kpiUnidades = document.getElementById('kpiUnidades');
     const kpiVagas = document.getElementById('kpiVagas');
+    const kpiInscritos = document.getElementById('kpiInscritos');
     const kpiD1 = document.getElementById('kpiD1');
     const kpiD2 = document.getElementById('kpiD2');
     const kpiRed = document.getElementById('kpiRed');
     const kpiParticipantes = document.getElementById('kpiParticipantes');
+
+    const cardKpiD2 = document.getElementById('cardKpiD2');
+    const lblKpiD1 = document.getElementById('lblKpiD1');
+
+    const thD1 = document.getElementById('thD1');
+    const thD2 = document.getElementById('thD2');
+    const thRespD2 = document.getElementById('thRespD2');
+    const thDddD2 = document.getElementById('thDddD2');
+    const thCelD2 = document.getElementById('thCelD2');
 
     function esc(v){
       return String(v ?? '')
@@ -308,24 +328,43 @@
     }
 
     function n(v){
-      const num = Number(v || 0);
-      return num.toLocaleString('pt-BR');
+      return Number(v || 0).toLocaleString('pt-BR');
     }
 
     function resetTela(){
       kpiUnidades.textContent = '0';
       kpiVagas.textContent = '0';
+      kpiInscritos.textContent = '0';
       kpiD1.textContent = '0';
       kpiD2.textContent = '0';
       kpiRed.textContent = '0';
       kpiParticipantes.textContent = '0';
 
+      lblKpiD1.textContent = 'Presentes D1';
       infoBar.textContent = 'Selecione um evento e clique em Buscar.';
+      configurarColunasDia2(true);
+
       tbody.innerHTML = `
         <tr>
-          <td colspan="12" class="vazio">Selecione um evento para carregar a contagem.</td>
+          <td colspan="13" class="vazio">Selecione um evento para carregar a contagem.</td>
         </tr>
       `;
+    }
+
+    function configurarColunasDia2(mostrarDia2){
+      cardKpiD2.classList.toggle('hidden', !mostrarDia2);
+
+      thD2.classList.toggle('hidden', !mostrarDia2);
+      thRespD2.classList.toggle('hidden', !mostrarDia2);
+      thDddD2.classList.toggle('hidden', !mostrarDia2);
+      thCelD2.classList.toggle('hidden', !mostrarDia2);
+
+      lblKpiD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
+      thD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
+    }
+
+    function getColspan(mostrarDia2){
+      return mostrarDia2 ? 13 : 10;
     }
 
     async function carregarEventos(){
@@ -356,8 +395,9 @@
         return;
       }
 
+      configurarColunasDia2(true);
       infoBar.textContent = 'Carregando...';
-      tbody.innerHTML = `<tr><td colspan="12" class="vazio">Carregando...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="13" class="vazio">Carregando...</td></tr>`;
 
       const qs = new URLSearchParams();
       qs.set('evento', evento.value);
@@ -375,9 +415,13 @@
 
       const rows = data.rows || [];
       const resumo = data.resumo || {};
+      const mostrarDia2 = !!data.tem_dia2;
+
+      configurarColunasDia2(mostrarDia2);
 
       kpiUnidades.textContent = n(resumo.total_unidades);
       kpiVagas.textContent = n(resumo.total_vagas);
+      kpiInscritos.textContent = n(resumo.total_inscritos);
       kpiD1.textContent = n(resumo.total_presentes_d1);
       kpiD2.textContent = n(resumo.total_presentes_d2);
       kpiRed.textContent = n(resumo.total_presentes_red);
@@ -388,7 +432,9 @@
       if (!rows.length) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="12" class="vazio">Nenhum registro encontrado para o evento selecionado.</td>
+            <td colspan="${getColspan(mostrarDia2)}" class="vazio">
+              Nenhum registro encontrado para o evento selecionado.
+            </td>
           </tr>
         `;
         return;
@@ -399,15 +445,16 @@
           <td>${esc(r.codigo)}</td>
           <td>${esc(r.unidade)}</td>
           <td class="num">${n(r.vagas)}</td>
+          <td class="num">${n(r.total_inscritos)}</td>
           <td class="num">${n(r.presentes_d1)}</td>
-          <td class="num">${n(r.presentes_d2)}</td>
+          ${mostrarDia2 ? `<td class="num">${n(r.presentes_d2)}</td>` : ``}
           <td class="num">${n(r.presentes_red)}</td>
           <td>${esc(r.resp_dia1_nome)}</td>
           <td>${esc(r.resp_dia1_ddd)}</td>
           <td class="celular">${esc(r.resp_dia1_celular)}</td>
-          <td>${esc(r.resp_dia2_nome)}</td>
-          <td>${esc(r.resp_dia2_ddd)}</td>
-          <td class="celular">${esc(r.resp_dia2_celular)}</td>
+          ${mostrarDia2 ? `<td>${esc(r.resp_dia2_nome)}</td>` : ``}
+          ${mostrarDia2 ? `<td>${esc(r.resp_dia2_ddd)}</td>` : ``}
+          ${mostrarDia2 ? `<td class="celular">${esc(r.resp_dia2_celular)}</td>` : ``}
         </tr>
       `).join('');
     }
@@ -435,7 +482,7 @@
         infoBar.textContent = 'Erro ao carregar dados.';
         tbody.innerHTML = `
           <tr>
-            <td colspan="12" class="vazio">Erro ao carregar dados.</td>
+            <td colspan="13" class="vazio">Erro ao carregar dados.</td>
           </tr>
         `;
       }
