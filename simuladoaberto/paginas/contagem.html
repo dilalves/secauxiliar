@@ -254,7 +254,7 @@
         <div class="resumo-valor" id="kpiD2">0</div>
       </div>
 
-      <div class="resumo-card">
+      <div class="resumo-card" id="cardKpiRed">
         <div class="resumo-label">Presentes Redação</div>
         <div class="resumo-valor" id="kpiRed">0</div>
       </div>
@@ -277,7 +277,7 @@
             <th>Inscritos</th>
             <th id="thD1">Presentes D1</th>
             <th id="thD2">Presentes D2</th>
-            <th>Presentes Red.</th>
+            <th id="thRed">Presentes Red.</th>
             <th>Resp. Dia 1</th>
             <th>DDD</th>
             <th>Celular</th>
@@ -311,10 +311,12 @@
     const kpiParticipantes = document.getElementById('kpiParticipantes');
 
     const cardKpiD2 = document.getElementById('cardKpiD2');
+    const cardKpiRed = document.getElementById('cardKpiRed');
     const lblKpiD1 = document.getElementById('lblKpiD1');
 
     const thD1 = document.getElementById('thD1');
     const thD2 = document.getElementById('thD2');
+    const thRed = document.getElementById('thRed');
     const thRespD2 = document.getElementById('thRespD2');
     const thDddD2 = document.getElementById('thDddD2');
     const thCelD2 = document.getElementById('thCelD2');
@@ -342,7 +344,11 @@
 
       lblKpiD1.textContent = 'Presentes D1';
       infoBar.textContent = 'Selecione um evento e clique em Buscar.';
-      configurarColunasDia2(true);
+
+      configurarColunas({
+        tem_dia2: true,
+        tipo_evento: 'ENEM'
+      });
 
       tbody.innerHTML = `
         <tr>
@@ -351,20 +357,34 @@
       `;
     }
 
-    function configurarColunasDia2(mostrarDia2){
-      cardKpiD2.classList.toggle('hidden', !mostrarDia2);
+    function configurarColunas(data){
+      const mostrarDia2 = !!data.tem_dia2;
+      const isFuvestao = String(data.tipo_evento || '').toUpperCase() === 'FUVESTAO';
+      const mostrarRed = !isFuvestao;
 
+      cardKpiD2.classList.toggle('hidden', !mostrarDia2);
       thD2.classList.toggle('hidden', !mostrarDia2);
       thRespD2.classList.toggle('hidden', !mostrarDia2);
       thDddD2.classList.toggle('hidden', !mostrarDia2);
       thCelD2.classList.toggle('hidden', !mostrarDia2);
 
+      cardKpiRed.classList.toggle('hidden', !mostrarRed);
+      thRed.classList.toggle('hidden', !mostrarRed);
+
       lblKpiD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
       thD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
+
+      return {
+        mostrarDia2,
+        mostrarRed
+      };
     }
 
-    function getColspan(mostrarDia2){
-      return mostrarDia2 ? 13 : 10;
+    function getColspan(mostrarDia2, mostrarRed){
+      let base = 10; // sem D2 e sem Red
+      if (mostrarDia2) base += 3;
+      if (mostrarRed) base += 1;
+      return base;
     }
 
     async function carregarEventos(){
@@ -395,7 +415,6 @@
         return;
       }
 
-      configurarColunasDia2(true);
       infoBar.textContent = 'Carregando...';
       tbody.innerHTML = `<tr><td colspan="13" class="vazio">Carregando...</td></tr>`;
 
@@ -415,9 +434,7 @@
 
       const rows = data.rows || [];
       const resumo = data.resumo || {};
-      const mostrarDia2 = !!data.tem_dia2;
-
-      configurarColunasDia2(mostrarDia2);
+      const config = configurarColunas(data);
 
       kpiUnidades.textContent = n(resumo.total_unidades);
       kpiVagas.textContent = n(resumo.total_vagas);
@@ -432,7 +449,7 @@
       if (!rows.length) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="${getColspan(mostrarDia2)}" class="vazio">
+            <td colspan="${getColspan(config.mostrarDia2, config.mostrarRed)}" class="vazio">
               Nenhum registro encontrado para o evento selecionado.
             </td>
           </tr>
@@ -447,14 +464,14 @@
           <td class="num">${n(r.vagas)}</td>
           <td class="num">${n(r.total_inscritos)}</td>
           <td class="num">${n(r.presentes_d1)}</td>
-          ${mostrarDia2 ? `<td class="num">${n(r.presentes_d2)}</td>` : ``}
-          <td class="num">${n(r.presentes_red)}</td>
+          ${config.mostrarDia2 ? `<td class="num">${n(r.presentes_d2)}</td>` : ``}
+          ${config.mostrarRed ? `<td class="num">${n(r.presentes_red)}</td>` : ``}
           <td>${esc(r.resp_dia1_nome)}</td>
           <td>${esc(r.resp_dia1_ddd)}</td>
           <td class="celular">${esc(r.resp_dia1_celular)}</td>
-          ${mostrarDia2 ? `<td>${esc(r.resp_dia2_nome)}</td>` : ``}
-          ${mostrarDia2 ? `<td>${esc(r.resp_dia2_ddd)}</td>` : ``}
-          ${mostrarDia2 ? `<td class="celular">${esc(r.resp_dia2_celular)}</td>` : ``}
+          ${config.mostrarDia2 ? `<td>${esc(r.resp_dia2_nome)}</td>` : ``}
+          ${config.mostrarDia2 ? `<td>${esc(r.resp_dia2_ddd)}</td>` : ``}
+          ${config.mostrarDia2 ? `<td class="celular">${esc(r.resp_dia2_celular)}</td>` : ``}
         </tr>
       `).join('');
     }
