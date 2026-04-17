@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root{
+      --bg:#f8fbff;
+      --card:#ffffff;
+      --line:#d9e5f2;
+      --text:#10233f;
+      --muted:#64748b;
+      --primary:#0b3b78;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      padding:18px;
+      font-family:system-ui, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+
+    h2{
+      margin:0;
+      font-size:24px;
+      color:var(--primary);
+    }
+
+    .sub{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      box-shadow:0 8px 24px rgba(11,59,120,.05);
+      margin-bottom:18px;
+    }
+
+    .filtros{
+      display:flex;
+      gap:12px;
+      align-items:end;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .campo{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:240px;
+    }
+
+    label{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    select, button{
+      height:40px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      padding:0 12px;
+      font-size:14px;
+    }
+
+    select{
+      background:#fff;
+    }
+
+    button{
+      background:var(--primary);
+      color:#fff;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    button:hover{
+      filter:brightness(1.05);
+    }
+
+    .btn-sec{
+      background:#e8f0fb;
+      color:var(--primary);
+      border:1px solid #cfe0f5;
+    }
+
+    .resumo{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .resumo-card{
+      min-width:220px;
+      background:#f4f8fe;
+      border:1px solid #dce7f6;
+      border-radius:12px;
+      padding:12px 14px;
+    }
+
+    .resumo-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    .resumo-valor{
+      margin-top:6px;
+      font-size:26px;
+      font-weight:800;
+      color:var(--primary);
+    }
+
+    .info-bar{
+      margin-bottom:12px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .tabela-wrap{
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1700px;
+    }
+
+    th, td{
+      padding:10px 12px;
+      border-bottom:1px solid #edf2f7;
+      text-align:left;
+      vertical-align:top;
+      font-size:14px;
+    }
+
+    th{
+      position:sticky;
+      top:0;
+      background:#f2f7fd;
+      color:#17345d;
+      z-index:1;
+      white-space:nowrap;
+    }
+
+    tr:hover td{
+      background:#fafcff;
+    }
+
+    .vazio{
+      padding:26px;
+      text-align:center;
+      color:var(--muted);
+    }
+
+    .num{
+      text-align:right;
+      font-variant-numeric:tabular-nums;
+    }
+
+    .celular{
+      white-space:nowrap;
+    }
+
+    @media (max-width: 900px){
+      .resumo-card{
+        min-width:calc(50% - 6px);
+      }
+    }
+
+    @media (max-width: 640px){
+      .resumo-card{
+        min-width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top">
+    <div>
+      <h2>Contagem de Presentes</h2>
+      <div class="sub">Conferência das quantidades de presentes informadas pelas unidades</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="filtros">
+      <div class="campo">
+        <label for="evento">Evento</label>
+        <select id="evento">
+          <option value="">Selecione</option>
+        </select>
+      </div>
+
+      <button id="btnBuscar">Buscar</button>
+      <button id="btnLimpar" class="btn-sec">Limpar filtro</button>
+    </div>
+
+    <div class="resumo">
+      <div class="resumo-card">
+        <div class="resumo-label">Unidades</div>
+        <div class="resumo-valor" id="kpiUnidades">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Total de vagas</div>
+        <div class="resumo-valor" id="kpiVagas">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Presentes D1</div>
+        <div class="resumo-valor" id="kpiD1">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Presentes D2</div>
+        <div class="resumo-valor" id="kpiD2">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Presentes Redação</div>
+        <div class="resumo-valor" id="kpiRed">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Total de participantes</div>
+        <div class="resumo-valor" id="kpiParticipantes">0</div>
+      </div>
+    </div>
+
+    <div class="info-bar" id="infoBar">Selecione um evento e clique em Buscar.</div>
+
+    <div class="tabela-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Unidade</th>
+            <th>Vagas</th>
+            <th>Presentes D1</th>
+            <th>Presentes D2</th>
+            <th>Presentes Red.</th>
+            <th>Resp. Dia 1</th>
+            <th>DDD</th>
+            <th>Celular</th>
+            <th>Resp. Dia 2</th>
+            <th>DDD</th>
+            <th>Celular</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr>
+            <td colspan="12" class="vazio">Selecione um evento para carregar a contagem.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
+
+    const evento = document.getElementById('evento');
+    const tbody = document.getElementById('tbody');
+    const infoBar = document.getElementById('infoBar');
+
+    const kpiUnidades = document.getElementById('kpiUnidades');
+    const kpiVagas = document.getElementById('kpiVagas');
+    const kpiD1 = document.getElementById('kpiD1');
+    const kpiD2 = document.getElementById('kpiD2');
+    const kpiRed = document.getElementById('kpiRed');
+    const kpiParticipantes = document.getElementById('kpiParticipantes');
+
+    function esc(v){
+      return String(v ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;');
+    }
+
+    function n(v){
+      const num = Number(v || 0);
+      return num.toLocaleString('pt-BR');
+    }
+
+    function resetTela(){
+      kpiUnidades.textContent = '0';
+      kpiVagas.textContent = '0';
+      kpiD1.textContent = '0';
+      kpiD2.textContent = '0';
+      kpiRed.textContent = '0';
+      kpiParticipantes.textContent = '0';
+
+      infoBar.textContent = 'Selecione um evento e clique em Buscar.';
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="12" class="vazio">Selecione um evento para carregar a contagem.</td>
+        </tr>
+      `;
+    }
+
+    async function carregarEventos(){
+      const r = await fetch(API + 'api_adesoes_eventos.php', {
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      const data = await r.json();
+
+      if (!r.ok || !data.ok) {
+        throw new Error(data.error || 'Falha ao carregar eventos');
+      }
+
+      evento.innerHTML = `<option value="">Selecione</option>`;
+
+      (data.eventos || []).forEach(ev => {
+        const opt = document.createElement('option');
+        opt.value = ev;
+        opt.textContent = ev;
+        evento.appendChild(opt);
+      });
+    }
+
+    async function carregarContagem(){
+      if (!evento.value) {
+        resetTela();
+        return;
+      }
+
+      infoBar.textContent = 'Carregando...';
+      tbody.innerHTML = `<tr><td colspan="12" class="vazio">Carregando...</td></tr>`;
+
+      const qs = new URLSearchParams();
+      qs.set('evento', evento.value);
+
+      const r = await fetch(API + 'api_contagem_presentes.php?' + qs.toString(), {
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      const data = await r.json();
+
+      if (!r.ok || !data.ok) {
+        throw new Error(data.error || 'Falha ao carregar contagem de presentes');
+      }
+
+      const rows = data.rows || [];
+      const resumo = data.resumo || {};
+
+      kpiUnidades.textContent = n(resumo.total_unidades);
+      kpiVagas.textContent = n(resumo.total_vagas);
+      kpiD1.textContent = n(resumo.total_presentes_d1);
+      kpiD2.textContent = n(resumo.total_presentes_d2);
+      kpiRed.textContent = n(resumo.total_presentes_red);
+      kpiParticipantes.textContent = n(resumo.total_participantes);
+
+      infoBar.textContent = `${rows.length} unidade(s) encontrada(s).`;
+
+      if (!rows.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="12" class="vazio">Nenhum registro encontrado para o evento selecionado.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td>${esc(r.codigo)}</td>
+          <td>${esc(r.unidade)}</td>
+          <td class="num">${n(r.vagas)}</td>
+          <td class="num">${n(r.presentes_d1)}</td>
+          <td class="num">${n(r.presentes_d2)}</td>
+          <td class="num">${n(r.presentes_red)}</td>
+          <td>${esc(r.resp_dia1_nome)}</td>
+          <td>${esc(r.resp_dia1_ddd)}</td>
+          <td class="celular">${esc(r.resp_dia1_celular)}</td>
+          <td>${esc(r.resp_dia2_nome)}</td>
+          <td>${esc(r.resp_dia2_ddd)}</td>
+          <td class="celular">${esc(r.resp_dia2_celular)}</td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('btnBuscar').addEventListener('click', async () => {
+      try {
+        await carregarContagem();
+      } catch (e) {
+        console.error(e);
+        alert(e.message || 'Erro ao carregar dados.');
+      }
+    });
+
+    document.getElementById('btnLimpar').addEventListener('click', () => {
+      evento.value = '';
+      resetTela();
+    });
+
+    (async function init(){
+      try{
+        await carregarEventos();
+        resetTela();
+      } catch(e){
+        console.error(e);
+        infoBar.textContent = 'Erro ao carregar dados.';
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="12" class="vazio">Erro ao carregar dados.</td>
+          </tr>
+        `;
+      }
+    })();
+  </script>
+</body>
+</html>
