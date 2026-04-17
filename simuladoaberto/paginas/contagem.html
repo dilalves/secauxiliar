@@ -104,6 +104,10 @@
       border:1px solid #cfe0f5;
     }
 
+    .hidden{
+      display:none !important;
+    }
+
     .resumo{
       display:flex;
       gap:12px;
@@ -193,13 +197,112 @@
       white-space:nowrap;
     }
 
-    .hidden{
-      display:none !important;
+    .dialog-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(16,35,63,.28);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:9999;
+    }
+
+    .dialog-backdrop.show{
+      display:flex;
+    }
+
+    .dialog{
+      width:min(720px, 100%);
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 18px 50px rgba(11,59,120,.18);
+      overflow:hidden;
+    }
+
+    .dialog-head{
+      padding:16px 18px 10px;
+      border-bottom:1px solid #edf2f7;
+    }
+
+    .dialog-title{
+      margin:0;
+      font-size:22px;
+      color:var(--primary);
+    }
+
+    .dialog-sub{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .dialog-body{
+      padding:18px;
+    }
+
+    .dialog-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .dialog-box{
+      background:#f4f8fe;
+      border:1px solid #dce7f6;
+      border-radius:12px;
+      padding:12px 14px;
+    }
+
+    .dialog-box-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      margin-bottom:5px;
+    }
+
+    .dialog-box-value{
+      font-size:18px;
+      font-weight:800;
+      color:var(--primary);
+      word-break:break-word;
+    }
+
+    .link-area{
+      background:#fbfdff;
+      border:1px solid #dce7f6;
+      border-radius:12px;
+      padding:12px 14px;
+      margin-bottom:14px;
+      font-size:14px;
+      color:var(--text);
+      word-break:break-all;
+    }
+
+    .dialog-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .dialog-note{
+      margin-bottom:12px;
+      color:var(--muted);
+      font-size:13px;
     }
 
     @media (max-width: 900px){
       .resumo-card{
         min-width:calc(50% - 6px);
+      }
+
+      .dialog-grid{
+        grid-template-columns:1fr;
       }
     }
 
@@ -230,6 +333,9 @@
 
       <button id="btnBuscar">Buscar</button>
       <button id="btnLimpar" class="btn-sec">Limpar filtro</button>
+
+      <button id="btnGerarLinkD1" class="btn-sec hidden">Gerar link Presença D1</button>
+      <button id="btnGerarLinkD2" class="btn-sec hidden">Gerar link Presença D2</button>
     </div>
 
     <div class="resumo">
@@ -299,6 +405,46 @@
     </div>
   </div>
 
+  <div class="dialog-backdrop" id="linkModal">
+    <div class="dialog">
+      <div class="dialog-head">
+        <h3 class="dialog-title" id="modalTitulo">Link gerado</h3>
+        <p class="dialog-sub" id="modalSubtitulo">Use este link para informar a quantidade de presentes.</p>
+      </div>
+
+      <div class="dialog-body">
+        <div class="dialog-grid">
+          <div class="dialog-box">
+            <div class="dialog-box-label">Evento</div>
+            <div class="dialog-box-value" id="mEvento">-</div>
+          </div>
+
+          <div class="dialog-box">
+            <div class="dialog-box-label">Dia</div>
+            <div class="dialog-box-value" id="mDia">-</div>
+          </div>
+
+          <div class="dialog-box">
+            <div class="dialog-box-label">Válido até</div>
+            <div class="dialog-box-value" id="mExpira">-</div>
+          </div>
+        </div>
+
+        <div class="dialog-note" id="modalNota">
+          Compartilhe o link abaixo com as unidades para que informem a quantidade de presentes.
+        </div>
+
+        <div class="link-area" id="mUrl">-</div>
+
+        <div class="dialog-actions">
+          <button class="btn-sec" id="btnCopiarLink" type="button">Copiar link</button>
+          <button class="btn-sec" id="btnAbrirLink" type="button">Abrir link</button>
+          <button id="btnFecharModal" type="button">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
 
@@ -325,8 +471,24 @@
     const thDddD2 = document.getElementById('thDddD2');
     const thCelD2 = document.getElementById('thCelD2');
 
+    const btnGerarLinkD1 = document.getElementById('btnGerarLinkD1');
+    const btnGerarLinkD2 = document.getElementById('btnGerarLinkD2');
+
+    const linkModal = document.getElementById('linkModal');
+    const modalTitulo = document.getElementById('modalTitulo');
+    const modalSubtitulo = document.getElementById('modalSubtitulo');
+    const modalNota = document.getElementById('modalNota');
+    const mEvento = document.getElementById('mEvento');
+    const mDia = document.getElementById('mDia');
+    const mExpira = document.getElementById('mExpira');
+    const mUrl = document.getElementById('mUrl');
+    const btnCopiarLink = document.getElementById('btnCopiarLink');
+    const btnAbrirLink = document.getElementById('btnAbrirLink');
+    const btnFecharModal = document.getElementById('btnFecharModal');
+
     let autoRefreshTimer = null;
     let carregandoAuto = false;
+    let ultimoLinkGerado = '';
 
     function esc(v){
       return String(v ?? '')
@@ -338,6 +500,67 @@
 
     function n(v){
       return Number(v || 0).toLocaleString('pt-BR');
+    }
+
+    function fmtDataHora(v){
+      if (!v) return '-';
+      const d = new Date(String(v).replace(' ', 'T'));
+      if (isNaN(d)) return v;
+      return d.toLocaleString('pt-BR');
+    }
+
+    function getTipoEventoPorValorEvento(ev){
+      const e = String(ev || '').toUpperCase();
+      if (e.startsWith('ENEM')) return 'ENEM';
+      if (e.startsWith('FUVESTAO')) return 'FUVESTAO';
+      return 'OUTRO';
+    }
+
+    function atualizarBotoesLink(){
+      const tipo = getTipoEventoPorValorEvento(evento.value);
+      const temEvento = !!evento.value;
+
+      if (!temEvento) {
+        btnGerarLinkD1.classList.add('hidden');
+        btnGerarLinkD2.classList.add('hidden');
+        return;
+      }
+
+      if (tipo === 'ENEM') {
+        btnGerarLinkD1.classList.remove('hidden');
+        btnGerarLinkD2.classList.remove('hidden');
+        btnGerarLinkD1.textContent = 'Gerar link Presença D1';
+        btnGerarLinkD2.textContent = 'Gerar link Presença D2';
+        return;
+      }
+
+      btnGerarLinkD1.classList.remove('hidden');
+      btnGerarLinkD2.classList.add('hidden');
+      btnGerarLinkD1.textContent = 'Gerar link Presença';
+    }
+
+    function abrirModalLink(data){
+      ultimoLinkGerado = data.url || '';
+
+      const diaLabel = data.dia === 'D2'
+        ? '2º dia'
+        : (getTipoEventoPorValorEvento(data.evento) === 'FUVESTAO' ? 'Dia único' : '1º dia');
+
+      modalTitulo.textContent = data.reused ? 'Link já existente' : 'Link gerado com sucesso';
+      modalSubtitulo.textContent = data.reused
+        ? 'Já existia um link válido para este evento/dia e ele foi reaproveitado.'
+        : 'Compartilhe o link abaixo com as unidades para informar a quantidade de presentes.';
+      modalNota.textContent = 'Esse link ficará disponível somente até a data da prova.';
+      mEvento.textContent = data.evento || '-';
+      mDia.textContent = diaLabel;
+      mExpira.textContent = fmtDataHora(data.expires_at);
+      mUrl.textContent = data.url || '-';
+
+      linkModal.classList.add('show');
+    }
+
+    function fecharModalLink(){
+      linkModal.classList.remove('show');
     }
 
     function resetTela(){
@@ -356,6 +579,8 @@
         tem_dia2: true,
         tipo_evento: 'ENEM'
       });
+
+      atualizarBotoesLink();
 
       tbody.innerHTML = `
         <tr>
@@ -380,6 +605,8 @@
 
       lblKpiD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
       thD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
+
+      atualizarBotoesLink();
 
       return {
         mostrarDia2,
@@ -414,6 +641,8 @@
         opt.textContent = ev;
         evento.appendChild(opt);
       });
+
+      atualizarBotoesLink();
     }
 
     async function carregarContagem(opcoes = {}){
@@ -487,6 +716,56 @@
       `).join('');
     }
 
+    async function gerarLinkPresenca(dia){
+      try {
+        if (!evento.value) {
+          alert('Selecione um evento antes de gerar o link.');
+          return;
+        }
+
+        const tipo = getTipoEventoPorValorEvento(evento.value);
+        const diaEnvio = (tipo === 'FUVESTAO') ? 'D1' : dia;
+
+        if (!['D1', 'D2'].includes(diaEnvio)) {
+          alert('Dia inválido para geração de link.');
+          return;
+        }
+
+        const botao = (dia === 'D2') ? btnGerarLinkD2 : btnGerarLinkD1;
+        const textoOriginal = botao.textContent;
+        botao.disabled = true;
+        botao.textContent = 'Gerando...';
+
+        const fd = new FormData();
+        fd.append('evento', evento.value);
+        fd.append('dia', diaEnvio);
+
+        const r = await fetch(API + 'api_presenca_link_create.php', {
+          method: 'POST',
+          body: fd,
+          credentials: 'include'
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.error || 'Falha ao gerar link de presença.');
+        }
+
+        abrirModalLink(data);
+
+        botao.disabled = false;
+        botao.textContent = textoOriginal;
+      } catch (e) {
+        console.error(e);
+        alert(e.message || 'Erro ao gerar link de presença.');
+
+        btnGerarLinkD1.disabled = false;
+        btnGerarLinkD2.disabled = false;
+        atualizarBotoesLink();
+      }
+    }
+
     function iniciarAutoRefresh() {
       pararAutoRefresh();
 
@@ -523,6 +802,55 @@
     document.getElementById('btnLimpar').addEventListener('click', () => {
       evento.value = '';
       resetTela();
+    });
+
+    evento.addEventListener('change', () => {
+      atualizarBotoesLink();
+    });
+
+    btnGerarLinkD1.addEventListener('click', async () => {
+      await gerarLinkPresenca('D1');
+    });
+
+    btnGerarLinkD2.addEventListener('click', async () => {
+      await gerarLinkPresenca('D2');
+    });
+
+    btnFecharModal.addEventListener('click', fecharModalLink);
+
+    btnAbrirLink.addEventListener('click', () => {
+      if (ultimoLinkGerado) {
+        window.open(ultimoLinkGerado, '_blank');
+      }
+    });
+
+    btnCopiarLink.addEventListener('click', async () => {
+      if (!ultimoLinkGerado) return;
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(ultimoLinkGerado);
+          btnCopiarLink.textContent = 'Link copiado!';
+          setTimeout(() => btnCopiarLink.textContent = 'Copiar link', 1500);
+        } else {
+          window.prompt('Copie o link abaixo:', ultimoLinkGerado);
+        }
+      } catch (e) {
+        console.error(e);
+        window.prompt('Copie o link abaixo:', ultimoLinkGerado);
+      }
+    });
+
+    linkModal.addEventListener('click', (e) => {
+      if (e.target === linkModal) {
+        fecharModalLink();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && linkModal.classList.contains('show')) {
+        fecharModalLink();
+      }
     });
 
     document.addEventListener('visibilitychange', async () => {
