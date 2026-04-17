@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Informar Presença - Simulados Abertos</title>
+  <style>
+    :root{
+      --bg:#f4f8fd;
+      --card:#ffffff;
+      --line:#d9e5f2;
+      --text:#10233f;
+      --muted:#64748b;
+      --primary:#0b3b78;
+      --primary-2:#174a91;
+      --ok-bg:#ecfdf3;
+      --ok-bd:#b7ebc6;
+      --ok-tx:#166534;
+      --err-bg:#fef2f2;
+      --err-bd:#fecaca;
+      --err-tx:#991b1b;
+      --warn-bg:#fff7ed;
+      --warn-bd:#fed7aa;
+      --warn-tx:#9a3412;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:system-ui, Arial, sans-serif;
+    }
+
+    .topbar{
+      background:var(--primary);
+      color:#fff;
+      padding:14px 18px;
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+    }
+
+    .topbar-inner{
+      max-width:980px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .logo{
+      width:34px;
+      height:34px;
+      border-radius:50%;
+      background:rgba(255,255,255,.14);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      font-weight:800;
+      flex:0 0 auto;
+    }
+
+    .brand{
+      font-size:18px;
+      font-weight:700;
+      line-height:1.2;
+    }
+
+    .wrap{
+      max-width:980px;
+      margin:24px auto;
+      padding:0 16px 32px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 8px 24px rgba(11,59,120,.06);
+      overflow:hidden;
+    }
+
+    .card-head{
+      padding:22px 22px 12px;
+      border-bottom:1px solid #edf2f7;
+    }
+
+    .title{
+      margin:0 0 6px;
+      font-size:30px;
+      color:var(--primary);
+    }
+
+    .sub{
+      margin:0;
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    .card-body{
+      padding:22px;
+    }
+
+    .info-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .info-box{
+      background:#f4f8fe;
+      border:1px solid #dce7f6;
+      border-radius:12px;
+      padding:12px 14px;
+    }
+
+    .info-label{
+      font-size:12px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      color:var(--muted);
+      margin-bottom:5px;
+    }
+
+    .info-value{
+      font-size:20px;
+      font-weight:800;
+      color:var(--primary);
+      word-break:break-word;
+    }
+
+    .msg{
+      border-radius:12px;
+      padding:12px 14px;
+      border:1px solid transparent;
+      margin-bottom:16px;
+      display:none;
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    .msg.show{ display:block; }
+    .msg.ok{
+      background:var(--ok-bg);
+      border-color:var(--ok-bd);
+      color:var(--ok-tx);
+    }
+    .msg.err{
+      background:var(--err-bg);
+      border-color:var(--err-bd);
+      color:var(--err-tx);
+    }
+    .msg.warn{
+      background:var(--warn-bg);
+      border-color:var(--warn-bd);
+      color:var(--warn-tx);
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+      margin-bottom:16px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+    }
+
+    .field.full{
+      grid-column:1 / -1;
+    }
+
+    label{
+      font-size:13px;
+      font-weight:700;
+      color:var(--muted);
+    }
+
+    input{
+      height:46px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:0 12px;
+      font-size:15px;
+      outline:none;
+      background:#fff;
+    }
+
+    input:focus{
+      border-color:#9bb6dc;
+      box-shadow:0 0 0 3px rgba(11,59,120,.08);
+    }
+
+    .help{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+
+    button{
+      height:44px;
+      border:none;
+      border-radius:10px;
+      padding:0 16px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+    }
+
+    .btn-primary:hover{ filter:brightness(1.05); }
+
+    .btn-sec{
+      background:#e8f0fb;
+      color:var(--primary);
+      border:1px solid #cfe0f5;
+    }
+
+    .consulta-box{
+      background:#fbfdff;
+      border:1px dashed #d7e4f4;
+      border-radius:12px;
+      padding:14px;
+      margin-top:12px;
+      display:none;
+    }
+
+    .consulta-box.show{
+      display:block;
+    }
+
+    .consulta-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:5px;
+      font-size:14px;
+    }
+
+    .consulta-row strong{
+      color:var(--primary);
+    }
+
+    .expired{
+      text-align:center;
+      padding:34px 18px;
+    }
+
+    .expired h3{
+      margin:0 0 8px;
+      color:var(--err-tx);
+      font-size:24px;
+    }
+
+    .expired p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    @media (max-width: 760px){
+      .info-grid,
+      .form-grid{
+        grid-template-columns:1fr;
+      }
+
+      .title{
+        font-size:25px;
+      }
+
+      .card-body,
+      .card-head{
+        padding:18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">➤</div>
+      <div class="brand">Simulados Abertos - Informação de Presença</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="card-head">
+        <h1 class="title">Informar quantidade de presentes</h1>
+        <p class="sub">Preencha o código da unidade e a quantidade de presentes para registrar a informação do evento.</p>
+      </div>
+
+      <div class="card-body">
+        <div id="msgGeral" class="msg"></div>
+
+        <div id="blocoFormulario" class="hidden">
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-label">Evento</div>
+              <div class="info-value" id="infoEvento">-</div>
+            </div>
+            <div class="info-box">
+              <div class="info-label">Dia</div>
+              <div class="info-value" id="infoDia">-</div>
+            </div>
+            <div class="info-box">
+              <div class="info-label">Válido até</div>
+              <div class="info-value" id="infoExpira">-</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="codigo">Código da unidade</label>
+              <input type="text" id="codigo" inputmode="numeric" autocomplete="off" placeholder="Ex.: 8529">
+            </div>
+
+            <div class="field">
+              <label for="quantidade">Quantidade de presentes</label>
+              <input type="number" id="quantidade" min="0" step="1" autocomplete="off" placeholder="Ex.: 47">
+            </div>
+
+            <div class="field full">
+              <div class="help">
+                Se a unidade já informou anteriormente, basta enviar novamente para atualizar a quantidade registrada.
+              </div>
+            </div>
+          </div>
+
+          <div id="consultaBox" class="consulta-box">
+            <div class="consulta-row"><strong>Unidade:</strong> <span id="cUnidade">-</span></div>
+            <div class="consulta-row"><strong>Vagas:</strong> <span id="cVagas">0</span></div>
+            <div class="consulta-row"><strong>Quantidade já registrada:</strong> <span id="cAtual">0</span></div>
+          </div>
+
+          <div class="actions">
+            <button class="btn-primary" id="btnEnviar">Enviar</button>
+            <button class="btn-sec" id="btnConsultar" type="button">Consultar código</button>
+          </div>
+        </div>
+
+        <div id="blocoExpirado" class="expired hidden">
+          <h3>Link indisponível</h3>
+          <p id="txtExpirado">Este link não está mais disponível.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
+    const params = new URLSearchParams(window.location.search);
+    const token = (params.get('t') || '').trim();
+
+    const msgGeral = document.getElementById('msgGeral');
+    const blocoFormulario = document.getElementById('blocoFormulario');
+    const blocoExpirado = document.getElementById('blocoExpirado');
+    const txtExpirado = document.getElementById('txtExpirado');
+
+    const infoEvento = document.getElementById('infoEvento');
+    const infoDia = document.getElementById('infoDia');
+    const infoExpira = document.getElementById('infoExpira');
+
+    const codigo = document.getElementById('codigo');
+    const quantidade = document.getElementById('quantidade');
+
+    const consultaBox = document.getElementById('consultaBox');
+    const cUnidade = document.getElementById('cUnidade');
+    const cVagas = document.getElementById('cVagas');
+    const cAtual = document.getElementById('cAtual');
+
+    const btnEnviar = document.getElementById('btnEnviar');
+    const btnConsultar = document.getElementById('btnConsultar');
+
+    let dadosLink = null;
+
+    function esc(v){
+      return String(v ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;');
+    }
+
+    function n(v){
+      return Number(v || 0).toLocaleString('pt-BR');
+    }
+
+    function fmtDataHora(v){
+      if (!v) return '-';
+      const d = new Date(String(v).replace(' ', 'T'));
+      if (isNaN(d)) return v;
+      return d.toLocaleString('pt-BR');
+    }
+
+    function showMsg(texto, tipo = 'warn'){
+      msgGeral.className = `msg show ${tipo}`;
+      msgGeral.innerHTML = texto;
+    }
+
+    function clearMsg(){
+      msgGeral.className = 'msg';
+      msgGeral.innerHTML = '';
+    }
+
+    function bloquearPagina(texto){
+      blocoFormulario.classList.add('hidden');
+      blocoExpirado.classList.remove('hidden');
+      txtExpirado.textContent = texto || 'Este link não está mais disponível.';
+    }
+
+    function mostrarFormulario(){
+      blocoFormulario.classList.remove('hidden');
+      blocoExpirado.classList.add('hidden');
+    }
+
+    function limparConsulta(){
+      consultaBox.classList.remove('show');
+      cUnidade.textContent = '-';
+      cVagas.textContent = '0';
+      cAtual.textContent = '0';
+    }
+
+    async function carregarInfoLink(){
+      if (!token) {
+        bloquearPagina('Link inválido. Token não informado.');
+        return;
+      }
+
+      try {
+        const r = await fetch(API + 'api_presenca_public_info.php?t=' + encodeURIComponent(token), {
+          cache: 'no-store'
+        });
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          const msg = data.error || 'Este link não está disponível.';
+          bloquearPagina(msg);
+          return;
+        }
+
+        dadosLink = data;
+
+        infoEvento.textContent = data.evento || '-';
+        infoDia.textContent = data.dia_label || data.dia || '-';
+        infoExpira.textContent = fmtDataHora(data.expires_at);
+
+        mostrarFormulario();
+        clearMsg();
+      } catch (e) {
+        console.error(e);
+        bloquearPagina('Não foi possível validar este link no momento.');
+      }
+    }
+
+    async function consultarCodigo(){
+      clearMsg();
+      limparConsulta();
+
+      const codigoVal = codigo.value.trim();
+      if (!codigoVal) {
+        showMsg('Informe o código da unidade para consultar.', 'warn');
+        codigo.focus();
+        return;
+      }
+
+      try {
+        btnConsultar.disabled = true;
+
+        const url = API + 'api_presenca_public_consultar.php?t='
+          + encodeURIComponent(token)
+          + '&codigo=' + encodeURIComponent(codigoVal);
+
+        const r = await fetch(url, { cache: 'no-store' });
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.error || 'Não foi possível consultar o código.');
+        }
+
+        cUnidade.textContent = data.unidade || '-';
+        cVagas.textContent = n(data.vagas);
+        cAtual.textContent = n(data.quantidade_atual);
+        consultaBox.classList.add('show');
+
+        if (!quantidade.value) {
+          quantidade.value = String(data.quantidade_atual ?? 0);
+        }
+
+        clearMsg();
+      } catch (e) {
+        console.error(e);
+        showMsg(e.message || 'Não foi possível consultar o código informado.', 'err');
+      } finally {
+        btnConsultar.disabled = false;
+      }
+    }
+
+    async function enviarFormulario(){
+      clearMsg();
+
+      const codigoVal = codigo.value.trim();
+      const qtdVal = quantidade.value.trim();
+
+      if (!codigoVal) {
+        showMsg('Informe o código da unidade.', 'warn');
+        codigo.focus();
+        return;
+      }
+
+      if (qtdVal === '' || isNaN(Number(qtdVal)) || Number(qtdVal) < 0) {
+        showMsg('Informe uma quantidade válida de presentes.', 'warn');
+        quantidade.focus();
+        return;
+      }
+
+      try {
+        btnEnviar.disabled = true;
+        btnEnviar.textContent = 'Enviando...';
+
+        const fd = new FormData();
+        fd.append('t', token);
+        fd.append('codigo', codigoVal);
+        fd.append('quantidade', String(parseInt(qtdVal, 10)));
+
+        const r = await fetch(API + 'api_presenca_public_submit.php', {
+          method: 'POST',
+          body: fd
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.error || 'Falha ao registrar presença.');
+        }
+
+        consultaBox.classList.add('show');
+        cUnidade.textContent = data.unidade || '-';
+        cVagas.textContent = n(data.vagas);
+        cAtual.textContent = n(data.quantidade);
+
+        showMsg(
+          `Obrigado por informar a quantidade de presentes.<br><b>${esc(data.codigo)}</b> - ${esc(data.unidade)}<br>Quantidade registrada com sucesso: <b>${n(data.quantidade)}</b>.`,
+          'ok'
+        );
+      } catch (e) {
+        console.error(e);
+        showMsg(e.message || 'Falha ao registrar quantidade de presentes.', 'err');
+      } finally {
+        btnEnviar.disabled = false;
+        btnEnviar.textContent = 'Enviar';
+      }
+    }
+
+    btnConsultar.addEventListener('click', consultarCodigo);
+
+    codigo.addEventListener('blur', async () => {
+      if (codigo.value.trim()) {
+        await consultarCodigo();
+      }
+    });
+
+    codigo.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        await consultarCodigo();
+        quantidade.focus();
+      }
+    });
+
+    quantidade.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        await enviarFormulario();
+      }
+    });
+
+    btnEnviar.addEventListener('click', enviarFormulario);
+
+    (async function init(){
+      await carregarInfoLink();
+    })();
+  </script>
+</body>
+</html>
