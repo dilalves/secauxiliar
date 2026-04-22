@@ -312,25 +312,35 @@
     }
 
     .btn-icon-edit{
-      border:none;
-      background:transparent;
-      color:var(--primary);
-      cursor:pointer;
-      padding:0;
-      width:auto;
-      height:auto;
-      min-width:auto;
-      font-size:14px;
-      line-height:1;
+    border:none;
+    background:transparent;
+    color:#3f4b5f;
+    cursor:pointer;
+    padding:0;
+    width:14px;
+    height:14px;
+    min-width:14px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    vertical-align:middle;
     }
 
     .btn-icon-edit:hover{
-      filter:brightness(1.1);
+    color:#0b3b78;
+    filter:none;
     }
 
     .btn-icon-edit:disabled{
-      opacity:.6;
-      cursor:not-allowed;
+    opacity:.6;
+    cursor:not-allowed;
+    }
+
+    .btn-icon-edit svg{
+    width:12px;
+    height:12px;
+    fill:currentColor;
+    display:block;
     }
 
     .modal-edit-backdrop{
@@ -831,10 +841,10 @@
     }
 
     function montarCampoEdicao({ valor = 0, campo = '', codigo = '', unidade = '', isFuvestao = false }) {
-      return `
+    return `
         <div class="valor-com-lapis">
-          <span class="valor-editavel">${Number(valor || 0)}</span>
-          <button
+        <span class="valor-editavel">${Number(valor || 0)}</span>
+        <button
             type="button"
             class="btn-icon-edit"
             data-action="abrir-modal-edicao"
@@ -844,9 +854,14 @@
             data-valor="${Number(valor || 0)}"
             data-label="${esc(getLabelCampo(campo, isFuvestao))}"
             title="Editar"
-          >✎</button>
+            aria-label="Editar"
+        >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.33H5v-.92l8.06-8.06.92.92L5.92 19.58zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.13 1.13 3.75 3.75 1.14-1.12z"/>
+            </svg>
+        </button>
         </div>
-      `;
+    `;
     }
 
     async function salvarContagem(codigo, campo, valor, inputEl, botaoEl){
