@@ -116,7 +116,7 @@
     }
 
     .resumo-card{
-      min-width:220px;
+      min-width:170px;
       background:#f4f8fe;
       border:1px solid #dce7f6;
       border-radius:12px;
@@ -294,6 +294,64 @@
       margin-bottom:12px;
       color:var(--muted);
       font-size:13px;
+    }
+
+    .edit-wrap{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+    }
+
+    .edit-num{
+      width:78px;
+      height:34px;
+      border:1px solid #cfe0f5;
+      border-radius:8px;
+      padding:0 8px;
+      text-align:center;
+      font-size:14px;
+      font-weight:600;
+      color:#10233f;
+      background:#fff;
+    }
+
+    .edit-num:focus{
+      outline:none;
+      border-color:#0b3b78;
+      box-shadow:0 0 0 3px rgba(11,59,120,.10);
+    }
+
+    .btn-save-mini{
+      height:34px;
+      min-width:34px;
+      padding:0 10px;
+      border-radius:8px;
+      border:1px solid #cfe0f5;
+      background:#e8f0fb;
+      color:#0b3b78;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    .btn-save-mini:hover{
+      filter:brightness(1.03);
+    }
+
+    .btn-save-mini:disabled,
+    .edit-num:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
+    .salvo-ok{
+      border-color:#19a974 !important;
+      background:#f3fff9 !important;
+    }
+
+    .salvo-erro{
+      border-color:#d64545 !important;
+      background:#fff6f6 !important;
     }
 
     @media (max-width: 900px){
@@ -603,14 +661,20 @@
       cardKpiRed.classList.toggle('hidden', !mostrarRed);
       thRed.classList.toggle('hidden', !mostrarRed);
 
-      lblKpiD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
-      thD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
+      if (isFuvestao) {
+        lblKpiD1.textContent = 'Presentes';
+        thD1.textContent = 'Contagem';
+      } else {
+        lblKpiD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
+        thD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
+      }
 
       atualizarBotoesLink();
 
       return {
         mostrarDia2,
-        mostrarRed
+        mostrarRed,
+        isFuvestao
       };
     }
 
@@ -619,6 +683,84 @@
       if (mostrarDia2) base += 3;
       if (mostrarRed) base += 1;
       return base;
+    }
+
+    function montarCampoEdicao({ valor = 0, campo = '', codigo = '' }) {
+      return `
+        <div class="edit-wrap">
+          <input
+            type="number"
+            min="0"
+            step="1"
+            class="edit-num"
+            value="${Number(valor || 0)}"
+            data-campo="${esc(campo)}"
+            data-codigo="${esc(codigo)}"
+          >
+          <button
+            type="button"
+            class="btn-save-mini"
+            data-action="salvar-contagem"
+            data-campo="${esc(campo)}"
+            data-codigo="${esc(codigo)}"
+            title="Salvar"
+          >OK</button>
+        </div>
+      `;
+    }
+
+    async function salvarContagem(codigo, campo, valor, inputEl, botaoEl){
+      const valorLimpo = String(valor ?? '').trim();
+
+      if (!/^\d+$/.test(valorLimpo) && valorLimpo !== '') {
+        alert('Informe apenas números inteiros.');
+        inputEl?.focus();
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append('evento', evento.value);
+      fd.append('codigo', codigo);
+      fd.append('campo', campo);
+      fd.append('valor', valorLimpo === '' ? '0' : valorLimpo);
+
+      try {
+        if (inputEl) inputEl.disabled = true;
+        if (botaoEl) botaoEl.disabled = true;
+
+        const r = await fetch(API + 'api_contagem_presentes_update.php', {
+          method: 'POST',
+          body: fd,
+          credentials: 'include'
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.error || 'Erro ao salvar.');
+        }
+
+        if (inputEl) {
+          inputEl.value = data.valor ?? 0;
+          inputEl.classList.remove('salvo-erro');
+          inputEl.classList.add('salvo-ok');
+          setTimeout(() => inputEl.classList.remove('salvo-ok'), 1200);
+        }
+
+        await carregarContagem({ silencioso: true });
+      } catch (e) {
+        console.error(e);
+        if (inputEl) {
+          inputEl.classList.remove('salvo-ok');
+          inputEl.classList.add('salvo-erro');
+          setTimeout(() => inputEl.classList.remove('salvo-erro'), 1800);
+          inputEl.focus();
+        }
+        alert(e.message || 'Erro ao salvar contagem.');
+      } finally {
+        if (inputEl) inputEl.disabled = false;
+        if (botaoEl) botaoEl.disabled = false;
+      }
     }
 
     async function carregarEventos(){
@@ -703,12 +845,39 @@
           <td>${esc(r.unidade)}</td>
           <td class="num">${n(r.vagas)}</td>
           <td class="num">${n(r.total_inscritos)}</td>
-          <td class="num">${n(r.presentes_d1)}</td>
-          ${config.mostrarDia2 ? `<td class="num">${n(r.presentes_d2)}</td>` : ``}
-          ${config.mostrarRed ? `<td class="num">${n(r.presentes_red)}</td>` : ``}
+
+          <td class="num">
+            ${montarCampoEdicao({
+              valor: r.presentes_d1,
+              campo: 'presentes_d1',
+              codigo: r.codigo
+            })}
+          </td>
+
+          ${config.mostrarDia2 ? `
+            <td class="num">
+              ${montarCampoEdicao({
+                valor: r.presentes_d2,
+                campo: 'presentes_d2',
+                codigo: r.codigo
+              })}
+            </td>
+          ` : ``}
+
+          ${config.mostrarRed ? `
+            <td class="num">
+              ${montarCampoEdicao({
+                valor: r.presentes_red,
+                campo: 'presentes_red',
+                codigo: r.codigo
+              })}
+            </td>
+          ` : ``}
+
           <td>${esc(r.resp_dia1_nome)}</td>
           <td class="num">${esc(r.resp_dia1_ddd)}</td>
           <td class="num celular">${esc(r.resp_dia1_celular)}</td>
+
           ${config.mostrarDia2 ? `<td>${esc(r.resp_dia2_nome)}</td>` : ``}
           ${config.mostrarDia2 ? `<td class="num">${esc(r.resp_dia2_ddd)}</td>` : ``}
           ${config.mostrarDia2 ? `<td class="num celular">${esc(r.resp_dia2_celular)}</td>` : ``}
@@ -850,6 +1019,34 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && linkModal.classList.contains('show')) {
         fecharModalLink();
+      }
+    });
+
+    tbody.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-action="salvar-contagem"]');
+      if (!btn) return;
+
+      const codigo = btn.dataset.codigo || '';
+      const campo = btn.dataset.campo || '';
+      const input = tbody.querySelector(`.edit-num[data-codigo="${CSS.escape(codigo)}"][data-campo="${CSS.escape(campo)}"]`);
+
+      if (!codigo || !campo || !input) return;
+
+      await salvarContagem(codigo, campo, input.value, input, btn);
+    });
+
+    tbody.addEventListener('keydown', async (e) => {
+      const input = e.target.closest('.edit-num');
+      if (!input) return;
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+
+        const codigo = input.dataset.codigo || '';
+        const campo = input.dataset.campo || '';
+        const btn = tbody.querySelector(`[data-action="salvar-contagem"][data-codigo="${CSS.escape(codigo)}"][data-campo="${CSS.escape(campo)}"]`);
+
+        await salvarContagem(codigo, campo, input.value, input, btn);
       }
     });
 
