@@ -35,7 +35,6 @@
 
     .container{ width:min(1400px, calc(100% - 32px)); margin:0 auto; }
 
-    /* ── TOPBAR ── */
     .topbar{
       position:fixed;
       top:0; left:0; right:0;
@@ -62,7 +61,6 @@
 
     main{ padding-top:92px; padding-bottom:36px; }
 
-    /* ── HERO ── */
     .hero{
       background:linear-gradient(180deg,rgba(11,59,120,.08),rgba(11,59,120,0));
       border:1px solid var(--line);
@@ -83,7 +81,6 @@
     }
     .badge-chip i{ font-size:16px; color:var(--accent); }
 
-    /* ── SECTION ── */
     .section{
       margin-top:16px;
       background:var(--card);
@@ -100,7 +97,6 @@
     .section-head h2{ margin:0; font-size:18px; color:var(--primary); font-weight:800; }
     .section-body{ padding:16px 18px 18px; }
 
-    /* ── TOOLBAR BUSCA ── */
     .toolbar{
       display:grid;
       grid-template-columns: 1.3fr 160px auto auto;
@@ -108,7 +104,6 @@
       align-items:end;
     }
 
-    /* ── BOTÕES ── */
     .btn-flatline{
       border:1px solid var(--line); background:#fff; color:var(--primary);
       border-radius:12px; height:46px; line-height:46px;
@@ -124,7 +119,6 @@
     .btn-main:hover{ filter:brightness(1.08); }
     .btn-flatline:hover{ background:#f0f6ff; }
 
-    /* ── GRID FORMULÁRIO ── */
     .grid-form{
       display:grid;
       grid-template-columns:repeat(12, minmax(0, 1fr));
@@ -141,9 +135,6 @@
     .col-9{ grid-column:span 9; }
     .col-12{ grid-column:span 12; }
 
-    /* ── CAMPO FLUTUANTE CUSTOMIZADO ──
-       Substitui o padrão do Materialize para evitar sobreposição de label+valor.
-       Funciona com placeholder=" " (espaço). */
     .field{
       position:relative;
       display:flex;
@@ -182,7 +173,6 @@
     .field select:focus{
       border-bottom:2px solid var(--accent);
     }
-    /* Label sobe quando campo tem valor ou está em foco */
     .field input:not(:placeholder-shown) ~ label,
     .field input:focus ~ label,
     .field select:focus ~ label,
@@ -192,7 +182,6 @@
       font-size:11px;
       color:var(--accent);
     }
-    /* Select: label sempre em cima (já tem valor padrão visível) */
     .field select ~ label{
       top:2px;
       transform:translateY(0);
@@ -203,7 +192,6 @@
       color:var(--accent);
     }
 
-    /* Campo de busca simples (toolbar) — mantém Materialize */
     .input-field{ margin:0 !important; }
     .input-field input,
     .input-field select{ margin-bottom:0 !important; }
@@ -213,7 +201,6 @@
       justify-content:flex-start; flex-wrap:wrap; padding-top:8px;
     }
 
-    /* ── TABELA ── */
     .table-wrap{
       overflow:auto;
       border:1px solid var(--line);
@@ -256,7 +243,14 @@
 
     .hidden{ display:none !important; }
 
-    /* ── RESPONSIVO ── */
+    .modal-custom .modal-content{
+      padding:20px 24px;
+    }
+    .modal-custom .modal-footer{
+      background:#fff;
+      border-top:1px solid var(--line);
+    }
+
     @media(max-width:1100px){
       .toolbar{ grid-template-columns:1fr 1fr; }
       .grid-form .col-2,
@@ -313,7 +307,6 @@
       </div>
     </section>
 
-    <!-- ── CONSULTA ── -->
     <section class="section">
       <div class="section-head">
         <h2>Consulta</h2>
@@ -361,7 +354,6 @@
       </div>
     </section>
 
-    <!-- ── FORMULÁRIO ── -->
     <section class="section">
       <div class="section-head">
         <h2 id="tituloForm">Nova unidade</h2>
@@ -498,6 +490,9 @@
             <div class="col-3 form-actions">
               <button class="btn-main" type="submit">Salvar unidade</button>
               <button class="btn-flatline" type="button" onclick="novaUnidade()">Limpar</button>
+              <button class="btn-flatline" type="button" id="btnVerAdesoes" onclick="abrirAdesoesUnidade()" disabled>
+                Ver adesões
+              </button>
             </div>
 
           </div>
@@ -506,12 +501,60 @@
     </section>
   </main>
 
+  <div id="modalAdesoes" class="modal modal-custom" style="max-height:85%; width:min(1100px,96%); border-radius:16px;">
+    <div class="modal-content">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+        <div>
+          <h4 style="margin:0; color:var(--primary); font-size:24px; font-weight:800;">Adesões da unidade</h4>
+          <p style="margin:6px 0 0; color:var(--muted); font-size:14px;">
+            Panorama geral dos simulados associados à unidade selecionada.
+          </p>
+        </div>
+        <div class="badge-chip">
+          <i class="material-icons">assignment</i>
+          <span id="badgeAdesoesTotal">0 adesão(ões)</span>
+        </div>
+      </div>
+
+      <div style="margin-top:14px; color:var(--muted); font-size:14px;">
+        <b>Código:</b> <span id="adesoesCodigo">-</span> &nbsp; | &nbsp;
+        <b>Unidade:</b> <span id="adesoesUnidade">-</span>
+      </div>
+
+      <div id="statusAdesoes" class="status-box" style="margin-top:14px;">Carregando...</div>
+
+      <div class="table-wrap" style="margin-top:12px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Evento</th>
+              <th>Vagas</th>
+              <th>Presentes D1</th>
+              <th>Presentes D2</th>
+              <th>Resp. Adesão</th>
+              <th>Criado em</th>
+              <th>Cancelado em</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyAdesoesUnidade">
+            <tr><td colspan="7">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <a href="#!" class="modal-close waves-effect btn-flat" style="color:var(--primary); font-weight:700;">Fechar</a>
+    </div>
+  </div>
+
   <script>
-    const API        = 'https://apisec.secauxiliar.com.br/sim_adm/';
-    const URL_LISTAR = `${API}unidades_listar.php`;
-    const URL_OBTER  = `${API}unidades_get.php`;
-    const URL_SALVAR = `${API}unidades_salvar.php`;
-    const LIMITE     = 50; // máximo de linhas exibidas sem busca
+    const API                 = 'https://apisec.secauxiliar.com.br/sim_adm/';
+    const URL_LISTAR          = `${API}unidades_listar.php`;
+    const URL_OBTER           = `${API}unidades_get.php`;
+    const URL_SALVAR          = `${API}unidades_salvar.php`;
+    const URL_ADESOES_UNIDADE = `${API}unidades_adesoes_listar.php`;
+    const LIMITE              = 50;
 
     const els = {
       busca:       document.getElementById('busca'),
@@ -524,7 +567,6 @@
       id:          document.getElementById('id')
     };
 
-    /* ── utilitários ── */
     function toast(msg, classes = '') {
       if (window.M && M.toast) M.toast({ html: msg, classes });
     }
@@ -535,7 +577,13 @@
         .replaceAll('>','&gt;').replaceAll('"','&quot;');
     }
 
-    /* Marca campos com valor para o label flutuar corretamente */
+    function fmtDataHora(v) {
+      if (!v) return '';
+      const d = new Date(String(v).replace(' ', 'T'));
+      if (isNaN(d)) return v;
+      return d.toLocaleString('pt-BR');
+    }
+
     function marcarCampos() {
       document.querySelectorAll('.field input').forEach(el => {
         el.closest('.field').classList.toggle('has-value', el.value !== '');
@@ -545,7 +593,12 @@
       });
     }
 
-    /* ── ações toolbar ── */
+    function atualizarBotaoAdesoes() {
+      const btn = document.getElementById('btnVerAdesoes');
+      const codigo = document.getElementById('login')?.value?.trim() || '';
+      btn.disabled = !codigo;
+    }
+
     function limparBusca() {
       els.busca.value = '';
       els.filtroAtivo.value = '';
@@ -558,16 +611,15 @@
       els.id.value = '';
       els.tituloForm.textContent = 'Nova unidade';
       document.getElementById('ativo').value = '1';
-      // limpa marcações has-value
       document.querySelectorAll('.field').forEach(f => f.classList.remove('has-value'));
       if (window.M) { M.updateTextFields(); M.FormSelect.init(document.querySelectorAll('select')); }
+      atualizarBotaoAdesoes();
     }
 
     function formToObject(form) {
       return Object.fromEntries(new FormData(form).entries());
     }
 
-    /* ── lista ── */
     async function carregarLista() {
       els.statusLista.textContent = 'Carregando unidades...';
       els.tbodyLista.innerHTML = `<tr><td colspan="9" style="color:var(--muted)">Carregando...</td></tr>`;
@@ -622,7 +674,6 @@
       }
     }
 
-    /* ── editar ── */
     async function editarUnidade(id) {
       try {
         const url = new URL(URL_OBTER, location.href);
@@ -635,7 +686,6 @@
 
         const u = j.dados || {};
 
-        // limpa has-value antes de preencher
         document.querySelectorAll('.field').forEach(f => f.classList.remove('has-value'));
 
         for (const [k, v] of Object.entries(u)) {
@@ -650,6 +700,8 @@
         els.tituloForm.textContent = `Alterar unidade #${u.id}`;
         if (window.M) { M.updateTextFields(); M.FormSelect.init(document.querySelectorAll('select')); }
 
+        atualizarBotaoAdesoes();
+
         document.querySelector('.section:last-child')
           .scrollIntoView({ behavior:'smooth', block:'start' });
 
@@ -659,7 +711,68 @@
       }
     }
 
-    /* ── salvar ── */
+    async function abrirAdesoesUnidade() {
+      const codigo = document.getElementById('login')?.value?.trim() || '';
+      const unidade = document.getElementById('unidade')?.value?.trim() || '';
+
+      if (!codigo) {
+        toast('Selecione uma unidade primeiro.', 'red');
+        return;
+      }
+
+      document.getElementById('adesoesCodigo').textContent = codigo;
+      document.getElementById('adesoesUnidade').textContent = unidade || '-';
+      document.getElementById('badgeAdesoesTotal').textContent = '0 adesão(ões)';
+      document.getElementById('statusAdesoes').textContent = 'Carregando adesões...';
+      document.getElementById('tbodyAdesoesUnidade').innerHTML =
+        `<tr><td colspan="7">Carregando...</td></tr>`;
+
+      const modalEl = document.getElementById('modalAdesoes');
+      const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl, {});
+      modal.open();
+
+      try {
+        const url = new URL(URL_ADESOES_UNIDADE, location.href);
+        url.searchParams.set('codigo', codigo);
+
+        const r = await fetch(url.toString(), { credentials:'include' });
+        const j = await r.json();
+
+        if (!r.ok || !j.ok) throw new Error(j.msg || j.error || 'Erro ao carregar adesões.');
+
+        const dados = Array.isArray(j.dados) ? j.dados : [];
+
+        document.getElementById('badgeAdesoesTotal').textContent = `${dados.length} adesão(ões)`;
+        document.getElementById('statusAdesoes').textContent =
+          `${dados.length} registro(s) encontrado(s).`;
+
+        if (!dados.length) {
+          document.getElementById('tbodyAdesoesUnidade').innerHTML =
+            `<tr><td colspan="7">Nenhuma adesão encontrada para esta unidade.</td></tr>`;
+          return;
+        }
+
+        document.getElementById('tbodyAdesoesUnidade').innerHTML = dados.map(r => `
+          <tr>
+            <td>${escapeHtml(r.evento || '')}</td>
+            <td>${escapeHtml(r.vagas ?? 0)}</td>
+            <td>${escapeHtml(r.presentes_d1 ?? 0)}</td>
+            <td>${escapeHtml(r.presentes_d2 ?? 0)}</td>
+            <td>${escapeHtml(r.resp_adesao || '')}</td>
+            <td>${escapeHtml(fmtDataHora(r.criado_em))}</td>
+            <td>${escapeHtml(fmtDataHora(r.cancelado_em))}</td>
+          </tr>
+        `).join('');
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById('statusAdesoes').textContent = 'Erro ao carregar adesões.';
+        document.getElementById('tbodyAdesoesUnidade').innerHTML =
+          `<tr><td colspan="7">${escapeHtml(err.message || 'Erro')}</td></tr>`;
+        toast(err.message || 'Erro ao carregar adesões.', 'red');
+      }
+    }
+
     async function salvarUnidade(ev) {
       ev.preventDefault();
       const dados = formToObject(els.frm);
@@ -687,9 +800,12 @@
       }
     }
 
-    /* ── init ── */
     document.addEventListener('DOMContentLoaded', () => {
-      if (window.M) { M.FormSelect.init(document.querySelectorAll('select')); M.updateTextFields(); }
+      if (window.M) {
+        M.FormSelect.init(document.querySelectorAll('select'));
+        M.Modal.init(document.querySelectorAll('.modal'));
+        M.updateTextFields();
+      }
 
       els.frm.addEventListener('submit', salvarUnidade);
       els.busca.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); carregarLista(); } });
@@ -697,6 +813,7 @@
       marcarCampos();
       carregarLista();
       novaUnidade();
+      atualizarBotaoAdesoes();
     });
   </script>
 </body>
