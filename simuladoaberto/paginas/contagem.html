@@ -296,52 +296,126 @@
       font-size:13px;
     }
 
-    .edit-wrap{
+    .valor-com-lapis{
       display:flex;
       align-items:center;
       justify-content:center;
       gap:6px;
     }
 
-    .edit-num{
-      width:78px;
-      height:34px;
-      border:1px solid #cfe0f5;
-      border-radius:8px;
-      padding:0 8px;
+    .valor-editavel{
+      min-width:28px;
       text-align:center;
-      font-size:14px;
-      font-weight:600;
-      color:#10233f;
-      background:#fff;
+      font-weight:700;
+      color:var(--text);
+      display:inline-block;
     }
 
-    .edit-num:focus{
+    .btn-icon-edit{
+      border:none;
+      background:transparent;
+      color:var(--primary);
+      cursor:pointer;
+      padding:0;
+      width:auto;
+      height:auto;
+      min-width:auto;
+      font-size:14px;
+      line-height:1;
+    }
+
+    .btn-icon-edit:hover{
+      filter:brightness(1.1);
+    }
+
+    .btn-icon-edit:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .modal-edit-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(16,35,63,.28);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:10000;
+    }
+
+    .modal-edit-backdrop.show{
+      display:flex;
+    }
+
+    .modal-edit{
+      width:min(460px, 100%);
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 18px 50px rgba(11,59,120,.18);
+      overflow:hidden;
+    }
+
+    .modal-edit-head{
+      padding:16px 18px 10px;
+      border-bottom:1px solid #edf2f7;
+    }
+
+    .modal-edit-title{
+      margin:0;
+      font-size:22px;
+      color:var(--primary);
+    }
+
+    .modal-edit-sub{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .modal-edit-body{
+      padding:18px;
+    }
+
+    .modal-edit-box{
+      background:#f4f8fe;
+      border:1px solid #dce7f6;
+      border-radius:12px;
+      padding:12px 14px;
+      margin-bottom:14px;
+    }
+
+    .modal-edit-box div{
+      margin-bottom:4px;
+    }
+
+    .modal-edit-box div:last-child{
+      margin-bottom:0;
+    }
+
+    .modal-edit-input{
+      width:100%;
+      height:42px;
+      border:1px solid #cfe0f5;
+      border-radius:10px;
+      padding:0 12px;
+      font-size:16px;
+      font-weight:600;
+    }
+
+    .modal-edit-input:focus{
       outline:none;
       border-color:#0b3b78;
       box-shadow:0 0 0 3px rgba(11,59,120,.10);
     }
 
-    .btn-save-mini{
-      height:34px;
-      min-width:34px;
-      padding:0 10px;
-      border-radius:8px;
-      border:1px solid #cfe0f5;
-      background:#e8f0fb;
-      color:#0b3b78;
-      cursor:pointer;
-      font-weight:700;
-    }
-
-    .btn-save-mini:hover{
-      filter:brightness(1.03);
-    }
-
-    .btn-save-mini:disabled,
-    .edit-num:disabled{
-      opacity:.65;
-      cursor:not-allowed;
+    .modal-edit-actions{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      margin-top:14px;
+      flex-wrap:wrap;
     }
 
     .salvo-ok{
@@ -503,6 +577,30 @@
     </div>
   </div>
 
+  <div class="modal-edit-backdrop" id="editModal">
+    <div class="modal-edit">
+      <div class="modal-edit-head">
+        <h3 class="modal-edit-title">Editar contagem</h3>
+        <p class="modal-edit-sub">Altere o valor e clique em salvar.</p>
+      </div>
+
+      <div class="modal-edit-body">
+        <div class="modal-edit-box">
+          <div><strong>Unidade:</strong> <span id="editUnidade">-</span></div>
+          <div><strong>Código:</strong> <span id="editCodigo">-</span></div>
+          <div><strong>Campo:</strong> <span id="editCampoLabel">-</span></div>
+        </div>
+
+        <input type="number" min="0" step="1" id="editValor" class="modal-edit-input">
+
+        <div class="modal-edit-actions">
+          <button type="button" class="btn-sec" id="btnCancelarEdicao">Cancelar</button>
+          <button type="button" id="btnSalvarEdicao">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
 
@@ -544,9 +642,24 @@
     const btnAbrirLink = document.getElementById('btnAbrirLink');
     const btnFecharModal = document.getElementById('btnFecharModal');
 
+    const editModal = document.getElementById('editModal');
+    const editUnidade = document.getElementById('editUnidade');
+    const editCodigo = document.getElementById('editCodigo');
+    const editCampoLabel = document.getElementById('editCampoLabel');
+    const editValor = document.getElementById('editValor');
+    const btnCancelarEdicao = document.getElementById('btnCancelarEdicao');
+    const btnSalvarEdicao = document.getElementById('btnSalvarEdicao');
+
     let autoRefreshTimer = null;
     let carregandoAuto = false;
     let ultimoLinkGerado = '';
+
+    let editState = {
+      codigo: '',
+      campo: '',
+      unidade: '',
+      valor: 0
+    };
 
     function esc(v){
       return String(v ?? '')
@@ -572,6 +685,13 @@
       if (e.startsWith('ENEM')) return 'ENEM';
       if (e.startsWith('FUVESTAO')) return 'FUVESTAO';
       return 'OUTRO';
+    }
+
+    function getLabelCampo(campo, isFuvestao = false){
+      if (campo === 'presentes_d1') return isFuvestao ? 'Contagem' : 'Presentes D1';
+      if (campo === 'presentes_d2') return 'Presentes D2';
+      if (campo === 'presentes_red') return 'Presentes Redação';
+      return 'Valor';
     }
 
     function atualizarBotoesLink(){
@@ -619,6 +739,31 @@
 
     function fecharModalLink(){
       linkModal.classList.remove('show');
+    }
+
+    function abrirModalEdicao({ codigo, campo, unidade, valor, label }) {
+      editState = {
+        codigo: codigo || '',
+        campo: campo || '',
+        unidade: unidade || '',
+        valor: Number(valor || 0)
+      };
+
+      editUnidade.textContent = unidade || '-';
+      editCodigo.textContent = codigo || '-';
+      editCampoLabel.textContent = label || '-';
+      editValor.value = Number(valor || 0);
+
+      editModal.classList.add('show');
+
+      setTimeout(() => {
+        editValor.focus();
+        editValor.select();
+      }, 50);
+    }
+
+    function fecharModalEdicao() {
+      editModal.classList.remove('show');
     }
 
     function resetTela(){
@@ -685,26 +830,21 @@
       return base;
     }
 
-    function montarCampoEdicao({ valor = 0, campo = '', codigo = '' }) {
+    function montarCampoEdicao({ valor = 0, campo = '', codigo = '', unidade = '', isFuvestao = false }) {
       return `
-        <div class="edit-wrap">
-          <input
-            type="number"
-            min="0"
-            step="1"
-            class="edit-num"
-            value="${Number(valor || 0)}"
-            data-campo="${esc(campo)}"
-            data-codigo="${esc(codigo)}"
-          >
+        <div class="valor-com-lapis">
+          <span class="valor-editavel">${Number(valor || 0)}</span>
           <button
             type="button"
-            class="btn-save-mini"
-            data-action="salvar-contagem"
+            class="btn-icon-edit"
+            data-action="abrir-modal-edicao"
             data-campo="${esc(campo)}"
             data-codigo="${esc(codigo)}"
-            title="Salvar"
-          >OK</button>
+            data-unidade="${esc(unidade)}"
+            data-valor="${Number(valor || 0)}"
+            data-label="${esc(getLabelCampo(campo, isFuvestao))}"
+            title="Editar"
+          >✎</button>
         </div>
       `;
     }
@@ -715,7 +855,7 @@
       if (!/^\d+$/.test(valorLimpo) && valorLimpo !== '') {
         alert('Informe apenas números inteiros.');
         inputEl?.focus();
-        return;
+        return false;
       }
 
       const fd = new FormData();
@@ -734,20 +874,28 @@
           credentials: 'include'
         });
 
-        const data = await r.json();
+        const txt = await r.text();
+        let data = {};
+
+        try {
+          data = txt ? JSON.parse(txt) : {};
+        } catch (e) {
+          throw new Error('O endpoint não retornou JSON válido.');
+        }
 
         if (!r.ok || !data.ok) {
           throw new Error(data.error || 'Erro ao salvar.');
         }
 
         if (inputEl) {
-          inputEl.value = data.valor ?? 0;
+          inputEl.value = data.valor ?? valorLimpo;
           inputEl.classList.remove('salvo-erro');
           inputEl.classList.add('salvo-ok');
           setTimeout(() => inputEl.classList.remove('salvo-ok'), 1200);
         }
 
         await carregarContagem({ silencioso: true });
+        return true;
       } catch (e) {
         console.error(e);
         if (inputEl) {
@@ -757,6 +905,7 @@
           inputEl.focus();
         }
         alert(e.message || 'Erro ao salvar contagem.');
+        return false;
       } finally {
         if (inputEl) inputEl.disabled = false;
         if (botaoEl) botaoEl.disabled = false;
@@ -850,7 +999,9 @@
             ${montarCampoEdicao({
               valor: r.presentes_d1,
               campo: 'presentes_d1',
-              codigo: r.codigo
+              codigo: r.codigo,
+              unidade: r.unidade,
+              isFuvestao: config.isFuvestao
             })}
           </td>
 
@@ -859,7 +1010,9 @@
               ${montarCampoEdicao({
                 valor: r.presentes_d2,
                 campo: 'presentes_d2',
-                codigo: r.codigo
+                codigo: r.codigo,
+                unidade: r.unidade,
+                isFuvestao: config.isFuvestao
               })}
             </td>
           ` : ``}
@@ -869,7 +1022,9 @@
               ${montarCampoEdicao({
                 valor: r.presentes_red,
                 campo: 'presentes_red',
-                codigo: r.codigo
+                codigo: r.codigo,
+                unidade: r.unidade,
+                isFuvestao: config.isFuvestao
               })}
             </td>
           ` : ``}
@@ -1010,9 +1165,49 @@
       }
     });
 
+    btnCancelarEdicao.addEventListener('click', fecharModalEdicao);
+
+    btnSalvarEdicao.addEventListener('click', async () => {
+      const ok = await salvarContagem(
+        editState.codigo,
+        editState.campo,
+        editValor.value,
+        editValor,
+        btnSalvarEdicao
+      );
+
+      if (ok) {
+        fecharModalEdicao();
+      }
+    });
+
+    editValor.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+
+        const ok = await salvarContagem(
+          editState.codigo,
+          editState.campo,
+          editValor.value,
+          editValor,
+          btnSalvarEdicao
+        );
+
+        if (ok) {
+          fecharModalEdicao();
+        }
+      }
+    });
+
     linkModal.addEventListener('click', (e) => {
       if (e.target === linkModal) {
         fecharModalLink();
+      }
+    });
+
+    editModal.addEventListener('click', (e) => {
+      if (e.target === editModal) {
+        fecharModalEdicao();
       }
     });
 
@@ -1020,34 +1215,22 @@
       if (e.key === 'Escape' && linkModal.classList.contains('show')) {
         fecharModalLink();
       }
+      if (e.key === 'Escape' && editModal.classList.contains('show')) {
+        fecharModalEdicao();
+      }
     });
 
     tbody.addEventListener('click', async (e) => {
-      const btn = e.target.closest('[data-action="salvar-contagem"]');
+      const btn = e.target.closest('[data-action="abrir-modal-edicao"]');
       if (!btn) return;
 
-      const codigo = btn.dataset.codigo || '';
-      const campo = btn.dataset.campo || '';
-      const input = tbody.querySelector(`.edit-num[data-codigo="${CSS.escape(codigo)}"][data-campo="${CSS.escape(campo)}"]`);
-
-      if (!codigo || !campo || !input) return;
-
-      await salvarContagem(codigo, campo, input.value, input, btn);
-    });
-
-    tbody.addEventListener('keydown', async (e) => {
-      const input = e.target.closest('.edit-num');
-      if (!input) return;
-
-      if (e.key === 'Enter') {
-        e.preventDefault();
-
-        const codigo = input.dataset.codigo || '';
-        const campo = input.dataset.campo || '';
-        const btn = tbody.querySelector(`[data-action="salvar-contagem"][data-codigo="${CSS.escape(codigo)}"][data-campo="${CSS.escape(campo)}"]`);
-
-        await salvarContagem(codigo, campo, input.value, input, btn);
-      }
+      abrirModalEdicao({
+        codigo: btn.dataset.codigo || '',
+        campo: btn.dataset.campo || '',
+        unidade: btn.dataset.unidade || '',
+        valor: btn.dataset.valor || '0',
+        label: btn.dataset.label || ''
+      });
     });
 
     document.addEventListener('visibilitychange', async () => {
