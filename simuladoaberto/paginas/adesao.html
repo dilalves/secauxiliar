@@ -245,6 +245,147 @@
       color:#991b1b;
       border-color:#fecaca;
     }
+
+    .valor-com-lapis{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .valor-editavel{
+      min-width:28px;
+      text-align:center;
+      font-weight:700;
+      color:var(--text);
+      display:inline-block;
+    }
+
+    .btn-icon-edit{
+      border:none;
+      background:transparent;
+      color:#3f4b5f;
+      cursor:pointer;
+      padding:0;
+      width:14px;
+      height:14px;
+      min-width:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      vertical-align:middle;
+    }
+
+    .btn-icon-edit:hover{
+      color:#0b3b78;
+      filter:none;
+    }
+
+    .btn-icon-edit:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .btn-icon-edit svg{
+      width:12px;
+      height:12px;
+      fill:currentColor;
+      display:block;
+    }
+
+    .modal-edit-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(16,35,63,.28);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:10000;
+    }
+
+    .modal-edit-backdrop.show{
+      display:flex;
+    }
+
+    .modal-edit{
+      width:min(460px, 100%);
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 18px 50px rgba(11,59,120,.18);
+      overflow:hidden;
+    }
+
+    .modal-edit-head{
+      padding:16px 18px 10px;
+      border-bottom:1px solid #edf2f7;
+    }
+
+    .modal-edit-title{
+      margin:0;
+      font-size:22px;
+      color:var(--primary);
+    }
+
+    .modal-edit-sub{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .modal-edit-body{
+      padding:18px;
+    }
+
+    .modal-edit-box{
+      background:#f4f8fe;
+      border:1px solid #dce7f6;
+      border-radius:12px;
+      padding:12px 14px;
+      margin-bottom:14px;
+    }
+
+    .modal-edit-box div{
+      margin-bottom:4px;
+    }
+
+    .modal-edit-box div:last-child{
+      margin-bottom:0;
+    }
+
+    .modal-edit-input{
+      width:100%;
+      height:42px;
+      border:1px solid #cfe0f5;
+      border-radius:10px;
+      padding:0 12px;
+      font-size:16px;
+      font-weight:600;
+    }
+
+    .modal-edit-input:focus{
+      outline:none;
+      border-color:#0b3b78;
+      box-shadow:0 0 0 3px rgba(11,59,120,.10);
+    }
+
+    .modal-edit-actions{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+
+    .salvo-ok{
+      border-color:#19a974 !important;
+      background:#f3fff9 !important;
+    }
+
+    .salvo-erro{
+      border-color:#d64545 !important;
+      background:#fff6f6 !important;
+    }
   </style>
 </head>
 <body>
@@ -383,6 +524,30 @@
     </div>
   </div>
 
+  <div class="modal-edit-backdrop" id="editModal">
+    <div class="modal-edit">
+      <div class="modal-edit-head">
+        <h3 class="modal-edit-title">Editar vagas</h3>
+        <p class="modal-edit-sub">Altere a quantidade de vagas e clique em salvar.</p>
+      </div>
+
+      <div class="modal-edit-body">
+        <div class="modal-edit-box">
+          <div><strong>Evento:</strong> <span id="editEvento">-</span></div>
+          <div><strong>Unidade:</strong> <span id="editUnidade">-</span></div>
+          <div><strong>Código:</strong> <span id="editCodigo">-</span></div>
+        </div>
+
+        <input type="number" min="0" step="1" id="editValor" class="modal-edit-input">
+
+        <div class="modal-edit-actions">
+          <button type="button" class="btn-sec" id="btnCancelarEdicao">Cancelar</button>
+          <button type="button" id="btnSalvarEdicao">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
 
@@ -404,6 +569,21 @@
     const faltantesInscritos = document.getElementById('faltantesInscritos');
     const faltantesEstados = document.getElementById('faltantesEstados');
     const faltantesCidades = document.getElementById('faltantesCidades');
+
+    const editModal = document.getElementById('editModal');
+    const editEvento = document.getElementById('editEvento');
+    const editUnidade = document.getElementById('editUnidade');
+    const editCodigo = document.getElementById('editCodigo');
+    const editValor = document.getElementById('editValor');
+    const btnCancelarEdicao = document.getElementById('btnCancelarEdicao');
+    const btnSalvarEdicao = document.getElementById('btnSalvarEdicao');
+
+    let editState = {
+      evento: '',
+      codigo: '',
+      unidade: '',
+      valor: 0
+    };
 
     function esc(v){
       return String(v ?? '')
@@ -456,6 +636,166 @@
           </td>
         </tr>
       `;
+    }
+
+    function abrirModalEdicao({ eventoNome, codigo, unidade, valor }){
+      editState = {
+        evento: eventoNome || '',
+        codigo: codigo || '',
+        unidade: unidade || '',
+        valor: Number(valor || 0)
+      };
+
+      editEvento.textContent = eventoNome || '-';
+      editUnidade.textContent = unidade || '-';
+      editCodigo.textContent = codigo || '-';
+      editValor.value = Number(valor || 0);
+
+      editModal.classList.add('show');
+
+      setTimeout(() => {
+        editValor.focus();
+        editValor.select();
+      }, 50);
+    }
+
+    function fecharModalEdicao(){
+      editModal.classList.remove('show');
+    }
+
+    function renderIconeLapis(){
+      return `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.33H5v-.92l8.06-8.06.92.92L5.92 19.58zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.13 1.13 3.75 3.75 1.14-1.12z"/>
+        </svg>
+      `;
+    }
+
+    function renderVagas(r){
+      const vagas = Number(r.vagas ?? 0);
+      const vagasRel = r.vagas_relatorio;
+      const removidaRelatorio = Number(r.removida_relatorio ?? 0);
+      const vagasDivergentes = Number(r.vagas_divergentes ?? 0) === 1;
+      const status = String(r.status || '').toUpperCase();
+
+      let html = `
+        <span class="valor-com-lapis">
+          <span class="valor-editavel">${esc(vagas)}</span>
+          <button
+            type="button"
+            class="btn-icon-edit"
+            data-action="abrir-modal-vagas"
+            data-evento="${esc(evento.value)}"
+            data-codigo="${esc(r.unidade_login)}"
+            data-unidade="${esc(r.unidade_internet)}"
+            data-valor="${esc(vagas)}"
+            title="Editar vagas"
+            aria-label="Editar vagas"
+          >
+            ${renderIconeLapis()}
+          </button>
+        </span>
+      `;
+
+      if (status === 'AGUARDANDO') {
+        if (vagasDivergentes) {
+          html += `
+            <span class="vaga-tag vaga-tag-dif"
+                  title="Vagas no relatório: ${esc(vagasRel)}">
+              ⚠️
+            </span>
+          `;
+        }
+        return `<span class="vaga-wrap">${html}</span>`;
+      }
+
+      if (vagasRel === null || vagasRel === undefined || vagasRel === '') {
+        html += `
+          <span class="vaga-tag vaga-tag-miss"
+                title="Unidade não localizada no relatório para este evento.">
+            ?
+          </span>
+        `;
+        return `<span class="vaga-wrap">${html}</span>`;
+      }
+
+      if (removidaRelatorio === 1) {
+        html += `
+          <span class="vaga-tag vaga-tag-cancel"
+                title="Unidade marcada como removida/cancelada no relatório. Vagas no relatório: ${esc(vagasRel)}">
+            ⚠️
+          </span>
+        `;
+        return `<span class="vaga-wrap">${html}</span>`;
+      }
+
+      if (vagasDivergentes) {
+        html += `
+          <span class="vaga-tag vaga-tag-dif"
+                title="Vagas no relatório: ${esc(vagasRel)}">
+            ⚠️
+          </span>
+        `;
+      }
+
+      return `<span class="vaga-wrap">${html}</span>`;
+    }
+
+    async function salvarVagas(){
+      const valorLimpo = String(editValor.value ?? '').trim();
+
+      if (!/^\d+$/.test(valorLimpo) && valorLimpo !== '') {
+        alert('Informe apenas números inteiros.');
+        editValor.focus();
+        return false;
+      }
+
+      const fd = new FormData();
+      fd.append('evento', editState.evento);
+      fd.append('codigo', editState.codigo);
+      fd.append('vagas', valorLimpo === '' ? '0' : valorLimpo);
+
+      try {
+        editValor.disabled = true;
+        btnSalvarEdicao.disabled = true;
+
+        const r = await fetch(API + 'api_adesoes_update_vagas.php', {
+          method:'POST',
+          body: fd,
+          credentials:'include'
+        });
+
+        const txt = await r.text();
+        let data = {};
+
+        try {
+          data = txt ? JSON.parse(txt) : {};
+        } catch (e) {
+          throw new Error('O endpoint não retornou JSON válido.');
+        }
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.error || 'Erro ao salvar vagas.');
+        }
+
+        editValor.classList.remove('salvo-erro');
+        editValor.classList.add('salvo-ok');
+        setTimeout(() => editValor.classList.remove('salvo-ok'), 1200);
+
+        await carregarAdesoes();
+        return true;
+      } catch(e) {
+        console.error(e);
+        editValor.classList.remove('salvo-ok');
+        editValor.classList.add('salvo-erro');
+        setTimeout(() => editValor.classList.remove('salvo-erro'), 1800);
+        editValor.focus();
+        alert(e.message || 'Erro ao salvar vagas.');
+        return false;
+      } finally {
+        editValor.disabled = false;
+        btnSalvarEdicao.disabled = false;
+      }
     }
 
     async function carregarEventos(){
@@ -599,59 +939,6 @@
       `).join('');
     }
 
-    function renderVagas(r){
-      const vagas = Number(r.vagas ?? 0);
-      const vagasRel = r.vagas_relatorio;
-      const removidaRelatorio = Number(r.removida_relatorio ?? 0);
-      const vagasDivergentes = Number(r.vagas_divergentes ?? 0) === 1;
-      const status = String(r.status || '').toUpperCase();
-
-      let html = `<span>${esc(vagas)}</span>`;
-
-      if (status === 'AGUARDANDO') {
-        if (vagasDivergentes) {
-          html += `
-            <span class="vaga-tag vaga-tag-dif"
-                  title="Vagas no relatório: ${esc(vagasRel)}">
-              ⚠️
-            </span>
-          `;
-        }
-        return `<span class="vaga-wrap">${html}</span>`;
-      }
-
-      if (vagasRel === null || vagasRel === undefined || vagasRel === '') {
-        html += `
-          <span class="vaga-tag vaga-tag-miss"
-                title="Unidade não localizada no relatório para este evento.">
-            ?
-          </span>
-        `;
-        return `<span class="vaga-wrap">${html}</span>`;
-      }
-
-      if (removidaRelatorio === 1) {
-        html += `
-          <span class="vaga-tag vaga-tag-cancel"
-                title="Unidade marcada como removida/cancelada no relatório. Vagas no relatório: ${esc(vagasRel)}">
-            ⚠️
-          </span>
-        `;
-        return `<span class="vaga-wrap">${html}</span>`;
-      }
-
-      if (vagasDivergentes) {
-        html += `
-          <span class="vaga-tag vaga-tag-dif"
-                title="Vagas no relatório: ${esc(vagasRel)}">
-            ⚠️
-          </span>
-        `;
-      }
-
-      return `<span class="vaga-wrap">${html}</span>`;
-    }
-
     document.getElementById('btnBuscar').addEventListener('click', async () => {
       try {
         await carregarAdesoes();
@@ -734,6 +1021,45 @@
       } catch(e) {
         console.error(e);
         alert(e.message || 'Erro ao gerar link.');
+      }
+    });
+
+    tbody.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action="abrir-modal-vagas"]');
+      if (!btn) return;
+
+      abrirModalEdicao({
+        eventoNome: btn.dataset.evento || '',
+        codigo: btn.dataset.codigo || '',
+        unidade: btn.dataset.unidade || '',
+        valor: btn.dataset.valor || '0'
+      });
+    });
+
+    btnCancelarEdicao.addEventListener('click', fecharModalEdicao);
+
+    btnSalvarEdicao.addEventListener('click', async () => {
+      const ok = await salvarVagas();
+      if (ok) fecharModalEdicao();
+    });
+
+    editValor.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const ok = await salvarVagas();
+        if (ok) fecharModalEdicao();
+      }
+    });
+
+    editModal.addEventListener('click', (e) => {
+      if (e.target === editModal) {
+        fecharModalEdicao();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && editModal.classList.contains('show')) {
+        fecharModalEdicao();
       }
     });
 
