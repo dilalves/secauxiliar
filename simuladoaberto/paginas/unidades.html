@@ -529,6 +529,7 @@
             <tr>
               <th>Evento</th>
               <th>Vagas</th>
+              <th>Inscritos</th>
               <th>Presentes D1</th>
               <th>Presentes D2</th>
               <th>Resp. Adesão</th>
@@ -537,7 +538,7 @@
             </tr>
           </thead>
           <tbody id="tbodyAdesoesUnidade">
-            <tr><td colspan="7">Carregando...</td></tr>
+            <tr><td colspan="8">Carregando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -725,7 +726,7 @@
       document.getElementById('badgeAdesoesTotal').textContent = '0 adesão(ões)';
       document.getElementById('statusAdesoes').textContent = 'Carregando adesões...';
       document.getElementById('tbodyAdesoesUnidade').innerHTML =
-        `<tr><td colspan="7">Carregando...</td></tr>`;
+        `<tr><td colspan="8">Carregando...</td></tr>`;
 
       const modalEl = document.getElementById('modalAdesoes');
       const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl, {});
@@ -748,27 +749,28 @@
 
         if (!dados.length) {
           document.getElementById('tbodyAdesoesUnidade').innerHTML =
-            `<tr><td colspan="7">Nenhuma adesão encontrada para esta unidade.</td></tr>`;
+            `<tr><td colspan="8">Nenhuma adesão encontrada para esta unidade.</td></tr>`;
           return;
         }
 
-        document.getElementById('tbodyAdesoesUnidade').innerHTML = dados.map(r => `
-          <tr>
-            <td>${escapeHtml(r.evento || '')}</td>
-            <td>${escapeHtml(r.vagas ?? 0)}</td>
-            <td>${escapeHtml(r.presentes_d1 ?? 0)}</td>
-            <td>${escapeHtml(r.presentes_d2 ?? 0)}</td>
-            <td>${escapeHtml(r.resp_adesao || '')}</td>
-            <td>${escapeHtml(fmtDataHora(r.criado_em))}</td>
-            <td>${escapeHtml(fmtDataHora(r.cancelado_em))}</td>
-          </tr>
-        `).join('');
+       document.getElementById('tbodyAdesoesUnidade').innerHTML = dados.map(r => `
+        <tr>
+          <td>${escapeHtml(r.evento || '')}</td>
+          <td>${escapeHtml(r.vagas ?? 0)}</td>
+          <td>${escapeHtml(r.inscritos ?? 0)}</td>
+          <td>${escapeHtml(r.presentes_d1 ?? 0)}</td>
+          <td>${escapeHtml(r.presentes_d2 ?? 0)}</td>
+          <td>${escapeHtml(r.resp_adesao || '')}</td>
+          <td>${escapeHtml(fmtDataHora(r.criado_em))}</td>
+          <td>${escapeHtml(fmtDataHora(r.cancelado_em))}</td>
+        </tr>
+      `).join('');
 
       } catch (err) {
         console.error(err);
         document.getElementById('statusAdesoes').textContent = 'Erro ao carregar adesões.';
         document.getElementById('tbodyAdesoesUnidade').innerHTML =
-          `<tr><td colspan="7">${escapeHtml(err.message || 'Erro')}</td></tr>`;
+          `<tr><td colspan="8">${escapeHtml(err.message || 'Erro')}</td></tr>`;
         toast(err.message || 'Erro ao carregar adesões.', 'red');
       }
     }
