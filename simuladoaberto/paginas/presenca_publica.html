@@ -227,37 +227,6 @@
 
     .btn-primary:hover{ filter:brightness(1.05); }
 
-    .btn-sec{
-      background:#e8f0fb;
-      color:var(--primary);
-      border:1px solid #cfe0f5;
-    }
-
-    .consulta-box{
-      background:#fbfdff;
-      border:1px dashed #d7e4f4;
-      border-radius:12px;
-      padding:14px;
-      margin-top:12px;
-      display:none;
-    }
-
-    .consulta-box.show{
-      display:block;
-    }
-
-    .consulta-row{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-bottom:5px;
-      font-size:14px;
-    }
-
-    .consulta-row strong{
-      color:var(--primary);
-    }
-
     .expired{
       text-align:center;
       padding:34px 18px;
@@ -348,15 +317,8 @@
             </div>
           </div>
 
-          <div id="consultaBox" class="consulta-box">
-            <div class="consulta-row"><strong>Unidade:</strong> <span id="cUnidade">-</span></div>
-            <div class="consulta-row"><strong>Vagas:</strong> <span id="cVagas">0</span></div>
-            <div class="consulta-row"><strong>Quantidade já registrada:</strong> <span id="cAtual">0</span></div>
-          </div>
-
           <div class="actions">
             <button class="btn-primary" id="btnEnviar">Enviar</button>
-            <button class="btn-sec" id="btnConsultar" type="button">Consultar código</button>
           </div>
         </div>
 
@@ -385,13 +347,7 @@
     const codigo = document.getElementById('codigo');
     const quantidade = document.getElementById('quantidade');
 
-    const consultaBox = document.getElementById('consultaBox');
-    const cUnidade = document.getElementById('cUnidade');
-    const cVagas = document.getElementById('cVagas');
-    const cAtual = document.getElementById('cAtual');
-
     const btnEnviar = document.getElementById('btnEnviar');
-    const btnConsultar = document.getElementById('btnConsultar');
 
     let dadosLink = null;
 
@@ -435,13 +391,6 @@
       blocoExpirado.classList.add('hidden');
     }
 
-    function limparConsulta(){
-      consultaBox.classList.remove('show');
-      cUnidade.textContent = '-';
-      cVagas.textContent = '0';
-      cAtual.textContent = '0';
-    }
-
     async function carregarInfoLink(){
       if (!token) {
         bloquearPagina('Link inválido. Token não informado.');
@@ -471,49 +420,6 @@
       } catch (e) {
         console.error(e);
         bloquearPagina('Não foi possível validar este link no momento.');
-      }
-    }
-
-    async function consultarCodigo(){
-      clearMsg();
-      limparConsulta();
-
-      const codigoVal = codigo.value.trim();
-      if (!codigoVal) {
-        showMsg('Informe o código da unidade para consultar.', 'warn');
-        codigo.focus();
-        return;
-      }
-
-      try {
-        btnConsultar.disabled = true;
-
-        const url = API + 'api_presenca_public_consultar.php?t='
-          + encodeURIComponent(token)
-          + '&codigo=' + encodeURIComponent(codigoVal);
-
-        const r = await fetch(url, { cache: 'no-store' });
-        const data = await r.json();
-
-        if (!r.ok || !data.ok) {
-          throw new Error(data.error || 'Não foi possível consultar o código.');
-        }
-
-        cUnidade.textContent = data.unidade || '-';
-        cVagas.textContent = n(data.vagas);
-        cAtual.textContent = n(data.quantidade_atual);
-        consultaBox.classList.add('show');
-
-        if (!quantidade.value) {
-          quantidade.value = String(data.quantidade_atual ?? 0);
-        }
-
-        clearMsg();
-      } catch (e) {
-        console.error(e);
-        showMsg(e.message || 'Não foi possível consultar o código informado.', 'err');
-      } finally {
-        btnConsultar.disabled = false;
       }
     }
 
@@ -555,11 +461,6 @@
           throw new Error(data.error || 'Falha ao registrar presença.');
         }
 
-        consultaBox.classList.add('show');
-        cUnidade.textContent = data.unidade || '-';
-        cVagas.textContent = n(data.vagas);
-        cAtual.textContent = n(data.quantidade);
-
         showMsg(
           `Obrigado por informar a quantidade de presentes.<br><b>${esc(data.codigo)}</b> - ${esc(data.unidade)}<br>Quantidade registrada com sucesso: <b>${n(data.quantidade)}</b>.`,
           'ok'
@@ -573,18 +474,9 @@
       }
     }
 
-    btnConsultar.addEventListener('click', consultarCodigo);
-
-    codigo.addEventListener('blur', async () => {
-      if (codigo.value.trim()) {
-        await consultarCodigo();
-      }
-    });
-
     codigo.addEventListener('keydown', async (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        await consultarCodigo();
         quantidade.focus();
       }
     });
