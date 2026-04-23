@@ -490,8 +490,13 @@
             <div class="col-3 form-actions">
               <button class="btn-main" type="submit">Salvar</button>
               <button class="btn-flatline" type="button" onclick="novaUnidade()">Limpar</button>
+
               <button class="btn-flatline" type="button" id="btnVerAdesoes" onclick="abrirAdesoesUnidade()" disabled>
                 Adesões
+              </button>
+
+              <button class="btn-flatline" type="button" id="btnObservacoes" onclick="abrirObservacoes()" disabled>
+                Observações
               </button>
             </div>
 
@@ -501,6 +506,7 @@
     </section>
   </main>
 
+  
   <div id="modalAdesoes" class="modal modal-custom" style="max-height:85%; width:min(1100px,96%); border-radius:16px;">
     <div class="modal-content">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
@@ -549,12 +555,91 @@
     </div>
   </div>
 
+  <!--  Modal Observações da unidade (funcionalidade futura, botão ficará desabilitado por enquanto) -->
+
+    <div id="modalObservacoes" class="modal modal-custom" style="max-height:90%; width:min(1100px,96%); border-radius:16px;">
+  <div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+      <div>
+        <h4 style="margin:0; color:var(--primary); font-size:24px; font-weight:800;">Observações da unidade</h4>
+        <p style="margin:6px 0 0; color:var(--muted); font-size:14px;">
+          Registre novas observações e acompanhe o histórico da unidade.
+        </p>
+      </div>
+      <div class="badge-chip">
+        <i class="material-icons">notes</i>
+        <span id="badgeObsTotal">0 observação(ões)</span>
+      </div>
+    </div>
+
+    <div style="margin-top:14px; color:var(--muted); font-size:14px;">
+      <b>ID:</b> <span id="obsUnidadeId">-</span> &nbsp; | &nbsp;
+      <b>Login:</b> <span id="obsLogin">-</span> &nbsp; | &nbsp;
+      <b>Unidade:</b> <span id="obsUnidadeNome">-</span>
+    </div>
+
+    <div style="margin-top:18px;">
+      <label for="obsTexto" style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">
+        Nova observação
+      </label>
+      <textarea id="obsTexto" class="materialize-textarea" maxlength="5000"
+        style="min-height:120px; border:1px solid var(--line); border-radius:12px; padding:12px; background:#fff;"></textarea>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:10px;">
+        <div style="font-size:12px; color:var(--muted);">
+          Tipo:
+          <select id="obsTipo" style="display:inline-block; width:auto; margin-left:8px;">
+            <option value="GERAL" selected>GERAL</option>
+            <option value="FINANCEIRO">FINANCEIRO</option>
+            <option value="COMERCIAL">COMERCIAL</option>
+            <option value="SUPORTE">SUPORTE</option>
+            <option value="BLOQUEIO">BLOQUEIO</option>
+          </select>
+        </div>
+
+        <button class="btn-main" type="button" onclick="salvarObservacao()">Salvar observação</button>
+      </div>
+    </div>
+
+    <div id="statusObservacoes" class="status-box" style="margin-top:18px;">Carregando histórico...</div>
+
+    <div class="table-wrap" style="margin-top:12px;">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Usuário</th>
+            <th>Observação</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyObservacoes">
+          <tr><td colspan="6">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#!" class="modal-close waves-effect btn-flat" style="color:var(--primary); font-weight:700;">Fechar</a>
+  </div>
+</div>
+
+
+<!--fim da Modal Observações da unidade (funcionalidade futura, botão ficará desabilitado por enquanto) -->
+
   <script>
     const API                 = 'https://apisec.secauxiliar.com.br/sim_adm/';
     const URL_LISTAR          = `${API}unidades_listar.php`;
     const URL_OBTER           = `${API}unidades_get.php`;
     const URL_SALVAR          = `${API}unidades_salvar.php`;
     const URL_ADESOES_UNIDADE = `${API}unidades_adesoes_listar.php`;
+
+    const URL_OBS_LISTAR      = `${API}unidades_observacoes_listar.php`;
+    const URL_OBS_SALVAR      = `${API}unidades_observacoes_salvar.php`;
+
     const LIMITE              = 50;
 
     const els = {
@@ -594,10 +679,15 @@
       });
     }
 
-    function atualizarBotaoAdesoes() {
-      const btn = document.getElementById('btnVerAdesoes');
+    function atualizarBotoesUnidade() {
       const codigo = document.getElementById('login')?.value?.trim() || '';
-      btn.disabled = !codigo;
+      const unidadeId = document.getElementById('id')?.value?.trim() || '';
+
+      const btnAdesoes = document.getElementById('btnVerAdesoes');
+      const btnObs = document.getElementById('btnObservacoes');
+
+      if (btnAdesoes) btnAdesoes.disabled = !codigo;
+      if (btnObs) btnObs.disabled = !unidadeId;
     }
 
     function limparBusca() {
@@ -613,8 +703,23 @@
       els.tituloForm.textContent = 'Nova unidade';
       document.getElementById('ativo').value = '1';
       document.querySelectorAll('.field').forEach(f => f.classList.remove('has-value'));
-      if (window.M) { M.updateTextFields(); M.FormSelect.init(document.querySelectorAll('select')); }
-      atualizarBotaoAdesoes();
+
+      const obsTexto = document.getElementById('obsTexto');
+      const tbodyObs = document.getElementById('tbodyObservacoes');
+      const badgeObs = document.getElementById('badgeObsTotal');
+      const statusObs = document.getElementById('statusObservacoes');
+
+      if (obsTexto) obsTexto.value = '';
+      if (tbodyObs) tbodyObs.innerHTML = `<tr><td colspan="6">Selecione e salve uma unidade para visualizar o histórico.</td></tr>`;
+      if (badgeObs) badgeObs.textContent = '0 observação(ões)';
+      if (statusObs) statusObs.textContent = 'Selecione e salve uma unidade para visualizar o histórico.';
+
+      if (window.M) {
+        M.updateTextFields();
+        M.FormSelect.init(document.querySelectorAll('select'));
+      }
+
+      atualizarBotoesUnidade();
     }
 
     function formToObject(form) {
@@ -701,7 +806,7 @@
         els.tituloForm.textContent = `Alterar unidade #${u.id}`;
         if (window.M) { M.updateTextFields(); M.FormSelect.init(document.querySelectorAll('select')); }
 
-        atualizarBotaoAdesoes();
+        atualizarBotoesUnidade();
 
         document.querySelector('.section:last-child')
           .scrollIntoView({ behavior:'smooth', block:'start' });
@@ -815,8 +920,124 @@
       marcarCampos();
       carregarLista();
       novaUnidade();
-      atualizarBotaoAdesoes();
+      atualizarBotoesUnidade();
     });
+
+    async function abrirObservacoes() {
+      const unidadeId = document.getElementById('id')?.value?.trim() || '';
+      const login = document.getElementById('login')?.value?.trim() || '';
+      const unidade = document.getElementById('unidade')?.value?.trim() || '';
+
+      if (!unidadeId) {
+        toast('Salve ou selecione uma unidade primeiro.', 'red');
+        return;
+      }
+
+      document.getElementById('obsUnidadeId').textContent = unidadeId;
+      document.getElementById('obsLogin').textContent = login || '-';
+      document.getElementById('obsUnidadeNome').textContent = unidade || '-';
+      document.getElementById('obsTexto').value = '';
+      document.getElementById('badgeObsTotal').textContent = '0 observação(ões)';
+      document.getElementById('statusObservacoes').textContent = 'Carregando histórico...';
+      document.getElementById('tbodyObservacoes').innerHTML = `<tr><td colspan="6">Carregando...</td></tr>`;
+
+      if (window.M) M.textareaAutoResize(document.getElementById('obsTexto'));
+
+      const modalEl = document.getElementById('modalObservacoes');
+      const modal = M.Modal.getInstance(modalEl) || M.Modal.init(modalEl, {});
+      modal.open();
+
+      await carregarHistoricoObservacoes(unidadeId);
+    }
+
+    async function carregarHistoricoObservacoes(unidadeId) {
+      try {
+        const url = new URL(URL_OBS_LISTAR, location.href);
+        url.searchParams.set('unidade_id', unidadeId);
+
+        const r = await fetch(url.toString(), { credentials: 'include' });
+        const j = await r.json();
+
+        if (!r.ok || !j.ok) throw new Error(j.msg || 'Erro ao carregar observações.');
+
+        const dados = Array.isArray(j.dados) ? j.dados : [];
+
+        document.getElementById('badgeObsTotal').textContent = `${dados.length} observação(ões)`;
+        document.getElementById('statusObservacoes').textContent = `${dados.length} registro(s) encontrado(s).`;
+
+        if (!dados.length) {
+          document.getElementById('tbodyObservacoes').innerHTML =
+            `<tr><td colspan="6">Nenhuma observação cadastrada para esta unidade.</td></tr>`;
+          return;
+        }
+
+        document.getElementById('tbodyObservacoes').innerHTML = dados.map(o => `
+          <tr>
+            <td>${escapeHtml(o.id)}</td>
+            <td>${escapeHtml(fmtDataHora(o.criado_em))}</td>
+            <td>${escapeHtml(o.tipo || 'GERAL')}</td>
+            <td>${escapeHtml(o.usuario || '')}</td>
+            <td style="white-space:normal; min-width:320px;">${escapeHtml(o.observacao || '')}</td>
+            <td>${String(o.ativo) === '1'
+              ? '<span class="pill pill-ok">ATIVO</span>'
+              : '<span class="pill pill-off">INATIVO</span>'}</td>
+          </tr>
+        `).join('');
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById('statusObservacoes').textContent = 'Erro ao carregar histórico.';
+        document.getElementById('tbodyObservacoes').innerHTML =
+          `<tr><td colspan="6">${escapeHtml(err.message || 'Erro')}</td></tr>`;
+        toast(err.message || 'Erro ao carregar observações.', 'red');
+      }
+    }
+
+    async function salvarObservacao() {
+      const unidadeId = document.getElementById('id')?.value?.trim() || '';
+      const observacao = document.getElementById('obsTexto')?.value?.trim() || '';
+      const tipo = document.getElementById('obsTipo')?.value?.trim() || 'GERAL';
+
+      if (!unidadeId) {
+        toast('Selecione uma unidade primeiro.', 'red');
+        return;
+      }
+
+      if (!observacao) {
+        toast('Digite a observação.', 'red');
+        return;
+      }
+
+      try {
+        const body = new URLSearchParams({
+          unidade_id: unidadeId,
+          observacao,
+          tipo
+        });
+
+        const r = await fetch(URL_OBS_SALVAR, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: body.toString()
+        });
+
+        const j = await r.json();
+
+        if (!r.ok || !j.ok) throw new Error(j.msg || 'Erro ao salvar observação.');
+
+        document.getElementById('obsTexto').value = '';
+        if (window.M) M.textareaAutoResize(document.getElementById('obsTexto'));
+
+        toast(j.msg || 'Observação salva com sucesso.', 'green');
+        await carregarHistoricoObservacoes(unidadeId);
+
+      } catch (err) {
+        console.error(err);
+        Swal.fire({ icon:'error', title:'Erro ao salvar observação', text: err.message || 'Não foi possível salvar.' });
+      }
+    }
+
   </script>
 </body>
 </html>
