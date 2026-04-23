@@ -1021,6 +1021,19 @@
     }
   }
 
+  function ehHoje(dataStr){
+    if(!dataStr) return false;
+
+    const d = new Date(dataStr);
+    if(isNaN(d.getTime())) return false;
+
+    const hoje = new Date();
+
+    return d.getFullYear() === hoje.getFullYear()
+        && d.getMonth() === hoje.getMonth()
+        && d.getDate() === hoje.getDate();
+  }
+
 function preencherModalMaterial(j){
   $matMsg.textContent = '';
 
@@ -1033,6 +1046,7 @@ function preencherModalMaterial(j){
   $matProximo.textContent = j.proximo_caderno ? ('Caderno ' + j.proximo_caderno) : '—';
 
   const hist = Array.isArray(j.entregues) ? j.entregues : [];
+
   if(hist.length === 0){
     $matHist.innerHTML = '';
     $matHistEmpty.style.display = '';
@@ -1055,6 +1069,8 @@ function preencherModalMaterial(j){
     `).join('');
   }
 
+  const jaEntregouHoje = hist.some(item => ehHoje(item.data_retirada));
+
   const disponiveis = Array.isArray(j.disponiveis) ? j.disponiveis : [];
   if(!disponiveis.length){
     $matFinalizado.style.display = '';
@@ -1067,17 +1083,21 @@ function preencherModalMaterial(j){
 
   $matFinalizado.style.display = 'none';
   $matSelectWrap.style.display = '';
-  $btnEntregarMaterial.classList.remove('disabled');
-
   $matCadernoSelect.innerHTML = disponiveis.map(n => {
     const sel = Number(n) === Number(j.proximo_caderno) ? 'selected' : '';
     return `<option value="${n}" ${sel}>Caderno ${n}</option>`;
   }).join('');
-
   reinitMaterialSelect();
+
+  if(jaEntregouHoje){
+    $btnEntregarMaterial.classList.add('disabled');
+    $matMsg.textContent = 'Já houve entrega de material hoje para este aluno.';
+  } else {
+    $btnEntregarMaterial.classList.remove('disabled');
+  }
 }
 
-  async function abrirModalMaterial(a){
+ async function abrirModalMaterial(a){
   try{
     materialCursoAtual = '';
     $btnEntregarMaterial.classList.add('disabled');
@@ -1100,10 +1120,6 @@ function preencherModalMaterial(j){
 
   } catch(err){
     $matMsg.textContent = err?.message || 'Falha ao carregar material.';
-  } finally {
-    if($matSelectWrap.style.display !== 'none'){
-      $btnEntregarMaterial.classList.remove('disabled');
-    }
   }
 }
 
