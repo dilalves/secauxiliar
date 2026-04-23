@@ -1412,9 +1412,13 @@ function preencherModalMaterial(j){
     $btnEntregarMaterial.classList.add('disabled');
 
     try{
-      let gravouServidor = false;
+      let presenceAutoMarcada = false;
 
-      // 1) se estiver online, tenta gravar DIRETO no servidor
+      if(!alunoSelecionado.bloqueado && !alunoSelecionado.presenca_ok && !alunoSelecionado.pendente_sync){
+        marcarPresencaLocal(alunoSelecionado);
+        presenceAutoMarcada = true;
+      }
+
       if(navigator.onLine){
         const res = await entregarMaterialServidor({
           matricula: mat,
@@ -1424,16 +1428,21 @@ function preencherModalMaterial(j){
         });
 
         if(res.ok){
-          gravouServidor = true;
-
-          // atualiza contador visual local
           alunoSelecionado.material_qtd = Number(alunoSelecionado.material_qtd || 0) + 1;
           alunoSelecionado.material_qtd_local = Number(alunoSelecionado.material_qtd_local || 0);
           alunoSelecionado.material_qtd_view = Number(alunoSelecionado.material_qtd || 0) + Number(alunoSelecionado.material_qtd_local || 0);
 
           filtrarRender();
 
-          M.toast({ html: `📘 Caderno ${caderno} entregue e sincronizado ✅` });
+          M.toast({
+            html: presenceAutoMarcada
+              ? `📘 Caderno ${caderno} entregue e presença registrada ✅`
+              : `📘 Caderno ${caderno} entregue e sincronizado ✅`
+          });
+
+          if(presenceAutoMarcada){
+            await sincronizarPendentes({ silent: true });
+          }
 
           try{
             const atualizado = await carregarMaterialAluno(alunoSelecionado);
@@ -1445,9 +1454,16 @@ function preencherModalMaterial(j){
           return;
         }
 
-        // se o servidor respondeu duplicado, trata como sucesso visual
         if(res.status === 409){
-          M.toast({ html: `📘 Caderno ${caderno} já constava como entregue.` });
+          if(presenceAutoMarcada){
+            await sincronizarPendentes({ silent: true });
+          }
+
+          M.toast({
+            html: presenceAutoMarcada
+              ? `📘 Caderno ${caderno} já constava. Presença registrada ✅`
+              : `📘 Caderno ${caderno} já constava como entregue.`
+          });
 
           try{
             const atualizado = await carregarMaterialAluno(alunoSelecionado);
@@ -1459,13 +1475,16 @@ function preencherModalMaterial(j){
           return;
         }
 
-        // se estava online mas falhou, mostra o motivo no console
         console.warn('Falha ao gravar material online:', res.msg);
       }
 
-      // 2) fallback: salva local
       marcarMaterialLocal(alunoSelecionado, caderno, cursoOpcional);
-      M.toast({ html: `📘 Caderno ${caderno} salvo no aparelho` });
+
+      M.toast({
+        html: presenceAutoMarcada
+          ? `📘 Caderno ${caderno} e presença salvos no aparelho`
+          : `📘 Caderno ${caderno} salvo no aparelho`
+      });
 
       try{
         const atualizado = await carregarMaterialAluno(alunoSelecionado);
