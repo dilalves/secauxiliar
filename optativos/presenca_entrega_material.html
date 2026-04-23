@@ -1385,122 +1385,133 @@ function preencherModalMaterial(j){
     return false;
   }
 
-  async function entregarMaterialAluno(){
-    if(!alunoSelecionado) return;
-    if($btnEntregarMaterial.classList.contains('disabled')) return;
+async function entregarMaterialAluno(){
+  if(!alunoSelecionado) return;
+  if($btnEntregarMaterial.classList.contains('disabled')) return;
 
-    const turmaId = getTurmaId();
-    const mat = String(alunoSelecionado.matricula || '').trim();
-    const caderno = Number($matCadernoSelect.value || 0);
-    const cursoOpcional = String(materialCursoAtual || '').trim();
+  const turmaId = getTurmaId();
+  const mat = String(alunoSelecionado.matricula || '').trim();
+  const caderno = Number($matCadernoSelect.value || 0);
+  const cursoOpcional = String(materialCursoAtual || '').trim();
 
-    if(!mat || !turmaId || !caderno){
-      $matMsg.textContent = 'Aguarde o carregamento do material antes de entregar.';
-      return;
+  if(!mat || !turmaId || !caderno){
+    $matMsg.textContent = 'Aguarde o carregamento do material antes de entregar.';
+    return;
+  }
+
+  if(
+    !cursoOpcional ||
+    cursoOpcional.toLowerCase() === 'carregando material...' ||
+    cursoOpcional.toLowerCase() === 'carregando...'
+  ){
+    $matMsg.textContent = 'Não foi possível identificar a turma do material.';
+    return;
+  }
+
+  $matMsg.textContent = '';
+  $btnEntregarMaterial.classList.add('disabled');
+
+  let bloquearAposEntrega = false;
+
+  try{
+    let presenceAutoMarcada = false;
+
+    if(!alunoSelecionado.bloqueado && !alunoSelecionado.presenca_ok && !alunoSelecionado.pendente_sync){
+      marcarPresencaLocal(alunoSelecionado);
+      presenceAutoMarcada = true;
     }
 
-    if(
-      !cursoOpcional ||
-      cursoOpcional.toLowerCase() === 'carregando material...' ||
-      cursoOpcional.toLowerCase() === 'carregando...'
-    ){
-      $matMsg.textContent = 'Não foi possível identificar a turma do material.';
-      return;
-    }
-
-    $matMsg.textContent = '';
-    $btnEntregarMaterial.classList.add('disabled');
-
-    try{
-      let presenceAutoMarcada = false;
-
-      if(!alunoSelecionado.bloqueado && !alunoSelecionado.presenca_ok && !alunoSelecionado.pendente_sync){
-        marcarPresencaLocal(alunoSelecionado);
-        presenceAutoMarcada = true;
-      }
-
-      if(navigator.onLine){
-        const res = await entregarMaterialServidor({
-          matricula: mat,
-          turma_id: turmaId,
-          caderno,
-          curso_opcional: cursoOpcional
-        });
-
-        if(res.ok){
-          alunoSelecionado.material_qtd = Number(alunoSelecionado.material_qtd || 0) + 1;
-          alunoSelecionado.material_qtd_local = Number(alunoSelecionado.material_qtd_local || 0);
-          alunoSelecionado.material_qtd_view = Number(alunoSelecionado.material_qtd || 0) + Number(alunoSelecionado.material_qtd_local || 0);
-
-          filtrarRender();
-
-          M.toast({
-            html: presenceAutoMarcada
-              ? `📘 Caderno ${caderno} entregue e presença registrada ✅`
-              : `📘 Caderno ${caderno} entregue e sincronizado ✅`
-          });
-
-          if(presenceAutoMarcada){
-            await sincronizarPendentes({ silent: true });
-          }
-
-          try{
-            const atualizado = await carregarMaterialAluno(alunoSelecionado);
-            preencherModalMaterial(atualizado);
-          }catch(err2){
-            $matMsg.textContent = err2?.message || 'Entrega registrada, mas não foi possível atualizar a tela.';
-          }
-
-          return;
-        }
-
-        if(res.status === 409){
-          if(presenceAutoMarcada){
-            await sincronizarPendentes({ silent: true });
-          }
-
-          M.toast({
-            html: presenceAutoMarcada
-              ? `📘 Caderno ${caderno} já constava. Presença registrada ✅`
-              : `📘 Caderno ${caderno} já constava como entregue.`
-          });
-
-          try{
-            const atualizado = await carregarMaterialAluno(alunoSelecionado);
-            preencherModalMaterial(atualizado);
-          }catch(err2){
-            $matMsg.textContent = err2?.message || 'Não foi possível atualizar a tela.';
-          }
-
-          return;
-        }
-
-        console.warn('Falha ao gravar material online:', res.msg);
-      }
-
-      marcarMaterialLocal(alunoSelecionado, caderno, cursoOpcional);
-
-      M.toast({
-        html: presenceAutoMarcada
-          ? `📘 Caderno ${caderno} e presença salvos no aparelho`
-          : `📘 Caderno ${caderno} salvo no aparelho`
+    if(navigator.onLine){
+      const res = await entregarMaterialServidor({
+        matricula: mat,
+        turma_id: turmaId,
+        caderno,
+        curso_opcional: cursoOpcional
       });
 
-      try{
-        const atualizado = await carregarMaterialAluno(alunoSelecionado);
-        preencherModalMaterial(atualizado);
-      }catch(err2){
-        $matMsg.textContent = err2?.message || 'Entrega salva localmente, mas não foi possível atualizar a tela.';
+      if(res.ok){
+        alunoSelecionado.material_qtd = Number(alunoSelecionado.material_qtd || 0) + 1;
+        alunoSelecionado.material_qtd_local = Number(alunoSelecionado.material_qtd_local || 0);
+        alunoSelecionado.material_qtd_view = Number(alunoSelecionado.material_qtd || 0) + Number(alunoSelecionado.material_qtd_local || 0);
+
+        filtrarRender();
+
+        M.toast({
+          html: presenceAutoMarcada
+            ? `📘 Caderno ${caderno} entregue e presença registrada ✅`
+            : `📘 Caderno ${caderno} entregue e sincronizado ✅`
+        });
+
+        if(presenceAutoMarcada){
+          await sincronizarPendentes({ silent: true });
+        }
+
+        try{
+          const atualizado = await carregarMaterialAluno(alunoSelecionado);
+          preencherModalMaterial(atualizado);
+          bloquearAposEntrega = true;
+          $btnEntregarMaterial.classList.add('disabled');
+          $matMsg.textContent = 'Entrega registrada. Para evitar duplicidade, feche e abra novamente antes de fazer outra entrega.';
+        }catch(err2){
+          $matMsg.textContent = err2?.message || 'Entrega registrada, mas não foi possível atualizar a tela.';
+        }
+
+        return;
       }
 
-    } catch(err){
-      $matMsg.textContent = err?.message || 'Falha ao registrar entrega.';
-    } finally {
-      if($matSelectWrap.style.display !== 'none'){
-        $btnEntregarMaterial.classList.remove('disabled');
+      if(res.status === 409){
+        if(presenceAutoMarcada){
+          await sincronizarPendentes({ silent: true });
+        }
+
+        M.toast({
+          html: presenceAutoMarcada
+            ? `📘 Caderno ${caderno} já constava. Presença registrada ✅`
+            : `📘 Caderno ${caderno} já constava como entregue.`
+        });
+
+        try{
+          const atualizado = await carregarMaterialAluno(alunoSelecionado);
+          preencherModalMaterial(atualizado);
+          bloquearAposEntrega = true;
+          $btnEntregarMaterial.classList.add('disabled');
+          $matMsg.textContent = 'Registro já existente. Feche e abra novamente o modal antes de continuar.';
+        }catch(err2){
+          $matMsg.textContent = err2?.message || 'Não foi possível atualizar a tela.';
+        }
+
+        return;
       }
+
+      console.warn('Falha ao gravar material online:', res.msg);
+    }
+
+    marcarMaterialLocal(alunoSelecionado, caderno, cursoOpcional);
+
+    M.toast({
+      html: presenceAutoMarcada
+        ? `📘 Caderno ${caderno} e presença salvos no aparelho`
+        : `📘 Caderno ${caderno} salvo no aparelho`
+    });
+
+    try{
+      const atualizado = await carregarMaterialAluno(alunoSelecionado);
+      preencherModalMaterial(atualizado);
+      bloquearAposEntrega = true;
+      $btnEntregarMaterial.classList.add('disabled');
+      $matMsg.textContent = 'Entrega salva. Para evitar duplicidade, feche e abra novamente antes de fazer outra entrega.';
+    }catch(err2){
+      $matMsg.textContent = err2?.message || 'Entrega salva localmente, mas não foi possível atualizar a tela.';
+    }
+
+  } catch(err){
+    $matMsg.textContent = err?.message || 'Falha ao registrar entrega.';
+  } finally {
+    if($matSelectWrap.style.display !== 'none' && !bloquearAposEntrega){
+      $btnEntregarMaterial.classList.remove('disabled');
     }
   }
+}
 
   async function pingServidor(timeoutMs = 5000){
     if(!navigator.onLine) return false;
