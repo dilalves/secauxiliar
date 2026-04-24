@@ -8,6 +8,7 @@
   <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     .top-actions{
@@ -737,6 +738,7 @@
     const URL_COMPARATIVO = `${API_BASE}/estatistica_comparativo.php?evento=${encodeURIComponent(EVENTO)}`;
     const URL_AUTH = `${API_BASE}/auth_me_unidade.php`;
     const URL_LOGOUT = `${API_BASE}/logout_unidade.php`;
+    const URL_QUESTAO_DETALHE = `${API_BASE}/estatistica_questao_detalhe.php`;
 
     let chartDisciplinas = null;
     let chartQuestoes = null;
@@ -794,6 +796,40 @@
         SOC: 'Sociologia'
       };
       return mapa[sigla] || sigla || '';
+    }
+
+    function escapeHtml(v) {
+      return String(v ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function normalizarImagemSrc(src) {
+      const s = String(src || '').trim();
+
+      if (!s) return '';
+
+      if (s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:image')) {
+        return s;
+      }
+
+      // Caso o campo imagem esteja salvo como base64 puro
+      if (s.length > 100 && !s.includes('/') && !s.includes('.')) {
+        return `data:image/png;base64,${s}`;
+      }
+
+      return s;
+    }
+
+    function corAlternativa(alt, gabarito) {
+      if (String(alt).toUpperCase() === String(gabarito).toUpperCase()) {
+        return '#22c55e';
+      }
+
+      return '#60a5fa';
     }
 
     function corPorPercentual(v){
@@ -965,18 +1001,33 @@
             maxBarThickness: 26
           }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                title: (items) => items[0]?.label || '',
-                label: (context) => ` ${formatPct(context.raw, 1)}`
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            onClick: (event, elements) => {
+              if (!elements.length) return;
+
+              const index = elements[0].index;
+              const item = lista[index];
+
+              if (item && item.questao) {
+                abrirModalQuestao(item.questao);
               }
-            }
-          },
+            },
+            onHover: (event, elements) => {
+              event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+            },
+
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  title: (items) => items[0]?.label || '',
+                  label: (context) => ` ${formatPct(context.raw, 1)}`
+                }
+              }
+            },
           scales: {
             x: {
               ticks: {
@@ -1016,6 +1067,153 @@
           `(${formatPct(melhor.percentual)}) e a mais difícil foi <b>Q${pior.questao}</b> (${formatPct(pior.percentual)}).`;
       } else {
         insightQuestoes.textContent = 'Não há dados por questão para o filtro selecionado.';
+      }
+    }
+
+    async function abrirModalQuestao(questao) {
+      try {
+        Swal.fire({
+          title: 'Carregando questão...',
+          html: 'Buscando detalhes da questão selecionada.',
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        const url = `${URL_QUESTAO_DETALHE}?evento=${encodeURIComponent(EVENTO)}&dia=D1&questao=${encodeURIComponent(questao)}`;
+
+        const data = await fetchJson(url);
+
+        const alternativas = data.alternativas || {};
+        const labels = ['A', 'B', 'C', 'D', 'E', 'BRANCO', 'NULO'];
+        const valores = labels.map(k => Number(alternativas[k] || 0));
+
+        const gabarito = String(data.gabarito || '').toUpperCase();
+        const imagemSrc = normalizarImagemSrc(data.imagem || '');
+
+        let insight = '';
+
+        if (data.mais_marcada && data.mais_marcada !== gabarito) {
+          insight = `A alternativa mais marcada foi <b>${escapeHtml(data.mais_marcada)}</b>, mas o gabarito é <b>${escapeHtml(gabarito)}</b>.`;
+        } else if (data.mais_marcada === gabarito) {
+          insight = `A alternativa correta <b>${escapeHtml(gabarito)}</b> também foi a mais marcada pelos alunos.`;
+        } else {
+          insight = `Distribuição das alternativas da questão selecionada.`;
+        }
+
+        const html = `
+          <div style="text-align:left;">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+              <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
+                <div style="font-size:11px;color:#64748b;font-weight:700;">QUESTÃO</div>
+                <div style="font-size:22px;color:#0b3b78;font-weight:800;">Q${escapeHtml(data.questao)}</div>
+              </div>
+
+              <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
+                <div style="font-size:11px;color:#64748b;font-weight:700;">DISCIPLINA</div>
+                <div style="font-size:22px;color:#0b3b78;font-weight:800;">${escapeHtml(data.disciplina || '-')}</div>
+              </div>
+
+              <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
+                <div style="font-size:11px;color:#64748b;font-weight:700;">GABARITO</div>
+                <div style="font-size:22px;color:#16a34a;font-weight:800;">${escapeHtml(gabarito || '-')}</div>
+              </div>
+
+              <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
+                <div style="font-size:11px;color:#64748b;font-weight:700;">ACERTO</div>
+                <div style="font-size:22px;color:#0b3b78;font-weight:800;">${formatPct(data.percentual_acerto || 0)}</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+              <div style="border:1px solid #dbe6f3;border-radius:14px;padding:12px;background:#fff;">
+                <h3 style="margin:0 0 8px;color:#0b3b78;font-size:17px;">Distribuição das alternativas</h3>
+                <div style="height:300px;">
+                  <canvas id="chartDetalheQuestao"></canvas>
+                </div>
+
+                <div style="margin-top:12px;background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;font-size:13px;">
+                  ${insight}
+                  <br>
+                  <b>Total:</b> ${escapeHtml(data.total_respostas)}
+                  &nbsp; | &nbsp;
+                  <b>Acertos:</b> ${escapeHtml(data.qtd_acertos)}
+                  &nbsp; | &nbsp;
+                  <b>Erros:</b> ${escapeHtml(data.qtd_erros)}
+                </div>
+              </div>
+
+              <div style="border:1px solid #dbe6f3;border-radius:14px;padding:12px;background:#fff;">
+                <h3 style="margin:0 0 8px;color:#0b3b78;font-size:17px;">Resolução / imagem</h3>
+                ${
+                  imagemSrc
+                    ? `<div style="max-height:420px;overflow:auto;border-radius:12px;border:1px solid #e5edf7;background:#f8fbff;">
+                        <img src="${escapeHtml(imagemSrc)}" style="width:100%;display:block;" alt="Imagem da resolução">
+                      </div>`
+                    : `<div style="padding:30px;text-align:center;color:#64748b;background:#f8fbff;border:1px dashed #dbe6f3;border-radius:12px;">
+                        Nenhuma imagem cadastrada para esta questão.
+                      </div>`
+                }
+              </div>
+            </div>
+          </div>
+        `;
+
+        let chartDetalhe = null;
+
+        await Swal.fire({
+          title: `Detalhes da questão Q${data.questao}`,
+          html,
+          width: 1180,
+          showConfirmButton: true,
+          confirmButtonText: 'Fechar',
+          confirmButtonColor: '#0b3b78',
+          didOpen: () => {
+            const ctx = document.getElementById('chartDetalheQuestao');
+
+            chartDetalhe = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels,
+                datasets: [{
+                  label: 'Quantidade de respostas',
+                  data: valores,
+                  backgroundColor: labels.map(alt => corAlternativa(alt, gabarito)),
+                  borderColor: labels.map(alt => corAlternativa(alt, gabarito)),
+                  borderWidth: 1,
+                  borderRadius: 8,
+                  maxBarThickness: 38
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    callbacks: {
+                      label: context => ` ${context.raw} resposta(s)`
+                    }
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      precision: 0
+                    }
+                  }
+                }
+              }
+            });
+          },
+          willClose: () => {
+            if (chartDetalhe) chartDetalhe.destroy();
+          }
+        });
+
+      } catch (err) {
+        Swal.fire('Erro', err.message || 'Não foi possível carregar os detalhes da questão.', 'error');
       }
     }
 
