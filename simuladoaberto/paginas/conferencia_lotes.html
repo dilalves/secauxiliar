@@ -715,7 +715,7 @@
   const URL_SALVAR_CORRECAO = `${API_BASE}/salvar_correcao_pendencia.php`;
   const URL_MARCAR_CONFERIDO = `${API_BASE}/marcar_pendencia_conferida.php`;
   const URL_FINALIZAR_LOTE = `${API_BASE}/finalizar_lote.php`;
-  const URL_GERAR_STATS_ALTERNATIVAS = `${API_BASE}/gerar_stats_alternativas_fuvestao.php`;
+  const URL_GERAR_STATS_ALTERNATIVAS = `${API_BASE}/gerar_stats_alternativas.php`;
 
 
   const elEvento = document.getElementById('evento');
@@ -1398,90 +1398,121 @@ async function marcarConferido(row, tipo) {
       Swal.fire('Erro', err.message || 'Falha ao finalizar lote.', 'error');
     }
   }
+  
+  function isEventoEnem(evento) {
+    return String(evento || '').toUpperCase().includes('ENEM');
+  }
+    
+   async function gerarStatsAlternativas() {
+  const evento = String(elEvento.value || '').trim();
 
-    async function gerarStatsAlternativas() {
-      const evento = String(elEvento.value || '').trim();
+  if (!evento) {
+    Swal.fire('Atenção', 'Selecione um evento.', 'warning');
+    return;
+  }
 
-      if (!evento) {
-        Swal.fire('Atenção', 'Selecione um evento.', 'warning');
-        return;
-      }
+  const totalPend = Number(rsPend.textContent || 0);
+  const totalDif = Number(rsDif.textContent || 0);
 
-      const totalPend = Number(rsPend.textContent || 0);
-      const totalDif = Number(rsDif.textContent || 0);
+  if (totalPend !== 0 || totalDif !== 0) {
+    Swal.fire(
+      'Atenção',
+      'As estatísticas só podem ser geradas quando não houver pendências nem diferenças nos lotes.',
+      'warning'
+    );
+    return;
+  }
 
-      if (totalPend !== 0 || totalDif !== 0) {
-        Swal.fire(
-          'Atenção',
-          'As estatísticas só podem ser geradas quando não houver pendências nem diferenças nos lotes.',
-          'warning'
-        );
-        return;
-      }
+  let dia = 'D1';
 
-      const confirma = await Swal.fire({
-        icon: 'question',
-        title: 'Gerar estatísticas?',
-        html: `
-          <div style="text-align:left;line-height:1.55;">
-            <p><b>Evento:</b> ${escapeHtml(evento)}</p>
-            <p>O sistema vai consolidar as alternativas marcadas por questão canônica.</p>
-            <p>Serão gravados os totais de A, B, C, D, E, branco e nulo na tabela:</p>
-            <p><b>simulado_alternativas_stats</b></p>
-          </div>
-        `,
-        showCancelButton: true,
-        confirmButtonText: 'Sim, gerar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#0b3b78'
-      });
+  if (isEventoEnem(evento)) {
+    const escolha = await Swal.fire({
+      icon: 'question',
+      title: 'Qual dia do ENEM?',
+      html: `
+        <div style="text-align:left;line-height:1.55;">
+          <p><b>Evento:</b> ${escapeHtml(evento)}</p>
+          <p>Selecione o dia que será processado:</p>
+        </div>
+      `,
+      input: 'select',
+      inputOptions: {
+        D1: 'Dia 1 — Questões 1 a 90',
+        D2: 'Dia 2 — Questões 91 a 180'
+      },
+      inputValue: 'D1',
+      showCancelButton: true,
+      confirmButtonText: 'Continuar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#0b3b78'
+    });
 
-      if (!confirma.isConfirmed) return;
+    if (!escolha.isConfirmed) return;
 
-      try {
-        btnGerarStats.disabled = true;
+    dia = escolha.value || 'D1';
+  }
 
-        Swal.fire({
-          title: 'Gerando estatísticas...',
-          html: 'Aguarde. O sistema está organizando as questões canônicas e contando as alternativas.',
-          allowOutsideClick: false,
-          allowEscapeKey: false,
-          didOpen: () => Swal.showLoading()
-        });
+  const confirma = await Swal.fire({
+    icon: 'question',
+    title: 'Gerar estatísticas?',
+    html: `
+      <div style="text-align:left;line-height:1.55;">
+        <p><b>Evento:</b> ${escapeHtml(evento)}</p>
+        <p><b>Dia:</b> ${escapeHtml(dia)}</p>
+        <p>O sistema vai consolidar as alternativas marcadas por questão canônica.</p>
+        <p>Serão gravados os totais de A, B, C, D, E, branco e nulo na tabela:</p>
+        <p><b>simulado_alternativas_stats</b></p>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Sim, gerar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#0b3b78'
+  });
 
-        const data = await fetchJson(URL_GERAR_STATS_ALTERNATIVAS, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ evento })
-        });
+  if (!confirma.isConfirmed) return;
 
-        await Swal.fire({
-          icon: 'success',
-          title: 'Estatísticas geradas ✅',
-          html: `
-            <div style="text-align:left;line-height:1.55;">
-              <p><b>Evento:</b> ${escapeHtml(data.evento || evento)}</p>
-              <p><b>Alunos processados:</b> ${escapeHtml(String(data.alunos_processados ?? 0))}</p>
-              <p><b>Questões gravadas:</b> ${escapeHtml(String(data.questoes_gravadas ?? 0))}</p>
-              <p><b>Destino:</b> ${escapeHtml(data.destino || 'simulado_alternativas_stats')}</p>
-              ${
-                Number(data.sem_gabarito_qtd || 0) > 0
-                  ? `<p><b>Atenção:</b> ${escapeHtml(String(data.sem_gabarito_qtd))} item(ns) sem gabarito.</p>`
-                  : ''
-              }
-            </div>
-          `,
-          confirmButtonColor: '#0b3b78'
-        });
+  try {
+    btnGerarStats.disabled = true;
 
-        await carregarLotes();
+    Swal.fire({
+      title: 'Gerando estatísticas...',
+      html: `Aguarde. Processando <b>${escapeHtml(evento)}</b> — <b>${escapeHtml(dia)}</b>.`,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => Swal.showLoading()
+    });
 
-      } catch (err) {
-        Swal.fire('Erro', err.message || 'Falha ao gerar estatísticas.', 'error');
-      } finally {
-        btnGerarStats.disabled = false;
-      }
-    }         
+    const data = await fetchJson(URL_GERAR_STATS_ALTERNATIVAS, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ evento, dia })
+    });
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'Estatísticas geradas ✅',
+      html: `
+        <div style="text-align:left;line-height:1.55;">
+          <p><b>Evento:</b> ${escapeHtml(data.evento || evento)}</p>
+          <p><b>Dia:</b> ${escapeHtml(data.dia || dia)}</p>
+          <p><b>Tabela origem:</b> ${escapeHtml(data.tabela || '')}</p>
+          <p><b>Alunos processados:</b> ${escapeHtml(String(data.alunos_processados ?? 0))}</p>
+          <p><b>Questões gravadas:</b> ${escapeHtml(String(data.questoes_gravadas ?? 0))}</p>
+          <p><b>Destino:</b> ${escapeHtml(data.destino || 'simulado_alternativas_stats')}</p>
+        </div>
+      `,
+      confirmButtonColor: '#0b3b78'
+    });
+
+    await carregarLotes();
+
+  } catch (err) {
+    Swal.fire('Erro', err.message || 'Falha ao gerar estatísticas.', 'error');
+  } finally {
+    btnGerarStats.disabled = false;
+  }
+}         
 
 
   btnFiltrar.addEventListener('click', carregarLotes);
