@@ -35,23 +35,12 @@
       line-height:44px;
       padding:0 16px;
     }
-    .status-ok{
-      color:#2e7d32;
-      font-weight:600;
-    }
-    .status-warn{
-      color:#777;
-    }
-    .status-erro{
-      color:#c62828;
-      font-weight:600;
-    }
   </style>
 </head>
 <body>
 
 <header class="page fixed-header">
-  Administrativo → Cadastramento / Edição da Versão Canônica
+  Administrativo → Cadastramento da Versão Canônica
 </header>
 
 <div class="container">
@@ -60,12 +49,12 @@
       <div class="row">
         <div class="input-field col s12 m3">
           <input id="evento" name="evento" type="text" required>
-          <label for="evento">Evento (ex: ENEM0526)</label>
+          <label for="evento">Evento (ex: enem0925)</label>
         </div>
 
         <div class="input-field col s12 m3">
           <input id="codigo" name="codigo" type="text" required>
-          <label for="codigo">Código da Versão Canônica (ex: 26527)</label>
+          <label for="codigo">Código da Versão Canônica (ex: 25000101)</label>
         </div>
 
         <div class="input-field col s12 m2">
@@ -84,7 +73,7 @@
         <div class="col s12 m2">
           <div class="acoes-topo">
             <button id="btnMontarTabela" class="btn blue darken-3 waves-effect waves-light btn-small-custom" type="button">
-              Montar / carregar
+              Montar tabela
             </button>
           </div>
         </div>
@@ -122,46 +111,25 @@
   const inputInicio = document.getElementById('inicioNumeracao');
   const btnMontarTabela = document.getElementById('btnMontarTabela');
 
-  function escapeHtml(str) {
-    return String(str ?? '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
-  }
-
-  function criarLinhaQuestao(numeroQuestao, dados = null) {
+  function criarLinhaQuestao(numeroQuestao) {
     const row = document.createElement('tr');
-
-    const disciplina = dados?.disciplina || '';
-    const gabarito = dados?.gabarito || '';
-    const imagem = dados?.imagem || '';
-
     row.innerHTML = `
       <td>
-        ${escapeHtml(numeroQuestao)}
-        <input type="hidden" name="questao[]" value="${escapeHtml(numeroQuestao)}" />
+        ${numeroQuestao}
+        <input type="hidden" name="questao[]" value="${numeroQuestao}" />
       </td>
       <td>
-        <input type="text" name="disciplina[]" value="${escapeHtml(disciplina)}">
+        <input type="text" name="disciplina[]">
       </td>
       <td>
-        <input type="text" name="gabarito[]" maxlength="1" value="${escapeHtml(gabarito)}">
+        <input type="text" name="gabarito[]" maxlength="1">
       </td>
       <td>
-        <input type="file" name="imagem[]" accept="image/*,.tif,.tiff,.pdf" data-q="${escapeHtml(numeroQuestao)}">
-        <input type="hidden" name="imagem_link[]" value="${escapeHtml(imagem)}" />
+        <input type="file" name="imagem[]" accept="image/*,.tif,.tiff,.pdf" data-q="${numeroQuestao}">
+        <input type="hidden" name="imagem_link[]" />
       </td>
-      <td class="status-cell ${imagem ? 'status-ok' : 'status-warn'}">
-        ${
-          imagem
-            ? `<a href="${escapeHtml(imagem)}" target="_blank" rel="noopener noreferrer">🔗 ver imagem</a>`
-            : 'sem imagem'
-        }
-      </td>
+      <td class="status-cell grey-text text-darken-1">aguardando</td>
     `;
-
     return row;
   }
 
@@ -172,15 +140,6 @@
       const numeroQuestao = inicio + i;
       tabela.appendChild(criarLinhaQuestao(numeroQuestao));
     }
-  }
-
-  function montarTabelaPreenchida(questoes) {
-    tabela.innerHTML = '';
-
-    questoes.forEach(q => {
-      const numeroQuestao = q.QUESTAO || q.questao;
-      tabela.appendChild(criarLinhaQuestao(numeroQuestao, q));
-    });
   }
 
   function getQuantidadeValida() {
@@ -221,68 +180,9 @@
     montarTabela(qtd, inicio);
   }
 
-  async function carregarOuMontarTabela() {
-    const evento = document.getElementById('evento').value.trim();
-    const codigo = document.getElementById('codigo').value.trim();
-
-    if (!evento || !codigo) {
-      M.toast({ html: 'Informe evento e código canônico.', classes: 'red' });
-      return;
-    }
-
-    btnMontarTabela.disabled = true;
-    const textoOriginal = btnMontarTabela.textContent;
-    btnMontarTabela.textContent = 'Carregando...';
-
-    try {
-      const url = `${API_BASE}/buscar_gabarito_canonico.php?evento=${encodeURIComponent(evento)}&codigo=${encodeURIComponent(codigo)}`;
-
-      const resp = await fetch(url, {
-        method: 'GET',
-        credentials: 'include'
-      });
-
-      const raw = await resp.text();
-      console.log('BUSCAR GABARITO RAW:', raw);
-
-      let json;
-      try {
-        json = JSON.parse(raw);
-      } catch (e) {
-        throw new Error('Resposta inválida do servidor: ' + raw);
-      }
-
-      if (!resp.ok || !json.ok) {
-        throw new Error(json.msg || json.message || json.error || `HTTP ${resp.status}`);
-      }
-
-      if (json.exists && Array.isArray(json.questoes) && json.questoes.length) {
-        montarTabelaPreenchida(json.questoes);
-
-        inputQtd.value = json.questoes.length;
-
-        const primeira = Number(json.questoes[0].QUESTAO || json.questoes[0].questao || 1);
-        inputInicio.value = String(primeira);
-
-        M.updateTextFields();
-        M.FormSelect.init(document.querySelectorAll('select'));
-
-        M.toast({ html: 'Gabarito carregado para edição.', classes: 'blue' });
-      } else {
-        remontarTabela();
-        M.toast({ html: 'Nenhum gabarito encontrado. Tabela nova montada.', classes: 'grey darken-1' });
-      }
-
-    } catch (err) {
-      console.error(err);
-      M.toast({ html: 'Erro ao carregar gabarito: ' + err.message, classes: 'red' });
-    } finally {
-      btnMontarTabela.disabled = false;
-      btnMontarTabela.textContent = textoOriginal;
-    }
-  }
-
-  btnMontarTabela.addEventListener('click', carregarOuMontarTabela);
+  btnMontarTabela.addEventListener('click', () => {
+    remontarTabela();
+  });
 
   inputQtd.addEventListener('change', () => {
     remontarTabela();
@@ -292,8 +192,10 @@
     remontarTabela();
   });
 
+  // Monta a tabela inicial com o valor padrão
   montarTabela(parseInt(inputQtd.value, 10) || 90, parseInt(inputInicio.value, 10) || 1);
 
+  // Auto-upload ao escolher arquivo (pré-upload)
   tabela.addEventListener('change', async (ev) => {
     const input = ev.target;
     if (input.type !== 'file') return;
@@ -310,13 +212,14 @@
 
     if (!evento || !codigo || !questao) {
       status.textContent = 'preencha evento/código/questão';
-      status.className = 'status-cell status-erro';
+      status.classList.remove('green-text');
+      status.classList.add('red-text');
       input.value = '';
       return;
     }
 
     status.textContent = 'enviando...';
-    status.className = 'status-cell grey-text text-darken-1';
+    status.classList.remove('red-text', 'green-text');
 
     const fd = new FormData();
     fd.append('evento', evento);
@@ -327,8 +230,7 @@
     try {
       const resp = await fetch(`${API_BASE}/upload_imagem_gabarito.php?debug=1`, {
         method: 'POST',
-        body: fd,
-        credentials: 'include'
+        body: fd
       });
 
       const raw = await resp.text();
@@ -358,21 +260,28 @@
 
       hiddenLink.value = link;
 
+      console.log('KEY RESOLVIDA:', key);
+      console.log('LINK VISUALIZAÇÃO:', link);
+      console.log('JSON UPLOAD:', json);
+
       if (link && link.trim() !== '') {
-        status.innerHTML = `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">🔗 ver imagem</a>`;
+        status.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer">🔗 ver imagem</a>`;
       } else {
         status.textContent = 'link não retornado';
       }
 
-      status.className = 'status-cell status-ok';
+      status.classList.remove('red-text');
+      status.classList.add('green-text');
 
     } catch (err) {
       status.textContent = 'erro no upload';
-      status.className = 'status-cell status-erro';
+      status.classList.remove('green-text');
+      status.classList.add('red-text');
       console.error(err);
     }
   });
 
+  // Submit final — manda só metadados + links (sem re-enviar imagem)
   document.getElementById('formCadastro').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -393,6 +302,7 @@
 
     const fd = new FormData(form);
 
+    // não reenvia os arquivos no submit final
     for (const input of form.querySelectorAll('input[type="file"]')) {
       input.disabled = true;
     }
@@ -400,8 +310,7 @@
     try {
       const resp = await fetch(`${API_BASE}/cadastrar_gabarito.php`, {
         method: 'POST',
-        body: fd,
-        credentials: 'include'
+        body: fd
       });
 
       const raw = await resp.text();
@@ -433,7 +342,6 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     M.FormSelect.init(document.querySelectorAll('select'));
-    M.updateTextFields();
   });
 </script>
 
