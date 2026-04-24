@@ -796,6 +796,14 @@
       return mapa[sigla] || sigla || '';
     }
 
+    function corPorPercentual(v){
+      const n = Number(v || 0);
+
+      if (n < 20) return '#ef4444';     // vermelho
+      if (n <= 50) return '#f59e0b';    // amarelo
+      return '#22c55e';                 // verde
+    }
+
     async function fetchJson(url){
       const resp = await fetch(url, {
         method: 'GET',
@@ -880,6 +888,8 @@
           datasets: [{
             label: '% de acerto',
             data: valores,
+            backgroundColor: valores.map(v => corPorPercentual(v)),
+            borderColor: valores.map(v => corPorPercentual(v)),
             borderWidth: 1,
             borderRadius: 8,
             maxBarThickness: 42
@@ -948,6 +958,8 @@
           datasets: [{
             label: '% de acerto por questão',
             data: valores,
+            backgroundColor: valores.map(v => corPorPercentual(v)),
+            borderColor: valores.map(v => corPorPercentual(v)),
             borderWidth: 1,
             borderRadius: 6,
             maxBarThickness: 26
