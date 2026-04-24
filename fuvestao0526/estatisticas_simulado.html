@@ -1171,6 +1171,31 @@
           didOpen: () => {
             const ctx = document.getElementById('chartDetalheQuestao');
 
+            const pluginValoresBarras = {
+              id: 'pluginValoresBarras',
+              afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+
+                chart.data.datasets.forEach((dataset, datasetIndex) => {
+                  const meta = chart.getDatasetMeta(datasetIndex);
+
+                  meta.data.forEach((bar, index) => {
+                    const valor = dataset.data[index];
+
+                    if (valor === null || valor === undefined || Number(valor) === 0) return;
+
+                    ctx.save();
+                    ctx.font = 'bold 12px Arial';
+                    ctx.fillStyle = '#0b3b78';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(valor, bar.x, bar.y - 4);
+                    ctx.restore();
+                  });
+                });
+              }
+            };
+
             chartDetalhe = new Chart(ctx, {
               type: 'bar',
               data: {
@@ -1185,6 +1210,7 @@
                   maxBarThickness: 38
                 }]
               },
+              plugins: [pluginValoresBarras],
               options: {
                 responsive: true,
                 maintainAspectRatio: false,
