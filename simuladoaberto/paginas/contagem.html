@@ -449,6 +449,18 @@
       background:#fff6f6 !important;
     }
 
+    .subtotal-row td{
+      background:#f7faff !important;
+      color:#0b3b78;
+      font-weight:800;
+      border-top:1px solid #d9e5f2;
+      border-bottom:2px solid #d9e5f2;
+    }
+
+    .subtotal-label{
+      text-align:right;
+    }
+
     @media (max-width: 900px){
       .resumo-card{
         min-width:calc(50% - 6px);
@@ -1014,75 +1026,141 @@
         return;
       }
 
-      let grupoAtual = '';
+let grupoAtual = '';
+let html = '';
 
-      tbody.innerHTML = rows.map(r => {
-        const tipo = String(r.tipo_unidade || 'CONVENIADA').toUpperCase();
-        const grupoLabel = tipo === 'PROPRIA'
-          ? 'UNIDADES PRÓPRIAS'
-          : 'UNIDADES CONVENIADAS';
+let subtotal = {
+  vagas: 0,
+  inscritos: 0,
+  d1: 0,
+  d2: 0,
+  red: 0
+};
 
-        const separador = grupoLabel !== grupoAtual
-          ? `<tr class="grupo-row">
-              <td colspan="${getColspan(config.mostrarDia2, config.mostrarRed)}">${grupoLabel}</td>
-            </tr>`
-          : '';
+function zerarSubtotal(){
+  subtotal = {
+    vagas: 0,
+    inscritos: 0,
+    d1: 0,
+    d2: 0,
+    red: 0
+  };
+}
 
-        grupoAtual = grupoLabel;
+function linhaSubtotal(label){
+  let linha = `
+    <tr class="subtotal-row">
+      <td colspan="2" class="subtotal-label">Subtotal ${label}</td>
+      <td class="num">${n(subtotal.vagas)}</td>
+      <td class="num">${n(subtotal.inscritos)}</td>
+      <td class="num">${n(subtotal.d1)}</td>
+  `;
 
-        return `
-          ${separador}
-          <tr>
-            <td>${esc(r.codigo)}</td>
-            <td>${esc(r.unidade)}</td>
-            <td class="num">${n(r.vagas)}</td>
-            <td class="num">${n(r.total_inscritos)}</td>
+  if (config.mostrarDia2) {
+    linha += `<td class="num">${n(subtotal.d2)}</td>`;
+  }
 
-            <td class="num">
-              ${montarCampoEdicao({
-                valor: r.presentes_d1,
-                campo: 'presentes_d1',
-                codigo: r.codigo,
-                unidade: r.unidade,
-                isFuvestao: config.isFuvestao
-              })}
-            </td>
+  if (config.mostrarRed) {
+    linha += `<td class="num">${n(subtotal.red)}</td>`;
+  }
 
-            ${config.mostrarDia2 ? `
-              <td class="num">
-                ${montarCampoEdicao({
-                  valor: r.presentes_d2,
-                  campo: 'presentes_d2',
-                  codigo: r.codigo,
-                  unidade: r.unidade,
-                  isFuvestao: config.isFuvestao
-                })}
-              </td>
-            ` : ``}
+  const colunasUsadas = 5 + (config.mostrarDia2 ? 1 : 0) + (config.mostrarRed ? 1 : 0);
+  const colunasRestantes = getColspan(config.mostrarDia2, config.mostrarRed) - colunasUsadas;
 
-            ${config.mostrarRed ? `
-              <td class="num">
-                ${montarCampoEdicao({
-                  valor: r.presentes_red,
-                  campo: 'presentes_red',
-                  codigo: r.codigo,
-                  unidade: r.unidade,
-                  isFuvestao: config.isFuvestao
-                })}
-              </td>
-            ` : ``}
+  if (colunasRestantes > 0) {
+    linha += `<td colspan="${colunasRestantes}"></td>`;
+  }
 
-            <td>${esc(r.resp_dia1_nome)}</td>
-            <td class="num">${esc(r.resp_dia1_ddd)}</td>
-            <td class="num celular">${esc(r.resp_dia1_celular)}</td>
+  linha += `</tr>`;
 
-            ${config.mostrarDia2 ? `<td>${esc(r.resp_dia2_nome)}</td>` : ``}
-            ${config.mostrarDia2 ? `<td class="num">${esc(r.resp_dia2_ddd)}</td>` : ``}
-            ${config.mostrarDia2 ? `<td class="num celular">${esc(r.resp_dia2_celular)}</td>` : ``}
-          </tr>
-        `;
-      }).join('');
+  return linha;
+}
+
+rows.forEach((r, idx) => {
+  const tipo = String(r.tipo_unidade || 'CONVENIADA').toUpperCase();
+  const grupoLabel = tipo === 'PROPRIA'
+    ? 'UNIDADES PRÓPRIAS'
+    : 'UNIDADES CONVENIADAS';
+
+  if (grupoLabel !== grupoAtual) {
+    if (grupoAtual !== '') {
+      html += linhaSubtotal(grupoAtual);
+      zerarSubtotal();
     }
+
+    html += `
+      <tr class="grupo-row">
+        <td colspan="${getColspan(config.mostrarDia2, config.mostrarRed)}">${grupoLabel}</td>
+      </tr>
+    `;
+
+    grupoAtual = grupoLabel;
+  }
+
+  subtotal.vagas += Number(r.vagas || 0);
+  subtotal.inscritos += Number(r.total_inscritos || 0);
+  subtotal.d1 += Number(r.presentes_d1 || 0);
+  subtotal.d2 += Number(r.presentes_d2 || 0);
+  subtotal.red += Number(r.presentes_red || 0);
+
+  html += `
+    <tr>
+      <td>${esc(r.codigo)}</td>
+      <td>${esc(r.unidade)}</td>
+      <td class="num">${n(r.vagas)}</td>
+      <td class="num">${n(r.total_inscritos)}</td>
+
+      <td class="num">
+        ${montarCampoEdicao({
+          valor: r.presentes_d1,
+          campo: 'presentes_d1',
+          codigo: r.codigo,
+          unidade: r.unidade,
+          isFuvestao: config.isFuvestao
+        })}
+      </td>
+
+      ${config.mostrarDia2 ? `
+        <td class="num">
+          ${montarCampoEdicao({
+            valor: r.presentes_d2,
+            campo: 'presentes_d2',
+            codigo: r.codigo,
+            unidade: r.unidade,
+            isFuvestao: config.isFuvestao
+          })}
+        </td>
+      ` : ``}
+
+      ${config.mostrarRed ? `
+        <td class="num">
+          ${montarCampoEdicao({
+            valor: r.presentes_red,
+            campo: 'presentes_red',
+            codigo: r.codigo,
+            unidade: r.unidade,
+            isFuvestao: config.isFuvestao
+          })}
+        </td>
+      ` : ``}
+
+      <td>${esc(r.resp_dia1_nome)}</td>
+      <td class="num">${esc(r.resp_dia1_ddd)}</td>
+      <td class="num celular">${esc(r.resp_dia1_celular)}</td>
+
+      ${config.mostrarDia2 ? `<td>${esc(r.resp_dia2_nome)}</td>` : ``}
+      ${config.mostrarDia2 ? `<td class="num">${esc(r.resp_dia2_ddd)}</td>` : ``}
+      ${config.mostrarDia2 ? `<td class="num celular">${esc(r.resp_dia2_celular)}</td>` : ``}
+    </tr>
+  `;
+
+  if (idx === rows.length - 1) {
+    html += linhaSubtotal(grupoAtual);
+  }
+});
+
+tbody.innerHTML = html;
+}
 
     async function gerarLinkPresenca(dia){
       try {
