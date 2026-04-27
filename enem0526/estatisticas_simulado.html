@@ -546,6 +546,29 @@
       return 'Chute baixo';
     }
 
+    function probTri(theta, a, b, c){
+      const aa = Number(a || 0);
+      const bb = Number(b || 0);
+      const cc = Number(c || 0);
+      return cc + (1 - cc) / (1 + Math.exp(-aa * (theta - bb)));
+    }
+
+    function gerarPontosCCI(a, b, c){
+      const bb = Number(b || 0);
+      const minX = Math.min(-4, bb - 1.5);
+      const maxX = Math.max(4, bb + 1.5);
+      const pontos = [];
+
+      for (let x = minX; x <= maxX + 0.0001; x += 0.1) {
+        pontos.push({
+          x: Number(x.toFixed(2)),
+          y: Number((probTri(x, a, b, c) * 100).toFixed(2))
+        });
+      }
+
+      return pontos;
+    }
+
     async function fetchJson(url){
       const resp = await fetch(url,{method:'GET',credentials:'include'});
 
@@ -698,7 +721,8 @@
 
       let textoComp = '--';
       if (geral.some(v => v > 0)) {
-        const mediaGeral = geral.reduce((a,b)=>a+b,0) / geral.filter(v=>v>0).length;
+        const geralValidos = geral.filter(v => v > 0);
+        const mediaGeral = geralValidos.reduce((a,b)=>a+b,0) / geralValidos.length;
         const diff = mediaDia - mediaGeral;
         textoComp = `${diff >= 0 ? '+' : ''}${formatTri(diff)}`;
       }
@@ -870,12 +894,13 @@
 
       return `
         <div style="margin-top:12px;border:1px solid #dbe6f3;border-radius:14px;padding:12px;background:#fff;">
-          <h3 style="margin:0 0 8px;color:#0b3b78;font-size:17px;">Perfil TRI da questão</h3>
-          <div style="height:180px;">
+          <h3 style="margin:0 0 8px;color:#0b3b78;font-size:17px;">Curva Característica do Item</h3>
+          <div style="height:230px;">
             <canvas id="chartTriQuestao"></canvas>
           </div>
           <div style="margin-top:10px;background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;font-size:12px;color:#334155;line-height:1.35;">
-            <b>Leitura:</b> a dificuldade indica o nível da questão; a discriminação indica o quanto ela separa alunos de desempenhos diferentes; o chute indica a chance de acerto ao acaso.
+            <b>Leitura:</b> a curva mostra a probabilidade de acerto conforme aumenta a proficiência do aluno. 
+            O ponto mínimo tende ao parâmetro <b>c</b>, que representa o acerto ao acaso.
           </div>
         </div>
       `;
@@ -937,11 +962,11 @@
 
             ${blocoTriQuestao(data)}
 
-            <div style="display:grid;grid-template-columns:390px 1fr;gap:18px;align-items:start;margin-top:14px;">
+            <div style="display:grid;grid-template-columns:430px 1fr;gap:18px;align-items:start;margin-top:14px;">
               <div>
                 <div style="border:1px solid #dbe6f3;border-radius:14px;padding:12px;background:#fff;">
                   <h3 style="margin:0 0 8px;color:#0b3b78;font-size:17px;">Distribuição das alternativas</h3>
-                  <div style="height:230px;">
+                  <div style="height:220px;">
                     <canvas id="chartDetalheQuestao"></canvas>
                   </div>
                   <div style="margin-top:12px;background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;font-size:13px;">
@@ -961,7 +986,7 @@
                 <h3 style="margin:0 0 8px;color:#0b3b78;font-size:17px;">Resolução / imagem</h3>
                 ${
                   imagemSrc
-                    ? `<div style="height:690px;overflow:auto;border-radius:12px;border:1px solid #e5edf7;background:#fff;padding:12px;">
+                    ? `<div style="height:720px;overflow:auto;border-radius:12px;border:1px solid #e5edf7;background:#fff;padding:12px;">
                          <img src="${escapeHtml(imagemSrc)}" style="width:100%;display:block;border-radius:10px;" alt="Imagem da resolução">
                        </div>`
                     : `<div style="padding:30px;text-align:center;color:#64748b;background:#f8fbff;border:1px dashed #dbe6f3;border-radius:12px;">
@@ -979,7 +1004,7 @@
         await Swal.fire({
           title:`Detalhes da questão Q${data.questao}`,
           html,
-          width:1480,
+          width:1500,
           showConfirmButton:true,
           confirmButtonText:'Fechar',
           confirmButtonColor:'#0b3b78',
@@ -1041,38 +1066,74 @@
 
             const ctxTriQuestao = document.getElementById('chartTriQuestao');
             if (ctxTriQuestao) {
+              const pontosCCI = gerarPontosCCI(triA, triB, triC);
+              const probB = Number((probTri(triB, triA, triB, triC) * 100).toFixed(2));
+              const probC = Number((triC * 100).toFixed(2));
+
               chartTriQuestao = new Chart(ctxTriQuestao,{
-                type:'bar',
+                type:'line',
                 data:{
-                  labels:['Discriminação (a)','Dificuldade (b)','Chute (c)'],
-                  datasets:[{
-                    label:'Parâmetros TRI',
-                    data:[triA, triB, triC],
-                    backgroundColor:['#2563eb','#f59e0b','#8b5cf6'],
-                    borderColor:['#1d4ed8','#d97706','#7c3aed'],
-                    borderWidth:1,
-                    borderRadius:8,
-                    maxBarThickness:42
-                  }]
+                  datasets:[
+                    {
+                      label:'Probabilidade de acerto',
+                      data:pontosCCI,
+                      parsing:false,
+                      borderColor:'#2563eb',
+                      backgroundColor:'rgba(37,99,235,.10)',
+                      borderWidth:3,
+                      tension:.35,
+                      pointRadius:0,
+                      fill:true
+                    },
+                    {
+                      type:'scatter',
+                      label:'Dificuldade (b)',
+                      data:[{x:triB,y:probB}],
+                      parsing:false,
+                      backgroundColor:'#f59e0b',
+                      borderColor:'#d97706',
+                      pointRadius:5,
+                      pointHoverRadius:7
+                    },
+                    {
+                      type:'scatter',
+                      label:'Chute (c)',
+                      data:[{x:pontosCCI[0]?.x ?? -4,y:probC}],
+                      parsing:false,
+                      backgroundColor:'#8b5cf6',
+                      borderColor:'#7c3aed',
+                      pointRadius:5,
+                      pointHoverRadius:7
+                    }
+                  ]
                 },
                 options:{
                   responsive:true,
                   maintainAspectRatio:false,
                   plugins:{
-                    legend:{display:false},
+                    legend:{display:true,position:'top'},
                     tooltip:{
                       callbacks:{
-                        label:(context)=>` ${formatNum(context.raw,2)}`
+                        label:(context)=>{
+                          const label = context.dataset.label || '';
+                          const y = context.parsed.y;
+                          const x = context.parsed.x;
+                          return `${label}: θ ${formatNum(x,2)} → ${formatNum(y,1)}%`;
+                        }
                       }
                     }
                   },
                   scales:{
+                    x:{
+                      type:'linear',
+                      title:{display:true,text:'Proficiência (θ)'},
+                      ticks:{callback:(value)=>String(value).replace('.', ',')}
+                    },
                     y:{
                       beginAtZero:true,
-                      suggestedMax:Math.max(1, triA, triB, triC) + 0.5,
-                      ticks:{
-                        callback:(value)=>String(value).replace('.', ',')
-                      }
+                      max:100,
+                      title:{display:true,text:'Probabilidade de acerto'},
+                      ticks:{callback:(value)=>`${value}%`}
                     }
                   }
                 }
