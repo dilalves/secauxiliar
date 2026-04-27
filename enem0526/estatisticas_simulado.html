@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Estatísticas do Simulado ENEM</title>
+
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    .top-actions{display:flex;align-items:center;gap:10px;}
+    .chip-link{display:inline-flex;align-items:center;gap:8px;color:#fff!important;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:10px 14px;font-weight:700;line-height:1;transition:.18s ease;}
+    .chip-link:hover{background:rgba(255,255,255,.22);}
+    .chip-link i{font-size:18px;color:#fff!important;}
+    .btn-user{display:flex;align-items:center;gap:8px;cursor:pointer;border:none;background:transparent;}
+
+    :root{
+      --bg:#eef4fb;
+      --panel:#f6f9fe;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --line:#dbe6f3;
+      --text:#0f172a;
+      --muted:#64748b;
+      --ok:#eaf7ef;
+      --err:#fff1f2;
+      --warn:#fff8e6;
+      --shadow:0 10px 30px rgba(11,59,120,.06);
+      --card-shadow:0 8px 24px rgba(11,59,120,.08);
+    }
+
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);}
+    body{min-height:100vh;}
+    a{color:inherit;text-decoration:none;}
+
+    .container{max-width:1280px;margin:0 auto;padding:0 16px;}
+
+    header.topbar{
+      position:fixed;top:0;left:0;right:0;height:64px;background:var(--primary);color:#fff;
+      display:flex;align-items:center;z-index:1000;box-shadow:0 2px 10px rgba(16,24,40,.22);
+    }
+
+    .topbar .container{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0;}
+    .brand img{height:28px;width:auto;display:block;flex:0 0 auto;}
+    .brand .title-wrap{display:flex;flex-direction:column;line-height:1.05;min-width:0;}
+    .brand .title{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;}
+    .brand .sub{font-size:12px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;}
+
+    .chip-user{
+      display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.14)!important;
+      border:1px solid rgba(255,255,255,.22)!important;border-radius:999px;padding:8px 12px;color:#fff!important;
+    }
+
+    .chip-user .mat,.chip-user .caret{color:#fff!important;opacity:.95;}
+    .chip-user .txt{display:flex;flex-direction:column;line-height:1.05;min-width:0;}
+    .chip-user .txt b,.chip-user .txt span{color:#fff!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .chip-user .txt b{font-size:12px;font-weight:700;}
+    .chip-user .txt span{font-size:12px;opacity:.9;}
+
+    main{padding-bottom:32px;}
+    .wrap{max-width:1320px;margin:0 auto;padding:116px 16px 32px;}
+
+    .page-card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;}
+    .page-head{
+      padding:20px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;
+      align-items:flex-start;gap:12px;flex-wrap:wrap;
+    }
+    .page-head h1{margin:0;font-size:30px;line-height:1.1;color:var(--primary);}
+    .page-sub{margin-top:8px;color:var(--muted);font-size:14px;}
+
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;}
+    .btn{
+      height:42px;border:none;background:var(--primary);color:#fff;border-radius:12px;padding:0 16px;
+      font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+      box-shadow:0 4px 14px rgba(11,59,120,.15);
+    }
+    .btn:hover{opacity:.95;}
+    .btn.secondary{background:#fff;color:var(--primary);border:1px solid var(--line);box-shadow:none;}
+
+    .field{min-width:180px;}
+    .field label{display:block;margin-bottom:6px;font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+    .field select{
+      width:100%;height:42px;border:1px solid var(--line);border-radius:12px;padding:0 12px;
+      font-size:14px;background:#fff;color:var(--text);outline:none;
+    }
+
+    .status{margin:16px 20px 0;padding:12px 14px;border-radius:12px;font-size:14px;display:none;}
+    .status.ok{background:var(--ok);color:#175c2f;border:1px solid #cfe9d7;display:block;}
+    .status.err{background:var(--err);color:#8a1c2b;border:1px solid #f5c2c7;display:block;}
+    .status.warn{background:var(--warn);color:#7a5a00;border:1px solid #f3df9a;display:block;}
+
+    .meta{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:14px;padding:18px 20px 0;}
+    .info{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;min-height:92px;}
+    .info .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px;}
+    .info .value{font-size:22px;font-weight:700;color:var(--primary);word-break:break-word;}
+    .info .subvalue{margin-top:6px;color:var(--muted);font-size:12px;}
+
+    .section-grid{display:grid;grid-template-columns:1fr;gap:18px;padding:18px 20px 22px;}
+    .chart-card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--card-shadow);overflow:hidden;}
+    .chart-head{
+      display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+      padding:18px 18px 14px;border-bottom:1px solid var(--line);background:#fbfdff;
+    }
+    .chart-title{margin:0;font-size:20px;color:var(--primary);}
+    .chart-sub{margin-top:5px;color:var(--muted);font-size:13px;}
+    .chart-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .chart-body{padding:18px;}
+    .chart-wrap{position:relative;width:100%;min-height:360px;}
+    .chart-wrap.small{min-height:340px;}
+    .chart-wrap.tri{min-height:300px;}
+
+    .insight{
+      margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;
+      background:var(--panel);color:var(--text);font-size:14px;line-height:1.45;
+    }
+    .insight b{color:var(--primary);}
+
+    .chip{
+      display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;
+      font-size:12px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--primary);
+    }
+
+    .user-menu{position:relative;}
+    .dropdown{
+      position:absolute;right:0;top:54px;min-width:220px;background:#fff;border:1px solid var(--line);
+      border-radius:14px;box-shadow:0 14px 34px rgba(0,0,0,.14);padding:8px;display:none;z-index:9999;
+    }
+    .dropdown.open{display:block;}
+    .dd-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--text);}
+    .dd-item i{color:var(--accent);font-size:18px;}
+    .dd-item:hover{background:#f0f4ff;}
+
+    .tri-grid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:18px;
+      align-items:stretch;
+    }
+
+    .tri-mini{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+
+    .mini-card{
+      border:1px solid var(--line);
+      background:var(--panel);
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .mini-card .k{font-size:11px;text-transform:uppercase;color:var(--muted);font-weight:700;letter-spacing:.04em;}
+    .mini-card .v{margin-top:6px;font-size:22px;color:var(--primary);font-weight:800;}
+    .mini-card .s{margin-top:4px;font-size:12px;color:var(--muted);}
+
+    @media (max-width:1100px){
+      .meta{grid-template-columns:repeat(2,minmax(180px,1fr));}
+      .tri-grid{grid-template-columns:1fr;}
+    }
+
+    @media (max-width:780px){
+      .container,.wrap{padding-left:12px;padding-right:12px;}
+      .wrap{padding-top:96px;}
+      .brand .title{font-size:14px;}
+      .brand .sub{display:none;}
+      .page-head h1{font-size:24px;}
+      .meta{grid-template-columns:1fr;}
+      .toolbar,.chart-toolbar{width:100%;}
+      .btn{width:100%;justify-content:center;}
+      .field{width:100%;min-width:100%;}
+      .chip-link span,.chip-user .txt span{display:none;}
+      .chart-wrap,.chart-wrap.small,.chart-wrap.tri{min-height:300px;}
+      .tri-mini{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <img src="/enem0526/logo-mini.png" alt="Logo">
+        <div class="title-wrap">
+          <div class="title">Simulado Aberto ENEM — Maio/2026</div>
+          <div class="sub">Estatísticas da unidade</div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <a href="./painel.html" class="chip-link">
+          <i class="material-icons">dashboard</i>
+          <span>Painel</span>
+        </a>
+
+        <div class="user-menu" id="userMenu">
+          <button class="chip-user btn-user" id="userBtn" type="button">
+            <i class="material-icons mat">account_circle</i>
+            <div class="txt">
+              <b id="uLogin">Carregando...</b>
+              <span id="uNome"></span>
+            </div>
+            <i class="material-icons caret">arrow_drop_down</i>
+          </button>
+
+          <div class="dropdown" id="userDropdown">
+            <a href="./alterar_senha.html" class="dd-item">
+              <i class="material-icons">lock</i> Alterar senha
+            </a>
+            <a href="#" class="dd-item" onclick="logout(); return false;">
+              <i class="material-icons">logout</i> Sair
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="page-card">
+      <div class="page-head">
+        <div>
+          <h1>Estatísticas do Simulado ENEM</h1>
+          <div class="page-sub" id="pageSub">
+            Acompanhamento da unidade com base no desempenho do Simulado ENEM.
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="field">
+            <label for="filtroDia">Dia da prova</label>
+            <select id="filtroDia">
+              <option value="D1" selected>Dia 1 — Linguagens e Humanas</option>
+              <option value="D2">Dia 2 — Natureza e Matemática</option>
+            </select>
+          </div>
+
+          <button class="btn secondary" id="btnAtualizar">
+            <i class="material-icons">refresh</i>
+            <span>Atualizar gráficos</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="status" class="status"></div>
+
+      <div class="meta">
+        <div class="info">
+          <div class="label">Evento</div>
+          <div class="value" id="metaEvento">ENEM0526</div>
+          <div class="subvalue">Evento consultado nesta tela</div>
+        </div>
+
+        <div class="info">
+          <div class="label">Total de alunos</div>
+          <div class="value" id="metaTotalAlunos">0</div>
+          <div class="subvalue">Quantidade considerada nos gráficos</div>
+        </div>
+
+        <div class="info">
+          <div class="label">Média de acerto da unidade</div>
+          <div class="value" id="metaMediaUnidade">0%</div>
+          <div class="subvalue">Aproveitamento médio no dia selecionado</div>
+        </div>
+
+        <div class="info">
+          <div class="label">Comparativo geral</div>
+          <div class="value" id="metaComparativo">0%</div>
+          <div class="subvalue" id="metaComparativoSub">Unidade x média geral</div>
+        </div>
+      </div>
+
+      <div class="section-grid">
+
+        <article class="chart-card" id="cardTri">
+          <div class="chart-head">
+            <div>
+              <h2 class="chart-title">Desempenho TRI</h2>
+              <div class="chart-sub">Média TRI da unidade por área do ENEM.</div>
+            </div>
+            <div class="chart-toolbar">
+              <span class="chip">
+                <i class="material-icons" style="font-size:16px;">timeline</i>
+                TRI
+              </span>
+            </div>
+          </div>
+
+          <div class="chart-body">
+            <div class="tri-grid">
+              <div>
+                <div class="chart-wrap tri">
+                  <canvas id="chartTri"></canvas>
+                </div>
+              </div>
+
+              <div>
+                <div class="tri-mini">
+                  <div class="mini-card">
+                    <div class="k" id="triArea1Label">Área 1</div>
+                    <div class="v" id="triArea1Valor">--</div>
+                    <div class="s">Média TRI da unidade</div>
+                  </div>
+
+                  <div class="mini-card">
+                    <div class="k" id="triArea2Label">Área 2</div>
+                    <div class="v" id="triArea2Valor">--</div>
+                    <div class="s">Média TRI da unidade</div>
+                  </div>
+
+                  <div class="mini-card">
+                    <div class="k">Média TRI do dia</div>
+                    <div class="v" id="triMediaDia">--</div>
+                    <div class="s">Média das áreas exibidas</div>
+                  </div>
+
+                  <div class="mini-card">
+                    <div class="k">Comparativo TRI</div>
+                    <div class="v" id="triComparativo">--</div>
+                    <div class="s">Unidade x geral, se disponível</div>
+                  </div>
+                </div>
+
+                <div class="insight" id="insightTri">
+                  Carregando análise TRI...
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="chart-card">
+          <div class="chart-head">
+            <div>
+              <h2 class="chart-title">Acertos por área</h2>
+              <div class="chart-sub">Percentual médio de acerto da sua unidade por área do ENEM.</div>
+            </div>
+            <div class="chart-toolbar">
+              <span class="chip">
+                <i class="material-icons" style="font-size:16px;">bar_chart</i>
+                Unidade
+              </span>
+            </div>
+          </div>
+
+          <div class="chart-body">
+            <div class="chart-wrap small">
+              <canvas id="chartDisciplinas"></canvas>
+            </div>
+            <div class="insight" id="insightDisciplinas">Carregando análise por área...</div>
+          </div>
+        </article>
+
+        <article class="chart-card">
+          <div class="chart-head">
+            <div>
+              <h2 class="chart-title">Índice de acerto por questão</h2>
+              <div class="chart-sub">Percentual de acerto por questão da unidade, com filtro por área.</div>
+            </div>
+
+            <div class="chart-toolbar">
+              <div class="field">
+                <label for="filtroDisciplina">Área</label>
+                <select id="filtroDisciplina"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-body">
+            <div class="chart-wrap">
+              <canvas id="chartQuestoes"></canvas>
+            </div>
+            <div class="insight" id="insightQuestoes">Carregando análise por questão...</div>
+          </div>
+        </article>
+
+        <article class="chart-card">
+          <div class="chart-head">
+            <div>
+              <h2 class="chart-title">Comparativo por área</h2>
+              <div class="chart-sub">Comparação entre o percentual da sua unidade e a média geral do simulado.</div>
+            </div>
+            <div class="chart-toolbar">
+              <span class="chip">
+                <i class="material-icons" style="font-size:16px;">compare_arrows</i>
+                Unidade x Geral
+              </span>
+            </div>
+          </div>
+
+          <div class="chart-body">
+            <div class="chart-wrap small">
+              <canvas id="chartComparativo"></canvas>
+            </div>
+            <div class="insight" id="insightComparativo">Carregando comparativo entre unidade e geral...</div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const EVENTO = 'ENEM0526';
+    const API_BASE = 'https://apisec.secauxiliar.com.br/enem0526';
+
+    let DIA_ATUAL = 'D1';
+
+    const URL_AUTH = `${API_BASE}/auth_me_unidade.php`;
+    const URL_LOGOUT = `${API_BASE}/logout_unidade.php`;
+    const URL_QUESTAO_DETALHE = `${API_BASE}/estatistica_questao_detalhe.php`;
+
+    let chartDisciplinas = null;
+    let chartQuestoes = null;
+    let chartComparativo = null;
+    let chartTri = null;
+
+    let dadosResumo = null;
+    let dadosQuestoes = [];
+    let dadosComparativo = [];
+    let dadosTri = null;
+
+    const statusEl = document.getElementById('status');
+    const btnAtualizar = document.getElementById('btnAtualizar');
+    const filtroDisciplina = document.getElementById('filtroDisciplina');
+    const filtroDia = document.getElementById('filtroDia');
+
+    const metaEvento = document.getElementById('metaEvento');
+    const metaTotalAlunos = document.getElementById('metaTotalAlunos');
+    const metaMediaUnidade = document.getElementById('metaMediaUnidade');
+    const metaComparativo = document.getElementById('metaComparativo');
+    const metaComparativoSub = document.getElementById('metaComparativoSub');
+
+    const insightDisciplinas = document.getElementById('insightDisciplinas');
+    const insightQuestoes = document.getElementById('insightQuestoes');
+    const insightComparativo = document.getElementById('insightComparativo');
+    const insightTri = document.getElementById('insightTri');
+
+    function urlResumo(){
+      return `${API_BASE}/estatistica_disciplinas.php?evento=${encodeURIComponent(EVENTO)}&dia=${encodeURIComponent(DIA_ATUAL)}`;
+    }
+
+    function urlQuestoes(){
+      return `${API_BASE}/estatistica_questoes.php?evento=${encodeURIComponent(EVENTO)}&dia=${encodeURIComponent(DIA_ATUAL)}`;
+    }
+
+    function urlComparativo(){
+      return `${API_BASE}/estatistica_comparativo.php?evento=${encodeURIComponent(EVENTO)}&dia=${encodeURIComponent(DIA_ATUAL)}`;
+    }
+
+    function urlTri(){
+      return `${API_BASE}/estatistica_tri.php?evento=${encodeURIComponent(EVENTO)}&dia=${encodeURIComponent(DIA_ATUAL)}`;
+    }
+
+    function areasDoDia(){
+      if (DIA_ATUAL === 'D2') {
+        return [
+          { value:'TODAS', label:'Todas as áreas' },
+          { value:'NAT', label:'Ciências da Natureza' },
+          { value:'MAT', label:'Matemática' }
+        ];
+      }
+
+      return [
+        { value:'TODAS', label:'Todas as áreas' },
+        { value:'LIN', label:'Linguagens' },
+        { value:'HUM', label:'Ciências Humanas' }
+      ];
+    }
+
+    function atualizarFiltroAreas(){
+      filtroDisciplina.innerHTML = areasDoDia()
+        .map(a => `<option value="${a.value}">${a.label}</option>`)
+        .join('');
+      filtroDisciplina.value = 'TODAS';
+    }
+
+    function showStatus(msg,type='ok'){
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = msg;
+    }
+
+    function clearStatus(){
+      statusEl.className = 'status';
+      statusEl.textContent = '';
+    }
+
+    function formatPct(v, casas=1){
+      const n = Number(v || 0);
+      return `${n.toFixed(casas).replace('.', ',')}%`;
+    }
+
+    function formatNum(v, casas=1){
+      const n = Number(v || 0);
+      return n.toFixed(casas).replace('.', ',');
+    }
+
+    function formatTri(v){
+      const n = Number(v || 0);
+      if (!n) return '--';
+      return n.toFixed(1).replace('.', ',');
+    }
+
+    function slugDisciplina(sigla){
+      const mapa = {
+        LIN:'Linguagens',
+        HUM:'Ciências Humanas',
+        NAT:'Ciências da Natureza',
+        MAT:'Matemática'
+      };
+      return mapa[sigla] || sigla || '';
+    }
+
+    function escapeHtml(v){
+      return String(v ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#039;');
+    }
+
+    function normalizarImagemSrc(src){
+      const s = String(src || '').trim();
+      if (!s) return '';
+      if (s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:image')) return s;
+      if (s.length > 100 && !s.includes('/') && !s.includes('.')) return `data:image/png;base64,${s}`;
+      return s;
+    }
+
+    function corAlternativa(alt,gabarito){
+      return String(alt).toUpperCase() === String(gabarito).toUpperCase() ? '#22c55e' : '#60a5fa';
+    }
+
+    function corPorPercentual(v){
+      const n = Number(v || 0);
+      if (n < 20) return '#ef4444';
+      if (n <= 50) return '#f59e0b';
+      return '#22c55e';
+    }
+
+    async function fetchJson(url){
+      const resp = await fetch(url,{method:'GET',credentials:'include'});
+
+      let data = null;
+      try{ data = await resp.json(); }
+      catch(e){ throw new Error('Resposta inválida da API.'); }
+
+      if (!resp.ok) throw new Error(data?.msg || data?.error || 'Erro na requisição.');
+      if (typeof data === 'object' && data !== null && 'ok' in data && !data.ok) {
+        throw new Error(data.msg || data.error || 'Falha ao carregar dados.');
+      }
+
+      return data;
+    }
+
+    async function fetchJsonOpcional(url){
+      try{
+        return await fetchJson(url);
+      }catch(e){
+        console.warn('Endpoint opcional indisponível:', url, e.message);
+        return null;
+      }
+    }
+
+    async function carregarUsuario(){
+      const uLogin = document.getElementById('uLogin');
+      const uNome = document.getElementById('uNome');
+
+      uLogin.textContent = 'Carregando...';
+      uNome.textContent = '';
+
+      try{
+        const data = await fetchJson(URL_AUTH);
+        const login = data.login || '';
+        const unidade = data.unidade || '';
+        uLogin.textContent = login ? `Unidade ${login}` : 'Unidade';
+        uNome.textContent = unidade || '';
+      }catch(e){
+        console.error(e);
+        uLogin.textContent = 'Sessão';
+        uNome.textContent = 'Faça login novamente';
+      }
+    }
+
+    function destruirCharts(){
+      if (chartDisciplinas) chartDisciplinas.destroy();
+      if (chartQuestoes) chartQuestoes.destroy();
+      if (chartComparativo) chartComparativo.destroy();
+      if (chartTri) chartTri.destroy();
+
+      chartDisciplinas = null;
+      chartQuestoes = null;
+      chartComparativo = null;
+      chartTri = null;
+    }
+
+    function renderMeta(){
+      metaEvento.textContent = `${dadosResumo?.evento || EVENTO} — ${DIA_ATUAL}`;
+      metaTotalAlunos.textContent = dadosResumo?.total_alunos ?? 0;
+      metaMediaUnidade.textContent = formatPct(dadosResumo?.media_unidade ?? 0);
+
+      const diff = Number(dadosResumo?.diferenca_geral ?? 0);
+      const sinal = diff > 0 ? '+' : '';
+      metaComparativo.textContent = `${sinal}${formatPct(diff,1)}`;
+      metaComparativoSub.textContent =
+        diff >= 0 ? 'Sua unidade está acima ou igual à média geral' : 'Sua unidade está abaixo da média geral';
+    }
+
+    function getListaTri(){
+      if (!dadosTri) return [];
+
+      if (Array.isArray(dadosTri.tri)) return dadosTri.tri;
+      if (Array.isArray(dadosTri.areas)) return dadosTri.areas;
+
+      if (dadosTri.medias && typeof dadosTri.medias === 'object') {
+        return Object.keys(dadosTri.medias).map(k => ({
+          area:k,
+          unidade:dadosTri.medias[k],
+          geral:dadosTri.medias_geral?.[k] ?? null
+        }));
+      }
+
+      return [];
+    }
+
+    function renderGraficoTri(){
+      const lista = getListaTri();
+      const labels = lista.map(i => slugDisciplina(i.area || i.disciplina));
+      const unidade = lista.map(i => Number(i.unidade ?? i.media_unidade ?? i.tri ?? 0));
+      const geral = lista.map(i => Number(i.geral ?? i.media_geral ?? 0));
+
+      const ctx = document.getElementById('chartTri');
+
+      if (!lista.length) {
+        document.getElementById('triArea1Label').textContent = DIA_ATUAL === 'D1' ? 'Linguagens' : 'Natureza';
+        document.getElementById('triArea2Label').textContent = DIA_ATUAL === 'D1' ? 'Humanas' : 'Matemática';
+        document.getElementById('triArea1Valor').textContent = '--';
+        document.getElementById('triArea2Valor').textContent = '--';
+        document.getElementById('triMediaDia').textContent = '--';
+        document.getElementById('triComparativo').textContent = '--';
+        insightTri.textContent = 'Dados TRI ainda não disponíveis para este dia/evento.';
+        return;
+      }
+
+      chartTri = new Chart(ctx, {
+        type:'bar',
+        data:{
+          labels,
+          datasets:[
+            {
+              label:'TRI Unidade',
+              data:unidade,
+              borderWidth:1,
+              borderRadius:8,
+              maxBarThickness:42
+            },
+            ...(geral.some(v => v > 0) ? [{
+              label:'TRI Geral',
+              data:geral,
+              borderWidth:1,
+              borderRadius:8,
+              maxBarThickness:42
+            }] : [])
+          ]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{display:true,position:'top'},
+            tooltip:{callbacks:{label:(context)=>`${context.dataset.label}: ${formatTri(context.raw)}`}}
+          },
+          scales:{
+            y:{
+              beginAtZero:false,
+              suggestedMin:300,
+              suggestedMax:900
+            }
+          }
+        }
+      });
+
+      document.getElementById('triArea1Label').textContent = labels[0] || 'Área 1';
+      document.getElementById('triArea2Label').textContent = labels[1] || 'Área 2';
+      document.getElementById('triArea1Valor').textContent = formatTri(unidade[0]);
+      document.getElementById('triArea2Valor').textContent = formatTri(unidade[1]);
+
+      const mediaDia = unidade.length ? unidade.reduce((a,b)=>a+b,0) / unidade.length : 0;
+      document.getElementById('triMediaDia').textContent = formatTri(mediaDia);
+
+      let textoComp = '--';
+      if (geral.some(v => v > 0)) {
+        const mediaGeral = geral.reduce((a,b)=>a+b,0) / geral.filter(v=>v>0).length;
+        const diff = mediaDia - mediaGeral;
+        textoComp = `${diff >= 0 ? '+' : ''}${formatTri(diff)}`;
+      }
+      document.getElementById('triComparativo').textContent = textoComp;
+
+      const maiorIdx = unidade.indexOf(Math.max(...unidade));
+      const menorIdx = unidade.indexOf(Math.min(...unidade));
+
+      insightTri.innerHTML =
+        `<b>Leitura TRI:</b> melhor média em <b>${labels[maiorIdx]}</b> (${formatTri(unidade[maiorIdx])}) ` +
+        `e menor média em <b>${labels[menorIdx]}</b> (${formatTri(unidade[menorIdx])}).`;
+    }
+
+    function renderGraficoDisciplinas(){
+      const labels = Array.isArray(dadosResumo?.disciplinas)
+        ? dadosResumo.disciplinas.map(i => slugDisciplina(i.disciplina))
+        : [];
+
+      const valores = Array.isArray(dadosResumo?.disciplinas)
+        ? dadosResumo.disciplinas.map(i => Number(i.percentual || 0))
+        : [];
+
+      const ctx = document.getElementById('chartDisciplinas');
+
+      chartDisciplinas = new Chart(ctx,{
+        type:'bar',
+        data:{
+          labels,
+          datasets:[{
+            label:'% de acerto',
+            data:valores,
+            backgroundColor:valores.map(v => corPorPercentual(v)),
+            borderColor:valores.map(v => corPorPercentual(v)),
+            borderWidth:1,
+            borderRadius:8,
+            maxBarThickness:42
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{display:false},
+            tooltip:{callbacks:{label:(context)=>` ${formatPct(context.raw,1)}`}}
+          },
+          scales:{y:{beginAtZero:true,max:100,ticks:{callback:(value)=>`${value}%`}}}
+        }
+      });
+
+      if (valores.length) {
+        let maior = 0, menor = 0;
+        for (let i=1;i<valores.length;i++){
+          if (valores[i] > valores[maior]) maior = i;
+          if (valores[i] < valores[menor]) menor = i;
+        }
+
+        insightDisciplinas.innerHTML =
+          `<b>Destaque da unidade:</b> melhor desempenho em <b>${labels[maior]}</b> (${formatPct(valores[maior])}) ` +
+          `e menor aproveitamento em <b>${labels[menor]}</b> (${formatPct(valores[menor])}).`;
+      } else {
+        insightDisciplinas.textContent = 'Não há dados por área para exibir.';
+      }
+    }
+
+    function getQuestoesFiltradas(){
+      const filtro = filtroDisciplina.value;
+      if (filtro === 'TODAS') return dadosQuestoes;
+      return dadosQuestoes.filter(item => String(item.disciplina || '').toUpperCase() === filtro);
+    }
+
+    function renderGraficoQuestoes(){
+      const lista = getQuestoesFiltradas();
+      const labels = lista.map(i => `Q${i.questao}`);
+      const valores = lista.map(i => Number(i.percentual || 0));
+      const ctx = document.getElementById('chartQuestoes');
+
+      if (chartQuestoes) chartQuestoes.destroy();
+
+      chartQuestoes = new Chart(ctx,{
+        type:'bar',
+        data:{
+          labels,
+          datasets:[{
+            label:'% de acerto por questão',
+            data:valores,
+            backgroundColor:valores.map(v => corPorPercentual(v)),
+            borderColor:valores.map(v => corPorPercentual(v)),
+            borderWidth:1,
+            borderRadius:6,
+            maxBarThickness:26
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          onClick:(event,elements)=>{
+            if (!elements.length) return;
+            const index = elements[0].index;
+            const item = lista[index];
+            if (item && item.questao) abrirModalQuestao(item.questao);
+          },
+          onHover:(event,elements)=>{
+            event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+          },
+          plugins:{
+            legend:{display:false},
+            tooltip:{callbacks:{title:(items)=>items[0]?.label || '',label:(context)=>` ${formatPct(context.raw,1)}`}}
+          },
+          scales:{
+            x:{ticks:{autoSkip:true,maxRotation:0,minRotation:0}},
+            y:{beginAtZero:true,max:100,ticks:{callback:(value)=>`${value}%`}}
+          }
+        }
+      });
+
+      if (lista.length) {
+        let maior = 0, menor = 0;
+        for (let i=1;i<lista.length;i++){
+          if (Number(lista[i].percentual || 0) > Number(lista[maior].percentual || 0)) maior = i;
+          if (Number(lista[i].percentual || 0) < Number(lista[menor].percentual || 0)) menor = i;
+        }
+
+        const melhor = lista[maior];
+        const pior = lista[menor];
+        const nomeArea = filtroDisciplina.value === 'TODAS' ? 'no conjunto do dia' : `em ${slugDisciplina(filtroDisciplina.value)}`;
+
+        insightQuestoes.innerHTML =
+          `<b>Leitura rápida:</b> ${nomeArea}, a questão com melhor aproveitamento foi <b>Q${melhor.questao}</b> ` +
+          `(${formatPct(melhor.percentual)}) e a mais difícil foi <b>Q${pior.questao}</b> (${formatPct(pior.percentual)}).`;
+      } else {
+        insightQuestoes.textContent = 'Não há dados por questão para o filtro selecionado.';
+      }
+    }
+
+    function blocoTriQuestao(data){
+      const triA = data.tri_a ?? data.a ?? null;
+      const triB = data.tri_b ?? data.b ?? null;
+      const triC = data.tri_c ?? data.c ?? null;
+
+      if (triA === null && triB === null && triC === null) return '';
+
+      return `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;">
+          <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
+            <div style="font-size:11px;color:#64748b;font-weight:700;">DISCRIMINAÇÃO (a)</div>
+            <div style="font-size:18px;color:#0b3b78;font-weight:800;">${escapeHtml(formatNum(triA || 0,2))}</div>
+          </div>
+          <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
+            <div style="font-size:11px;color:#64748b;font-weight:700;">DIFICULDADE (b)</div>
+            <div style="font-size:18px;color:#0b3b78;font-weight:800;">${escapeHtml(formatNum(triB || 0,2))}</div>
+          </div>
+          <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
+            <div style="font-size:11px;color:#64748b;font-weight:700;">CHUTE (c)</div>
+            <div style="font-size:18px;color:#0b3b78;font-weight:800;">${escapeHtml(formatNum(triC || 0,2))}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function abrirModalQuestao(questao){
+      try{
+        Swal.fire({
+          title:'Carregando questão...',
+          html:'Buscando detalhes da questão selecionada.',
+          allowOutsideClick:false,
+          allowEscapeKey:false,
+          didOpen:()=>Swal.showLoading()
+        });
+
+        const url = `${URL_QUESTAO_DETALHE}?evento=${encodeURIComponent(EVENTO)}&dia=${encodeURIComponent(DIA_ATUAL)}&questao=${encodeURIComponent(questao)}`;
+        const data = await fetchJson(url);
+
+        const alternativas = data.alternativas || {};
+        const labels = ['A','B','C','D','E','BRANCO','NULO'];
+        const valores = labels.map(k => Number(alternativas[k] || 0));
+
+        const gabarito = String(data.gabarito || '').toUpperCase();
+        const imagemSrc = normalizarImagemSrc(data.imagem || '');
+
+        let insight = '';
+        if (data.mais_marcada && data.mais_marcada !== gabarito) {
+          insight = `A alternativa mais marcada foi <b>${escapeHtml(data.mais_marcada)}</b>, mas o gabarito é <b>${escapeHtml(gabarito)}</b>.`;
+        } else if (data.mais_marcada === gabarito) {
+          insight = `A alternativa correta <b>${escapeHtml(gabarito)}</b> também foi a mais marcada pelos alunos.`;
+        } else {
+          insight = `Distribuição das alternativas da questão selecionada.`;
+        }
+
+        const html = `
+          <div style="text-align:left;">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+              <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
+                <div style="font-size:11px;color:#64748b;font-weight:700;">QUESTÃO</div>
+                <div style="font-size:22px;color:#0b3b78;font-weight:800;">Q${escapeHtml(data.questao)}</div>
+              </div>
+              <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
+                <div style="font-size:11px;color:#64748b;font-weight:700;">ÁREA</div>
+                <div style="font-size:22px;color:#0b3b78;font-weight:800;">${escapeHtml(slugDisciplina(data.disciplina || '-'))}</div>
+              </div>
+              <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
+                <div style="font-size:11px;color:#64748b;font-weight:700;">GABARITO</div>
+                <div style="font-size:22px;color:#16a34a;font-weight:800;">${escapeHtml(gabarito || '-')}</div>
+              </div>
+              <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
+                <div style="font-size:11px;color:#64748b;font-weight:700;">ACERTO</div>
+                <div style="font-size:22px;color:#0b3b78;font-weight:800;">${formatPct(data.percentual_acerto || 0)}</div>
+              </div>
+            </div>
+
+            ${blocoTriQuestao(data)}
+
+            <div style="display:grid;grid-template-columns:360px 1fr;gap:18px;align-items:start;margin-top:14px;">
+              <div style="border:1px solid #dbe6f3;border-radius:14px;padding:12px;background:#fff;">
+                <h3 style="margin:0 0 8px;color:#0b3b78;font-size:17px;">Distribuição das alternativas</h3>
+                <div style="height:240px;">
+                  <canvas id="chartDetalheQuestao"></canvas>
+                </div>
+                <div style="margin-top:12px;background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;font-size:13px;">
+                  ${insight}<br>
+                  <b>Total:</b> ${escapeHtml(data.total_respostas)}
+                  &nbsp; | &nbsp;
+                  <span style="color:#16a34a;"><b>Acertos:</b> ${escapeHtml(data.qtd_acertos)}</span>
+                  &nbsp; | &nbsp;
+                  <span style="color:#dc2626;"><b>Erros:</b> ${escapeHtml(data.qtd_erros)}</span>
+                </div>
+              </div>
+
+              <div style="border:1px solid #dbe6f3;border-radius:14px;padding:12px;background:#fff;">
+                <h3 style="margin:0 0 8px;color:#0b3b78;font-size:17px;">Resolução / imagem</h3>
+                ${
+                  imagemSrc
+                    ? `<div style="height:560px;overflow:auto;border-radius:12px;border:1px solid #e5edf7;background:#fff;padding:12px;">
+                         <img src="${escapeHtml(imagemSrc)}" style="width:100%;display:block;border-radius:10px;" alt="Imagem da resolução">
+                       </div>`
+                    : `<div style="padding:30px;text-align:center;color:#64748b;background:#f8fbff;border:1px dashed #dbe6f3;border-radius:12px;">
+                         Nenhuma imagem cadastrada para esta questão.
+                       </div>`
+                }
+              </div>
+            </div>
+          </div>
+        `;
+
+        let chartDetalhe = null;
+
+        await Swal.fire({
+          title:`Detalhes da questão Q${data.questao}`,
+          html,
+          width:1380,
+          showConfirmButton:true,
+          confirmButtonText:'Fechar',
+          confirmButtonColor:'#0b3b78',
+          didOpen:()=>{
+            const ctx = document.getElementById('chartDetalheQuestao');
+
+            const pluginValoresBarras = {
+              id:'pluginValoresBarras',
+              afterDatasetsDraw(chart){
+                const {ctx} = chart;
+                chart.data.datasets.forEach((dataset,datasetIndex)=>{
+                  const meta = chart.getDatasetMeta(datasetIndex);
+                  meta.data.forEach((bar,index)=>{
+                    const valor = dataset.data[index];
+                    if (valor === null || valor === undefined || Number(valor) === 0) return;
+                    ctx.save();
+                    ctx.font = 'bold 12px Arial';
+                    ctx.fillStyle = '#0b3b78';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(valor,bar.x,bar.y - 8);
+                    ctx.restore();
+                  });
+                });
+              }
+            };
+
+            chartDetalhe = new Chart(ctx,{
+              type:'bar',
+              data:{
+                labels,
+                datasets:[{
+                  label:'Quantidade de respostas',
+                  data:valores,
+                  backgroundColor:labels.map(alt => corAlternativa(alt,gabarito)),
+                  borderColor:labels.map(alt => corAlternativa(alt,gabarito)),
+                  borderWidth:1,
+                  borderRadius:8,
+                  maxBarThickness:38
+                }]
+              },
+              plugins:[pluginValoresBarras],
+              options:{
+                responsive:true,
+                maintainAspectRatio:false,
+                plugins:{
+                  legend:{display:false},
+                  tooltip:{callbacks:{label:context=>` ${context.raw} resposta(s)`}}
+                },
+                scales:{
+                  y:{
+                    beginAtZero:true,
+                    suggestedMax:Math.max(...valores) + 5,
+                    ticks:{precision:0}
+                  }
+                }
+              }
+            });
+          },
+          willClose:()=>{
+            if (chartDetalhe) chartDetalhe.destroy();
+          }
+        });
+
+      }catch(err){
+        Swal.fire('Erro',err.message || 'Não foi possível carregar os detalhes da questão.','error');
+      }
+    }
+
+    function renderGraficoComparativo(){
+      const labels = dadosComparativo.map(i => slugDisciplina(i.disciplina));
+      const unidade = dadosComparativo.map(i => Number(i.unidade || 0));
+      const geral = dadosComparativo.map(i => Number(i.geral || 0));
+      const ctx = document.getElementById('chartComparativo');
+
+      chartComparativo = new Chart(ctx,{
+        type:'bar',
+        data:{
+          labels,
+          datasets:[
+            {label:'Unidade',data:unidade,borderWidth:1,borderRadius:8,maxBarThickness:28},
+            {label:'Geral',data:geral,borderWidth:1,borderRadius:8,maxBarThickness:28}
+          ]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{display:true,position:'top'},
+            tooltip:{callbacks:{label:(context)=>`${context.dataset.label}: ${formatPct(context.raw,1)}`}}
+          },
+          scales:{y:{beginAtZero:true,max:100,ticks:{callback:(value)=>`${value}%`}}}
+        }
+      });
+
+      if (dadosComparativo.length) {
+        let maiorVantagem = dadosComparativo[0];
+        let maiorDefasagem = dadosComparativo[0];
+
+        for (const item of dadosComparativo) {
+          const diffAtual = Number(item.unidade || 0) - Number(item.geral || 0);
+          const diffMaior = Number(maiorVantagem.unidade || 0) - Number(maiorVantagem.geral || 0);
+          const diffMenor = Number(maiorDefasagem.unidade || 0) - Number(maiorDefasagem.geral || 0);
+
+          if (diffAtual > diffMaior) maiorVantagem = item;
+          if (diffAtual < diffMenor) maiorDefasagem = item;
+        }
+
+        const vantagem = Number(maiorVantagem.unidade || 0) - Number(maiorVantagem.geral || 0);
+        const defasagem = Number(maiorDefasagem.unidade || 0) - Number(maiorDefasagem.geral || 0);
+
+        insightComparativo.innerHTML =
+          `<b>Comparativo com a média geral:</b> a maior vantagem da unidade aparece em <b>${slugDisciplina(maiorVantagem.disciplina)}</b> ` +
+          `(${vantagem >= 0 ? '+' : ''}${formatNum(vantagem,1)}%). ` +
+          `A maior defasagem está em <b>${slugDisciplina(maiorDefasagem.disciplina)}</b> ` +
+          `(${defasagem >= 0 ? '+' : ''}${formatNum(defasagem,1)}%).`;
+      } else {
+        insightComparativo.textContent = 'Não há dados comparativos para exibir.';
+      }
+    }
+
+    async function carregarDados(){
+      clearStatus();
+      btnAtualizar.disabled = true;
+
+      try{
+        atualizarFiltroAreas();
+
+        const [resumo, questoes, comparativo, tri] = await Promise.all([
+          fetchJson(urlResumo()),
+          fetchJson(urlQuestoes()),
+          fetchJson(urlComparativo()),
+          fetchJsonOpcional(urlTri())
+        ]);
+
+        dadosResumo = resumo;
+        dadosQuestoes = Array.isArray(questoes?.questoes) ? questoes.questoes : (Array.isArray(questoes) ? questoes : []);
+        dadosComparativo = Array.isArray(comparativo?.comparativo) ? comparativo.comparativo : (Array.isArray(comparativo) ? comparativo : []);
+        dadosTri = tri;
+
+        destruirCharts();
+        renderMeta();
+        renderGraficoTri();
+        renderGraficoDisciplinas();
+        renderGraficoQuestoes();
+        renderGraficoComparativo();
+
+        showStatus(`Gráficos carregados com sucesso — ${DIA_ATUAL}.`,'ok');
+      }catch(e){
+        console.error(e);
+        showStatus(e.message || 'Não foi possível carregar as estatísticas.','err');
+      }finally{
+        btnAtualizar.disabled = false;
+      }
+    }
+
+    async function logout(){
+      try{
+        await fetch(URL_LOGOUT,{method:'POST',credentials:'include'});
+      }catch(e){
+        console.error(e);
+      }
+      window.location.href = './index.html';
+    }
+
+    const userBtn = document.getElementById('userBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    const userMenu = document.getElementById('userMenu');
+
+    userBtn.addEventListener('click',()=>userDropdown.classList.toggle('open'));
+
+    document.addEventListener('click',(e)=>{
+      if (!userMenu.contains(e.target)) userDropdown.classList.remove('open');
+    });
+
+    filtroDia.addEventListener('change', async () => {
+      DIA_ATUAL = filtroDia.value || 'D1';
+      await carregarDados();
+    });
+
+    filtroDisciplina.addEventListener('change',renderGraficoQuestoes);
+    btnAtualizar.addEventListener('click',carregarDados);
+
+    document.addEventListener('DOMContentLoaded',async()=>{
+      atualizarFiltroAreas();
+      await carregarUsuario();
+      await carregarDados();
+    });
+  </script>
+</body>
+</html>
