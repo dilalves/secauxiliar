@@ -865,20 +865,20 @@
       if (triA === null && triB === null && triC === null) return '';
 
       return `
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px;">
-          <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:8px 10px;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;">
+          <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
             <div style="font-size:11px;color:#64748b;font-weight:700;">DISCRIMINAÇÃO (a)</div>
-            <div style="font-size:17px;color:#0b3b78;font-weight:800;">${escapeHtml(formatNum(triA || 0,2))}</div>
+            <div style="font-size:18px;color:#0b3b78;font-weight:800;">${escapeHtml(formatNum(triA || 0,2))}</div>
             <div style="font-size:11px;color:#64748b;margin-top:4px;">${escapeHtml(classificarTriA(triA))}</div>
           </div>
-          <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:8px 10px;">
+          <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
             <div style="font-size:11px;color:#64748b;font-weight:700;">DIFICULDADE (b)</div>
-            <div style="font-size:17px;color:#0b3b78;font-weight:800;">${escapeHtml(formatNum(triB || 0,2))}</div>
+            <div style="font-size:18px;color:#0b3b78;font-weight:800;">${escapeHtml(formatNum(triB || 0,2))}</div>
             <div style="font-size:11px;color:#64748b;margin-top:4px;">${escapeHtml(classificarTriB(triB))}</div>
           </div>
-          <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:8px 10px;">
+          <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
             <div style="font-size:11px;color:#64748b;font-weight:700;">CHUTE (c)</div>
-            <div style="font-size:17px;color:#0b3b78;font-weight:800;">${escapeHtml(formatNum(triC || 0,2))}</div>
+            <div style="font-size:18px;color:#0b3b78;font-weight:800;">${escapeHtml(formatNum(triC || 0,2))}</div>
             <div style="font-size:11px;color:#64748b;margin-top:4px;">${escapeHtml(classificarTriC(triC))}</div>
           </div>
         </div>
@@ -895,7 +895,7 @@
       return `
         <div style="margin-top:12px;border:1px solid #dbe6f3;border-radius:14px;padding:12px;background:#fff;">
           <h3 style="margin:0 0 8px;color:#0b3b78;font-size:17px;">Curva Característica do Item</h3>
-          <div style="height:190px;">
+          <div style="height:230px;">
             <canvas id="chartTriQuestao"></canvas>
           </div>
           <div style="margin-top:10px;background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;font-size:12px;color:#334155;line-height:1.35;">
@@ -929,7 +929,6 @@
         const triA = Number(data.tri_a ?? data.a ?? 0);
         const triB = Number(data.tri_b ?? data.b ?? 0);
         const triC = Number(data.tri_c ?? data.c ?? 0);
-        const blocoTriCompacto = blocoTriQuestao(data);
 
         let insight = '';
         if (data.mais_marcada && data.mais_marcada !== gabarito) {
@@ -961,11 +960,13 @@
               </div>
             </div>
 
-            <div style="display:grid;grid-template-columns:380px 1fr;gap:18px;align-items:start;margin-top:14px;">
+            ${blocoTriQuestao(data)}
+
+            <div style="display:grid;grid-template-columns:430px 1fr;gap:18px;align-items:start;margin-top:14px;">
               <div>
                 <div style="border:1px solid #dbe6f3;border-radius:14px;padding:12px;background:#fff;">
                   <h3 style="margin:0 0 8px;color:#0b3b78;font-size:17px;">Distribuição das alternativas</h3>
-                  <div style="height:190px;">
+                  <div style="height:220px;">
                     <canvas id="chartDetalheQuestao"></canvas>
                   </div>
                   <div style="margin-top:12px;background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;font-size:13px;">
@@ -983,10 +984,9 @@
 
               <div style="border:1px solid #dbe6f3;border-radius:14px;padding:12px;background:#fff;">
                 <h3 style="margin:0 0 8px;color:#0b3b78;font-size:17px;">Resolução / imagem</h3>
-                ${blocoTriCompacto}
                 ${
                   imagemSrc
-                    ? `<div style="height:520px;overflow:auto;border-radius:12px;border:1px solid #e5edf7;background:#fff;padding:12px;">
+                    ? `<div style="height:720px;overflow:auto;border-radius:12px;border:1px solid #e5edf7;background:#fff;padding:12px;">
                          <img src="${escapeHtml(imagemSrc)}" style="width:100%;display:block;border-radius:10px;" alt="Imagem da resolução">
                        </div>`
                     : `<div style="padding:30px;text-align:center;color:#64748b;background:#f8fbff;border:1px dashed #dbe6f3;border-radius:12px;">
