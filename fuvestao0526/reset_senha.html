@@ -105,8 +105,7 @@ function qs(name){
 }
 
 const token  = qs('token');
-const login  = qs('login');
-const evento = qs('evento') || 'FUVESTAO0526'; // fallback
+const evento = 'FUVESTAO0526';
 
 const sub = document.getElementById('sub');
 const msg = document.getElementById('msg');
@@ -116,13 +115,14 @@ const btnVoltar = document.getElementById('btnVoltar');
 btnVoltar.onclick = () => location.href = './index.html';
 
 (function init(){
-  if (!token || !login) {
+  if (!token) {
     sub.textContent = 'Link inválido: faltam parâmetros.';
     msg.textContent = 'Volte ao login e solicite um novo link de redefinição.';
     btnSalvar.disabled = true;
     return;
   }
-  sub.textContent = `Unidade: ${login} • Evento: ${evento}`;
+
+  sub.textContent = `Evento: ${evento}`;
 })();
 
 btnSalvar.onclick = async () => {
@@ -136,10 +136,12 @@ btnSalvar.onclick = async () => {
     msg.textContent = 'Preencha a nova senha e a confirmação.';
     return;
   }
+
   if (nova.length < 6) {
     msg.textContent = 'A senha deve ter pelo menos 6 caracteres.';
     return;
   }
+
   if (nova !== conf) {
     msg.textContent = 'As senhas não conferem.';
     return;
@@ -148,10 +150,10 @@ btnSalvar.onclick = async () => {
   btnSalvar.disabled = true;
 
   try {
-    const r = await fetch(API + 'auth_reset.php', {
+    const r = await fetch(API + 'reset_senha.php', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ login, evento, token, nova_senha: nova }),
+      body: JSON.stringify({ token, senha: nova }),
       credentials: 'include'
     });
 
@@ -165,7 +167,6 @@ btnSalvar.onclick = async () => {
     msg.style.color = '#137333';
     msg.textContent = 'Senha alterada com sucesso! Você já pode entrar no sistema.';
 
-    // opcional: redireciona depois de 2s
     setTimeout(() => {
       location.href = './index.html';
     }, 2000);
