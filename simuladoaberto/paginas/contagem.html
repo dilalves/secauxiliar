@@ -465,6 +465,12 @@
       text-align:right;
     }
 
+    .linha-cancelada td{
+      color:#c62828; /* vermelho elegante, não gritante */
+      font-weight:600;
+      background:#fff5f5; /* leve fundo rosado */
+    }
+
     @media (max-width: 900px){
       .resumo-card{
         min-width:calc(50% - 6px);
@@ -1081,6 +1087,7 @@ function linhaSubtotal(label){
 }
 
 rows.forEach((r, idx) => {
+  const isCancelada = String(r.status || '').toUpperCase() === 'CANCELADA';
   const tipo = String(r.tipo_unidade || 'CONVENIADA').toUpperCase();
   const grupoLabel = tipo === 'PROPRIA'
     ? 'UNIDADES PRÓPRIAS'
@@ -1096,7 +1103,10 @@ rows.forEach((r, idx) => {
       <tr class="grupo-row">
         <td colspan="${getColspan(config.mostrarDia2, config.mostrarRed)}">${grupoLabel}</td>
       </tr>
+      
     `;
+
+    
 
     grupoAtual = grupoLabel;
   }
@@ -1108,12 +1118,15 @@ rows.forEach((r, idx) => {
   subtotal.red += Number(r.presentes_red || 0);
 
   html += `
-    <tr>
-      <td>${esc(r.codigo)}</td>
-      <td>${esc(r.unidade)}</td>
-      <td class="num">${n(r.vagas)}</td>
-      <td class="num">${n(r.total_inscritos)}</td>
-
+  <tr class="${isCancelada ? 'linha-cancelada' : ''}">
+    <td>${esc(r.codigo)}</td>
+    <td>
+      ${esc(r.unidade)}
+      ${isCancelada ? '<span style="margin-left:6px; font-size:11px;">(CANCELADA)</span>' : ''}
+    </td>
+    <td class="num">${n(r.vagas)}</td>
+    <td class="num">${n(r.total_inscritos)}</td>
+    
       <td class="num">
         ${montarCampoEdicao({
           valor: r.presentes_d1,
