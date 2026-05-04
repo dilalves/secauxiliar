@@ -713,6 +713,15 @@
               <div class="d">PDF oficial de presença, com dia da prova, data, sala, local e nomes dos candidatos.</div>
             </div>
           </button>
+
+          <button class="action-btn" id="btnMapaSalas" type="button">
+            <div class="action-ico"><i class="material-icons">grid_view</i></div>
+            <div class="action-meta">
+              <div class="t">Mapa de salas</div>
+              <div class="d">Salas ativas com quantidade de alunos e cálculo de provas (quebra de 15%).</div>
+            </div>
+          </button>
+
         </div>
 
         <div class="helper">
@@ -769,6 +778,7 @@
     const URL_LISTA_PORTA = `${API_BASE}/gerar_lista_porta.php`;
     const URL_ME = `${API_BASE}/auth_me_unidade.php`;
     const URL_LOGOUT = `${API_BASE}/logout.php`;
+    const URL_MAPA_SALAS = `${API_BASE}/mapa_salas.php`;
 
     const els = {
       evento: document.getElementById('evento'),
@@ -778,6 +788,7 @@
       btnListaGeral: document.getElementById('btnListaGeral'),
       btnListaPorta: document.getElementById('btnListaPorta'),
       btnListaChamada: document.getElementById('btnListaChamada'),
+      btnMapaSalas: document.getElementById('btnMapaSalas'),
 
       badgeEvento: document.getElementById('badgeEvento'),
       badgeSalas: document.getElementById('badgeSalas'),
@@ -1048,7 +1059,17 @@
       els.btnListaChamada.addEventListener('click', gerarListaChamada);
       els.btnListaGeral.addEventListener('click', gerarListaGeral);
       els.btnListaPorta.addEventListener('click', gerarListaPorta);
+      els.btnMapaSalas.addEventListener('click', gerarMapaSalas);
     });
+
+    function gerarMapaSalas() {
+    if (carregando) return;
+
+    const url = new URL(URL_MAPA_SALAS, location.href);
+    url.searchParams.set('evento', getEvento());
+
+    abrir(url.toString());
+    }
   </script>
 </body>
 </html>
