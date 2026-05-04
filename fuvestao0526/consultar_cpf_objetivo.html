@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Consulta CPF - Sistema Objetivo</title>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+
+<style>
+  :root{
+    --primary:#0b3b78;
+    --accent:#2563eb;
+    --line:#d9e6f5;
+    --soft:#f5f9ff;
+    --text:#10233f;
+    --muted:#5f7088;
+    --success:#e9f9ef;
+    --success-line:#3aa65a;
+    --warn:#fff8e1;
+    --danger:#fdecec;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#eef4fb;
+    color:var(--text);
+  }
+
+  .page-wrap{
+    padding:18px;
+    display:flex;
+    justify-content:center;
+  }
+
+  .sheet{
+    width:min(920px, 100%);
+    min-height:620px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(11,59,120,.10);
+    overflow:hidden;
+  }
+
+  .top-logo{
+    display:flex;
+    justify-content:flex-start;
+    padding:18px 22px 14px;
+  }
+
+  .logo img{
+    width:170px;
+    height:auto;
+    display:block;
+  }
+
+  .topbar{
+    background:linear-gradient(135deg, var(--primary), #134d96);
+    color:#fff;
+    padding:18px 22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+  }
+
+  .head h1{
+    margin:0 0 4px;
+    font-size:24px;
+    line-height:1.1;
+  }
+
+  .head p{
+    margin:0;
+    font-size:13px;
+    color:rgba(255,255,255,.9);
+  }
+
+  .badge{
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:14px;
+    padding:10px 14px;
+    min-width:170px;
+    text-align:center;
+    font-weight:700;
+  }
+
+  .content{
+    padding:22px;
+  }
+
+  .section{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px;
+    background:#fff;
+    margin-bottom:16px;
+  }
+
+  .section h2{
+    margin:0 0 10px;
+    font-size:18px;
+    color:var(--primary);
+  }
+
+  .section p{
+    margin:0 0 16px;
+    font-size:13px;
+    color:var(--muted);
+    line-height:1.4;
+  }
+
+  .form-row{
+    display:grid;
+    grid-template-columns:1fr 180px;
+    gap:12px;
+    align-items:end;
+  }
+
+  label{
+    display:block;
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.45px;
+    margin-bottom:6px;
+    font-weight:700;
+  }
+
+  input{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:13px 14px;
+    font-size:16px;
+    outline:none;
+    color:var(--text);
+    background:#fff;
+  }
+
+  input:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(37,99,235,.12);
+  }
+
+  .btn{
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:14px 16px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    background:var(--primary);
+    color:#fff;
+  }
+
+  .btn:disabled{
+    opacity:.65;
+    cursor:not-allowed;
+  }
+
+  .result{
+    margin-top:16px;
+  }
+
+  .msg{
+    border-radius:14px;
+    padding:14px 16px;
+    font-size:14px;
+    line-height:1.35;
+    border:1px solid var(--line);
+  }
+
+  .msg.info{
+    background:#eaf3ff;
+    color:#0b3b78;
+  }
+
+  .msg.warn{
+    background:var(--warn);
+    color:#795600;
+    border-color:#f0d98a;
+  }
+
+  .msg.danger{
+    background:var(--danger);
+    color:#8a1f1f;
+    border-color:#f0b7b7;
+  }
+
+  .candidate-card{
+    background:var(--success);
+    border:1px solid #ccebd5;
+    border-left:6px solid var(--success-line);
+    border-radius:14px;
+    padding:16px;
+  }
+
+  .candidate-title{
+    margin:0 0 14px;
+    font-size:17px;
+    color:#17612d;
+    font-weight:700;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px 16px;
+  }
+
+  .field{
+    background:#fff;
+    border:1px solid #dceee3;
+    border-radius:12px;
+    padding:10px 12px;
+  }
+
+  .field.full{
+    grid-column:1 / -1;
+  }
+
+  .label{
+    font-size:10px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.45px;
+    margin-bottom:4px;
+    font-weight:700;
+  }
+
+  .value{
+    font-size:15px;
+    color:var(--text);
+    word-break:break-word;
+  }
+
+  .note{
+    margin-top:14px;
+    font-size:12px;
+    color:#5f7088;
+    background:#fff;
+    border:1px dashed #cfdced;
+    border-radius:10px;
+    padding:9px 10px;
+  }
+
+  .actions{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    padding:0 18px 18px;
+  }
+
+  .btn-light{
+    border:none;
+    border-radius:12px;
+    padding:11px 16px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    background:#e9f1fb;
+    color:var(--primary);
+  }
+
+  @media(max-width:700px){
+    .topbar{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+
+    .badge{
+      width:100%;
+    }
+
+    .form-row{
+      grid-template-columns:1fr;
+    }
+
+    .grid{
+      grid-template-columns:1fr;
+    }
+
+    .field.full{
+      grid-column:auto;
+    }
+  }
+</style>
+</head>
+
+<body>
+  <div class="page-wrap">
+    <main class="sheet">
+      <div class="top-logo">
+        <div class="logo">
+          <img src="/fuvestao0526/logo.png" alt="Objetivo">
+        </div>
+      </div>
+
+      <div class="topbar">
+        <div class="head">
+          <h1>Consulta de CPF</h1>
+          <p>Pesquisa de candidato no sistema Objetivo</p>
+        </div>
+
+        <div class="badge">
+          Somente consulta
+        </div>
+      </div>
+
+      <div class="content">
+        <section class="section">
+          <h2>Pesquisar candidato</h2>
+          <p>
+            Informe o CPF do candidato para consultar se há cadastro no sistema Objetivo.
+            Esta tela apenas exibe os dados encontrados, sem permitir alteração.
+          </p>
+
+          <div class="form-row">
+            <div>
+              <label for="cpf">CPF do candidato</label>
+              <input id="cpf" type="text" maxlength="14" placeholder="000.000.000-00" autocomplete="off">
+            </div>
+
+            <button class="btn" id="btnConsultar" type="button">
+              Consultar CPF
+            </button>
+          </div>
+
+          <div id="resultado" class="result"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="actions">
+    <button class="btn-light" onclick="history.back()">Voltar</button>
+  </div>
+
+<script>
+  const API_CPF = 'https://apisec.secauxiliar.com.br/fuvestao0526/buscar_candidato_objetivo.php';
+
+  const $cpf = document.getElementById('cpf');
+  const $btn = document.getElementById('btnConsultar');
+  const $resultado = document.getElementById('resultado');
+
+  function somenteDigitos(v){
+    return String(v || '').replace(/\D/g, '');
+  }
+
+  function formatarCpf(v){
+    v = somenteDigitos(v).slice(0, 11);
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    return v;
+  }
+
+  function escapeHtml(str){
+    return String(str ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function cpfFormatado(cpf){
+    const s = somenteDigitos(cpf);
+    if (s.length !== 11) return cpf || '-';
+    return s.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  }
+
+  function msg(tipo, texto){
+    $resultado.innerHTML = `
+      <div class="msg ${tipo}">
+        ${escapeHtml(texto)}
+      </div>
+    `;
+  }
+
+  function renderCandidato(c){
+    $resultado.innerHTML = `
+      <div class="candidate-card">
+        <div class="candidate-title">Candidato encontrado</div>
+
+        <div class="grid">
+          <div class="field">
+            <div class="label">Nº Candidato</div>
+            <div class="value">${escapeHtml(c.numero || '-')}</div>
+          </div>
+
+          <div class="field">
+            <div class="label">CPF</div>
+            <div class="value">${escapeHtml(cpfFormatado(c.cpf))}</div>
+          </div>
+
+          <div class="field full">
+            <div class="label">Nome</div>
+            <div class="value">${escapeHtml(c.nome || '-')}</div>
+          </div>
+
+          <div class="field">
+            <div class="label">E-mail</div>
+            <div class="value">${escapeHtml(c.email || '-')}</div>
+          </div>
+
+          <div class="field">
+            <div class="label">Celular</div>
+            <div class="value">${escapeHtml(c.celular || '-')}</div>
+          </div>
+
+          <div class="field full">
+            <div class="label">Origem</div>
+            <div class="value">${escapeHtml(c.origem || '-')}</div>
+          </div>
+        </div>
+
+        <div class="note">
+          Consulta somente para visualização. Edição, troca de senha ou qualquer alteração
+          continuam restritas ao painel administrativo.
+        </div>
+      </div>
+    `;
+  }
+
+  async function consultarCpf(){
+    const cpf = somenteDigitos($cpf.value);
+
+    if (cpf.length !== 11) {
+      msg('warn', 'Informe um CPF válido com 11 dígitos.');
+      return;
+    }
+
+    $btn.disabled = true;
+    $btn.textContent = 'Consultando...';
+    msg('info', 'Consultando CPF no sistema Objetivo...');
+
+    try {
+      const resp = await fetch(`${API_CPF}?cpf=${encodeURIComponent(cpf)}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      const json = await resp.json();
+
+      if (!resp.ok || !json.ok) {
+        msg('danger', json.msg || json.error || 'Erro ao consultar CPF.');
+        return;
+      }
+
+      if (!json.encontrado) {
+        msg('warn', json.msg || 'Nenhum candidato encontrado para este CPF.');
+        return;
+      }
+
+      renderCandidato(json.candidato || {});
+
+    } catch (e) {
+      console.error(e);
+      msg('danger', 'Erro de comunicação com o servidor.');
+    } finally {
+      $btn.disabled = false;
+      $btn.textContent = 'Consultar CPF';
+    }
+  }
+
+  $cpf.addEventListener('input', () => {
+    $cpf.value = formatarCpf($cpf.value);
+  });
+
+  $cpf.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      consultarCpf();
+    }
+  });
+
+  $btn.addEventListener('click', consultarCpf);
+</script>
+</body>
+</html>
