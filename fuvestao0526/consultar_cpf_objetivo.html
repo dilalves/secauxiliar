@@ -564,6 +564,8 @@
   const $btn = document.getElementById('btnConsultar');
   const $resultado = document.getElementById('resultado');
 
+  let candidatoAtual = null;
+
   function toast(msg){
     if (window.M && M.toast) M.toast({ html: msg });
     else alert(msg);
@@ -596,6 +598,10 @@
       .replaceAll("'", '&#039;');
   }
 
+  function validarEmail(email){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+  }
+
   function msg(tipo, texto){
     $resultado.innerHTML = `
       <div class="msg ${tipo}">
@@ -604,7 +610,45 @@
     `;
   }
 
+  function badgeStatus(status){
+    const st = String(status || '').toUpperCase();
+
+    let bg = '#eef2ff';
+    let color = '#1e3a8a';
+
+    if (st === 'PENDENTE') {
+      bg = '#fff8e1';
+      color = '#795600';
+    } else if (st === 'CONCLUIDO') {
+      bg = '#dcfce7';
+      color = '#166534';
+    } else if (st === 'RECUSADO') {
+      bg = '#fee2e2';
+      color = '#991b1b';
+    } else if (st === 'ERRO') {
+      bg = '#fdecec';
+      color = '#8a1f1f';
+    }
+
+    return `
+      <span style="
+        display:inline-flex;
+        align-items:center;
+        padding:4px 9px;
+        border-radius:999px;
+        font-size:11px;
+        font-weight:800;
+        background:${bg};
+        color:${color};
+      ">
+        ${escapeHtml(st || '-')}
+      </span>
+    `;
+  }
+
   function renderCandidato(c){
+    candidatoAtual = c;
+
     $resultado.innerHTML = `
       <div class="candidate-card">
         <div class="candidate-title">
@@ -644,15 +688,30 @@
           </div>
         </div>
 
+        <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button"
+                  class="btn-consultar"
+                  style="width:auto; height:42px; padding:0 16px;"
+                  onclick="abrirModalAlterarEmail()">
+            <i class="material-icons">edit</i>
+            Solicitar alteração de e-mail
+          </button>
+        </div>
+
         <div class="note">
           Consulta somente para visualização. Edição, troca de senha ou qualquer alteração continuam restritas ao painel administrativo.
         </div>
+
+        <div id="historicoEmail" style="margin-top:14px;"></div>
       </div>
     `;
+
+    carregarHistoricoEmail(c.cpf);
   }
 
   async function consultarCpf(){
     const cpf = somenteDigitos($cpf.value);
+    candidatoAtual = null;
 
     if (cpf.length !== 11) {
       msg('warn', 'Informe um CPF válido com 11 dígitos.');
@@ -690,6 +749,172 @@
     } finally {
       $btn.disabled = false;
       $btn.innerHTML = '<i class="material-icons">search</i> Consultar CPF';
+    }
+  }
+
+  async function abrirModalAlterarEmail(){
+    if (!candidatoAtual) return;
+
+    const atual = candidatoAtual.email || '';
+
+    const { value: formValues } = await Swal.fire({
+      title: 'Solicitar alteração de e-mail',
+      html: `
+        <div style="text-align:left">
+          <label style="font-size:12px;font-weight:700;color:#5f7088;">Candidato</label>
+          <input class="swal2-input" value="${escapeHtml(candidatoAtual.nome || '')}" disabled>
+
+          <label style="font-size:12px;font-weight:700;color:#5f7088;">E-mail atual</label>
+          <input class="swal2-input" value="${escapeHtml(atual)}" disabled>
+
+          <label style="font-size:12px;font-weight:700;color:#5f7088;">Novo e-mail</label>
+          <input id="swalEmailNovo" class="swal2-input" placeholder="novoemail@dominio.com">
+
+          <label style="font-size:12px;font-weight:700;color:#5f7088;">Observação</label>
+          <textarea id="swalObs" class="swal2-textarea" placeholder="Informe o motivo da solicitação"></textarea>
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Enviar solicitação',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#0b3b78',
+      preConfirm: () => {
+        const emailNovo = document.getElementById('swalEmailNovo').value.trim();
+        const obs = document.getElementById('swalObs').value.trim();
+
+        if (!validarEmail(emailNovo)) {
+          Swal.showValidationMessage('Informe um e-mail válido.');
+          return false;
+        }
+
+        if (atual && emailNovo.toLowerCase() === atual.toLowerCase()) {
+          Swal.showValidationMessage('O novo e-mail é igual ao e-mail atual.');
+          return false;
+        }
+
+        return {
+          email_novo: emailNovo,
+          observacao: obs
+        };
+      }
+    });
+
+    if (!formValues) return;
+
+    try {
+      const resp = await fetch(API + 'solicitar_alteracao_email.php', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          evento: EVENTO_FIXO,
+          numero_candidato: candidatoAtual.numero,
+          cpf: somenteDigitos(candidatoAtual.cpf),
+          nome: candidatoAtual.nome,
+          email_atual: candidatoAtual.email,
+          email_novo: formValues.email_novo,
+          observacao: formValues.observacao
+        })
+      });
+
+      const json = await resp.json();
+
+      if (!resp.ok || !json.ok) {
+        Swal.fire('Erro', json.msg || json.error || 'Não foi possível registrar a solicitação.', 'error');
+        return;
+      }
+
+      await Swal.fire({
+        title: 'Solicitação enviada',
+        text: json.msg || 'O pedido foi registrado para análise.',
+        icon: 'success',
+        confirmButtonColor: '#0b3b78'
+      });
+
+      carregarHistoricoEmail(candidatoAtual.cpf);
+
+    } catch (e) {
+      console.error(e);
+      Swal.fire('Erro', 'Erro de comunicação com o servidor.', 'error');
+    }
+  }
+
+  async function carregarHistoricoEmail(cpf){
+    const box = document.getElementById('historicoEmail');
+    if (!box) return;
+
+    box.innerHTML = `
+      <div class="msg info">
+        Carregando histórico de solicitações...
+      </div>
+    `;
+
+    try {
+      const resp = await fetch(API + 'historico_alteracao_email.php?cpf=' + encodeURIComponent(somenteDigitos(cpf)), {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      const json = await resp.json();
+
+      if (!resp.ok || !json.ok) {
+        box.innerHTML = `
+          <div class="msg danger">
+            ${escapeHtml(json.msg || json.error || 'Erro ao carregar histórico.')}
+          </div>
+        `;
+        return;
+      }
+
+      if (!json.itens || json.itens.length === 0) {
+        box.innerHTML = `
+          <div class="msg warn">
+            Nenhuma solicitação de alteração registrada para este CPF.
+          </div>
+        `;
+        return;
+      }
+
+      box.innerHTML = `
+        <div class="note">
+          <b>Histórico de solicitações de alteração de e-mail</b>
+          <div style="margin-top:12px; display:grid; gap:10px;">
+            ${json.itens.map(i => `
+              <div style="
+                background:#fff;
+                border:1px solid #dceee3;
+                border-radius:12px;
+                padding:10px 12px;
+              ">
+                <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+                  <b>Pedido #${escapeHtml(i.id)}</b>
+                  ${badgeStatus(i.status)}
+                </div>
+
+                <div style="font-size:12px; line-height:1.55;">
+                  <b>E-mail atual:</b> ${escapeHtml(i.email_atual || '-')}<br>
+                  <b>Novo e-mail:</b> ${escapeHtml(i.email_novo || '-')}<br>
+                  <b>Solicitado em:</b> ${escapeHtml(i.solicitado_em || '-')}<br>
+                  ${i.processado_em ? `<b>Processado em:</b> ${escapeHtml(i.processado_em)}<br>` : ''}
+                  ${i.observacao ? `<b>Observação:</b> ${escapeHtml(i.observacao)}<br>` : ''}
+                  ${i.retorno ? `<b>Retorno:</b> ${escapeHtml(i.retorno)}<br>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+    } catch (e) {
+      console.error(e);
+      box.innerHTML = `
+        <div class="msg danger">
+          Erro de comunicação ao carregar histórico.
+        </div>
+      `;
     }
   }
 
