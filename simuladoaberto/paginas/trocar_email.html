@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Troca de e-mail — ADM</title>
+
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --bg:#eef4fb;
+      --card:#fff;
+      --line:#d9e6f5;
+      --text:#10233f;
+      --muted:#60708a;
+      --ok:#16a34a;
+      --danger:#dc2626;
+      --warn:#f59e0b;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .topbar{
+      background:var(--primary);
+      color:#fff;
+      height:64px;
+      display:flex;
+      align-items:center;
+      box-shadow:0 2px 10px rgba(0,0,0,.18);
+    }
+
+    .wrap{
+      width:min(1280px, calc(100% - 32px));
+      margin:0 auto;
+    }
+
+    .topbar .wrap{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:800;
+    }
+
+    .brand img{height:28px}
+
+    .user{
+      font-size:13px;
+      opacity:.95;
+    }
+
+    main{
+      padding:22px 0 40px;
+    }
+
+    .hero{
+      background:linear-gradient(180deg, rgba(11,59,120,.10), rgba(11,59,120,0));
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      margin-bottom:16px;
+      box-shadow:0 10px 28px rgba(0,0,0,.05);
+    }
+
+    .hero h1{
+      margin:0;
+      font-size:25px;
+      color:var(--primary);
+    }
+
+    .hero p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .toolbar{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:16px;
+      display:grid;
+      grid-template-columns:180px 220px 1fr 160px;
+      gap:12px;
+      align-items:end;
+      box-shadow:0 10px 26px rgba(0,0,0,.04);
+    }
+
+    label{
+      display:block;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.4px;
+      color:var(--muted);
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    select,input{
+      width:100%;
+      height:42px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:0 12px;
+      outline:none;
+      font-size:14px;
+      color:var(--text);
+      background:#fff;
+    }
+
+    select:focus,input:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    button{
+      border:none;
+      border-radius:12px;
+      height:42px;
+      padding:0 14px;
+      cursor:pointer;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+    }
+
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+    }
+
+    .btn-light{
+      background:#eaf2ff;
+      color:var(--primary);
+      border:1px solid var(--line);
+    }
+
+    .btn-ok{
+      background:#dcfce7;
+      color:#166534;
+    }
+
+    .btn-danger{
+      background:#fee2e2;
+      color:#991b1b;
+    }
+
+    .btn-small{
+      height:34px;
+      font-size:12px;
+      padding:0 10px;
+      border-radius:10px;
+    }
+
+    .card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 10px 26px rgba(0,0,0,.04);
+      overflow:hidden;
+    }
+
+    .card-head{
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom:1px solid var(--line);
+      gap:12px;
+    }
+
+    .card-head h2{
+      margin:0;
+      font-size:17px;
+      color:var(--primary);
+    }
+
+    .count{
+      background:#eef6ff;
+      color:var(--primary);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      max-height:calc(100vh - 260px);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1180px;
+    }
+
+    thead th{
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:#f2f7ff;
+      color:#123b70;
+      text-align:left;
+      font-size:12px;
+      padding:11px 10px;
+      border-bottom:1px solid var(--line);
+      white-space:nowrap;
+    }
+
+    tbody td{
+      padding:10px;
+      border-bottom:1px solid #edf2f7;
+      font-size:13px;
+      vertical-align:top;
+    }
+
+    tbody tr:hover{
+      background:#f8fbff;
+    }
+
+    .mono{
+      font-family:ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      padding:5px 9px;
+      font-size:11px;
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    .PENDENTE{background:#fff7d6;color:#8a5b00}
+    .CONCLUIDO{background:#dcfce7;color:#166534}
+    .RECUSADO{background:#fee2e2;color:#991b1b}
+    .ERRO{background:#fdecec;color:#8a1f1f}
+
+    .actions{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+
+    .empty{
+      padding:26px;
+      color:var(--muted);
+      text-align:center;
+    }
+
+    .msg{
+      padding:12px 14px;
+      border-radius:12px;
+      margin-bottom:14px;
+      font-size:13px;
+      display:none;
+    }
+
+    .msg.ok{display:block;background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+    .msg.err{display:block;background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+    .msg.info{display:block;background:#eaf2ff;color:#0b3b78;border:1px solid var(--line)}
+
+    @media(max-width:850px){
+      .toolbar{
+        grid-template-columns:1fr;
+      }
+
+      .topbar{
+        height:auto;
+        padding:12px 0;
+      }
+
+      .topbar .wrap{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <div class="brand">
+        <img src="/simuladoaberto/img/logo-mini.png" alt="Logo" onerror="this.style.display='none'">
+        <span>Simulados Abertos - Painel Administrativo</span>
+      </div>
+      <div class="user">Adilson • admin</div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>Solicitações de troca de e-mail</h1>
+      <p>Acompanhe os pedidos das unidades e aplique a alteração diretamente no sistema Objetivo.</p>
+    </section>
+
+    <section class="toolbar">
+      <div>
+        <label for="fStatus">Status</label>
+        <select id="fStatus">
+          <option value="PENDENTE" selected>Pendentes</option>
+          <option value="ERRO">Com erro</option>
+          <option value="CONCLUIDO">Concluídas</option>
+          <option value="RECUSADO">Recusadas</option>
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="fCpf">CPF</label>
+        <input id="fCpf" type="text" placeholder="somente números">
+      </div>
+
+      <div>
+        <label>&nbsp;</label>
+        <button class="btn-primary" type="button" onclick="carregar()">
+          <i class="material-icons">search</i>
+          Buscar
+        </button>
+        <button class="btn-light" type="button" onclick="limparFiltros()">
+          <i class="material-icons">backspace</i>
+          Limpar
+        </button>
+      </div>
+
+      <div>
+        <label>&nbsp;</label>
+        <button class="btn-light" type="button" onclick="location.href='./painel.html'">
+          <i class="material-icons">arrow_back</i>
+          Voltar
+        </button>
+      </div>
+    </section>
+
+    <div id="msg" class="msg"></div>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Pedidos encontrados</h2>
+        <span id="total" class="count">0 pedido(s)</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Status</th>
+              <th>Solicitado em</th>
+              <th>Evento</th>
+              <th>Unidade</th>
+              <th>Nº Cand.</th>
+              <th>CPF</th>
+              <th>Nome</th>
+              <th>E-mail atual</th>
+              <th>Novo e-mail</th>
+              <th>Observação</th>
+              <th>Processamento</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr>
+              <td colspan="13" class="empty">Carregando...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+<script>
+  const API = 'https://apisec.secauxiliar.com.br/fuvestao0526/';
+
+  const $tbody = document.getElementById('tbody');
+  const $total = document.getElementById('total');
+  const $msg = document.getElementById('msg');
+
+  function onlyDigits(v){
+    return String(v || '').replace(/\D/g, '');
+  }
+
+  function cpfMask(v){
+    const s = onlyDigits(v);
+    if (s.length !== 11) return v || '-';
+    return s.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  }
+
+  function esc(v){
+    return String(v ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#039;');
+  }
+
+  function showMsg(tipo, texto){
+    $msg.className = 'msg ' + tipo;
+    $msg.textContent = texto;
+  }
+
+  function clearMsg(){
+    $msg.className = 'msg';
+    $msg.textContent = '';
+  }
+
+  function limparFiltros(){
+    document.getElementById('fStatus').value = 'PENDENTE';
+    document.getElementById('fCpf').value = '';
+    carregar();
+  }
+
+  function render(rows){
+    $total.textContent = `${rows.length} pedido(s)`;
+
+    if (!rows.length) {
+      $tbody.innerHTML = `
+        <tr>
+          <td colspan="13" class="empty">Nenhum pedido encontrado.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    $tbody.innerHTML = rows.map(r => {
+      const podeAplicar = r.status === 'PENDENTE' || r.status === 'ERRO';
+      const podeRecusar = r.status === 'PENDENTE';
+
+      return `
+        <tr>
+          <td class="mono">#${esc(r.id)}</td>
+          <td><span class="status ${esc(r.status)}">${esc(r.status)}</span></td>
+          <td>${esc(r.solicitado_em || '-')}</td>
+          <td>${esc(r.evento || '-')}</td>
+          <td>${esc(r.unidade_login || '-')}</td>
+          <td class="mono">${esc(r.numero_candidato || '-')}</td>
+          <td class="mono">${esc(cpfMask(r.cpf))}</td>
+          <td>${esc(r.nome || '-')}</td>
+          <td>${esc(r.email_atual || '-')}</td>
+          <td><b>${esc(r.email_novo || '-')}</b></td>
+          <td>${esc(r.observacao || '-')}</td>
+          <td>
+            <b>${esc(r.processado_em || '-')}</b><br>
+            <small>${esc(r.retorno || '')}</small>
+          </td>
+          <td>
+            <div class="actions">
+              ${podeAplicar ? `
+                <button class="btn-ok btn-small" onclick="aplicar(${Number(r.id)})">
+                  <i class="material-icons" style="font-size:16px;">check_circle</i>
+                  Aplicar
+                </button>
+              ` : ''}
+
+              ${podeRecusar ? `
+                <button class="btn-danger btn-small" onclick="recusar(${Number(r.id)})">
+                  <i class="material-icons" style="font-size:16px;">cancel</i>
+                  Recusar
+                </button>
+              ` : ''}
+
+              <button class="btn-light btn-small" onclick='detalhes(${JSON.stringify(r).replaceAll("'", "&apos;")})'>
+                <i class="material-icons" style="font-size:16px;">visibility</i>
+                Ver
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function carregar(){
+    clearMsg();
+    $tbody.innerHTML = `<tr><td colspan="13" class="empty">Carregando...</td></tr>`;
+
+    const status = document.getElementById('fStatus').value;
+    const cpf = onlyDigits(document.getElementById('fCpf').value);
+
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    if (cpf) params.set('cpf', cpf);
+
+    try {
+      const resp = await fetch(API + 'adm_listar_alteracoes_email.php?' + params.toString(), {
+        credentials:'include',
+        cache:'no-store'
+      });
+
+      const json = await resp.json();
+
+      if (!json.ok) {
+        showMsg('err', json.msg || 'Erro ao listar pedidos.');
+        render([]);
+        return;
+      }
+
+      render(json.itens || []);
+
+    } catch(e) {
+      console.error(e);
+      showMsg('err', 'Erro de comunicação com o servidor.');
+      render([]);
+    }
+  }
+
+  async function aplicar(id){
+    const ok = await Swal.fire({
+      title: 'Aplicar alteração?',
+      html: `
+        <div style="text-align:left;line-height:1.5">
+          <p>O sistema fará login no Objetivo e trocará o e-mail do candidato.</p>
+          <p><b>Pedido:</b> #${id}</p>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, aplicar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#0b3b78'
+    });
+
+    if (!ok.isConfirmed) return;
+
+    Swal.fire({
+      title:'Processando...',
+      text:'Aguarde enquanto a alteração é aplicada no sistema Objetivo.',
+      allowOutsideClick:false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    try {
+      const resp = await fetch(API + 'adm_aplicar_alteracao_email.php', {
+        method:'POST',
+        credentials:'include',
+        cache:'no-store',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({id})
+      });
+
+      const json = await resp.json();
+
+      if (!json.ok) {
+        await Swal.fire('Erro', json.msg || json.erro || 'Não foi possível aplicar a alteração.', 'error');
+        carregar();
+        return;
+      }
+
+      await Swal.fire('Concluído', json.msg || 'Alteração aplicada com sucesso.', 'success');
+      carregar();
+
+    } catch(e) {
+      console.error(e);
+      await Swal.fire('Erro', 'Erro de comunicação com o servidor.', 'error');
+      carregar();
+    }
+  }
+
+  async function recusar(id){
+    const res = await Swal.fire({
+      title: 'Recusar solicitação',
+      input: 'textarea',
+      inputLabel: 'Motivo da recusa',
+      inputPlaceholder: 'Ex.: e-mail informado não confere / solicitação duplicada...',
+      showCancelButton: true,
+      confirmButtonText: 'Recusar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#dc2626'
+    });
+
+    if (!res.isConfirmed) return;
+
+    try {
+      const resp = await fetch(API + 'adm_recusar_alteracao_email.php', {
+        method:'POST',
+        credentials:'include',
+        cache:'no-store',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          id,
+          motivo: res.value || ''
+        })
+      });
+
+      const json = await resp.json();
+
+      if (!json.ok) {
+        await Swal.fire('Erro', json.msg || json.erro || 'Não foi possível recusar.', 'error');
+        carregar();
+        return;
+      }
+
+      await Swal.fire('Recusada', json.msg || 'Solicitação recusada.', 'success');
+      carregar();
+
+    } catch(e) {
+      console.error(e);
+      await Swal.fire('Erro', 'Erro de comunicação com o servidor.', 'error');
+    }
+  }
+
+  function detalhes(r){
+    Swal.fire({
+      title: `Pedido #${esc(r.id)}`,
+      width: 760,
+      html: `
+        <div style="text-align:left;line-height:1.6;font-size:14px">
+          <p><b>Status:</b> ${esc(r.status)}</p>
+          <p><b>Evento:</b> ${esc(r.evento || '-')}</p>
+          <p><b>Unidade:</b> ${esc(r.unidade_login || '-')}</p>
+          <p><b>Nº Candidato:</b> ${esc(r.numero_candidato || '-')}</p>
+          <p><b>CPF:</b> ${esc(cpfMask(r.cpf))}</p>
+          <p><b>Nome:</b> ${esc(r.nome || '-')}</p>
+          <hr>
+          <p><b>E-mail atual:</b> ${esc(r.email_atual || '-')}</p>
+          <p><b>Novo e-mail:</b> ${esc(r.email_novo || '-')}</p>
+          <p><b>Observação:</b><br>${esc(r.observacao || '-')}</p>
+          <hr>
+          <p><b>Solicitado por:</b> ${esc(r.solicitado_por || '-')}</p>
+          <p><b>Solicitado em:</b> ${esc(r.solicitado_em || '-')}</p>
+          <p><b>Processado por:</b> ${esc(r.processado_por || '-')}</p>
+          <p><b>Processado em:</b> ${esc(r.processado_em || '-')}</p>
+          <p><b>Retorno:</b><br>${esc(r.retorno || '-')}</p>
+        </div>
+      `,
+      confirmButtonColor:'#0b3b78'
+    });
+  }
+
+  document.getElementById('fCpf').addEventListener('input', function(){
+    this.value = onlyDigits(this.value).slice(0,11);
+  });
+
+  document.addEventListener('DOMContentLoaded', carregar);
+</script>
+</body>
+</html>
