@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Consulta CPF — Sistema Objetivo</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e9edf3;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --danger:#dc2626;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    .container{ max-width:1100px; margin:0 auto; padding:0 16px; }
+
+    header.topbar{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:64px;
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      z-index:10;
+      box-shadow:0 2px 10px rgba(16,24,40,.22);
+    }
+
+    .topbar .container{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand img{ height:28px; }
+
+    .brand .title-wrap{
+      display:flex;
+      flex-direction:column;
+      line-height:1.05;
+      min-width:0;
+    }
+
+    .brand .title{
+      font-weight:700;
+      font-size:15px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .chip-user{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(255,255,255,.14) !important;
+      border:1px solid rgba(255,255,255,.22) !important;
+      border-radius:999px;
+      padding:8px 12px;
+      max-width:420px;
+      color:#fff !important;
+      cursor:pointer;
+    }
+
+    .chip-user .mat,
+    .chip-user .caret{
+      color:#fff !important;
+      font-size:18px;
+      opacity:.95;
+    }
+
+    .chip-user .caret{ font-size:22px; }
+
+    .chip-user .txt{
+      display:flex;
+      flex-direction:column;
+      line-height:1.05;
+      min-width:0;
+    }
+
+    .chip-user .txt b,
+    .chip-user .txt span{
+      color:#fff !important;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .chip-user .txt b{
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .chip-user .txt span{
+      font-size:12px;
+      opacity:.9;
+    }
+
+    .user-menu{ position:relative; }
+
+    .btn-user{
+      border:none;
+    }
+
+    .dropdown{
+      position:absolute;
+      right:0;
+      top:54px;
+      min-width:220px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      box-shadow:0 14px 34px rgba(0,0,0,.14);
+      padding:8px;
+      display:none;
+      z-index:9999;
+    }
+
+    .dropdown.open{ display:block; }
+
+    .dd-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:10px;
+      color:var(--ink);
+    }
+
+    .dd-item i{
+      color:var(--accent);
+      font-size:18px;
+    }
+
+    .dd-item:hover{
+      background:#f0f4ff;
+    }
+
+    .banner-evento-wrap{
+      margin-top:75px;
+      margin-bottom:0;
+    }
+
+    .banner-evento{
+      width:100%;
+      display:block;
+      border-radius:16px;
+      border:1px solid var(--line);
+      box-shadow:0 10px 26px rgba(0,0,0,.05);
+    }
+
+    main{
+      padding-top:18px;
+      padding-bottom:40px;
+    }
+
+    .hero{
+      background:linear-gradient(180deg, rgba(11,59,120,.10), rgba(11,59,120,0));
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.05);
+      overflow:hidden;
+      margin-bottom:16px;
+    }
+
+    .hero-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .hero h1{
+      margin:0;
+      font-size:22px;
+      font-weight:800;
+    }
+
+    .hero p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--line);
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .badge i{
+      font-size:16px;
+      color:var(--accent);
+    }
+
+    .search-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 10px 26px rgba(0,0,0,.05);
+    }
+
+    .search-card h2{
+      margin:0;
+      font-size:18px;
+      font-weight:800;
+      color:var(--ink);
+    }
+
+    .search-card p{
+      margin:6px 0 18px;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 190px;
+      gap:12px;
+      align-items:end;
+    }
+
+    .field-label{
+      display:block;
+      font-size:11px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.45px;
+      margin-bottom:6px;
+      font-weight:800;
+    }
+
+    .cpf-input{
+      width:100%;
+      height:48px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:0 14px;
+      font-size:17px;
+      background:#fff;
+      color:var(--ink);
+      outline:none;
+    }
+
+    .cpf-input:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    .btn-consultar{
+      width:100%;
+      height:48px;
+      border:none;
+      border-radius:14px;
+      background:var(--primary);
+      color:#fff;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+
+    .btn-consultar:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
+    .result{
+      margin-top:16px;
+    }
+
+    .msg{
+      border-radius:14px;
+      padding:14px 16px;
+      font-size:14px;
+      line-height:1.35;
+      border:1px solid var(--line);
+    }
+
+    .msg.info{
+      background:#eaf3ff;
+      color:#0b3b78;
+    }
+
+    .msg.warn{
+      background:#fff8e1;
+      color:#795600;
+      border-color:#f0d98a;
+    }
+
+    .msg.danger{
+      background:#fdecec;
+      color:#8a1f1f;
+      border-color:#f0b7b7;
+    }
+
+    .candidate-card{
+      background:#eef5ff;
+      border:1px solid #cfe0ff;
+      border-left:6px solid var(--accent);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    .candidate-title{
+      margin:0 0 14px;
+      font-size:17px;
+      color:#0b3b78;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .candidate-title i{
+      font-size:21px;
+    }
+
+    .grid-result{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px 16px;
+    }
+
+    .info-field{
+      background:#fff;
+      border:1px solid #d7e6ff;
+      border-radius:14px;
+      padding:11px 12px;
+    }
+
+    .info-field.full{
+      grid-column:1 / -1;
+    }
+
+    .info-label{
+      font-size:10px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.45px;
+      margin-bottom:4px;
+      font-weight:800;
+    }
+
+    .info-value{
+      font-size:15px;
+      color:var(--ink);
+      word-break:break-word;
+    }
+
+    .note{
+      margin-top:14px;
+      font-size:12px;
+      color:#5f7088;
+      background:#fff;
+      border:1px dashed #cfdced;
+      border-radius:12px;
+      padding:10px 12px;
+    }
+
+    .footer-actions{
+      display:flex;
+      justify-content:center;
+      margin-top:16px;
+    }
+
+    .btn-voltar{
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:#fff;
+      color:var(--primary);
+      padding:9px 16px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .skeleton{
+      background: linear-gradient(90deg, #eef2f7, #f8fafc, #eef2f7);
+      background-size: 200% 100%;
+      animation: sk 1.2s infinite;
+      border-radius:8px;
+    }
+
+    @keyframes sk {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .sk-line{ height:12px; width:220px; }
+    .sk-mini{ height:10px; width:180px; opacity:.85; }
+
+    @media(max-width:860px){
+      .chip-user{ max-width:260px; }
+      .form-grid{ grid-template-columns:1fr; }
+    }
+
+    @media(max-width:600px){
+      .grid-result{ grid-template-columns:1fr; }
+      .info-field.full{ grid-column:auto; }
+      .hero-top{ flex-direction:column; }
+      .badges{ justify-content:flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container">
+    <div class="brand">
+      <img src="/enem0526/logo-mini.png" alt="Logo">
+      <div class="title-wrap">
+        <div class="title">Simulado Aberto ENEM — Maio/2026</div>        
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="user-menu" id="userMenu">
+        <button class="chip-user btn-user waves-effect" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <i class="material-icons mat">account_circle</i>
+          <div class="txt">
+            <b id="uLogin" class="skeleton sk-line"></b>
+            <span id="uNome" class="skeleton sk-mini"></span>
+          </div>
+          <i class="material-icons caret">arrow_drop_down</i>
+        </button>
+
+        <div class="dropdown" id="userDropdown" role="menu" aria-label="Menu do usuário">
+          <a href="./alterar_senha.html" class="dd-item" role="menuitem">
+            <i class="material-icons">lock</i> Alterar senha
+          </a>
+          <a href="#" class="dd-item" role="menuitem" onclick="logout(); return false;">
+            <i class="material-icons">logout</i> Sair
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="banner-evento-wrap">
+  <img
+    src="/enem0526/banner-enem.jpg"
+    alt="Banner do Simulado Aberto ENEM Maio 2026"
+    class="banner-evento"
+    >
+  </div>  
+</div>
+
+<main>
+  <div class="container">
+
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>Consulta de CPF</h1>
+          <p>Pesquise o candidato no sistema Objetivo. Esta tela é somente para visualização.</p>
+        </div>
+
+        <div class="badges">
+          <span class="badge"><i class="material-icons">event</i><b id="evt">ENEM0526</b></span>
+          <span class="badge"><i class="material-icons">visibility</i> Somente consulta</span>
+          <span class="badge"><i class="material-icons">shield</i> Sessão segura</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="search-card">
+      <h2>Pesquisar candidato</h2>
+      <p>Informe o CPF para verificar o cadastro no sistema Objetivo.</p>
+
+      <div class="form-grid">
+        <div>
+          <label class="field-label" for="cpf">CPF do candidato</label>
+          <input id="cpf" class="cpf-input" type="text" maxlength="14" placeholder="000.000.000-00" autocomplete="off">
+        </div>
+
+        <button class="btn-consultar" id="btnConsultar" type="button">
+          <i class="material-icons">search</i>
+          Consultar CPF
+        </button>
+      </div>
+
+      <div id="resultado" class="result"></div>
+    </section>
+
+    <div class="footer-actions">
+      <button class="btn-voltar" onclick="location.href='./painel.html'">
+        <i class="material-icons">arrow_back</i>
+        Voltar ao painel
+      </button>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const API = 'https://apisec.secauxiliar.com.br/enem0526/';
+  const API_CPF = API + 'buscar_candidato_objetivo.php';
+  const EVENTO_FIXO = 'ENEM0526';
+
+  const $cpf = document.getElementById('cpf');
+  const $btn = document.getElementById('btnConsultar');
+  const $resultado = document.getElementById('resultado');
+
+  let candidatoAtual = null;
+
+  function toast(msg){
+    if (window.M && M.toast) M.toast({ html: msg });
+    else alert(msg);
+  }
+
+  function somenteDigitos(v){
+    return String(v || '').replace(/\D/g, '');
+  }
+
+  function formatarCpf(v){
+    v = somenteDigitos(v).slice(0, 11);
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    return v;
+  }
+
+  function cpfFormatado(cpf){
+    const s = somenteDigitos(cpf);
+    if (s.length !== 11) return cpf || '-';
+    return s.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  }
+
+  function escapeHtml(str){
+    return String(str ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function validarEmail(email){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+  }
+
+  function msg(tipo, texto){
+    $resultado.innerHTML = `
+      <div class="msg ${tipo}">
+        ${escapeHtml(texto)}
+      </div>
+    `;
+  }
+
+  function badgeStatus(status){
+    const st = String(status || '').toUpperCase();
+
+    let bg = '#eef2ff';
+    let color = '#1e3a8a';
+
+    if (st === 'PENDENTE') {
+      bg = '#fff8e1';
+      color = '#795600';
+    } else if (st === 'CONCLUIDO') {
+      bg = '#dcfce7';
+      color = '#166534';
+    } else if (st === 'RECUSADO') {
+      bg = '#fee2e2';
+      color = '#991b1b';
+    } else if (st === 'ERRO') {
+      bg = '#fdecec';
+      color = '#8a1f1f';
+    }
+
+    return `
+      <span style="
+        display:inline-flex;
+        align-items:center;
+        padding:4px 9px;
+        border-radius:999px;
+        font-size:11px;
+        font-weight:800;
+        background:${bg};
+        color:${color};
+      ">
+        ${escapeHtml(st || '-')}
+      </span>
+    `;
+  }
+
+  function renderCandidato(c){
+    candidatoAtual = c;
+
+    $resultado.innerHTML = `
+      <div class="candidate-card">
+        <div class="candidate-title">
+          <i class="material-icons">check_circle</i>
+          Candidato encontrado
+        </div>
+
+        <div class="grid-result">
+          <div class="info-field">
+            <div class="info-label">Nº candidato</div>
+            <div class="info-value">${escapeHtml(c.numero || '-')}</div>
+          </div>
+
+          <div class="info-field">
+            <div class="info-label">CPF</div>
+            <div class="info-value">${escapeHtml(cpfFormatado(c.cpf))}</div>
+          </div>
+
+          <div class="info-field full">
+            <div class="info-label">Nome</div>
+            <div class="info-value">${escapeHtml(c.nome || '-')}</div>
+          </div>
+
+          <div class="info-field">
+            <div class="info-label">E-mail</div>
+            <div class="info-value">${escapeHtml(c.email || '-')}</div>
+          </div>
+
+          <div class="info-field">
+            <div class="info-label">Celular</div>
+            <div class="info-value">${escapeHtml(c.celular || '-')}</div>
+          </div>
+
+          <div class="info-field full">
+            <div class="info-label">Origem</div>
+            <div class="info-value">${escapeHtml(c.origem || '-')}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button"
+                  class="btn-consultar"
+                  style="width:auto; height:42px; padding:0 16px;"
+                  onclick="abrirModalAlterarEmail()">
+            <i class="material-icons">edit</i>
+            Solicitar alteração de e-mail
+          </button>
+        </div>
+
+        <div class="note">
+          Consulta somente para visualização. Edição, troca de senha ou qualquer alteração continuam restritas ao painel administrativo.
+        </div>
+
+        <div id="historicoEmail" style="margin-top:14px;"></div>
+      </div>
+    `;
+
+    carregarHistoricoEmail(c.cpf);
+  }
+
+  async function consultarCpf(){
+    const cpf = somenteDigitos($cpf.value);
+    candidatoAtual = null;
+
+    if (cpf.length !== 11) {
+      msg('warn', 'Informe um CPF válido com 11 dígitos.');
+      return;
+    }
+
+    $btn.disabled = true;
+    $btn.innerHTML = '<i class="material-icons">hourglass_empty</i> Consultando...';
+    msg('info', 'Consultando CPF no sistema Objetivo...');
+
+    try {
+      const resp = await fetch(`${API_CPF}?cpf=${encodeURIComponent(cpf)}`, {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      const json = await resp.json();
+
+      if (!resp.ok || !json.ok) {
+        msg('danger', json.msg || json.error || 'Erro ao consultar CPF.');
+        return;
+      }
+
+      if (!json.encontrado) {
+        msg('warn', json.msg || 'Nenhum candidato encontrado para este CPF.');
+        return;
+      }
+
+      renderCandidato(json.candidato || {});
+
+    } catch (e) {
+      console.error(e);
+      msg('danger', 'Erro de comunicação com o servidor.');
+    } finally {
+      $btn.disabled = false;
+      $btn.innerHTML = '<i class="material-icons">search</i> Consultar CPF';
+    }
+  }
+
+  async function abrirModalAlterarEmail(){
+    if (!candidatoAtual) return;
+
+    const atual = candidatoAtual.email || '';
+
+    const { value: formValues } = await Swal.fire({
+      title: 'Solicitar alteração de e-mail',
+      html: `
+        <div style="text-align:left">
+          <label style="font-size:12px;font-weight:700;color:#5f7088;">Candidato</label>
+          <input class="swal2-input" value="${escapeHtml(candidatoAtual.nome || '')}" disabled>
+
+          <label style="font-size:12px;font-weight:700;color:#5f7088;">E-mail atual</label>
+          <input class="swal2-input" value="${escapeHtml(atual)}" disabled>
+
+          <label style="font-size:12px;font-weight:700;color:#5f7088;">Novo e-mail</label>
+          <input id="swalEmailNovo" class="swal2-input" placeholder="novoemail@dominio.com">
+
+          <label style="font-size:12px;font-weight:700;color:#5f7088;">Observação</label>
+          <textarea id="swalObs" class="swal2-textarea" placeholder="Informe o motivo da solicitação"></textarea>
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Enviar solicitação',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#0b3b78',
+      preConfirm: () => {
+        const emailNovo = document.getElementById('swalEmailNovo').value.trim();
+        const obs = document.getElementById('swalObs').value.trim();
+
+        if (!validarEmail(emailNovo)) {
+          Swal.showValidationMessage('Informe um e-mail válido.');
+          return false;
+        }
+
+        if (atual && emailNovo.toLowerCase() === atual.toLowerCase()) {
+          Swal.showValidationMessage('O novo e-mail é igual ao e-mail atual.');
+          return false;
+        }
+
+        return {
+          email_novo: emailNovo,
+          observacao: obs
+        };
+      }
+    });
+
+    if (!formValues) return;
+
+    try {
+      const resp = await fetch(API + 'solicitar_alteracao_email.php', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          evento: EVENTO_FIXO,
+          numero_candidato: candidatoAtual.numero,
+          cpf: somenteDigitos(candidatoAtual.cpf),
+          nome: candidatoAtual.nome,
+          email_atual: candidatoAtual.email,
+          email_novo: formValues.email_novo,
+          observacao: formValues.observacao
+        })
+      });
+
+      const json = await resp.json();
+
+      if (!resp.ok || !json.ok) {
+        Swal.fire('Erro', json.msg || json.error || 'Não foi possível registrar a solicitação.', 'error');
+        return;
+      }
+
+      await Swal.fire({
+        title: 'Solicitação enviada',
+        text: json.msg || 'O pedido foi registrado para análise.',
+        icon: 'success',
+        confirmButtonColor: '#0b3b78'
+      });
+
+      carregarHistoricoEmail(candidatoAtual.cpf);
+
+    } catch (e) {
+      console.error(e);
+      Swal.fire('Erro', 'Erro de comunicação com o servidor.', 'error');
+    }
+  }
+
+  async function carregarHistoricoEmail(cpf){
+    const box = document.getElementById('historicoEmail');
+    if (!box) return;
+
+    box.innerHTML = `
+      <div class="msg info">
+        Carregando histórico de solicitações...
+      </div>
+    `;
+
+    try {
+      const resp = await fetch(API + 'historico_alteracao_email.php?cpf=' + encodeURIComponent(somenteDigitos(cpf)), {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      const json = await resp.json();
+
+      if (!resp.ok || !json.ok) {
+        box.innerHTML = `
+          <div class="msg danger">
+            ${escapeHtml(json.msg || json.error || 'Erro ao carregar histórico.')}
+          </div>
+        `;
+        return;
+      }
+
+      if (!json.itens || json.itens.length === 0) {
+        box.innerHTML = `
+          <div class="msg warn">
+            Nenhuma solicitação de alteração registrada para este CPF.
+          </div>
+        `;
+        return;
+      }
+
+      box.innerHTML = `
+        <div class="note">
+          <b>Histórico de solicitações de alteração de e-mail</b>
+          <div style="margin-top:12px; display:grid; gap:10px;">
+            ${json.itens.map(i => `
+              <div style="
+                background:#fff;
+                border:1px solid #dceee3;
+                border-radius:12px;
+                padding:10px 12px;
+              ">
+                <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+                  <b>Pedido #${escapeHtml(i.id)}</b>
+                  ${badgeStatus(i.status)}
+                </div>
+
+                <div style="font-size:12px; line-height:1.55;">
+                  <b>E-mail atual:</b> ${escapeHtml(i.email_atual || '-')}<br>
+                  <b>Novo e-mail:</b> ${escapeHtml(i.email_novo || '-')}<br>
+                  <b>Solicitado em:</b> ${escapeHtml(i.solicitado_em || '-')}<br>
+                  ${i.processado_em ? `<b>Processado em:</b> ${escapeHtml(i.processado_em)}<br>` : ''}
+                  ${i.observacao ? `<b>Observação:</b> ${escapeHtml(i.observacao)}<br>` : ''}
+                  ${i.retorno ? `<b>Retorno:</b> ${escapeHtml(i.retorno)}<br>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+    } catch (e) {
+      console.error(e);
+      box.innerHTML = `
+        <div class="msg danger">
+          Erro de comunicação ao carregar histórico.
+        </div>
+      `;
+    }
+  }
+
+  async function logout(){
+    try {
+      await fetch(API + 'auth_login_out.php', {
+        method:'POST',
+        credentials:'include',
+        cache:'no-store'
+      });
+    } catch(e){
+      console.error(e);
+    }
+
+    location.href = './index.html?logout=1';
+  }
+
+  async function carregarUsuario(){
+    const evt = document.getElementById('evt');
+    const uLogin = document.getElementById('uLogin');
+    const uNome = document.getElementById('uNome');
+
+    if (evt) evt.textContent = EVENTO_FIXO;
+
+    uLogin.classList.remove('skeleton','sk-line');
+    uNome.classList.remove('skeleton','sk-mini');
+    uLogin.textContent = 'Carregando...';
+    uNome.textContent = '';
+
+    try {
+      const res = await fetch(API + 'auth_me_unidade.php', {
+        credentials:'include',
+        cache:'no-store'
+      });
+
+      const data = await res.json();
+
+      if (!data.ok) {
+        toast('Sessão expirada. Faça login novamente.');
+        return logout();
+      }
+
+      const login = data.login || '';
+      const unidade = data.unidade || '';
+
+      uLogin.textContent = login ? `Unidade ${login}` : 'Login';
+      uNome.textContent = unidade || '';
+
+    } catch(e) {
+      console.error(e);
+      toast('Erro de conexão ao carregar usuário.');
+      uLogin.textContent = 'Erro';
+      uNome.textContent = 'Sem conexão';
+    }
+  }
+
+  function setupUserMenu(){
+    const btn = document.getElementById('userBtn');
+    const dd = document.getElementById('userDropdown');
+    if (!btn || !dd) return;
+
+    function close(){
+      dd.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggle(){
+      const isOpen = dd.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggle();
+    });
+
+    document.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
+  }
+
+  async function gatePagina(){
+    const r = await fetch(API + 'auth_me_unidade.php', {
+      credentials:'include',
+      cache:'no-store'
+    });
+
+    const data = await r.json().catch(() => ({}));
+
+    if (!r.ok || !data.ok) {
+      location.replace('./index.html');
+      return false;
+    }
+
+    const st = (data.adesao?.status || '').toUpperCase();
+
+    if (st !== 'ATIVA') {
+      await Swal.fire({
+        title:'Acesso indisponível',
+        html:`
+          <div style="text-align:left;line-height:1.5">
+            <p>Sua adesão ainda não foi liberada.</p>
+            <p>Status atual: <b>${st || 'SEM ADESÃO'}</b></p>
+            <p>⏳ Aguarde a conferência e liberação.</p>
+          </div>
+        `,
+        icon:'info',
+        confirmButtonColor:'#0b3b78',
+        confirmButtonText:'OK'
+      });
+
+      location.replace('./index.html');
+      return false;
+    }
+
+    return true;
+  }
+
+  $cpf.addEventListener('input', () => {
+    $cpf.value = formatarCpf($cpf.value);
+  });
+
+  $cpf.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      consultarCpf();
+    }
+  });
+
+  $btn.addEventListener('click', consultarCpf);
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const ok = await gatePagina();
+    if (!ok) return;
+
+    setupUserMenu();
+    await carregarUsuario();
+  });
+</script>
+</body>
+</html>
