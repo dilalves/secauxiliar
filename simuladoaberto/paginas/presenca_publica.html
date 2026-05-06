@@ -143,16 +143,19 @@
     }
 
     .msg.show{ display:block; }
+
     .msg.ok{
       background:var(--ok-bg);
       border-color:var(--ok-bd);
       color:var(--ok-tx);
     }
+
     .msg.err{
       background:var(--err-bg);
       border-color:var(--err-bd);
       color:var(--err-tx);
     }
+
     .msg.warn{
       background:var(--warn-bg);
       border-color:var(--warn-bd);
@@ -203,6 +206,28 @@
       line-height:1.45;
     }
 
+    .unidade-info{
+      display:none;
+      margin-top:4px;
+      padding:9px 11px;
+      border-radius:10px;
+      background:#eef6ff;
+      border:1px solid #cfe1f8;
+      color:#0b3b78;
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .unidade-info strong{
+      font-weight:800;
+    }
+
+    .unidade-info.err{
+      background:var(--err-bg);
+      border-color:var(--err-bd);
+      color:var(--err-tx);
+    }
+
     .actions{
       display:flex;
       gap:10px;
@@ -220,12 +245,19 @@
       cursor:pointer;
     }
 
+    button:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
     .btn-primary{
       background:var(--primary);
       color:#fff;
     }
 
-    .btn-primary:hover{ filter:brightness(1.05); }
+    .btn-primary:hover{
+      filter:brightness(1.05);
+    }
 
     .expired{
       text-align:center;
@@ -265,6 +297,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="topbar">
     <div class="topbar-inner">
@@ -289,10 +322,12 @@
               <div class="info-label">Evento</div>
               <div class="info-value" id="infoEvento">-</div>
             </div>
+
             <div class="info-box">
               <div class="info-label">Dia</div>
               <div class="info-value" id="infoDia">-</div>
             </div>
+
             <div class="info-box">
               <div class="info-label">Válido até</div>
               <div class="info-value" id="infoExpira">-</div>
@@ -303,6 +338,10 @@
             <div class="field">
               <label for="codigo">Código da unidade</label>
               <input type="text" id="codigo" inputmode="numeric" autocomplete="off" placeholder="Ex.: 8529">
+
+              <div id="unidadeIdentificada" class="unidade-info">
+                Unidade identificada: <strong id="nomeUnidadeIdentificada"></strong>
+              </div>
             </div>
 
             <div class="field">
@@ -346,6 +385,9 @@
 
     const codigo = document.getElementById('codigo');
     const quantidade = document.getElementById('quantidade');
+
+    const unidadeIdentificada = document.getElementById('unidadeIdentificada');
+    const nomeUnidadeIdentificada = document.getElementById('nomeUnidadeIdentificada');
 
     const btnEnviar = document.getElementById('btnEnviar');
 
@@ -391,6 +433,18 @@
       blocoExpirado.classList.add('hidden');
     }
 
+    function limparUnidadeIdentificada(){
+      unidadeIdentificada.style.display = 'none';
+      unidadeIdentificada.classList.remove('err');
+      nomeUnidadeIdentificada.textContent = '';
+    }
+
+    function mostrarUnidadeIdentificada(texto, erro = false){
+      unidadeIdentificada.style.display = 'block';
+      unidadeIdentificada.classList.toggle('err', erro);
+      nomeUnidadeIdentificada.textContent = texto || '-';
+    }
+
     async function carregarInfoLink(){
       if (!token) {
         bloquearPagina('Link inválido. Token não informado.');
@@ -401,6 +455,7 @@
         const r = await fetch(API + 'api_presenca_public_info.php?t=' + encodeURIComponent(token), {
           cache: 'no-store'
         });
+
         const data = await r.json();
 
         if (!r.ok || !data.ok) {
@@ -417,9 +472,39 @@
 
         mostrarFormulario();
         clearMsg();
+
       } catch (e) {
         console.error(e);
         bloquearPagina('Não foi possível validar este link no momento.');
+      }
+    }
+
+    async function consultarUnidade(){
+      const codigoVal = codigo.value.trim();
+
+      limparUnidadeIdentificada();
+
+      if (!codigoVal) return;
+
+      try {
+        mostrarUnidadeIdentificada('consultando...');
+
+        const r = await fetch(API + 'api_presenca_public_unidade.php?codigo=' + encodeURIComponent(codigoVal), {
+          cache: 'no-store'
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          mostrarUnidadeIdentificada('Unidade não localizada', true);
+          return;
+        }
+
+        mostrarUnidadeIdentificada(data.unidade || '-');
+
+      } catch (e) {
+        console.error(e);
+        mostrarUnidadeIdentificada('Erro ao consultar unidade', true);
       }
     }
 
@@ -465,18 +550,29 @@
           `Obrigado por informar a quantidade de presentes.<br><b>${esc(data.codigo)}</b> - ${esc(data.unidade)}<br>Quantidade registrada com sucesso: <b>${n(data.quantidade)}</b>.`,
           'ok'
         );
+
       } catch (e) {
         console.error(e);
         showMsg(e.message || 'Falha ao registrar quantidade de presentes.', 'err');
+
       } finally {
         btnEnviar.disabled = false;
         btnEnviar.textContent = 'Enviar';
       }
     }
 
+    codigo.addEventListener('blur', consultarUnidade);
+
+    codigo.addEventListener('change', consultarUnidade);
+
+    codigo.addEventListener('input', () => {
+      limparUnidadeIdentificada();
+    });
+
     codigo.addEventListener('keydown', async (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
+        await consultarUnidade();
         quantidade.focus();
       }
     });
