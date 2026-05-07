@@ -724,7 +724,7 @@
     msg('info', 'Consultando CPF no sistema Objetivo...');
 
     try {
-      const resp = await fetch(`${API_CPF}?cpf=${encodeURIComponent(cpf)}`, {
+      const resp = await fetch(`${API_CPF}?cpf=${encodeURIComponent(cpf)}&evento=${encodeURIComponent(EVENTO_FIXO)}`, {
         method: 'GET',
         credentials: 'include',
         cache: 'no-store'
@@ -853,7 +853,7 @@
     `;
 
     try {      
-      const resp = await fetch(`${API_CPF}?cpf=${encodeURIComponent(cpf)}&evento=${encodeURIComponent(EVENTO_FIXO)}`, {  
+      const resp = await fetch(API + 'historico_alteracao_email.php?cpf=' + encodeURIComponent(somenteDigitos(cpf)), {
         method: 'GET',
         credentials: 'include',
         cache: 'no-store'
