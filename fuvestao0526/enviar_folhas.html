@@ -851,6 +851,23 @@ async function uploadFile() {
     return;
   }
 
+    const arquivosInvalidos = arquivosOriginais.filter(f => {
+    const nome = f.name.toLowerCase();
+    return !nome.endsWith('.jpg') && !nome.endsWith('.jpeg');
+  });
+
+  if (arquivosInvalidos.length > 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Formato inválido',
+      text: 'Envie apenas arquivos JPG/JPEG.'
+    });
+
+    sendButton.disabled = false;
+    return;
+  }
+
+
   let arquivosProcessados = arquivosOriginais;
 
   atualizarKPIs(numeroPresentes, imagensEnviadas, arquivosProcessados.length);
