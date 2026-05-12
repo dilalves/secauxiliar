@@ -238,7 +238,8 @@
     }
 
 
-    /* ===== Troca de sala ===== */
+
+    /* ===== Troca de sala definitiva ===== */
     .troca-wrap{
       border-top:1px solid var(--line);
       padding:16px;
@@ -264,17 +265,6 @@
       font-size:.9rem;
       font-weight:600;
       margin-top:2px;
-    }
-    .troca-filter{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:12px;
-    }
-    .troca-filter .input-field{
-      margin:0;
-      min-width:180px;
     }
     .troca-list{
       display:grid;
@@ -320,7 +310,7 @@
     }
     .troca-form{
       display:grid;
-      grid-template-columns: minmax(220px, 1fr) minmax(180px, 280px) auto;
+      grid-template-columns: minmax(240px, 1fr) minmax(180px, 280px) auto;
       gap:12px;
       align-items:end;
     }
@@ -483,34 +473,26 @@
       </div>
 
       <div id="btnNotasRedacao" class="chip-soft btn-chip" style="display:none;">REDAÇÃO</div>
+    </div>
 
-
-    <!-- ===== Troca de Sala ===== -->
+    <!-- ===== Troca de Sala Definitiva ===== -->
     <div id="trocaSalaWrap" class="troca-wrap">
       <div class="troca-head">
         <div>
           <div class="troca-title">
             <i class="material-icons" style="color:var(--primary);">swap_horiz</i>
-            Troca de sala / turma
+            Troca definitiva de sala / turma
           </div>
-          <div class="troca-sub">Selecione o vínculo correto do aluno. Cada bloco mostra somente destinos permitidos para o mesmo curso.</div>
+          <div class="troca-sub">Mostra um bloco por vínculo atual do aluno. Cada bloco traz apenas destinos permitidos para o mesmo curso.</div>
         </div>
         <a id="btnAtualizarTroca" class="btn btn-small waves-effect waves-light" style="background:var(--primary); border-radius:999px;">
           <i class="material-icons left">refresh</i>Atualizar
         </a>
       </div>
-
-      <div class="troca-filter">
-        <div class="input-field">
-          <input id="trocaDataAula" type="date">
-          <label for="trocaDataAula" class="active">Data da aula</label>
-        </div>
-        <span id="trocaMsg" class="grey-text" style="font-weight:700;"></span>
-      </div>
-
-      <div id="trocaLista" class="troca-list"></div>
+      <span id="trocaMsg" class="grey-text" style="font-weight:700;"></span>
+      <div id="trocaLista" class="troca-list" style="margin-top:10px;"></div>
     </div>
-    </div>
+
 
     <!-- Modal Notas ENEM -->
     <div id="modalNotasEnem" class="modal">
@@ -780,7 +762,6 @@
     return j;
   }
 
-
   async function apiPost(url, data){
     const r = await fetch(url, {
       method: 'POST',
@@ -1023,12 +1004,6 @@
   document.addEventListener('DOMContentLoaded', () => {
     M.Modal.init(document.querySelectorAll('.modal'));
 
-    const dtTroca = $('trocaDataAula');
-    if(dtTroca){
-      dtTroca.value = hojeYMD();
-      dtTroca.addEventListener('change', () => carregarTrocaSala());
-    }
-
     const btnAtualizarTroca = $('btnAtualizarTroca');
     if(btnAtualizarTroca){
       btnAtualizarTroca.addEventListener('click', () => carregarTrocaSala());
@@ -1050,29 +1025,26 @@
 
 
 
-  // ===== Troca de Sala =====
-  function hojeYMD(){
-    return toYMD(new Date());
-  }
-
+  // ===== Troca de Sala Definitiva =====
   function setTrocaMsg(t){
     const el = $('trocaMsg');
     if(el) el.textContent = t || '';
   }
 
   function destinoLabel(d){
-    const curso = d.curso_nome ? `${d.curso_nome} • ` : '';
     const turma = d.turma_nome || d.turma || d.nome_turma || `Turma ${d.turma_id}`;
     const sala = d.sala_nome || d.sala || d.nome_sala || `Sala ${d.sala_id}`;
-    return `${curso}${turma} — ${sala}`;
+    return `${turma} — ${sala}`;
   }
 
   function renderTrocaSala(registros){
     const lista = $('trocaLista');
+    if(!lista) return;
+
     lista.innerHTML = '';
 
     if(!registros || !registros.length){
-      lista.innerHTML = '<div class="troca-empty">Nenhum vínculo encontrado para troca nessa data.</div>';
+      lista.innerHTML = '<div class="troca-empty">Nenhum vínculo atual encontrado para troca.</div>';
       return;
     }
 
@@ -1086,30 +1058,29 @@
 
       const opts = destinos.map(d => {
         const value = `${d.turma_id}|${d.sala_id}`;
-        const atual = Number(d.turma_id) === Number(r.turma_atual_id) && Number(d.sala_id) === Number(r.sala_atual_id);
-        return `<option value="${esc(value)}" ${atual ? 'disabled' : ''}>${esc(destinoLabel(d))}${atual ? ' (atual)' : ''}</option>`;
+        return `<option value="${esc(value)}">${esc(destinoLabel(d))}</option>`;
       }).join('');
 
-      const chamadaTxt = r.chamada_id ? `Chamada #${r.chamada_id}` : 'Sem chamada localizada nessa data';
       const curso = r.curso_atual_nome || `Curso ${r.curso_atual_id || '-'}`;
-      const dataAula = r.data_aula ? fmtDT(r.data_aula) : fmtDT($('trocaDataAula').value);
+      const salaAtual = r.sala_atual_nome || `Sala ${r.sala_atual_id || '-'}`;
+      const desabilitado = !destinos.length;
 
       card.innerHTML = `
         <div class="troca-card-top">
           <div>
             <div class="troca-curso">${esc(curso)}</div>
             <div class="troca-atual">
-              Atual: turma ${esc(r.turma_atual_id)} • sala ${esc(r.sala_atual_id)} • aula ${esc(dataAula)}
+              Atual: turma ${esc(r.turma_atual_id)} • ${esc(salaAtual)}
             </div>
-            <div class="troca-sub">Ensalamento #${esc(r.ensalamento_id)} • ${esc(chamadaTxt)}</div>
+            <div class="troca-sub">Ensalamento #${esc(r.ensalamento_id)} • alteração definitiva</div>
           </div>
           <div class="troca-badge"><i class="material-icons" style="font-size:16px;">verified</i>Mesmo curso</div>
         </div>
 
         <div class="troca-form">
           <div class="input-field">
-            <select id="${selectId}" ${(!destinos.length || !r.chamada_id) ? 'disabled' : ''}>
-              <option value="" disabled selected>Escolha o destino</option>
+            <select id="${selectId}" ${desabilitado ? 'disabled' : ''}>
+              <option value="" disabled selected>${desabilitado ? 'Sem outro destino disponível' : 'Escolha o destino'}</option>
               ${opts}
             </select>
             <label>Destino permitido</label>
@@ -1120,7 +1091,7 @@
             <label for="${motivoId}" class="active">Motivo</label>
           </div>
 
-          <a class="btn waves-effect waves-light btn-trocar" style="background:var(--primary); border-radius:12px;" ${(!destinos.length || !r.chamada_id) ? 'disabled' : ''}>
+          <a class="btn waves-effect waves-light btn-trocar" style="background:var(--primary); border-radius:12px;" ${desabilitado ? 'disabled' : ''}>
             <i class="material-icons left">swap_horiz</i>Trocar
           </a>
         </div>
@@ -1141,16 +1112,14 @@
     if(!currentMatricula) return;
 
     const wrap = $('trocaSalaWrap');
-    const dataInput = $('trocaDataAula');
-
-    if(!dataInput.value) dataInput.value = hojeYMD();
+    if(!wrap) return;
 
     wrap.style.display = 'block';
-    setTrocaMsg('Carregando vínculos...');
+    setTrocaMsg('Carregando vínculos atuais...');
     $('trocaLista').innerHTML = '';
 
     try{
-      const url = `${API}buscar_troca_sala.php?matricula=${encodeURIComponent(currentMatricula)}&data_aula=${encodeURIComponent(dataInput.value)}`;
+      const url = `${API}buscar_troca_sala.php?matricula=${encodeURIComponent(currentMatricula)}`;
       const j = await apiGet(url);
       renderTrocaSala(j.registros || []);
       setTrocaMsg('');
@@ -1177,20 +1146,17 @@
       return;
     }
 
-    if(!registro.chamada_id){
-      M.toast({ html: 'Não existe chamada para essa data.' });
-      return;
-    }
-
     const curso = registro.curso_atual_nome || `Curso ${registro.curso_atual_id || '-'}`;
+    const salaAtual = registro.sala_atual_nome || `Sala ${registro.sala_atual_id || '-'}`;
     const destinoText = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : `Turma ${novaTurmaId} / Sala ${novaSalaId}`;
 
     const ok = confirm(
-      `Confirmar troca de sala?\n\n` +
+      `Confirmar troca definitiva de sala?\n\n` +
       `Aluno: ${$('nome').textContent}\n` +
       `Curso: ${curso}\n` +
-      `Origem: turma ${registro.turma_atual_id} / sala ${registro.sala_atual_id}\n` +
-      `Destino: ${destinoText}`
+      `Origem: turma ${registro.turma_atual_id} / ${salaAtual}\n` +
+      `Destino: ${destinoText}\n\n` +
+      `Essa alteração atualizará o ensalamento e as chamadas dessa turma.`
     );
 
     if(!ok) return;
@@ -1200,13 +1166,14 @@
     try{
       const j = await apiPost(`${API}salvar_troca_sala.php`, {
         ensalamento_id: Number(registro.ensalamento_id),
-        chamada_id: Number(registro.chamada_id),
         nova_turma_id: novaTurmaId,
         nova_sala_id: novaSalaId,
         motivo: ($(motivoId)?.value || '').trim()
       });
 
-      M.toast({ html: j.msg || 'Troca realizada com sucesso.' });
+      const qtd = (j.chamadas_atualizadas !== undefined) ? ` Chamadas atualizadas: ${j.chamadas_atualizadas}.` : '';
+      M.toast({ html: (j.msg || 'Troca realizada com sucesso.') + qtd });
+
       await carregarTrocaSala();
       await carregarCalendario(currentYM);
     }catch(e){
