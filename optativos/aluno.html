@@ -237,6 +237,108 @@
       border-radius:14px;
     }
 
+
+    /* ===== Troca de sala ===== */
+    .troca-wrap{
+      border-top:1px solid var(--line);
+      padding:16px;
+      display:none;
+      background:#fff;
+    }
+    .troca-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .troca-title{
+      font-weight:900;
+      color:#111827;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .troca-sub{
+      color:var(--muted);
+      font-size:.9rem;
+      font-weight:600;
+      margin-top:2px;
+    }
+    .troca-filter{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .troca-filter .input-field{
+      margin:0;
+      min-width:180px;
+    }
+    .troca-list{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+    }
+    .troca-card{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      background:#fbfdff;
+    }
+    .troca-card-top{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      margin-bottom:10px;
+    }
+    .troca-curso{
+      font-weight:900;
+      color:var(--primary);
+      font-size:1rem;
+    }
+    .troca-atual{
+      color:#111827;
+      font-size:.92rem;
+      font-weight:700;
+      margin-top:4px;
+    }
+    .troca-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:5px 9px;
+      background:#eef2ff;
+      border:1px solid #dbeafe;
+      color:var(--primary);
+      font-size:.8rem;
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .troca-form{
+      display:grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(180px, 280px) auto;
+      gap:12px;
+      align-items:end;
+    }
+    .troca-form .input-field{ margin:0; }
+    .troca-empty{
+      border:1px dashed #cbd5e1;
+      border-radius:14px;
+      padding:14px;
+      color:var(--muted);
+      font-weight:700;
+      background:#fafafa;
+    }
+    @media (max-width: 800px){
+      .troca-head{ align-items:flex-start; flex-direction:column; }
+      .troca-card-top{ flex-direction:column; }
+      .troca-form{ grid-template-columns:1fr; }
+    }
+
     @media (min-width: 1200px){
       #modalNotasRedacao{ width: 98% !important; max-width: 1600px !important; }
     }
@@ -381,6 +483,33 @@
       </div>
 
       <div id="btnNotasRedacao" class="chip-soft btn-chip" style="display:none;">REDAÇÃO</div>
+
+
+    <!-- ===== Troca de Sala ===== -->
+    <div id="trocaSalaWrap" class="troca-wrap">
+      <div class="troca-head">
+        <div>
+          <div class="troca-title">
+            <i class="material-icons" style="color:var(--primary);">swap_horiz</i>
+            Troca de sala / turma
+          </div>
+          <div class="troca-sub">Selecione o vínculo correto do aluno. Cada bloco mostra somente destinos permitidos para o mesmo curso.</div>
+        </div>
+        <a id="btnAtualizarTroca" class="btn btn-small waves-effect waves-light" style="background:var(--primary); border-radius:999px;">
+          <i class="material-icons left">refresh</i>Atualizar
+        </a>
+      </div>
+
+      <div class="troca-filter">
+        <div class="input-field">
+          <input id="trocaDataAula" type="date">
+          <label for="trocaDataAula" class="active">Data da aula</label>
+        </div>
+        <span id="trocaMsg" class="grey-text" style="font-weight:700;"></span>
+      </div>
+
+      <div id="trocaLista" class="troca-list"></div>
+    </div>
     </div>
 
     <!-- Modal Notas ENEM -->
@@ -651,6 +780,19 @@
     return j;
   }
 
+
+  async function apiPost(url, data){
+    const r = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data || {})
+    });
+    const j = await r.json().catch(()=>null);
+    if(!r.ok || !j) throw new Error((j && j.msg) ? j.msg : `Erro HTTP ${r.status}`);
+    return j;
+  }
+
   async function carregarEventos(ym){
     const j = await apiGet(`${API}eventos_calendario.php?ym=${encodeURIComponent(ym)}`);
     const map = {};
@@ -811,6 +953,7 @@
     setMsg('');
 
     await carregarCalendario(currentYM);
+    await carregarTrocaSala();
   }
 
   async function carregarCalendario(ym){
@@ -879,6 +1022,17 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     M.Modal.init(document.querySelectorAll('.modal'));
+
+    const dtTroca = $('trocaDataAula');
+    if(dtTroca){
+      dtTroca.value = hojeYMD();
+      dtTroca.addEventListener('change', () => carregarTrocaSala());
+    }
+
+    const btnAtualizarTroca = $('btnAtualizarTroca');
+    if(btnAtualizarTroca){
+      btnAtualizarTroca.addEventListener('click', () => carregarTrocaSala());
+    }
   });
 
   function fmtNum(v){
@@ -893,6 +1047,176 @@
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
     }[m]));
   }
+
+
+
+  // ===== Troca de Sala =====
+  function hojeYMD(){
+    return toYMD(new Date());
+  }
+
+  function setTrocaMsg(t){
+    const el = $('trocaMsg');
+    if(el) el.textContent = t || '';
+  }
+
+  function destinoLabel(d){
+    const curso = d.curso_nome ? `${d.curso_nome} • ` : '';
+    const turma = d.turma_nome || d.turma || d.nome_turma || `Turma ${d.turma_id}`;
+    const sala = d.sala_nome || d.sala || d.nome_sala || `Sala ${d.sala_id}`;
+    return `${curso}${turma} — ${sala}`;
+  }
+
+  function renderTrocaSala(registros){
+    const lista = $('trocaLista');
+    lista.innerHTML = '';
+
+    if(!registros || !registros.length){
+      lista.innerHTML = '<div class="troca-empty">Nenhum vínculo encontrado para troca nessa data.</div>';
+      return;
+    }
+
+    registros.forEach((r, idx) => {
+      const destinos = Array.isArray(r.destinos) ? r.destinos : [];
+      const card = document.createElement('div');
+      card.className = 'troca-card';
+
+      const selectId = `trocaDestino_${idx}`;
+      const motivoId = `trocaMotivo_${idx}`;
+
+      const opts = destinos.map(d => {
+        const value = `${d.turma_id}|${d.sala_id}`;
+        const atual = Number(d.turma_id) === Number(r.turma_atual_id) && Number(d.sala_id) === Number(r.sala_atual_id);
+        return `<option value="${esc(value)}" ${atual ? 'disabled' : ''}>${esc(destinoLabel(d))}${atual ? ' (atual)' : ''}</option>`;
+      }).join('');
+
+      const chamadaTxt = r.chamada_id ? `Chamada #${r.chamada_id}` : 'Sem chamada localizada nessa data';
+      const curso = r.curso_atual_nome || `Curso ${r.curso_atual_id || '-'}`;
+      const dataAula = r.data_aula ? fmtDT(r.data_aula) : fmtDT($('trocaDataAula').value);
+
+      card.innerHTML = `
+        <div class="troca-card-top">
+          <div>
+            <div class="troca-curso">${esc(curso)}</div>
+            <div class="troca-atual">
+              Atual: turma ${esc(r.turma_atual_id)} • sala ${esc(r.sala_atual_id)} • aula ${esc(dataAula)}
+            </div>
+            <div class="troca-sub">Ensalamento #${esc(r.ensalamento_id)} • ${esc(chamadaTxt)}</div>
+          </div>
+          <div class="troca-badge"><i class="material-icons" style="font-size:16px;">verified</i>Mesmo curso</div>
+        </div>
+
+        <div class="troca-form">
+          <div class="input-field">
+            <select id="${selectId}" ${(!destinos.length || !r.chamada_id) ? 'disabled' : ''}>
+              <option value="" disabled selected>Escolha o destino</option>
+              ${opts}
+            </select>
+            <label>Destino permitido</label>
+          </div>
+
+          <div class="input-field">
+            <input id="${motivoId}" type="text" maxlength="255" placeholder="Opcional">
+            <label for="${motivoId}" class="active">Motivo</label>
+          </div>
+
+          <a class="btn waves-effect waves-light btn-trocar" style="background:var(--primary); border-radius:12px;" ${(!destinos.length || !r.chamada_id) ? 'disabled' : ''}>
+            <i class="material-icons left">swap_horiz</i>Trocar
+          </a>
+        </div>
+      `;
+
+      const btn = card.querySelector('.btn-trocar');
+      btn.addEventListener('click', async () => {
+        await salvarTrocaSala(r, selectId, motivoId);
+      });
+
+      lista.appendChild(card);
+    });
+
+    M.FormSelect.init(document.querySelectorAll('#trocaSalaWrap select'));
+  }
+
+  async function carregarTrocaSala(){
+    if(!currentMatricula) return;
+
+    const wrap = $('trocaSalaWrap');
+    const dataInput = $('trocaDataAula');
+
+    if(!dataInput.value) dataInput.value = hojeYMD();
+
+    wrap.style.display = 'block';
+    setTrocaMsg('Carregando vínculos...');
+    $('trocaLista').innerHTML = '';
+
+    try{
+      const url = `${API}buscar_troca_sala.php?matricula=${encodeURIComponent(currentMatricula)}&data_aula=${encodeURIComponent(dataInput.value)}`;
+      const j = await apiGet(url);
+      renderTrocaSala(j.registros || []);
+      setTrocaMsg('');
+    }catch(e){
+      console.error(e);
+      $('trocaLista').innerHTML = `<div class="troca-empty">${esc(e.message || 'Erro ao buscar vínculos para troca.')}</div>`;
+      setTrocaMsg('');
+    }
+  }
+
+  async function salvarTrocaSala(registro, selectId, motivoId){
+    const sel = $(selectId);
+    const raw = sel ? sel.value : '';
+
+    if(!raw){
+      M.toast({ html: 'Escolha o destino da troca.' });
+      return;
+    }
+
+    const [novaTurmaId, novaSalaId] = raw.split('|').map(x => parseInt(x, 10));
+
+    if(!novaTurmaId || !novaSalaId){
+      M.toast({ html: 'Destino inválido.' });
+      return;
+    }
+
+    if(!registro.chamada_id){
+      M.toast({ html: 'Não existe chamada para essa data.' });
+      return;
+    }
+
+    const curso = registro.curso_atual_nome || `Curso ${registro.curso_atual_id || '-'}`;
+    const destinoText = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : `Turma ${novaTurmaId} / Sala ${novaSalaId}`;
+
+    const ok = confirm(
+      `Confirmar troca de sala?\n\n` +
+      `Aluno: ${$('nome').textContent}\n` +
+      `Curso: ${curso}\n` +
+      `Origem: turma ${registro.turma_atual_id} / sala ${registro.sala_atual_id}\n` +
+      `Destino: ${destinoText}`
+    );
+
+    if(!ok) return;
+
+    setTrocaMsg('Salvando troca...');
+
+    try{
+      const j = await apiPost(`${API}salvar_troca_sala.php`, {
+        ensalamento_id: Number(registro.ensalamento_id),
+        chamada_id: Number(registro.chamada_id),
+        nova_turma_id: novaTurmaId,
+        nova_sala_id: novaSalaId,
+        motivo: ($(motivoId)?.value || '').trim()
+      });
+
+      M.toast({ html: j.msg || 'Troca realizada com sucesso.' });
+      await carregarTrocaSala();
+      await carregarCalendario(currentYM);
+    }catch(e){
+      console.error(e);
+      M.toast({ html: e.message || 'Erro ao salvar troca.' });
+    }finally{
+      setTrocaMsg('');
+    }
+  }
+
 
   // ===== ENEM (tabela) =====
   async function abrirModalNotasEnemTabela(cpf){
