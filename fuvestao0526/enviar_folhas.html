@@ -10,11 +10,6 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-  <!-- TIFF -->
-  <script src="https://cdn.jsdelivr.net/npm/tiff@0.14.0/dist/tiff.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.min.js" defer></script>
-
   <style>
     .top-actions{
   display:flex;
@@ -509,10 +504,10 @@
             <div class="file-field input-field" style="margin:0">
               <div class="btn blue">
                 <span>Escolher arquivos</span>
-                <input type="file" id="fileInput" accept=".jpg,.jpeg,.tif,.tiff" multiple />
+                <input type="file" id="fileInput" accept=".jpg,.jpeg,image/jpeg" multiple />
               </div>
               <div class="file-path-wrapper">
-                <input class="file-path validate" type="text" placeholder="Selecione os arquivos JPG/JPEG/TIF/TIFF">
+                <input class="file-path validate" type="text" placeholder="Selecione os arquivos JPG/JPEG">
               </div>
             </div>
           
@@ -772,62 +767,6 @@
     }
   }
 
-  function isTiff(file) {
-    return /\.tiff?$/i.test(file.name) || file.type === 'image/tiff';
-  }
-
-  async function converterTiffParaJpgs(file) {
-    const buf = await new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve(r.result);
-      r.onerror = reject;
-      r.readAsArrayBuffer(file);
-    });
-
-    if (window.Tiff) {
-      const tiff = new Tiff({ buffer: buf });
-      const pages = typeof tiff.countDirectory === 'function' ? tiff.countDirectory() : 1;
-      const saida = [];
-
-      for (let i = 0; i < pages; i++) {
-        if (pages > 1 && typeof tiff.setDirectory === 'function') tiff.setDirectory(i);
-        const canvas = tiff.toCanvas();
-        const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
-        const base = file.name.replace(/\.tiff?$/i, '');
-        const nome = pages > 1 ? `${base}_p${i+1}.jpg` : `${base}.jpg`;
-        saida.push(new File([blob], nome, { type: 'image/jpeg' }));
-      }
-      return saida;
-    }
-
-    if (window.UTIF) {
-      const ifds = UTIF.decode(buf);
-      const saida = [];
-
-      for (let i = 0; i < ifds.length; i++) {
-        const ifd = ifds[i];
-        UTIF.decodeImage(buf, ifd);
-        const rgba = UTIF.toRGBA8(ifd);
-        const w = ifd.width, h = ifd.height;
-
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        const imgData = new ImageData(new Uint8ClampedArray(rgba), w, h);
-        ctx.putImageData(imgData, 0, 0);
-
-        const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
-        const base = file.name.replace(/\.tiff?$/i, '');
-        const nome = ifds.length > 1 ? `${base}_p${i+1}.jpg` : `${base}.jpg`;
-        saida.push(new File([blob], nome, { type: 'image/jpeg' }));
-      }
-      return saida;
-    }
-
-    throw new Error('Leitor TIFF não carregou (tiff.js/UTIF.js)');
-  }
-
   function verificarDPIReal(file) {
     return new Promise((resolve) => {
       const controller = new AbortController();
@@ -912,26 +851,7 @@ async function uploadFile() {
     return;
   }
 
-  let arquivosProcessados = [];
-
-  for (const f of arquivosOriginais) {
-    if (isTiff(f)) {
-      try {
-        const jpgs = await converterTiffParaJpgs(f);
-        arquivosProcessados.push(...jpgs);
-      } catch (e) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Erro ao converter TIF',
-          text: `${f.name}: ${e}`
-        });
-        sendButton.disabled = false;
-        return;
-      }
-    } else {
-      arquivosProcessados.push(f);
-    }
-  }
+  let arquivosProcessados = arquivosOriginais;
 
   atualizarKPIs(numeroPresentes, imagensEnviadas, arquivosProcessados.length);
 
