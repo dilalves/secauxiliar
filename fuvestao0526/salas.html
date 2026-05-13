@@ -1195,7 +1195,21 @@
     setText('totVagasTotais', totais.vagas_totais ?? 0);
     setText('totVagas', totais.vagas_ativas ?? 0);
     setText('badgeSalas', totais.total ?? 0);
-    setText('totInscritos', totais.inscritos_total ?? 0);
+    const inscritos = Number(totais.inscritos_total ?? 0);
+    const vagasAtivas = Number(totais.vagas_ativas ?? 0);
+    const diferenca = inscritos - vagasAtivas;
+
+    if (diferenca > 0) {
+      setText('totInscritos', `${inscritos} (${diferenca})`);
+    } else {
+      setText('totInscritos', inscritos);
+    }
+
+    const kpiInscritos = document.getElementById('totInscritos');
+
+    if (kpiInscritos) {
+      kpiInscritos.style.color = diferenca > 0 ? '#dc2626' : 'var(--primary)';
+    }
 
     renderizarSalas();
     atualizarCampoPrioridadeForcado();
