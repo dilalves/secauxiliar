@@ -648,6 +648,8 @@
 
   function renderCandidato(c){
     candidatoAtual = c;
+    const ehAvulsa = c.somente_avulsa || String(c.tipo_inscricao || '').toUpperCase() === 'AVULSA';
+    const temCadastroObjetivo = !ehAvulsa && String(c.email || '').trim() !== '' && String(c.email || '').trim() !== '-';
 
     $resultado.innerHTML = `
       <div class="candidate-card">
@@ -684,19 +686,49 @@
 
           <div class="info-field full">
             <div class="info-label">INSCRIÇÃO - UNIDADE</div>
-            <div class="info-value">${escapeHtml(c.inscricao_unidade || c.origem || '-')}</div>
+            <div class="info-value">
+              ${escapeHtml(c.inscricao_unidade || c.origem || '-')}
+              ${(c.somente_avulsa || String(c.tipo_inscricao || '').toUpperCase() === 'AVULSA') ? `
+                <span style="
+                  display:inline-flex;
+                  align-items:center;
+                  margin-left:8px;
+                  padding:3px 9px;
+                  border-radius:999px;
+                  background:#fff3cd;
+                  color:#8a5a00;
+                  border:1px solid #facc15;
+                  font-size:11px;
+                  font-weight:900;
+                  vertical-align:middle;
+                ">
+                  AVULSA
+                </span>
+              ` : ''}
+            </div>
           </div>
 
         </div>
 
         <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-          <button type="button"
-                  class="btn-consultar"
-                  style="width:auto; height:42px; padding:0 16px;"
-                  onclick="abrirModalAlterarEmail()">
-            <i class="material-icons">edit</i>
-            Solicitar alteração de e-mail
-          </button>
+          ${temCadastroObjetivo ? `
+            <button type="button"
+                    class="btn-consultar"
+                    style="width:auto; height:42px; padding:0 16px;"
+                    onclick="abrirModalAlterarEmail()">
+              <i class="material-icons">edit</i>
+              Solicitar alteração de e-mail
+            </button>
+          ` : `
+            <button type="button"
+                    class="btn-consultar"
+                    disabled
+                    title="Disponível apenas para candidatos localizados no cadastro Objetivo"
+                    style="width:auto; height:42px; padding:0 16px; opacity:.55; cursor:not-allowed;">
+              <i class="material-icons">block</i>
+              Alteração de e-mail indisponível
+            </button>
+  `}  
         </div>
 
         <div class="note">
@@ -755,6 +787,19 @@
 
   async function abrirModalAlterarEmail(){
     if (!candidatoAtual) return;
+
+    const ehAvulsa = candidatoAtual.somente_avulsa || String(candidatoAtual.tipo_inscricao || '').toUpperCase() === 'AVULSA';
+    const emailAtual = String(candidatoAtual.email || '').trim();
+
+    if (ehAvulsa || emailAtual === '' || emailAtual === '-') {
+      Swal.fire({
+        title: 'Alteração indisponível',
+        text: 'Este CPF não foi localizado no cadastro principal do Objetivo. Portanto, não há e-mail cadastrado para alteração.',
+        icon: 'info',
+        confirmButtonColor: '#0b3b78'
+      });
+      return;
+    }  
 
     const atual = candidatoAtual.email || '';
 
