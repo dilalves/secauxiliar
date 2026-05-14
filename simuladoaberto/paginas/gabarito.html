@@ -7,6 +7,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   <style>
     body { background: #f6f8fb; }
+
     header.page {
       background: #0b3b78;
       color: white;
@@ -14,40 +15,68 @@
       font-size: 14px;
       font-weight: bold;
     }
-    .fixed-header { position: sticky; top: 0; z-index: 99; }
-    .card-form { padding: 20px; border-radius: 12px; }
-    .input-field input[type="file"] { margin-top: 10px; }
-    .table-wrap { max-height: 65vh; overflow: auto; margin-top: 24px; }
-    table td, table th { padding: 8px; }
+
+    .fixed-header {
+      position: sticky;
+      top: 0;
+      z-index: 99;
+    }
+
+    .card-form {
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    .input-field input[type="file"] {
+      margin-top: 10px;
+    }
+
+    .table-wrap {
+      max-height: 65vh;
+      overflow: auto;
+      margin-top: 24px;
+    }
+
+    table td,
+    table th {
+      padding: 8px;
+    }
+
     .status-cell a {
       font-weight: 600;
       text-decoration: none;
     }
-    .acoes-topo{
-      display:flex;
-      gap:10px;
-      align-items:end;
-      flex-wrap:wrap;
-      margin-top:8px;
+
+    .acoes-topo {
+      display: flex;
+      gap: 10px;
+      align-items: end;
+      flex-wrap: wrap;
+      margin-top: 8px;
     }
-    .btn-small-custom{
-      height:44px;
-      line-height:44px;
-      padding:0 16px;
+
+    .btn-small-custom {
+      height: 44px;
+      line-height: 44px;
+      padding: 0 16px;
     }
-    .status-ok{
-      color:#2e7d32;
-      font-weight:600;
+
+    .status-ok {
+      color: #2e7d32;
+      font-weight: 600;
     }
-    .status-warn{
-      color:#777;
+
+    .status-warn {
+      color: #777;
     }
-    .status-erro{
-      color:#c62828;
-      font-weight:600;
+
+    .status-erro {
+      color: #c62828;
+      font-weight: 600;
     }
   </style>
 </head>
+
 <body>
 
 <header class="page fixed-header">
@@ -102,13 +131,14 @@
             </tr>
           </thead>
           <tbody id="tabelaQuestoes">
-            <!-- Preenche automaticamente -->
           </tbody>
         </table>
       </div>
 
       <div class="center-align" style="margin-top: 24px;">
-        <button class="btn blue darken-3 waves-effect waves-light" type="submit">Salvar Gabarito</button>
+        <button class="btn blue darken-3 waves-effect waves-light" type="submit">
+          Salvar Gabarito
+        </button>
       </div>
     </form>
   </div>
@@ -134,25 +164,29 @@
   function criarLinhaQuestao(numeroQuestao, dados = null) {
     const row = document.createElement('tr');
 
-    const disciplina = dados?.disciplina || '';
-    const gabarito = dados?.gabarito || '';
-    const imagem = dados?.imagem || '';
+    const disciplina = dados?.disciplina || dados?.DISCIPLINA || '';
+    const gabarito = dados?.gabarito || dados?.GABARITO || '';
+    const imagem = dados?.imagem || dados?.IMAGEM || '';
 
     row.innerHTML = `
       <td>
         ${escapeHtml(numeroQuestao)}
-        <input type="hidden" name="questao[]" value="${escapeHtml(numeroQuestao)}" />
+        <input type="hidden" name="questao[]" value="${escapeHtml(numeroQuestao)}">
       </td>
+
       <td>
         <input type="text" name="disciplina[]" value="${escapeHtml(disciplina)}">
       </td>
+
       <td>
         <input type="text" name="gabarito[]" maxlength="1" value="${escapeHtml(gabarito)}">
       </td>
+
       <td>
         <input type="file" name="imagem[]" accept="image/*,.tif,.tiff,.pdf" data-q="${escapeHtml(numeroQuestao)}">
-        <input type="hidden" name="imagem_link[]" value="${escapeHtml(imagem)}" />
+        <input type="hidden" name="imagem_link[]" value="${escapeHtml(imagem)}">
       </td>
+
       <td class="status-cell ${imagem ? 'status-ok' : 'status-warn'}">
         ${
           imagem
@@ -246,6 +280,7 @@
       console.log('BUSCAR GABARITO RAW:', raw);
 
       let json;
+
       try {
         json = JSON.parse(raw);
       } catch (e) {
@@ -296,16 +331,18 @@
 
   tabela.addEventListener('change', async (ev) => {
     const input = ev.target;
+
     if (input.type !== 'file') return;
 
     const file = input.files && input.files[0];
+
     if (!file) return;
 
     const tr = input.closest('tr');
     const status = tr.querySelector('.status-cell');
     const questao = tr.querySelector('input[name="questao[]"]').value.trim();
-    const evento  = document.getElementById('evento').value.trim();
-    const codigo  = document.getElementById('codigo').value.trim();
+    const evento = document.getElementById('evento').value.trim();
+    const codigo = document.getElementById('codigo').value.trim();
     const hiddenLink = tr.querySelector('input[name="imagem_link[]"]');
 
     if (!evento || !codigo || !questao) {
@@ -335,6 +372,7 @@
       console.log('UPLOAD RAW:', raw);
 
       let json;
+
       try {
         json = JSON.parse(raw);
       } catch (e) {
@@ -366,6 +404,9 @@
 
       status.className = 'status-cell status-ok';
 
+      // limpa o input file depois do upload para não manter o binário preso no formulário
+      input.value = '';
+
     } catch (err) {
       status.textContent = 'erro no upload';
       status.className = 'status-cell status-erro';
@@ -377,25 +418,35 @@
     e.preventDefault();
 
     const form = e.target;
-    const btn  = form.querySelector('button[type="submit"]');
+    const btn = form.querySelector('button[type="submit"]');
+
     btn.disabled = true;
 
     const evento = document.getElementById('evento').value.trim();
     const codigo = document.getElementById('codigo').value.trim();
-    const qtd    = getQuantidadeValida();
+    const qtd = getQuantidadeValida();
     const inicio = getInicioValido();
 
     if (!evento || !codigo || !qtd || !inicio) {
-      M.toast({ html: 'Preencha evento, código, quantidade de testes e início da numeração.', classes: 'red' });
+      M.toast({
+        html: 'Preencha evento, código, quantidade de testes e início da numeração.',
+        classes: 'red'
+      });
+
       btn.disabled = false;
       return;
     }
 
-    const fd = new FormData(form);
+    const arquivos = form.querySelectorAll('input[type="file"]');
 
-    for (const input of form.querySelectorAll('input[type="file"]')) {
+    // MUITO IMPORTANTE:
+    // desabilita os arquivos ANTES de montar o FormData.
+    // Assim o salvar final envia apenas imagem_link[] e não reenvia os binários.
+    for (const input of arquivos) {
       input.disabled = true;
     }
+
+    const fd = new FormData(form);
 
     try {
       const resp = await fetch(`${API_BASE}/cadastrar_gabarito.php`, {
@@ -408,6 +459,7 @@
       console.log('CADASTRO RAW:', raw);
 
       let json;
+
       try {
         json = JSON.parse(raw);
       } catch (e) {
@@ -424,9 +476,10 @@
       M.toast({ html: 'Erro ao salvar: ' + err.message, classes: 'red' });
       console.error(err);
     } finally {
-      for (const input of form.querySelectorAll('input[type="file"]')) {
+      for (const input of arquivos) {
         input.disabled = false;
       }
+
       btn.disabled = false;
     }
   });
@@ -438,5 +491,6 @@
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
 </body>
 </html>
