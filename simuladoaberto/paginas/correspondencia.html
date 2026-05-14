@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Administrativo • Cadastrar Correspondências</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+
   <style>
     body { background: #f6f8fb; }
+
     header.page {
       background: #0b3b78;
       color: white;
@@ -14,16 +16,25 @@
       font-size: 20px;
       font-weight: bold;
     }
-    .fixed-header { position: sticky; top: 0; z-index: 99; }
-    .card-form { padding: 20px; border-radius: 12px; }
-    .table-wrap { max-height: 65vh; overflow: auto; margin-top: 24px; }
-    table td, table th { padding: 8px; }
+
+    .fixed-header {
+      position: sticky;
+      top: 0;
+      z-index: 99;
+    }
+
+    .card-form {
+      padding: 20px;
+      border-radius: 12px;
+    }
+
     .acoes-topo {
       display: flex;
       gap: 10px;
       align-items: end;
       flex-wrap: wrap;
     }
+
     .info-box {
       background: #eef4fb;
       border: 1px solid #d7e4f5;
@@ -33,14 +44,85 @@
       color: #0b3b78;
       font-weight: 600;
     }
-    .th-canonico {
-      width: 35%;
+
+    .table-wrap {
+      max-height: 65vh;
+      overflow: auto;
+      margin-top: 24px;
+      padding-right: 4px;
     }
-    .th-versao {
-      width: 65%;
+
+    .mapa-corresp {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .bloco-corresp {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .bloco-head,
+    .linha-corresp {
+      display: grid;
+      grid-template-columns: 75px 1fr;
+      align-items: center;
+    }
+
+    .bloco-head {
+      background: #0b3b78;
+      color: #fff;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 6px 8px;
+    }
+
+    .linha-corresp {
+      min-height: 34px;
+      padding: 4px 8px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .linha-corresp:nth-child(odd) {
+      background: #fafafa;
+    }
+
+    .q-canonica {
+      font-weight: 600;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .input-original {
+      width: 70px !important;
+      height: 26px !important;
+      margin: 0 !important;
+      text-align: center;
+      font-size: 13px !important;
+    }
+
+    .input-original:focus {
+      border-bottom: 1px solid #0b3b78 !important;
+      box-shadow: 0 1px 0 0 #0b3b78 !important;
+    }
+
+    @media (max-width: 1100px) {
+      .mapa-corresp {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .mapa-corresp {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
+
 <body>
 
 <header class="page fixed-header">
@@ -76,19 +158,13 @@
       <div id="infoCanonico" class="info-box" style="display:none;"></div>
 
       <div class="table-wrap">
-        <table class="highlight striped">
-          <thead>
-            <tr>
-              <th class="th-canonico">Questão Canônica</th>
-              <th class="th-versao">Questão da Versão Original</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaCorrespondencias"></tbody>
-        </table>
+        <div id="tabelaCorrespondencias" class="mapa-corresp"></div>
       </div>
 
       <div class="center-align" style="margin-top: 24px;">
-        <button class="btn blue darken-3 waves-effect waves-light" type="submit">Salvar Correspondências</button>
+        <button class="btn blue darken-3 waves-effect waves-light" type="submit">
+          Salvar Correspondências
+        </button>
       </div>
     </form>
   </div>
@@ -104,24 +180,71 @@
   function montarTabela(questoes) {
     tabela.innerHTML = '';
 
-    questoes.forEach((q) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>
-        ${q}
-        <input type="hidden" name="questao_canonica[]" value="${q}">
-      </td>
-      <td>
-        <input
-          type="number"
-          name="questao[]"
-          min="1"
-          required
-          placeholder="Informe a questão da versão"
-        >
-      </td>
+    const total = questoes.length;
+    const porBloco = Math.ceil(total / 4);
+
+    for (let bloco = 0; bloco < 4; bloco++) {
+      const inicio = bloco * porBloco;
+      const fim = Math.min(inicio + porBloco, total);
+      const grupo = questoes.slice(inicio, fim);
+
+      if (grupo.length === 0) continue;
+
+      const divBloco = document.createElement('div');
+      divBloco.className = 'bloco-corresp';
+
+      divBloco.innerHTML = `
+        <div class="bloco-head">
+          <div>Canônica</div>
+          <div>Original</div>
+        </div>
       `;
-      tabela.appendChild(tr);
+
+      grupo.forEach(q => {
+        const linha = document.createElement('div');
+        linha.className = 'linha-corresp';
+
+        linha.innerHTML = `
+          <div class="q-canonica">
+            ${q}
+            <input type="hidden" name="questao_canonica[]" value="${q}">
+          </div>
+
+          <div>
+            <input
+              type="number"
+              class="input-original"
+              name="questao[]"
+              min="1"
+              required
+            >
+          </div>
+        `;
+
+        divBloco.appendChild(linha);
+      });
+
+      tabela.appendChild(divBloco);
+    }
+
+    ativarNavegacaoInputs();
+  }
+
+  function ativarNavegacaoInputs() {
+    const inputs = Array.from(document.querySelectorAll('.input-original'));
+
+    inputs.forEach((input, index) => {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (inputs[index + 1]) inputs[index + 1].focus();
+        }
+
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (inputs[index - 1]) inputs[index - 1].focus();
+        }
+      });
     });
   }
 
@@ -136,11 +259,14 @@
 
     try {
       const url = `${API_BASE}/buscar_questoes_canonico.php?evento=${encodeURIComponent(evento)}&codigo_canonico=${encodeURIComponent(codigoCanonico)}`;
+
       const resp = await fetch(url);
       const raw = await resp.text();
+
       console.log('BUSCAR CANONICO RAW:', raw);
 
       let json;
+
       try {
         json = JSON.parse(raw);
       } catch (e) {
@@ -152,6 +278,7 @@
       }
 
       const questoes = json.questoes || [];
+
       if (!Array.isArray(questoes) || questoes.length === 0) {
         throw new Error('Nenhuma questão encontrada no gabarito canônico.');
       }
@@ -159,7 +286,7 @@
       montarTabela(questoes);
 
       infoCanonico.style.display = 'block';
-      infoCanonico.textContent = `Canônico carregado: ${json.evento} / ${json.codigo_canonico} — ${json.quantidade} questões. Preencha à direita os números da versão original.`;
+      infoCanonico.textContent = `Canônico carregado: ${json.evento} / ${json.codigo_canonico} — ${json.quantidade} questões. Preencha os números da versão original.`;
 
       M.toast({ html: 'Questões do canônico carregadas.', classes: 'green' });
 
@@ -190,13 +317,16 @@
       console.log('CADASTRO CORRESP RAW:', raw);
 
       let json;
+
       try {
         json = JSON.parse(raw);
       } catch (e) {
         throw new Error('Resposta inválida do servidor: ' + raw);
       }
 
-      if (!json.ok) throw new Error(json.message || 'Erro inesperado');
+      if (!json.ok) {
+        throw new Error(json.message || 'Erro inesperado');
+      }
 
       M.toast({ html: 'Correspondências salvas com sucesso!', classes: 'green' });
 
@@ -210,5 +340,6 @@
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
 </body>
 </html>
