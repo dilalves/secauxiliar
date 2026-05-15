@@ -12,162 +12,393 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
+  :root{
+    --azul:#0d3f82;
+    --azul2:#1453ab;
+    --fundo:#f4f6f9;
+    --texto:#263238;
+    --muted:#6b7280;
+    --borda:#e5e7eb;
+  }
+
   body{
-    background:#f4f6f9;
+    background:var(--fundo);
+    color:var(--texto);
   }
 
   .topo{
-    background:#0d3f82;
+    background:linear-gradient(135deg, #0d3f82, #1453ab);
     color:#fff;
     padding:18px 25px;
+    box-shadow:0 2px 10px rgba(0,0,0,.15);
+  }
+
+  .topo-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    max-width:1180px;
+    margin:0 auto;
+  }
+
+  .topo-titulo{
     font-size:22px;
-    font-weight:600;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .btn-voltar{
+    background:rgba(255,255,255,.15);
+    border:1px solid rgba(255,255,255,.35);
+    box-shadow:none;
+  }
+
+  .btn-voltar:hover{
+    background:rgba(255,255,255,.25);
+  }
+
+  .wrap{
+    max-width:1180px;
+    margin:28px auto;
+    padding:0 14px;
   }
 
   .card-main{
-    margin-top:30px;
-    border-radius:14px;
+    border-radius:18px;
+    overflow:hidden;
   }
 
-  .btn-processar{
-    background:#0d3f82;
-  }
-
-  .btn-processar:hover{
-    background:#1453ab;
-  }
-
-  .terminal{
-    background:#111;
-    color:#00ff66;
-    padding:18px;
-    border-radius:10px;
-    font-family:Consolas, monospace;
-    min-height:300px;
-    overflow:auto;
-    white-space:pre-wrap;
-    font-size:13px;
-    line-height:1.5;
+  .card-content{
+    padding:28px !important;
   }
 
   .titulo{
-    font-size:24px;
-    font-weight:600;
-    margin-bottom:5px;
+    font-size:25px;
+    font-weight:700;
+    margin-bottom:6px;
   }
 
   .subtitulo{
-    color:#666;
-    margin-bottom:25px;
+    color:var(--muted);
+    margin-bottom:22px;
+    font-size:15px;
+  }
+
+  .alerta{
+    background:#fff8e1;
+    border:1px solid #ffe082;
+    border-left:5px solid #f9a825;
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:24px;
+    color:#5d4037;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+
+  .alerta i{
+    color:#f9a825;
   }
 
   .input-field input:focus{
-    border-bottom:1px solid #0d3f82 !important;
-    box-shadow:0 1px 0 0 #0d3f82 !important;
+    border-bottom:1px solid var(--azul) !important;
+    box-shadow:0 1px 0 0 var(--azul) !important;
+  }
+
+  .dropdown-content li > span{
+    color:var(--azul);
+  }
+
+  .btn-processar{
+    background:var(--azul);
+    width:100%;
+    border-radius:8px;
+    height:44px;
+    line-height:44px;
+    font-weight:600;
+  }
+
+  .btn-processar:hover{
+    background:var(--azul2);
+  }
+
+  .btn-processar:disabled{
+    background:#9ca3af !important;
   }
 
   .loader{
     display:none;
-    margin-left:10px;
-    vertical-align:middle;
+    margin-top:12px;
+    text-align:center;
+  }
+
+  .painel-info{
+    border:1px solid var(--borda);
+    border-radius:14px;
+    padding:16px;
+    background:#fafafa;
+    margin-bottom:18px;
+  }
+
+  .painel-info-titulo{
+    font-weight:700;
+    margin-bottom:8px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .painel-info p{
+    margin:4px 0;
+    color:var(--muted);
+  }
+
+  .terminal-top{
+    margin-top:20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .terminal-label{
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .btn-limpar{
+    background:#607d8b;
+    border-radius:8px;
+    box-shadow:none;
+  }
+
+  .btn-limpar:hover{
+    background:#546e7a;
+  }
+
+  .terminal{
+    margin-top:10px;
+    background:#101418;
+    color:#00ff66;
+    padding:18px;
+    border-radius:14px;
+    font-family:Consolas, "Courier New", monospace;
+    min-height:300px;
+    max-height:480px;
+    overflow:auto;
+    white-space:pre-wrap;
+    font-size:13px;
+    line-height:1.55;
+    border:1px solid #263238;
+  }
+
+  .status-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    background:#e3f2fd;
+    color:#0d47a1;
+    margin-bottom:14px;
   }
 
   @media(max-width:700px){
+    .topo-inner{
+      flex-direction:column;
+      align-items:flex-start;
+    }
 
-    .topo{
+    .topo-titulo{
       font-size:18px;
-      padding:15px;
+    }
+
+    .card-content{
+      padding:20px !important;
     }
 
     .titulo{
       font-size:22px;
     }
 
+    .terminal-top{
+      flex-direction:column;
+      align-items:flex-start;
+    }
   }
 </style>
 </head>
 
 <body>
 
-<div class="topo">
-  Simulados Abertos - Reprocessar Ensalamento
-</div>
+<header class="topo">
+  <div class="topo-inner">
+    <div class="topo-titulo">
+      <i class="material-icons">event_seat</i>
+      Simulados Abertos — Reprocessar Ensalamento
+    </div>
 
-<div class="container">
+    <a href="painel.html" class="btn btn-small btn-voltar waves-effect">
+      <i class="material-icons left">arrow_back</i>
+      Voltar ao painel
+    </a>
+  </div>
+</header>
+
+<main class="wrap">
 
   <div class="card card-main">
     <div class="card-content">
 
+      <div class="status-chip">
+        <i class="material-icons tiny">admin_panel_settings</i>
+        Ferramenta administrativa
+      </div>
+
       <div class="titulo">
-        Reprocessar Ensalamento da Unidade
+        Reprocessar ensalamento da unidade
       </div>
 
       <div class="subtitulo">
-        Esta ferramenta recria o ensalamento apenas da unidade informada.
-        As demais unidades do evento não serão alteradas.
+        Selecione o evento, informe o código da unidade e execute o reprocessamento apenas para ela.
+      </div>
+
+      <div class="alerta">
+        <i class="material-icons">warning</i>
+        <div>
+          <b>Atenção:</b> esta ação apaga e recria o ensalamento somente da unidade informada.
+          As demais unidades do evento não serão alteradas.
+        </div>
       </div>
 
       <div class="row">
 
         <div class="input-field col s12 m5">
-          <input type="text" id="evento" value="FUVESTAO0526">
-          <label class="active" for="evento">Evento</label>
+          <select id="evento">
+            <option value="" disabled selected>Carregando eventos...</option>
+          </select>
+          <label>Evento</label>
         </div>
 
         <div class="input-field col s12 m3">
-          <input type="text" id="unidade" maxlength="4" placeholder="0704">
+          <input type="text" id="unidade" maxlength="4" placeholder="0704" autocomplete="off">
           <label class="active" for="unidade">Código da Unidade</label>
         </div>
 
         <div class="col s12 m4" style="margin-top:18px;">
-
           <button
+            id="btnProcessar"
             class="btn waves-effect waves-light btn-processar"
             onclick="processar()">
-
             <i class="material-icons left">autorenew</i>
-            Reprocessar
-
+            Reprocessar Unidade
           </button>
 
-          <div class="preloader-wrapper small active loader" id="loader">
-            <div class="spinner-layer spinner-blue-only">
-              <div class="circle-clipper left">
-                <div class="circle"></div>
-              </div>
-              <div class="gap-patch">
-                <div class="circle"></div>
-              </div>
-              <div class="circle-clipper right">
-                <div class="circle"></div>
+          <div class="loader" id="loader">
+            <div class="preloader-wrapper small active">
+              <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                  <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
               </div>
             </div>
           </div>
-
         </div>
 
       </div>
 
-      <div class="terminal" id="resultado">
-Aguardando processamento...
+      <div class="painel-info">
+        <div class="painel-info-titulo">
+          <i class="material-icons">info_outline</i>
+          Como usar
+        </div>
+        <p>1. Escolha o evento no seletor.</p>
+        <p>2. Digite o código da unidade, exemplo: <b>0704</b>.</p>
+        <p>3. Clique em <b>Reprocessar Unidade</b> e confira o retorno abaixo.</p>
       </div>
+
+      <div class="terminal-top">
+        <div class="terminal-label">
+          <i class="material-icons">terminal</i>
+          Resultado do processamento
+        </div>
+
+        <button class="btn btn-small btn-limpar waves-effect" onclick="limparResultado()">
+          <i class="material-icons left">delete_sweep</i>
+          Limpar
+        </button>
+      </div>
+
+      <div class="terminal" id="resultado">Aguardando processamento...</div>
 
     </div>
   </div>
 
-</div>
+</main>
 
 <script>
-
 const API_BASE = 'https://apisec.secauxiliar.com.br/sim_adm';
+
+document.addEventListener('DOMContentLoaded', function(){
+  carregarEventos();
+});
+
+async function carregarEventos(){
+  const select = document.getElementById('evento');
+
+  try{
+    const resp = await fetch(`${API_BASE}/api_adesoes_eventos.php`, {
+      credentials: 'include'
+    });
+
+    const json = await resp.json();
+
+    if(!json.ok){
+      throw new Error(json.message || 'Falha ao carregar eventos');
+    }
+
+    select.innerHTML = '<option value="" disabled selected>Selecione o evento</option>';
+
+    (json.eventos || []).forEach(ev => {
+      const opt = document.createElement('option');
+      opt.value = ev;
+      opt.textContent = ev;
+      select.appendChild(opt);
+    });
+
+    M.FormSelect.init(select);
+
+  }catch(err){
+    select.innerHTML = '<option value="FUVESTAO0526" selected>FUVESTAO0526</option>';
+    M.FormSelect.init(select);
+
+    M.toast({
+      html:'Não foi possível carregar eventos. Usando FUVESTAO0526 como padrão.'
+    });
+  }
+}
 
 async function processar(){
 
   const evento  = document.getElementById('evento').value.trim();
-  const unidade = document.getElementById('unidade').value.trim();
+  let unidade   = document.getElementById('unidade').value.trim();
 
   if(!evento){
-    M.toast({html:'Informe o evento'});
+    M.toast({html:'Selecione o evento'});
     return;
   }
 
@@ -176,12 +407,17 @@ async function processar(){
     return;
   }
 
+  if(/^\d+$/.test(unidade)){
+    unidade = unidade.padStart(4, '0');
+    document.getElementById('unidade').value = unidade;
+  }
+
   const ok = await Swal.fire({
     title: 'Confirmar reprocessamento?',
     html: `
       <div style="text-align:left;">
-        <b>Evento:</b> ${evento}<br>
-        <b>Unidade:</b> ${unidade}<br><br>
+        <b>Evento:</b> ${escapeHtml(evento)}<br>
+        <b>Unidade:</b> ${escapeHtml(unidade)}<br><br>
 
         O ensalamento atual desta unidade será apagado e recriado.<br>
         <b>As demais unidades NÃO serão alteradas.</b>
@@ -189,6 +425,8 @@ async function processar(){
     `,
     icon: 'warning',
     showCancelButton: true,
+    confirmButtonColor: '#0d3f82',
+    cancelButtonColor: '#607d8b',
     confirmButtonText: 'Sim, reprocessar',
     cancelButtonText: 'Cancelar'
   });
@@ -199,35 +437,42 @@ async function processar(){
 
   const resultado = document.getElementById('resultado');
   const loader    = document.getElementById('loader');
+  const btn       = document.getElementById('btnProcessar');
 
-  resultado.innerHTML = 'Processando...\n';
-  loader.style.display = 'inline-block';
+  resultado.textContent =
+    `[${new Date().toLocaleString('pt-BR')}] Processando ensalamento...\n\n` +
+    `Evento: ${evento}\n` +
+    `Unidade: ${unidade}\n\n` +
+    `Aguarde o retorno do servidor...\n`;
+
+  loader.style.display = 'block';
+  btn.disabled = true;
 
   try{
 
     const url =
       `${API_BASE}/ensalamento_unidade.php?evento=${encodeURIComponent(evento)}&unidade=${encodeURIComponent(unidade)}`;
 
-    const resp = await fetch(url);
+    const resp = await fetch(url, {
+      credentials: 'include'
+    });
 
     const texto = await resp.text();
 
-    resultado.textContent = texto;
+    resultado.textContent = texto || 'Processamento finalizado sem retorno do servidor.';
 
     if(resp.ok){
-
       Swal.fire({
         icon:'success',
-        title:'Processamento concluído'
+        title:'Processamento concluído',
+        text:'O ensalamento da unidade foi reprocessado.'
       });
-
     }else{
-
       Swal.fire({
         icon:'error',
-        title:'Erro ao processar'
+        title:'Erro ao processar',
+        text:'Verifique o retorno exibido na tela.'
       });
-
     }
 
   }catch(err){
@@ -237,17 +482,28 @@ async function processar(){
 
     Swal.fire({
       icon:'error',
-      title:'Erro de conexão'
+      title:'Erro de conexão',
+      text:'Não foi possível chamar o PHP de reprocessamento.'
     });
 
   }finally{
-
     loader.style.display = 'none';
-
+    btn.disabled = false;
   }
-
 }
 
+function limparResultado(){
+  document.getElementById('resultado').textContent = 'Aguardando processamento...';
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
 </script>
 
 </body>
