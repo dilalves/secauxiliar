@@ -117,11 +117,17 @@ async function atualizarPendenciasEmail(){
 
 function abrirEmail(){
   if(window.parent && window.parent !== window){
-    window.parent.postMessage({
-      acao: 'abrirMenu',
-      pagina: 'email'
-    }, '*');
+    const btnEmail = window.parent.document.querySelector(
+      'button[data-page="paginas/trocar_email.html"]'
+    );
+
+    if(btnEmail && typeof window.parent.abrir === 'function'){
+      window.parent.abrir('paginas/trocar_email.html', btnEmail);
+      return;
+    }
   }
+
+  window.location.href = 'trocar_email.html';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
