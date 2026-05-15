@@ -21,10 +21,7 @@
     --borda:#e5e7eb;
   }
 
-  body{
-    background:var(--fundo);
-    color:var(--texto);
-  }
+  body{ background:var(--fundo); color:var(--texto); }
 
   .topo{
     background:linear-gradient(135deg, #0d3f82, #1453ab);
@@ -56,9 +53,7 @@
     box-shadow:none;
   }
 
-  .btn-voltar:hover{
-    background:rgba(255,255,255,.25);
-  }
+  .btn-voltar:hover{ background:rgba(255,255,255,.25); }
 
   .wrap{
     max-width:1180px;
@@ -71,9 +66,7 @@
     overflow:hidden;
   }
 
-  .card-content{
-    padding:28px !important;
-  }
+  .card-content{ padding:28px !important; }
 
   .titulo{
     font-size:25px;
@@ -100,18 +93,14 @@
     align-items:flex-start;
   }
 
-  .alerta i{
-    color:#f9a825;
-  }
+  .alerta i{ color:#f9a825; }
 
   .input-field input:focus{
     border-bottom:1px solid var(--azul) !important;
     box-shadow:0 1px 0 0 var(--azul) !important;
   }
 
-  .dropdown-content li > span{
-    color:var(--azul);
-  }
+  .dropdown-content li > span{ color:var(--azul); }
 
   .btn-processar{
     background:var(--azul);
@@ -122,13 +111,8 @@
     font-weight:600;
   }
 
-  .btn-processar:hover{
-    background:var(--azul2);
-  }
-
-  .btn-processar:disabled{
-    background:#9ca3af !important;
-  }
+  .btn-processar:hover{ background:var(--azul2); }
+  .btn-processar:disabled{ background:#9ca3af !important; }
 
   .loader{
     display:none;
@@ -157,6 +141,36 @@
     color:var(--muted);
   }
 
+  .box-unidade{
+    display:none;
+    border-radius:12px;
+    padding:14px 16px;
+    margin:-6px 0 18px 0;
+    border:1px solid #bbdefb;
+    background:#e3f2fd;
+    color:#0d47a1;
+  }
+
+  .box-unidade.erro{
+    border-color:#ffcdd2;
+    background:#ffebee;
+    color:#b71c1c;
+  }
+
+  .box-unidade .linha1{
+    font-weight:800;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:4px;
+  }
+
+  .box-unidade .linha2{
+    font-size:13px;
+    color:inherit;
+    opacity:.9;
+  }
+
   .terminal-top{
     margin-top:20px;
     display:flex;
@@ -178,9 +192,7 @@
     box-shadow:none;
   }
 
-  .btn-limpar:hover{
-    background:#546e7a;
-  }
+  .btn-limpar:hover{ background:#546e7a; }
 
   .terminal{
     margin-top:10px;
@@ -217,17 +229,9 @@
       align-items:flex-start;
     }
 
-    .topo-titulo{
-      font-size:18px;
-    }
-
-    .card-content{
-      padding:20px !important;
-    }
-
-    .titulo{
-      font-size:22px;
-    }
+    .topo-titulo{ font-size:18px; }
+    .card-content{ padding:20px !important; }
+    .titulo{ font-size:22px; }
 
     .terminal-top{
       flex-direction:column;
@@ -263,9 +267,7 @@
         Ferramenta administrativa
       </div>
 
-      <div class="titulo">
-        Reprocessar ensalamento da unidade
-      </div>
+      <div class="titulo">Reprocessar ensalamento da unidade</div>
 
       <div class="subtitulo">
         Selecione o evento, informe o código da unidade e execute o reprocessamento apenas para ela.
@@ -289,7 +291,15 @@
         </div>
 
         <div class="input-field col s12 m3">
-          <input type="text" id="unidade" maxlength="4" placeholder="0704" autocomplete="off">
+          <input
+            type="text"
+            id="unidade"
+            maxlength="4"
+            placeholder="0704"
+            autocomplete="off"
+            oninput="aoDigitarUnidade()"
+            onblur="buscarUnidade()"
+          >
           <label class="active" for="unidade">Código da Unidade</label>
         </div>
 
@@ -305,20 +315,22 @@
           <div class="loader" id="loader">
             <div class="preloader-wrapper small active">
               <div class="spinner-layer spinner-blue-only">
-                <div class="circle-clipper left">
-                  <div class="circle"></div>
-                </div>
-                <div class="gap-patch">
-                  <div class="circle"></div>
-                </div>
-                <div class="circle-clipper right">
-                  <div class="circle"></div>
-                </div>
+                <div class="circle-clipper left"><div class="circle"></div></div>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right"><div class="circle"></div></div>
               </div>
             </div>
           </div>
         </div>
 
+      </div>
+
+      <div id="boxUnidade" class="box-unidade">
+        <div class="linha1">
+          <i class="material-icons">business</i>
+          <span id="unidadeTitulo">Unidade localizada</span>
+        </div>
+        <div class="linha2" id="unidadeDetalhe"></div>
       </div>
 
       <div class="painel-info">
@@ -328,7 +340,8 @@
         </div>
         <p>1. Escolha o evento no seletor.</p>
         <p>2. Digite o código da unidade, exemplo: <b>0704</b>.</p>
-        <p>3. Clique em <b>Reprocessar Unidade</b> e confira o retorno abaixo.</p>
+        <p>3. Confira se a unidade exibida está correta.</p>
+        <p>4. Clique em <b>Reprocessar Unidade</b> e confira o retorno abaixo.</p>
       </div>
 
       <div class="terminal-top">
@@ -352,6 +365,8 @@
 
 <script>
 const API_BASE = 'https://apisec.secauxiliar.com.br/sim_adm';
+let unidadeAtual = null;
+let timerBuscaUnidade = null;
 
 document.addEventListener('DOMContentLoaded', function(){
   carregarEventos();
@@ -392,6 +407,98 @@ async function carregarEventos(){
   }
 }
 
+function aoDigitarUnidade(){
+  unidadeAtual = null;
+  esconderBoxUnidade();
+
+  clearTimeout(timerBuscaUnidade);
+
+  const unidade = document.getElementById('unidade').value.trim();
+
+  if(unidade.length >= 4){
+    timerBuscaUnidade = setTimeout(buscarUnidade, 350);
+  }
+}
+
+async function buscarUnidade(){
+  let codigo = document.getElementById('unidade').value.trim();
+
+  unidadeAtual = null;
+  esconderBoxUnidade();
+
+  if(!codigo){
+    return;
+  }
+
+  if(/^\d+$/.test(codigo)){
+    codigo = codigo.padStart(4, '0');
+    document.getElementById('unidade').value = codigo;
+  }
+
+  mostrarBoxUnidade('buscando', 'Buscando unidade...', 'Aguarde a consulta no cadastro de unidades.');
+
+  try{
+    const resp = await fetch(`${API_BASE}/unidades_get_codigo.php?codigo=${encodeURIComponent(codigo)}`, {
+      credentials: 'include'
+    });
+
+    const json = await resp.json();
+
+    if(!resp.ok || !json.ok || !json.dados){
+      unidadeAtual = null;
+      mostrarBoxUnidade(
+        'erro',
+        'Unidade não localizada',
+        `Código consultado: ${escapeHtml(codigo)}`
+      );
+      return;
+    }
+
+    unidadeAtual = json.dados;
+
+    const nome = unidadeAtual.unidade_internet || unidadeAtual.unidade || '';
+    const cidadeUf = [
+      unidadeAtual.cidade || '',
+      unidadeAtual.uf || ''
+    ].filter(Boolean).join(' / ');
+
+    mostrarBoxUnidade(
+      'ok',
+      `${unidadeAtual.codigo} - ${nome}`,
+      cidadeUf ? `Cidade/UF: ${cidadeUf}` : 'Unidade encontrada no cadastro.'
+    );
+
+  }catch(err){
+    unidadeAtual = null;
+    mostrarBoxUnidade(
+      'erro',
+      'Erro ao buscar unidade',
+      'Não foi possível consultar o cadastro de unidades.'
+    );
+  }
+}
+
+function mostrarBoxUnidade(tipo, titulo, detalhe){
+  const box = document.getElementById('boxUnidade');
+  const unidadeTitulo = document.getElementById('unidadeTitulo');
+  const unidadeDetalhe = document.getElementById('unidadeDetalhe');
+
+  box.classList.remove('erro');
+
+  if(tipo === 'erro'){
+    box.classList.add('erro');
+  }
+
+  unidadeTitulo.innerHTML = titulo;
+  unidadeDetalhe.innerHTML = detalhe || '';
+  box.style.display = 'block';
+}
+
+function esconderBoxUnidade(){
+  const box = document.getElementById('boxUnidade');
+  box.style.display = 'none';
+}
+
 async function processar(){
 
   const evento  = document.getElementById('evento').value.trim();
@@ -412,12 +519,20 @@ async function processar(){
     document.getElementById('unidade').value = unidade;
   }
 
+  if(!unidadeAtual || String(unidadeAtual.codigo) !== unidade){
+    await buscarUnidade();
+  }
+
+  const nomeUnidade = unidadeAtual
+    ? `${unidadeAtual.codigo} - ${unidadeAtual.unidade_internet || unidadeAtual.unidade || ''}`
+    : unidade;
+
   const ok = await Swal.fire({
     title: 'Confirmar reprocessamento?',
     html: `
       <div style="text-align:left;">
         <b>Evento:</b> ${escapeHtml(evento)}<br>
-        <b>Unidade:</b> ${escapeHtml(unidade)}<br><br>
+        <b>Unidade:</b> ${escapeHtml(nomeUnidade)}<br><br>
 
         O ensalamento atual desta unidade será apagado e recriado.<br>
         <b>As demais unidades NÃO serão alteradas.</b>
@@ -442,14 +557,13 @@ async function processar(){
   resultado.textContent =
     `[${new Date().toLocaleString('pt-BR')}] Processando ensalamento...\n\n` +
     `Evento: ${evento}\n` +
-    `Unidade: ${unidade}\n\n` +
+    `Unidade: ${nomeUnidade}\n\n` +
     `Aguarde o retorno do servidor...\n`;
 
   loader.style.display = 'block';
   btn.disabled = true;
 
   try{
-
     const url =
       `${API_BASE}/ensalamento_unidade.php?evento=${encodeURIComponent(evento)}&unidade=${encodeURIComponent(unidade)}`;
 
@@ -476,7 +590,6 @@ async function processar(){
     }
 
   }catch(err){
-
     resultado.textContent =
       'Erro ao executar processamento.\n\n' + err;
 
@@ -497,7 +610,7 @@ function limparResultado(){
 }
 
 function escapeHtml(str){
-  return String(str)
+  return String(str ?? '')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
