@@ -359,7 +359,9 @@ function aoDigitarUnidade(){
 }
 
 async function buscarUnidade(){
+
   let codigo = document.getElementById('unidade').value.trim();
+  const evento = document.getElementById('evento').value.trim();
 
   unidadeAtual = null;
   esconderBoxUnidade();
@@ -368,50 +370,129 @@ async function buscarUnidade(){
     return;
   }
 
+  if(!evento){
+    mostrarBoxUnidade(
+      'erro',
+      'Selecione o evento',
+      'Escolha primeiro o evento para validar a unidade.'
+    );
+    return;
+  }
+
   if(/^\d+$/.test(codigo)){
     codigo = codigo.padStart(4, '0');
     document.getElementById('unidade').value = codigo;
   }
 
-  mostrarBoxUnidade('buscando', 'Buscando unidade...', 'Aguarde a consulta no cadastro de unidades.');
+  mostrarBoxUnidade(
+    'buscando',
+    'Validando ensalamento...',
+    'Consultando inscritos, salas e capacidade.'
+  );
 
   try{
-    const resp = await fetch(`${API_BASE}/unidades_get_codigo.php?codigo=${encodeURIComponent(codigo)}`, {
-      credentials: 'include'
-    });
+
+    const resp = await fetch(
+      `${API_BASE}/validar_ensalamento_unidade.php?evento=${encodeURIComponent(evento)}&codigo=${encodeURIComponent(codigo)}`,
+      {
+        credentials: 'include'
+      }
+    );
 
     const json = await resp.json();
 
-    if(!resp.ok || !json.ok || !json.dados){
+    if(!resp.ok || !json.ok){
+
       unidadeAtual = null;
+
+      document.getElementById('btnProcessar').disabled = true;
+
       mostrarBoxUnidade(
         'erro',
         'Unidade não localizada',
-        `Código consultado: ${escapeHtml(codigo)}`
+        json.msg || `Código consultado: ${escapeHtml(codigo)}`
       );
+
       return;
     }
 
-    unidadeAtual = json.dados;
+    unidadeAtual = json.unidade || {};
 
-    const nome = unidadeAtual.unidade_internet || unidadeAtual.unidade || '';
+    const nome =
+      unidadeAtual.nome_internet ||
+      unidadeAtual.nome ||
+      '';
+
     const cidadeUf = [
       unidadeAtual.cidade || '',
       unidadeAtual.uf || ''
     ].filter(Boolean).join(' / ');
 
+    const inscritos = json.inscritos || {};
+    const salas     = json.salas || {};
+    const validacao = json.validacao || {};
+
+    const podeProcessar = !!validacao.pode_processar;
+
+    document.getElementById('btnProcessar').disabled = !podeProcessar;
+
+    let detalhe = `
+      <div style="margin-top:8px;">
+        <b>Inscritos:</b> ${inscritos.total_unico || 0}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        <b>Salas ativas:</b> ${salas.ativas || 0}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        <b>Capacidade:</b> ${salas.capacidade_total || 0}
+      </div>
+    `;
+
+    if((salas.faltam_vagas || 0) > 0){
+      detalhe += `
+        <div style="margin-top:6px; color:#c62828;">
+          <b>Faltam vagas:</b> ${salas.faltam_vagas}
+        </div>
+      `;
+    }
+
+    if((salas.sobra_vagas || 0) > 0){
+      detalhe += `
+        <div style="margin-top:6px;">
+          <b>Sobra de vagas:</b> ${salas.sobra_vagas}
+        </div>
+      `;
+    }
+
+    detalhe += `
+      <div style="margin-top:8px;">
+        <b>Status:</b> ${escapeHtml(validacao.status_label || 'OK')}
+      </div>
+
+      <div style="margin-top:4px;">
+        ${escapeHtml(validacao.msg || '')}
+      </div>
+    `;
+
     mostrarBoxUnidade(
-      'ok',
+      podeProcessar ? 'ok' : 'erro',
       `${unidadeAtual.codigo} - ${nome}`,
-      cidadeUf ? `Cidade/UF: ${cidadeUf}` : 'Unidade encontrada no cadastro.'
+      `
+        ${cidadeUf ? `<div>Cidade/UF: ${cidadeUf}</div>` : ''}
+        ${detalhe}
+      `
     );
 
   }catch(err){
+
     unidadeAtual = null;
+
+    document.getElementById('btnProcessar').disabled = true;
+
     mostrarBoxUnidade(
       'erro',
-      'Erro ao buscar unidade',
-      'Não foi possível consultar o cadastro de unidades.'
+      'Erro ao validar unidade',
+      'Não foi possível consultar o ensalamento da unidade.'
     );
   }
 }
