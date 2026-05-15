@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Reprocessar Ensalamento</title>
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+  body{
+    background:#f4f6f9;
+  }
+
+  .topo{
+    background:#0d3f82;
+    color:#fff;
+    padding:18px 25px;
+    font-size:22px;
+    font-weight:600;
+  }
+
+  .card-main{
+    margin-top:30px;
+    border-radius:14px;
+  }
+
+  .btn-processar{
+    background:#0d3f82;
+  }
+
+  .btn-processar:hover{
+    background:#1453ab;
+  }
+
+  .terminal{
+    background:#111;
+    color:#00ff66;
+    padding:18px;
+    border-radius:10px;
+    font-family:Consolas, monospace;
+    min-height:300px;
+    overflow:auto;
+    white-space:pre-wrap;
+    font-size:13px;
+    line-height:1.5;
+  }
+
+  .titulo{
+    font-size:24px;
+    font-weight:600;
+    margin-bottom:5px;
+  }
+
+  .subtitulo{
+    color:#666;
+    margin-bottom:25px;
+  }
+
+  .input-field input:focus{
+    border-bottom:1px solid #0d3f82 !important;
+    box-shadow:0 1px 0 0 #0d3f82 !important;
+  }
+
+  .loader{
+    display:none;
+    margin-left:10px;
+    vertical-align:middle;
+  }
+
+  @media(max-width:700px){
+
+    .topo{
+      font-size:18px;
+      padding:15px;
+    }
+
+    .titulo{
+      font-size:22px;
+    }
+
+  }
+</style>
+</head>
+
+<body>
+
+<div class="topo">
+  Simulados Abertos - Reprocessar Ensalamento
+</div>
+
+<div class="container">
+
+  <div class="card card-main">
+    <div class="card-content">
+
+      <div class="titulo">
+        Reprocessar Ensalamento da Unidade
+      </div>
+
+      <div class="subtitulo">
+        Esta ferramenta recria o ensalamento apenas da unidade informada.
+        As demais unidades do evento não serão alteradas.
+      </div>
+
+      <div class="row">
+
+        <div class="input-field col s12 m5">
+          <input type="text" id="evento" value="FUVESTAO0526">
+          <label class="active" for="evento">Evento</label>
+        </div>
+
+        <div class="input-field col s12 m3">
+          <input type="text" id="unidade" maxlength="4" placeholder="0704">
+          <label class="active" for="unidade">Código da Unidade</label>
+        </div>
+
+        <div class="col s12 m4" style="margin-top:18px;">
+
+          <button
+            class="btn waves-effect waves-light btn-processar"
+            onclick="processar()">
+
+            <i class="material-icons left">autorenew</i>
+            Reprocessar
+
+          </button>
+
+          <div class="preloader-wrapper small active loader" id="loader">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div>
+              <div class="gap-patch">
+                <div class="circle"></div>
+              </div>
+              <div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="terminal" id="resultado">
+Aguardando processamento...
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+const API_BASE = 'https://apisec.secauxiliar.com.br/sim_adm';
+
+async function processar(){
+
+  const evento  = document.getElementById('evento').value.trim();
+  const unidade = document.getElementById('unidade').value.trim();
+
+  if(!evento){
+    M.toast({html:'Informe o evento'});
+    return;
+  }
+
+  if(!unidade){
+    M.toast({html:'Informe a unidade'});
+    return;
+  }
+
+  const ok = await Swal.fire({
+    title: 'Confirmar reprocessamento?',
+    html: `
+      <div style="text-align:left;">
+        <b>Evento:</b> ${evento}<br>
+        <b>Unidade:</b> ${unidade}<br><br>
+
+        O ensalamento atual desta unidade será apagado e recriado.<br>
+        <b>As demais unidades NÃO serão alteradas.</b>
+      </div>
+    `,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sim, reprocessar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if(!ok.isConfirmed){
+    return;
+  }
+
+  const resultado = document.getElementById('resultado');
+  const loader    = document.getElementById('loader');
+
+  resultado.innerHTML = 'Processando...\n';
+  loader.style.display = 'inline-block';
+
+  try{
+
+    const url =
+      `${API_BASE}/ensalamento_unidade.php?evento=${encodeURIComponent(evento)}&unidade=${encodeURIComponent(unidade)}`;
+
+    const resp = await fetch(url);
+
+    const texto = await resp.text();
+
+    resultado.textContent = texto;
+
+    if(resp.ok){
+
+      Swal.fire({
+        icon:'success',
+        title:'Processamento concluído'
+      });
+
+    }else{
+
+      Swal.fire({
+        icon:'error',
+        title:'Erro ao processar'
+      });
+
+    }
+
+  }catch(err){
+
+    resultado.textContent =
+      'Erro ao executar processamento.\n\n' + err;
+
+    Swal.fire({
+      icon:'error',
+      title:'Erro de conexão'
+    });
+
+  }finally{
+
+    loader.style.display = 'none';
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
