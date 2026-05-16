@@ -686,27 +686,49 @@
 
           <div class="info-field full">
             <div class="info-label">INSCRIÇÃO - UNIDADE</div>
-            <div class="info-value">
-              ${escapeHtml(c.inscricao_unidade || c.origem || '-')}
-              ${(c.somente_avulsa || String(c.tipo_inscricao || '').toUpperCase() === 'AVULSA') ? `
-                <span style="
-                  display:inline-flex;
-                  align-items:center;
-                  margin-left:8px;
-                  padding:3px 9px;
-                  border-radius:999px;
-                  background:#fff3cd;
-                  color:#8a5a00;
-                  border:1px solid #facc15;
-                  font-size:11px;
-                  font-weight:900;
-                  vertical-align:middle;
-                ">
-                  AVULSA
-                </span>
-              ` : ''}
-            </div>
+              <div class="info-value">
+                ${escapeHtml(c.inscricao_unidade || c.origem || '-')}
+                ${(c.somente_avulsa || String(c.tipo_inscricao || '').toUpperCase() === 'AVULSA') ? `
+                  <span style="
+                    display:inline-flex;
+                    align-items:center;
+                    margin-left:8px;
+                    padding:3px 9px;
+                    border-radius:999px;
+                    background:#fff3cd;
+                    color:#8a5a00;
+                    border:1px solid #facc15;
+                    font-size:11px;
+                    font-weight:900;
+                    vertical-align:middle;
+                  ">
+                    AVULSA
+                  </span>
+                ` : ''}
+              </div>
           </div>
+
+            ${c.ensalamento && c.ensalamento.encontrado ? `
+              <div class="info-field full">
+                <div class="info-label">LOCAL DE PROVA</div>
+                <div class="info-value">
+                  <b>Sala:</b> ${escapeHtml(c.ensalamento.sala || '-')}
+                  &nbsp; | &nbsp;
+                  <b>Andar:</b> ${escapeHtml(c.ensalamento.andar || '-')}
+                  &nbsp; | &nbsp;
+                  <b>Prédio:</b> ${escapeHtml(c.ensalamento.predio || '-')}
+                  &nbsp; | &nbsp;
+                  <b>Bloco:</b> ${escapeHtml(c.ensalamento.bloco || '-')}
+                </div>
+              </div>
+            ` : `
+              <div class="info-field full">
+                <div class="info-label">LOCAL DE PROVA</div>
+                <div class="info-value" style="color:#795600;">
+                  Ainda não localizado no ensalamento.
+                </div>
+              </div>
+            `}
 
         </div>
 
