@@ -263,6 +263,11 @@
       color:var(--warn-tx);
     }
 
+    .chip-wait{
+      background:#dbeafe;
+      color:#1d4ed8;
+    }
+
     .chip-bad{
       background:var(--bad-bg);
       color:var(--bad-tx);
@@ -769,9 +774,23 @@
   function chipStatus(status) {
     const s = String(status || '').toUpperCase();
     let cls = 'chip';
-    if (s === 'FINALIZADO' || s === 'PROCESSADO') cls += ' chip-ok';
-    else if (s === 'RECUSADO') cls += ' chip-bad';
-    else cls += ' chip-warn';
+
+    if (s === 'FINALIZADO' || s === 'PROCESSADO') {
+      cls += ' chip-ok';
+
+    } else if (s === 'PROCESSANDO') {
+      cls += ' chip-warn';
+
+    } else if (s === 'AGUARDANDO') {
+      cls += ' chip-wait';
+
+    } else if (s === 'RECUSADO') {
+      cls += ' chip-bad';
+
+    } else {
+      cls += ' chip-warn';
+    }
+
     return `<span class="${cls}">${escapeHtml(status || '')}</span>`;
   }
 
