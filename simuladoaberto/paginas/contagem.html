@@ -471,6 +471,16 @@
       background:#fff5f5; /* leve fundo rosado */
     }
 
+    .linha-sem-contagem td{
+      background:#fff7d6 !important;
+      color:#5f4300;
+      font-weight:600;
+    }
+
+    .linha-sem-contagem:hover td{
+      background:#ffefb0 !important;
+    }
+
     @media (max-width: 900px){
       .resumo-card{
         min-width:calc(50% - 6px);
@@ -1088,6 +1098,9 @@ function linhaSubtotal(label){
 
 rows.forEach((r, idx) => {
   const isCancelada = String(r.status || '').toUpperCase() === 'CANCELADA';
+  const semContagem = !isCancelada
+    && Number(r.total_inscritos || 0) > 0
+    && Number(r.presentes_d1 || 0) === 0;
   const tipo = String(r.tipo_unidade || 'CONVENIADA').toUpperCase();
   const grupoLabel = tipo === 'PROPRIA'
     ? 'UNIDADES PRÓPRIAS'
@@ -1118,7 +1131,7 @@ rows.forEach((r, idx) => {
   subtotal.red += Number(r.presentes_red || 0);
 
   html += `
-  <tr class="${isCancelada ? 'linha-cancelada' : ''}">
+  <tr class="${isCancelada ? 'linha-cancelada' : (semContagem ? 'linha-sem-contagem' : '')}">
     <td>${esc(r.codigo)}</td>
     <td>${esc(r.unidade)}</td>
     <td class="num">${n(r.vagas)}</td>
