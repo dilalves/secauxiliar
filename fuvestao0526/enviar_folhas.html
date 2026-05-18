@@ -797,9 +797,10 @@
           ok: false,
           dpiX: '-',
           dpiY: '-',
+          tipo: 'infra',
           erro: err.name === 'AbortError'
-            ? `❌ <strong>${file.name}</strong> - falha na verificação (tempo excedido ou servidor fora do ar)`
-            : `❌ <strong>${file.name}</strong> - erro ao verificar DPI`
+            ? 'Tempo excedido na verificação de resolução.'
+            : 'Falha temporária ao verificar resolução.'
         });
       });
     });
@@ -913,11 +914,22 @@ async function uploadFile() {
   const falhas = resultadosDpi.filter(r => !r.ok);
 
   if (falhas.length > 0) {
+    const falhaInfra = falhas.some(f => f.tipo === 'infra');
+
     Swal.fire({
-      icon: 'error',
-      title: 'Imagens recusadas por baixa resolução',
-      html: falhas.map(f => f.erro || `❌ <strong>${f.nome}</strong> - ${f.dpiX}x${f.dpiY} DPI`).join('<br>')
+      icon: falhaInfra ? 'warning' : 'error',
+      title: falhaInfra
+        ? 'Não foi possível verificar a resolução'
+        : 'Imagens recusadas por baixa resolução',
+      html: falhas.map(f => {
+        if (f.tipo === 'infra') {
+          return `⚠️ <strong>${f.nome}</strong> - não foi possível verificar a resolução agora. Tente enviar novamente em alguns instantes.`;
+        }
+
+        return `❌ <strong>${f.nome}</strong> - resolução insuficiente (${f.dpiX}x${f.dpiY} DPI).`;
+      }).join('<br>')
     });
+
     sendButton.disabled = false;
     return;
   }
