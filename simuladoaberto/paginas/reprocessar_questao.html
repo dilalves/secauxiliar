@@ -16,7 +16,6 @@
       --border:#d9e2ef;
       --green:#16a34a;
       --red:#dc2626;
-      --yellow:#f59e0b;
     }
 
     *{box-sizing:border-box}
@@ -60,7 +59,7 @@
 
     .grid{
       display:grid;
-      grid-template-columns:repeat(4,1fr);
+      grid-template-columns:repeat(3,1fr);
       gap:14px;
     }
 
@@ -109,17 +108,8 @@
       background:var(--azul);
     }
 
-    button:hover{
-      filter:brightness(.95);
-    }
-
-    button.secondary{
-      background:#475569;
-    }
-
-    button.danger{
-      background:var(--red);
-    }
+    button.secondary{ background:#475569; }
+    button.danger{ background:var(--red); }
 
     button:disabled{
       opacity:.55;
@@ -223,12 +213,11 @@
     .delta-zero{color:var(--muted);font-weight:700}
 
     @media(max-width:850px){
-      .grid{grid-template-columns:1fr 1fr}
+      .grid{grid-template-columns:1fr}
       .kpis{grid-template-columns:1fr 1fr}
     }
 
     @media(max-width:520px){
-      .grid{grid-template-columns:1fr}
       .kpis{grid-template-columns:1fr}
     }
   </style>
@@ -243,7 +232,7 @@
     <div class="card">
       <p class="subtitle">
         Use esta tela quando uma questão do gabarito oficial precisar ser corrigida depois que os lotes já foram conferidos.
-        Primeiro simule o impacto. Depois, se estiver correto, aplique a alteração na tabela corrigida.
+        Primeiro altere o gabarito oficial na tela de correspondências. Depois informe aqui o evento e a questão canônica para reprocessar a tabela corrigida.
       </p>
 
       <div class="grid">
@@ -267,11 +256,6 @@
         <div>
           <label for="questao">Questão canônica</label>
           <input id="questao" type="number" min="1" max="180" placeholder="Ex: 46">
-        </div>
-
-        <div>
-          <label for="gabarito">Novo gabarito</label>
-          <input id="gabarito" type="text" maxlength="9" placeholder="Ex: A">
         </div>
       </div>
 
@@ -380,7 +364,6 @@
     const evento = document.getElementById('evento').value.trim();
     const dia = document.getElementById('dia').value.trim();
     const questao = parseInt(document.getElementById('questao').value, 10);
-    const gabarito = document.getElementById('gabarito').value.trim().toUpperCase();
 
     if(!evento){
       throw new Error('Selecione o evento.');
@@ -392,10 +375,6 @@
 
     if(!questao || questao <= 0){
       throw new Error('Informe a questão canônica.');
-    }
-
-    if(!gabarito){
-      throw new Error('Informe o novo gabarito.');
     }
 
     if(dia === 'D1' && (questao < 1 || questao > 90)){
@@ -414,7 +393,6 @@
       evento: evento,
       dia: dia,
       questao_canonica: questao,
-      novo_gabarito: gabarito,
       aplicar: aplicar
     };
   }
@@ -434,13 +412,18 @@
       const resp = await fetch(URL_REPROCESSAR, {
         method:'POST',
         credentials:'include',
-        headers:{
-          'Content-Type':'application/json'
-        },
+        headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify(payload)
       });
 
-      const json = await resp.json();
+      const text = await resp.text();
+      let json;
+
+      try{
+        json = JSON.parse(text);
+      }catch(e){
+        throw new Error('Resposta inválida do servidor. Verifique se o PHP está retornando JSON. Início da resposta: ' + text.substring(0, 120));
+      }
 
       if(!json.ok){
         throw new Error(json.message || 'Erro no reprocessamento.');
@@ -477,15 +460,15 @@
     }
 
     const evento = document.getElementById('evento').value;
+    const dia = document.getElementById('dia').value;
     const questao = document.getElementById('questao').value;
-    const gabarito = document.getElementById('gabarito').value.toUpperCase();
 
     const ok = confirm(
       `Confirma aplicar a correção?\n\n` +
       `Evento: ${evento}\n` +
-      `Questão canônica: ${questao}\n` +
-      `Novo gabarito: ${gabarito}\n\n` +
-      `Essa ação atualizará a tabela corrigida.`
+      `Dia/Tipo: ${dia}\n` +
+      `Questão canônica: ${questao}\n\n` +
+      `O sistema buscará o gabarito atual cadastrado em gabarito_sim_aberto e atualizará a tabela corrigida.`
     );
 
     if(ok){
@@ -557,7 +540,6 @@
   function limparTela(){
     document.getElementById('dia').value = '';
     document.getElementById('questao').value = '';
-    document.getElementById('gabarito').value = '';
     document.getElementById('resultado').style.display = 'none';
     document.getElementById('tbodyDetalhes').innerHTML = '';
     document.getElementById('msg').className = 'msg';
