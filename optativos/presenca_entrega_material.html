@@ -193,6 +193,11 @@
     line-height:1;
   }
 
+  .material-chip-empty{
+    background:#f1f5f9;
+    color:#64748b;
+  }
+
   .modal .modal-content h5{
     color:#17324d;
   }
@@ -529,7 +534,8 @@
 
       <div class="material-summary">
         <span class="badge-soft b-prev">Entregues: <b id="mat_qtd">0</b></span>
-        <span class="badge-soft b-ok">Próximo: <b id="mat_proximo">—</b></span>
+        <span class="badge-soft b-ok">Selecionar caderno manualmente</span>
+        <span id="mat_proximo" style="display:none;">—</span>
       </div>
 
       <div id="mat_hist_wrap" class="mat-box">
@@ -619,6 +625,7 @@
   let isMaterialSyncRunning = false;
   let materialCursoAtual = '';
   let turmaEspecialAtual = '';
+  let materialBloqueadoHoje = false;
 
   function msgCtx(t=''){ $ctxMsg.textContent = t; }
 
@@ -843,6 +850,55 @@
     return readJSON(getMaterialCacheKey(salaId, turmaId, matricula), null);
   }
 
+
+  function normalizeMaterialNums(value){
+    if(Array.isArray(value)){
+      return value
+        .map(n => Number(n))
+        .filter(n => Number.isFinite(n) && n > 0)
+        .filter((n, i, arr) => arr.indexOf(n) === i)
+        .sort((a,b) => a-b);
+    }
+
+    const txt = String(value ?? '').trim();
+    if(!txt) return [];
+
+    return txt
+      .split(/[^0-9]+/g)
+      .map(n => Number(n))
+      .filter(n => Number.isFinite(n) && n > 0)
+      .filter((n, i, arr) => arr.indexOf(n) === i)
+      .sort((a,b) => a-b);
+  }
+
+  function mergeMaterialNums(...listas){
+    const nums = [];
+    listas.forEach(lista => normalizeMaterialNums(lista).forEach(n => nums.push(n)));
+    return nums
+      .filter((n, i, arr) => arr.indexOf(n) === i)
+      .sort((a,b) => a-b);
+  }
+
+  function getCachedMaterialNums(matricula){
+    const cache = loadMaterialCache(matricula);
+    return normalizeMaterialNums(cache?.payload?.entregues_nums || []);
+  }
+
+  function refreshAlunoMaterialFromPayload(a, payload){
+    if(!a || !payload) return;
+
+    const numsServidor = normalizeMaterialNums(payload.entregues_nums || []);
+    const numsLocais = normalizeMaterialNums(getMaterialQueueForAluno(a.matricula).map(q => q.caderno));
+    const numsView = mergeMaterialNums(numsServidor, numsLocais);
+
+    a.material_nums = numsServidor;
+    a.material_nums_local = numsLocais;
+    a.material_nums_view = numsView;
+    a.material_qtd = numsServidor.length || Number(payload.qtd || a.material_qtd || 0);
+    a.material_qtd_local = numsLocais.length;
+    a.material_qtd_view = numsView.length || (Number(a.material_qtd || 0) + Number(a.material_qtd_local || 0));
+  }
+
   function atualizarPainelSync(){
     const meta = getMeta();
     const presPend = getQueue().filter(q => q.status !== 'enviado').length;
@@ -887,6 +943,17 @@
     const turmaId = getTurmaId();
 
     alunos.forEach(a => {
+      const baseNums = mergeMaterialNums(
+        a.material_nums || [],
+        a.entregues_nums || [],
+        a.material_entregues_nums || [],
+        a.cadernos_entregues || [],
+        getCachedMaterialNums(a.matricula)
+      );
+
+      a.material_nums = baseNums;
+      a.material_nums_local = [];
+      a.material_nums_view = baseNums.slice();
       a.material_qtd_local = 0;
     });
 
@@ -894,12 +961,17 @@
       if(Number(q.turma_id) !== Number(turmaId)) return;
       const aluno = alunos.find(a => String(a.matricula) === String(q.matricula));
       if(aluno){
-        aluno.material_qtd_local = Number(aluno.material_qtd_local || 0) + 1;
+        const cad = Number(q.caderno);
+        aluno.material_nums_local = mergeMaterialNums(aluno.material_nums_local || [], [cad]);
+        aluno.material_nums_view = mergeMaterialNums(aluno.material_nums || [], aluno.material_nums_local || []);
+        aluno.material_qtd_local = Number(aluno.material_nums_local.length || 0);
       }
     });
 
     alunos.forEach(a => {
-      a.material_qtd_view = Number(a.material_qtd || 0) + Number(a.material_qtd_local || 0);
+      const numsView = normalizeMaterialNums(a.material_nums_view || []);
+      a.material_nums_view = numsView;
+      a.material_qtd_view = numsView.length || (Number(a.material_qtd || 0) + Number(a.material_qtd_local || 0));
     });
   }
 
@@ -917,8 +989,20 @@
   }
 
   function materialChip(a){
+    const nums = normalizeMaterialNums(a.material_nums_view || a.material_nums || a.entregues_nums || a.material_entregues_nums || a.cadernos_entregues || []);
+
+    if(nums.length){
+      return `<span class="material-chip"><i class="material-icons">menu_book</i> ${escapeHtml(nums.join(', '))}</span>`;
+    }
+
     const qtd = Number(a.material_qtd_view ?? a.material_qtd ?? 0);
-    return `<span class="material-chip"><i class="material-icons">menu_book</i> Caderno (${qtd})</span>`;
+    if(qtd > 0){
+      // Fallback: caso o PHP da lista ainda não envie os números dos cadernos,
+      // mostra a quantidade conhecida sem a palavra "Caderno".
+      return `<span class="material-chip"><i class="material-icons">menu_book</i> ${qtd}</span>`;
+    }
+
+    return `<span class="material-chip material-chip-empty"><i class="material-icons">menu_book</i> —</span>`;
   }
 
   function getMaterialQueueForAluno(matricula){
@@ -1036,14 +1120,19 @@
 
 function preencherModalMaterial(j){
   $matMsg.textContent = '';
+  materialBloqueadoHoje = false;
 
   materialCursoAtual = String(j.curso_opcional || '').trim();
+  if(alunoSelecionado){
+    refreshAlunoMaterialFromPayload(alunoSelecionado, j);
+    filtrarRender();
+  }
 
   $matNome.textContent = j.nome || '—';
   $matMatricula.textContent = j.matricula || '—';
   $matCurso.textContent = materialCursoAtual || j.curso_nome || '—';
   $matQtd.textContent = String(j.qtd || 0);
-  $matProximo.textContent = j.proximo_caderno ? ('Caderno ' + j.proximo_caderno) : '—';
+  $matProximo.textContent = '—';
 
   const hist = Array.isArray(j.entregues) ? j.entregues : [];
 
@@ -1083,23 +1172,26 @@ function preencherModalMaterial(j){
 
   $matFinalizado.style.display = 'none';
   $matSelectWrap.style.display = '';
-  $matCadernoSelect.innerHTML = disponiveis.map(n => {
-    const sel = Number(n) === Number(j.proximo_caderno) ? 'selected' : '';
-    return `<option value="${n}" ${sel}>Caderno ${n}</option>`;
-  }).join('');
+  $matCadernoSelect.innerHTML =
+    `<option value="" disabled selected>Selecione o caderno</option>` +
+    disponiveis.map(n => `<option value="${n}">Caderno ${n}</option>`).join('');
   reinitMaterialSelect();
 
   if(jaEntregouHoje){
+    materialBloqueadoHoje = true;
     $btnEntregarMaterial.classList.add('disabled');
     $matMsg.textContent = 'Já houve entrega de material hoje para este aluno.';
   } else {
-    $btnEntregarMaterial.classList.remove('disabled');
+    materialBloqueadoHoje = false;
+    $btnEntregarMaterial.classList.add('disabled');
+    $matMsg.textContent = 'Selecione o caderno que será entregue.';
   }
 }
 
  async function abrirModalMaterial(a){
   try{
     materialCursoAtual = '';
+    materialBloqueadoHoje = false;
     $btnEntregarMaterial.classList.add('disabled');
     $matMsg.textContent = '';
     $matNome.textContent = a.nome || '—';
@@ -1144,8 +1236,10 @@ function preencherModalMaterial(j){
       throw new Error(`O Caderno ${caderno} já está pendente neste aparelho.`);
     }
 
-    a.material_qtd_local = Number(a.material_qtd_local || 0) + 1;
-    a.material_qtd_view = Number(a.material_qtd || 0) + Number(a.material_qtd_local || 0);
+    a.material_nums_local = mergeMaterialNums(a.material_nums_local || [], [Number(caderno)]);
+    a.material_nums_view = mergeMaterialNums(a.material_nums || [], a.material_nums_local || []);
+    a.material_qtd_local = Number(a.material_nums_local.length || 0);
+    a.material_qtd_view = Number(a.material_nums_view.length || 0) || (Number(a.material_qtd || 0) + Number(a.material_qtd_local || 0));
     filtrarRender();
   }
 
@@ -1446,9 +1540,11 @@ async function entregarMaterialAluno(){
       });
 
       if(res.ok){
-        alunoSelecionado.material_qtd = Number(alunoSelecionado.material_qtd || 0) + 1;
-        alunoSelecionado.material_qtd_local = Number(alunoSelecionado.material_qtd_local || 0);
-        alunoSelecionado.material_qtd_view = Number(alunoSelecionado.material_qtd || 0) + Number(alunoSelecionado.material_qtd_local || 0);
+        alunoSelecionado.material_nums = mergeMaterialNums(alunoSelecionado.material_nums || [], [Number(caderno)]);
+        alunoSelecionado.material_nums_view = mergeMaterialNums(alunoSelecionado.material_nums || [], alunoSelecionado.material_nums_local || []);
+        alunoSelecionado.material_qtd = Number(alunoSelecionado.material_nums.length || 0) || (Number(alunoSelecionado.material_qtd || 0) + 1);
+        alunoSelecionado.material_qtd_local = Number((alunoSelecionado.material_nums_local || []).length || 0);
+        alunoSelecionado.material_qtd_view = Number((alunoSelecionado.material_nums_view || []).length || 0) || (Number(alunoSelecionado.material_qtd || 0) + Number(alunoSelecionado.material_qtd_local || 0));
 
         filtrarRender();
 
@@ -1580,8 +1676,9 @@ async function entregarMaterialAluno(){
       $listaMobile.innerHTML = `<li class="collection-item muted">Nenhum aluno encontrado.</li>`;
     } else {
       $listaMobile.innerHTML = list.map(a => {
+        const numsMat = normalizeMaterialNums(a.material_nums_view || a.material_nums || []);
         const qtdMat = Number(a.material_qtd_view ?? a.material_qtd ?? 0);
-        const sub = `Caderno: ${qtdMat}`;
+        const sub = numsMat.length ? `📘 ${numsMat.join(', ')}` : (qtdMat > 0 ? `📘 ${qtdMat}` : '📘 —');
         const pres = !!a.presenca_ok;
         const pend = !!a.pendente_sync;
         const bloq = !!a.bloqueado;
@@ -1700,6 +1797,9 @@ async function entregarMaterialAluno(){
           presenca_ok,
           pendente_sync: false,
           turma_especial_required: turmaEspecialAtual || String(x.turma_especial || '').trim() || '',
+          material_nums: mergeMaterialNums(x.material_nums || [], x.entregues_nums || [], x.material_entregues_nums || [], x.cadernos_entregues || [], getCachedMaterialNums(x.matricula)),
+          material_nums_local: [],
+          material_nums_view: mergeMaterialNums(x.material_nums || [], x.entregues_nums || [], x.material_entregues_nums || [], x.cadernos_entregues || [], getCachedMaterialNums(x.matricula)),
           material_qtd: Number(x.material_qtd || 0),
           material_qtd_local: 0,
           material_qtd_view: Number(x.material_qtd || 0)
@@ -1724,6 +1824,9 @@ async function entregarMaterialAluno(){
           presenca_ok: !!x.presenca_ok,
           pendente_sync: false,
           turma_especial_required: String(x.turma_especial_required || turmaEspecialAtual || x.turma_especial || '').trim(),
+          material_nums: mergeMaterialNums(x.material_nums || [], x.entregues_nums || [], x.material_entregues_nums || [], x.cadernos_entregues || [], getCachedMaterialNums(x.matricula)),
+          material_nums_local: [],
+          material_nums_view: mergeMaterialNums(x.material_nums || [], x.entregues_nums || [], x.material_entregues_nums || [], x.cadernos_entregues || [], getCachedMaterialNums(x.matricula)),
           material_qtd: Number(x.material_qtd || 0),
           material_qtd_local: 0,
           material_qtd_view: Number(x.material_qtd || 0)
@@ -1889,6 +1992,19 @@ async function entregarMaterialAluno(){
   });
 
   $btnEntregarMaterial.addEventListener('click', entregarMaterialAluno);
+
+  $matCadernoSelect.addEventListener('change', () => {
+    if(materialBloqueadoHoje) return;
+
+    const caderno = Number($matCadernoSelect.value || 0);
+    if(caderno > 0){
+      $btnEntregarMaterial.classList.remove('disabled');
+      $matMsg.textContent = '';
+    }else{
+      $btnEntregarMaterial.classList.add('disabled');
+      $matMsg.textContent = 'Selecione o caderno que será entregue.';
+    }
+  });
 
   $turmaSelect.addEventListener('change', async () => {
     await sincronizarTudoPendentes({ silent: true });
