@@ -629,6 +629,14 @@
         <div class="resumo-valor" id="rsLotes">0</div>
       </div>
       <div class="resumo-card">
+        <div class="resumo-label">Presentes</div>
+        <div class="resumo-valor" id="rsPresentes">0</div>
+      </div>
+      <div class="resumo-card">
+        <div class="resumo-label">Arquivos</div>
+        <div class="resumo-valor" id="rsArquivos">0</div>
+      </div>
+      <div class="resumo-card">
         <div class="resumo-label">Pendências</div>
         <div class="resumo-valor" id="rsPend">0</div>
       </div>
@@ -735,6 +743,8 @@
   const rsPend = document.getElementById('rsPend');
   const rsDif = document.getElementById('rsDif');
   const rsAptos = document.getElementById('rsAptos');
+  const rsPresentes = document.getElementById('rsPresentes');
+  const rsArquivos = document.getElementById('rsArquivos');
 
   const contextoLote = document.getElementById('contextoLote');
   const ctxEvento = document.getElementById('ctxEvento');
@@ -890,13 +900,18 @@ function buildCropStyle(tipo) {
     }
   }
 
-  function montarResumo(rows) {
+  function montarResumo(rows, data = {}) {
     const totalLotes = rows.length;
     const totalPend = rows.reduce((s, r) => s + Number(r.pendencias || 0), 0);
     const totalDif = rows.reduce((s, r) => s + Number(r.diferenca || 0), 0);
     const totalAptos = rows.filter(r => !!r.ok_habilitado).length;
 
+    const totalPresentes = Number(data.total_presentes || 0);
+    const totalArquivos = Number(data.total_arquivos || 0);
+
     rsLotes.textContent = totalLotes;
+    rsPresentes.textContent = totalPresentes;
+    rsArquivos.textContent = totalArquivos;
     rsPend.textContent = totalPend;
     rsDif.textContent = totalDif;
     rsAptos.textContent = totalAptos;
