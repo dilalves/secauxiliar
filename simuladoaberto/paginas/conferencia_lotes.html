@@ -170,6 +170,11 @@
       font-size:24px;
       font-weight:800;
       color:var(--primary);
+      white-space:nowrap;
+    }
+
+    .resumo-valor.det{
+      font-size:18px;
     }
 
     .layout{
@@ -905,13 +910,28 @@ function buildCropStyle(tipo) {
     const totalPend = rows.reduce((s, r) => s + Number(r.pendencias || 0), 0);
     const totalDif = rows.reduce((s, r) => s + Number(r.diferenca || 0), 0);
     const totalAptos = rows.filter(r => !!r.ok_habilitado).length;
+    const evento = String(elEvento.value || '').toUpperCase();
+    const presentes = data.presentes || {};
+    const arquivos = data.arquivos || {};
 
-    const totalPresentes = Number(data.total_presentes || 0);
-    const totalArquivos = Number(data.total_arquivos || 0);
+    if (evento.includes('ENEM')) {
+      rsPresentes.classList.add('det');
+      rsArquivos.classList.add('det');
+
+      rsPresentes.textContent =
+        `D1 ${Number(presentes.d1 || 0)} | D2 ${Number(presentes.d2 || 0)} | Red ${Number(presentes.red || 0)}`;
+
+      rsArquivos.textContent =
+        `D1 ${Number(arquivos.d1 || 0)} | D2 ${Number(arquivos.d2 || 0)} | Red ${Number(arquivos.red || 0)}`;
+    } else {
+      rsPresentes.classList.remove('det');
+      rsArquivos.classList.remove('det');
+
+      rsPresentes.textContent = Number(data.total_presentes || 0);
+      rsArquivos.textContent = Number(data.total_arquivos || 0);
+    }
 
     rsLotes.textContent = totalLotes;
-    rsPresentes.textContent = totalPresentes;
-    rsArquivos.textContent = totalArquivos;
     rsPend.textContent = totalPend;
     rsDif.textContent = totalDif;
     rsAptos.textContent = totalAptos;
