@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Reprocessar Questão do Gabarito</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root{
+      --azul:#0f4c81;
+      --azul2:#0b3a63;
+      --bg:#f3f6fb;
+      --card:#ffffff;
+      --txt:#172033;
+      --muted:#64748b;
+      --border:#d9e2ef;
+      --green:#16a34a;
+      --red:#dc2626;
+      --yellow:#f59e0b;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--txt);
+    }
+
+    .topbar{
+      background:linear-gradient(90deg,var(--azul),var(--azul2));
+      color:#fff;
+      padding:18px 24px;
+      font-size:20px;
+      font-weight:700;
+      box-shadow:0 2px 8px rgba(0,0,0,.16);
+    }
+
+    .wrap{
+      max-width:1100px;
+      margin:26px auto;
+      padding:0 18px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      box-shadow:0 8px 24px rgba(15,76,129,.08);
+      padding:22px;
+    }
+
+    .subtitle{
+      margin:0 0 20px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+    }
+
+    label{
+      display:block;
+      font-size:13px;
+      font-weight:700;
+      margin-bottom:6px;
+      color:#334155;
+    }
+
+    select,
+    input{
+      width:100%;
+      height:42px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:0 12px;
+      font-size:15px;
+      background:#fff;
+      color:var(--txt);
+      outline:none;
+    }
+
+    select:focus,
+    input:focus{
+      border-color:var(--azul);
+      box-shadow:0 0 0 3px rgba(15,76,129,.12);
+    }
+
+    .actions{
+      margin-top:20px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    button{
+      border:0;
+      border-radius:10px;
+      padding:11px 18px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      color:#fff;
+      background:var(--azul);
+    }
+
+    button:hover{
+      filter:brightness(.95);
+    }
+
+    button.secondary{
+      background:#475569;
+    }
+
+    button.danger{
+      background:var(--red);
+    }
+
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .msg{
+      margin-top:18px;
+      padding:13px 15px;
+      border-radius:10px;
+      display:none;
+      font-size:14px;
+    }
+
+    .msg.ok{
+      display:block;
+      background:#dcfce7;
+      color:#166534;
+      border:1px solid #86efac;
+    }
+
+    .msg.err{
+      display:block;
+      background:#fee2e2;
+      color:#991b1b;
+      border:1px solid #fecaca;
+    }
+
+    .msg.warn{
+      display:block;
+      background:#fef3c7;
+      color:#92400e;
+      border:1px solid #fde68a;
+    }
+
+    .resultado{
+      margin-top:22px;
+      display:none;
+    }
+
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .kpi{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:14px;
+      background:#f8fafc;
+      text-align:center;
+    }
+
+    .kpi strong{
+      display:block;
+      font-size:24px;
+      margin-bottom:4px;
+    }
+
+    .kpi span{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      text-transform:uppercase;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border:1px solid var(--border);
+      border-radius:12px;
+      max-height:420px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+      background:#fff;
+    }
+
+    th{
+      background:#eef4fb;
+      color:#334155;
+      text-align:left;
+      padding:10px;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+
+    td{
+      border-top:1px solid var(--border);
+      padding:9px 10px;
+      white-space:nowrap;
+    }
+
+    .delta-pos{color:var(--green);font-weight:700}
+    .delta-neg{color:var(--red);font-weight:700}
+    .delta-zero{color:var(--muted);font-weight:700}
+
+    @media(max-width:850px){
+      .grid{grid-template-columns:1fr 1fr}
+      .kpis{grid-template-columns:1fr 1fr}
+    }
+
+    @media(max-width:520px){
+      .grid{grid-template-columns:1fr}
+      .kpis{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    Reprocessar Questão do Gabarito
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <p class="subtitle">
+        Use esta tela quando uma questão do gabarito oficial precisar ser corrigida depois que os lotes já foram conferidos.
+        Primeiro simule o impacto. Depois, se estiver correto, aplique a alteração na tabela corrigida.
+      </p>
+
+      <div class="grid">
+        <div>
+          <label for="evento">Evento</label>
+          <select id="evento">
+            <option value="">Carregando eventos...</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="dia">Dia / Tipo</label>
+          <select id="dia">
+            <option value="">Selecione</option>
+            <option value="D1">ENEM - Dia 1</option>
+            <option value="D2">ENEM - Dia 2</option>
+            <option value="FUVESTAO">Fuvestão</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="questao">Questão canônica</label>
+          <input id="questao" type="number" min="1" max="180" placeholder="Ex: 46">
+        </div>
+
+        <div>
+          <label for="gabarito">Novo gabarito</label>
+          <input id="gabarito" type="text" maxlength="9" placeholder="Ex: A">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="btnSimular" onclick="reprocessar(false)">Simular impacto</button>
+        <button id="btnAplicar" class="danger" onclick="confirmarAplicacao()" disabled>Aplicar correção</button>
+        <button class="secondary" onclick="limparTela()">Limpar</button>
+      </div>
+
+      <div id="msg" class="msg"></div>
+
+      <div id="resultado" class="resultado">
+        <div class="kpis">
+          <div class="kpi">
+            <strong id="kProcessados">0</strong>
+            <span>Processados</span>
+          </div>
+
+          <div class="kpi">
+            <strong id="kGanharam">0</strong>
+            <span>Ganharam ponto</span>
+          </div>
+
+          <div class="kpi">
+            <strong id="kPerderam">0</strong>
+            <span>Perderam ponto</span>
+          </div>
+
+          <div class="kpi">
+            <strong id="kIguais">0</strong>
+            <span>Sem alteração</span>
+          </div>
+
+          <div class="kpi">
+            <strong id="kSemOriginal">0</strong>
+            <span>Sem original</span>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Arquivo</th>
+                <th>Unidade</th>
+                <th>Inscrição</th>
+                <th>Versão</th>
+                <th>Q. Canônica</th>
+                <th>Q. Original</th>
+                <th>Resposta</th>
+                <th>Antes</th>
+                <th>Depois</th>
+                <th>Delta</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyDetalhes"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const API_BASE = './';
+
+  const URL_EVENTOS = `${API_BASE}listar_eventos_gabarito.php`;
+  const URL_REPROCESSAR = `${API_BASE}reprocessar_questao_gabarito.php`;
+
+  let ultimaSimulacaoOk = false;
+
+  document.addEventListener('DOMContentLoaded', carregarEventos);
+
+  async function carregarEventos(){
+    const sel = document.getElementById('evento');
+
+    try{
+      const resp = await fetch(URL_EVENTOS, {
+        method:'GET',
+        credentials:'include'
+      });
+
+      const json = await resp.json();
+
+      if(!json.ok){
+        throw new Error(json.message || 'Erro ao carregar eventos.');
+      }
+
+      const eventos = json.eventos || [];
+
+      sel.innerHTML = '<option value="">Selecione o evento</option>';
+
+      eventos.forEach(ev => {
+        const opt = document.createElement('option');
+        opt.value = ev;
+        opt.textContent = ev;
+        sel.appendChild(opt);
+      });
+
+    }catch(e){
+      sel.innerHTML = '<option value="">Erro ao carregar</option>';
+      mostrarMsg(e.message, 'err');
+    }
+  }
+
+  function getPayload(aplicar){
+    const evento = document.getElementById('evento').value.trim();
+    const dia = document.getElementById('dia').value.trim();
+    const questao = parseInt(document.getElementById('questao').value, 10);
+    const gabarito = document.getElementById('gabarito').value.trim().toUpperCase();
+
+    if(!evento){
+      throw new Error('Selecione o evento.');
+    }
+
+    if(!dia){
+      throw new Error('Selecione o dia/tipo.');
+    }
+
+    if(!questao || questao <= 0){
+      throw new Error('Informe a questão canônica.');
+    }
+
+    if(!gabarito){
+      throw new Error('Informe o novo gabarito.');
+    }
+
+    if(dia === 'D1' && (questao < 1 || questao > 90)){
+      throw new Error('Para ENEM Dia 1, a questão deve estar entre 1 e 90.');
+    }
+
+    if(dia === 'D2' && (questao < 91 || questao > 180)){
+      throw new Error('Para ENEM Dia 2, a questão deve estar entre 91 e 180.');
+    }
+
+    if(dia === 'FUVESTAO' && (questao < 1 || questao > 80)){
+      throw new Error('Para Fuvestão, a questão deve estar entre 1 e 80.');
+    }
+
+    return {
+      evento: evento,
+      dia: dia,
+      questao_canonica: questao,
+      novo_gabarito: gabarito,
+      aplicar: aplicar
+    };
+  }
+
+  async function reprocessar(aplicar){
+    const btnSimular = document.getElementById('btnSimular');
+    const btnAplicar = document.getElementById('btnAplicar');
+
+    try{
+      const payload = getPayload(aplicar);
+
+      btnSimular.disabled = true;
+      btnAplicar.disabled = true;
+
+      mostrarMsg(aplicar ? 'Aplicando correção...' : 'Simulando impacto...', 'warn');
+
+      const resp = await fetch(URL_REPROCESSAR, {
+        method:'POST',
+        credentials:'include',
+        headers:{
+          'Content-Type':'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const json = await resp.json();
+
+      if(!json.ok){
+        throw new Error(json.message || 'Erro no reprocessamento.');
+      }
+
+      renderResultado(json);
+
+      if(aplicar){
+        ultimaSimulacaoOk = false;
+        mostrarMsg('Correção aplicada com sucesso na tabela corrigida.', 'ok');
+        btnAplicar.disabled = true;
+      }else{
+        ultimaSimulacaoOk = true;
+        mostrarMsg('Simulação concluída. Confira os números antes de aplicar.', 'ok');
+        btnAplicar.disabled = false;
+      }
+
+    }catch(e){
+      ultimaSimulacaoOk = false;
+      mostrarMsg(e.message, 'err');
+    }finally{
+      btnSimular.disabled = false;
+
+      if(ultimaSimulacaoOk){
+        btnAplicar.disabled = false;
+      }
+    }
+  }
+
+  function confirmarAplicacao(){
+    if(!ultimaSimulacaoOk){
+      mostrarMsg('Faça uma simulação antes de aplicar.', 'err');
+      return;
+    }
+
+    const evento = document.getElementById('evento').value;
+    const questao = document.getElementById('questao').value;
+    const gabarito = document.getElementById('gabarito').value.toUpperCase();
+
+    const ok = confirm(
+      `Confirma aplicar a correção?\n\n` +
+      `Evento: ${evento}\n` +
+      `Questão canônica: ${questao}\n` +
+      `Novo gabarito: ${gabarito}\n\n` +
+      `Essa ação atualizará a tabela corrigida.`
+    );
+
+    if(ok){
+      reprocessar(true);
+    }
+  }
+
+  function renderResultado(json){
+    document.getElementById('resultado').style.display = 'block';
+
+    document.getElementById('kProcessados').textContent = json.processados ?? 0;
+    document.getElementById('kGanharam').textContent = json.ganharam_ponto ?? 0;
+    document.getElementById('kPerderam').textContent = json.perderam_ponto ?? 0;
+    document.getElementById('kIguais').textContent = json.sem_alteracao ?? 0;
+    document.getElementById('kSemOriginal').textContent = json.sem_original ?? 0;
+
+    const tbody = document.getElementById('tbodyDetalhes');
+    tbody.innerHTML = '';
+
+    const detalhes = json.detalhes || [];
+
+    if(!detalhes.length){
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="10">Nenhum detalhe retornado.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    detalhes.forEach(r => {
+      const delta = Number(r.delta || 0);
+
+      let cls = 'delta-zero';
+      let sinal = '0';
+
+      if(delta > 0){
+        cls = 'delta-pos';
+        sinal = '+1';
+      }else if(delta < 0){
+        cls = 'delta-neg';
+        sinal = '-1';
+      }
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${esc(r.arquivo_origem)}</td>
+        <td>${esc(r.unidade)}</td>
+        <td>${esc(r.inscricao)}</td>
+        <td>${esc(r.cod_prova)}</td>
+        <td>${esc(r.questao_canonica)}</td>
+        <td>${esc(r.questao_original)}</td>
+        <td>${esc(r.resposta_aluno)}</td>
+        <td>${esc(r.valor_antigo)}</td>
+        <td>${esc(r.valor_novo)}</td>
+        <td class="${cls}">${sinal}</td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function mostrarMsg(txt, tipo){
+    const el = document.getElementById('msg');
+    el.className = `msg ${tipo}`;
+    el.textContent = txt;
+  }
+
+  function limparTela(){
+    document.getElementById('dia').value = '';
+    document.getElementById('questao').value = '';
+    document.getElementById('gabarito').value = '';
+    document.getElementById('resultado').style.display = 'none';
+    document.getElementById('tbodyDetalhes').innerHTML = '';
+    document.getElementById('msg').className = 'msg';
+    document.getElementById('msg').textContent = '';
+    document.getElementById('btnAplicar').disabled = true;
+    ultimaSimulacaoOk = false;
+  }
+
+  function esc(v){
+    return String(v ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#039;");
+  }
+</script>
+
+</body>
+</html>
