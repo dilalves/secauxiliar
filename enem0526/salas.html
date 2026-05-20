@@ -363,7 +363,7 @@
 
   .kpi-row{
     display:grid;
-    grid-template-columns:repeat(4,1fr);
+    grid-template-columns:repeat(5,1fr);
     gap:12px;
     margin-top:16px;
     margin-bottom:16px;
@@ -795,6 +795,11 @@
           <div class="v" id="totVagas">0</div>
           <div class="l">Vagas ativas</div>
         </div>
+
+        <div class="mini-kpi">
+          <div class="v" id="totInscritos">0</div>
+          <div class="l">Inscritos</div>
+        </div>
       </div>
 
     <section class="content-card">
@@ -1188,6 +1193,22 @@
     setText('totVagasTotais', totais.vagas_totais ?? 0);
     setText('totVagas', totais.vagas_ativas ?? 0);
     setText('badgeSalas', totais.total ?? 0);
+
+    const inscritos = Number(totais.inscritos_total ?? 0);
+    const vagasAtivas = Number(totais.vagas_ativas ?? 0);
+    const diferenca = inscritos - vagasAtivas;
+
+    if (diferenca > 0) {
+      setText('totInscritos', `${inscritos} (${diferenca})`);
+    } else {
+      setText('totInscritos', inscritos);
+    }
+
+    const kpiInscritos = document.getElementById('totInscritos');
+
+    if (kpiInscritos) {
+      kpiInscritos.style.color = diferenca > 0 ? '#dc2626' : 'var(--primary)';
+    }
 
     renderizarSalas();
     atualizarCampoPrioridadeForcado();
