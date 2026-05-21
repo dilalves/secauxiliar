@@ -481,6 +481,115 @@
       background:#ffefb0 !important;
     }
 
+
+
+    .diff-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:42px;
+      padding:3px 8px;
+      border-radius:999px;
+      font-weight:800;
+      font-variant-numeric:tabular-nums;
+      border:1px solid transparent;
+    }
+
+    .diff-ok{
+      color:#116b38;
+      background:#ecfdf3;
+      border-color:#b7efc7;
+    }
+
+    .diff-alerta{
+      color:#92400e;
+      background:#fff7ed;
+      border-color:#fed7aa;
+    }
+
+    .diff-erro{
+      color:#991b1b;
+      background:#fef2f2;
+      border-color:#fecaca;
+    }
+
+    .btn-detalhes{
+      height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      font-size:12px;
+      background:#e8f0fb;
+      color:var(--primary);
+      border:1px solid #cfe0f5;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+    }
+
+    .btn-detalhes:hover{
+      filter:brightness(1.03);
+    }
+
+    .dialog-large{
+      width:min(1100px, 100%);
+      max-height:92vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .dialog-large .dialog-body{
+      overflow:auto;
+    }
+
+    .detalhe-section-title{
+      margin:18px 0 10px;
+      color:var(--primary);
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .mini-table-wrap{
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:auto;
+      background:#fff;
+      max-height:360px;
+    }
+
+    .mini-table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:860px;
+    }
+
+    .mini-table th,
+    .mini-table td{
+      padding:8px 8px;
+      font-size:12px;
+      border-bottom:1px solid #edf2f7;
+      white-space:nowrap;
+    }
+
+    .mini-table th{
+      position:sticky;
+      top:0;
+      background:#f2f7fd;
+      color:#17345d;
+      z-index:2;
+    }
+
+    .status-pill-lote{
+      display:inline-flex;
+      align-items:center;
+      padding:3px 8px;
+      border-radius:999px;
+      background:#eef4ff;
+      color:#17345d;
+      font-weight:800;
+      font-size:11px;
+      border:1px solid #d8e6ff;
+    }
+
     @media (max-width: 900px){
       .resumo-card{
         min-width:calc(50% - 6px);
@@ -558,6 +667,16 @@
         <div class="resumo-label">Total de participantes</div>
         <div class="resumo-valor" id="kpiParticipantes">0</div>
       </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Total de arquivos</div>
+        <div class="resumo-valor" id="kpiArquivos">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Diferença</div>
+        <div class="resumo-valor" id="kpiDifArquivos">0</div>
+      </div>
     </div>
 
     <div class="info-bar" id="infoBar">Selecione um evento e clique em Buscar.</div>
@@ -573,12 +692,11 @@
             <th class="th-num" id="thD1">Presentes D1</th>
             <th class="th-num" id="thD2">Presentes D2</th>
             <th class="th-num" id="thRed">Presentes Red.</th>
-            <th>Resp. Dia 1</th>
-            <th class="th-num">DDD</th>
-            <th class="th-num">Celular</th>
-            <th id="thRespD2">Resp. Dia 2</th>
-            <th class="th-num" id="thDddD2">DDD</th>
-            <th class="th-num" id="thCelD2">Celular</th>
+            <th class="th-num" id="thArqD1">Arq. D1</th>
+            <th class="th-num" id="thDifD1">Dif. D1</th>
+            <th class="th-num" id="thArqD2">Arq. D2</th>
+            <th class="th-num" id="thDifD2">Dif. D2</th>
+            <th class="th-num">Detalhes</th>
           </tr>
         </thead>
         <tbody id="tbody">
@@ -654,6 +772,89 @@
     </div>
   </div>
 
+
+
+  <div class="dialog-backdrop" id="detalhesModal">
+    <div class="dialog dialog-large">
+      <div class="dialog-head">
+        <h3 class="dialog-title" id="detalhesTitulo">Detalhes da unidade</h3>
+        <p class="dialog-sub" id="detalhesSubtitulo">Contato da unidade e lotes enviados no evento selecionado.</p>
+      </div>
+
+      <div class="dialog-body">
+        <div class="dialog-grid">
+          <div class="dialog-box">
+            <div class="dialog-box-label">Código</div>
+            <div class="dialog-box-value" id="detCodigo">-</div>
+          </div>
+          <div class="dialog-box">
+            <div class="dialog-box-label">Evento</div>
+            <div class="dialog-box-value" id="detEvento">-</div>
+          </div>
+          <div class="dialog-box">
+            <div class="dialog-box-label">Lotes</div>
+            <div class="dialog-box-value" id="detTotalLotes">0</div>
+          </div>
+          <div class="dialog-box">
+            <div class="dialog-box-label">Arquivos enviados</div>
+            <div class="dialog-box-value" id="detTotalQnt">0</div>
+          </div>
+          <div class="dialog-box">
+            <div class="dialog-box-label">Processados</div>
+            <div class="dialog-box-value" id="detTotalProcessado">0</div>
+          </div>
+          <div class="dialog-box">
+            <div class="dialog-box-label">Unidade</div>
+            <div class="dialog-box-value" id="detUnidade">-</div>
+          </div>
+        </div>
+
+        <div class="detalhe-section-title">Contato</div>
+        <div class="dialog-grid">
+          <div class="dialog-box">
+            <div class="dialog-box-label">Responsável Dia 1</div>
+            <div class="dialog-box-value" id="detRespD1">-</div>
+          </div>
+          <div class="dialog-box">
+            <div class="dialog-box-label">DDD / Celular Dia 1</div>
+            <div class="dialog-box-value" id="detCelD1">-</div>
+          </div>
+          <div class="dialog-box">
+            <div class="dialog-box-label">Responsável Dia 2</div>
+            <div class="dialog-box-value" id="detRespD2">-</div>
+          </div>
+        </div>
+
+        <div class="detalhe-section-title">Lotes enviados</div>
+        <div class="mini-table-wrap">
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>Lote</th>
+                <th>Dia</th>
+                <th>Data envio</th>
+                <th class="th-num">Qnt</th>
+                <th class="th-num">Processada</th>
+                <th>Status</th>
+                <th>Baixado</th>
+                <th>Processado</th>
+                <th>Finalizado</th>
+                <th>Máquina</th>
+              </tr>
+            </thead>
+            <tbody id="detLotesBody">
+              <tr><td colspan="10" class="vazio">Clique em detalhes para carregar os lotes.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="dialog-actions" style="margin-top:14px;">
+          <button id="btnFecharDetalhes" type="button">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
 
@@ -668,6 +869,8 @@
     const kpiD2 = document.getElementById('kpiD2');
     const kpiRed = document.getElementById('kpiRed');
     const kpiParticipantes = document.getElementById('kpiParticipantes');
+    const kpiArquivos = document.getElementById('kpiArquivos');
+    const kpiDifArquivos = document.getElementById('kpiDifArquivos');
 
     const cardKpiD2 = document.getElementById('cardKpiD2');
     const cardKpiRed = document.getElementById('cardKpiRed');
@@ -676,9 +879,10 @@
     const thD1 = document.getElementById('thD1');
     const thD2 = document.getElementById('thD2');
     const thRed = document.getElementById('thRed');
-    const thRespD2 = document.getElementById('thRespD2');
-    const thDddD2 = document.getElementById('thDddD2');
-    const thCelD2 = document.getElementById('thCelD2');
+    const thArqD1 = document.getElementById('thArqD1');
+    const thDifD1 = document.getElementById('thDifD1');
+    const thArqD2 = document.getElementById('thArqD2');
+    const thDifD2 = document.getElementById('thDifD2');
 
     const btnGerarLinkD1 = document.getElementById('btnGerarLinkD1');
     const btnGerarLinkD2 = document.getElementById('btnGerarLinkD2');
@@ -702,6 +906,21 @@
     const editValor = document.getElementById('editValor');
     const btnCancelarEdicao = document.getElementById('btnCancelarEdicao');
     const btnSalvarEdicao = document.getElementById('btnSalvarEdicao');
+
+    const detalhesModal = document.getElementById('detalhesModal');
+    const detalhesTitulo = document.getElementById('detalhesTitulo');
+    const detalhesSubtitulo = document.getElementById('detalhesSubtitulo');
+    const detCodigo = document.getElementById('detCodigo');
+    const detEvento = document.getElementById('detEvento');
+    const detTotalLotes = document.getElementById('detTotalLotes');
+    const detTotalQnt = document.getElementById('detTotalQnt');
+    const detTotalProcessado = document.getElementById('detTotalProcessado');
+    const detUnidade = document.getElementById('detUnidade');
+    const detRespD1 = document.getElementById('detRespD1');
+    const detCelD1 = document.getElementById('detCelD1');
+    const detRespD2 = document.getElementById('detRespD2');
+    const detLotesBody = document.getElementById('detLotesBody');
+    const btnFecharDetalhes = document.getElementById('btnFecharDetalhes');
 
     let autoRefreshTimer = null;
     let carregandoAuto = false;
@@ -827,6 +1046,8 @@
       kpiD2.textContent = '0';
       kpiRed.textContent = '0';
       kpiParticipantes.textContent = '0';
+      kpiArquivos.textContent = '0';
+      kpiDifArquivos.textContent = '0';
 
       lblKpiD1.textContent = 'Presentes D1';
       infoBar.textContent = 'Selecione um evento e clique em Buscar.';
@@ -852,9 +1073,8 @@
 
       cardKpiD2.classList.toggle('hidden', !mostrarDia2);
       thD2.classList.toggle('hidden', !mostrarDia2);
-      thRespD2.classList.toggle('hidden', !mostrarDia2);
-      thDddD2.classList.toggle('hidden', !mostrarDia2);
-      thCelD2.classList.toggle('hidden', !mostrarDia2);
+      thArqD2.classList.toggle('hidden', !mostrarDia2);
+      thDifD2.classList.toggle('hidden', !mostrarDia2);
 
       cardKpiRed.classList.toggle('hidden', !mostrarRed);
       thRed.classList.toggle('hidden', !mostrarRed);
@@ -862,9 +1082,13 @@
       if (isFuvestao) {
         lblKpiD1.textContent = 'Presentes';
         thD1.textContent = 'Contagem';
+        thArqD1.textContent = 'Arquivos';
+        thDifD1.textContent = 'Dif.';
       } else {
         lblKpiD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
         thD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
+        thArqD1.textContent = mostrarDia2 ? 'Arq. D1' : 'Arquivos';
+        thDifD1.textContent = mostrarDia2 ? 'Dif. D1' : 'Dif.';
       }
 
       atualizarBotoesLink();
@@ -877,8 +1101,8 @@
     }
 
     function getColspan(mostrarDia2, mostrarRed){
-      let base = 10;
-      if (mostrarDia2) base += 3;
+      let base = 8; // código, unidade, vagas, inscritos, D1, arq D1, dif D1, detalhes
+      if (mostrarDia2) base += 3; // presentes D2, arq D2, dif D2
       if (mostrarRed) base += 1;
       return base;
     }
@@ -905,6 +1129,123 @@
         </button>
         </div>
     `;
+    }
+
+
+    function classeDiff(valor){
+      const v = Number(valor || 0);
+      if (v === 0) return 'diff-ok';
+      if (v > 0) return 'diff-alerta';
+      return 'diff-erro';
+    }
+
+    function montarDiff(valor){
+      const v = Number(valor || 0);
+      return `<span class="diff-badge ${classeDiff(v)}">${n(v)}</span>`;
+    }
+
+    function montarBotaoDetalhes(r){
+      return `
+        <button
+          type="button"
+          class="btn-detalhes"
+          data-action="abrir-detalhes-unidade"
+          data-codigo="${esc(r.codigo)}"
+          data-unidade="${esc(r.unidade)}"
+          title="Ver contato e lotes enviados"
+        >
+          Detalhes
+        </button>
+      `;
+    }
+
+    function limparDetalhesModal(){
+      detalhesTitulo.textContent = 'Detalhes da unidade';
+      detalhesSubtitulo.textContent = 'Contato da unidade e lotes enviados no evento selecionado.';
+      detCodigo.textContent = '-';
+      detEvento.textContent = evento.value || '-';
+      detTotalLotes.textContent = '0';
+      detTotalQnt.textContent = '0';
+      detTotalProcessado.textContent = '0';
+      detUnidade.textContent = '-';
+      detRespD1.textContent = '-';
+      detCelD1.textContent = '-';
+      detRespD2.textContent = '-';
+      detLotesBody.innerHTML = `<tr><td colspan="10" class="vazio">Carregando lotes...</td></tr>`;
+    }
+
+    function fecharDetalhesModal(){
+      detalhesModal.classList.remove('show');
+    }
+
+    async function abrirModalDetalhesUnidade(codigo, unidadeNome){
+      if (!evento.value) {
+        alert('Selecione um evento antes de abrir os detalhes.');
+        return;
+      }
+
+      limparDetalhesModal();
+      detCodigo.textContent = codigo || '-';
+      detUnidade.textContent = unidadeNome || '-';
+      detalhesTitulo.textContent = unidadeNome || 'Detalhes da unidade';
+      detalhesSubtitulo.textContent = `Evento ${evento.value} • Unidade ${codigo}`;
+      detalhesModal.classList.add('show');
+
+      try {
+        const qs = new URLSearchParams();
+        qs.set('evento', evento.value);
+        qs.set('codigo', codigo);
+
+        const r = await fetch(API + 'api_contagem_lotes_unidade.php?' + qs.toString(), {
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.error || 'Falha ao carregar detalhes da unidade.');
+        }
+
+        const u = data.unidade || {};
+        const resumo = data.resumo || {};
+        const lotes = data.lotes || [];
+
+        detCodigo.textContent = data.codigo || codigo || '-';
+        detEvento.textContent = data.evento || evento.value || '-';
+        detUnidade.textContent = u.unidade || unidadeNome || '-';
+        detTotalLotes.textContent = n(resumo.total_lotes);
+        detTotalQnt.textContent = n(resumo.total_qnt);
+        detTotalProcessado.textContent = n(resumo.total_processado);
+        detRespD1.textContent = u.resp_dia1_nome || '-';
+        detCelD1.textContent = `${u.resp_dia1_ddd || ''} ${u.resp_dia1_celular || ''}`.trim() || '-';
+        detRespD2.textContent = [u.resp_dia2_nome, `${u.resp_dia2_ddd || ''} ${u.resp_dia2_celular || ''}`.trim()]
+          .filter(Boolean)
+          .join(' • ') || '-';
+
+        if (!lotes.length) {
+          detLotesBody.innerHTML = `<tr><td colspan="10" class="vazio">Nenhum lote encontrado para esta unidade neste evento.</td></tr>`;
+          return;
+        }
+
+        detLotesBody.innerHTML = lotes.map(l => `
+          <tr>
+            <td class="num">${esc(l.lote)}</td>
+            <td class="num">${esc(l.dia)}</td>
+            <td>${esc(fmtDataHora(l.data_reg))}</td>
+            <td class="num">${n(l.qnt)}</td>
+            <td class="num">${n(l.quantidade_processada)}</td>
+            <td><span class="status-pill-lote">${esc(l.status || '-')}</span></td>
+            <td>${esc(fmtDataHora(l.dt_baixado))}</td>
+            <td>${esc(fmtDataHora(l.dt_processado))}</td>
+            <td>${esc(fmtDataHora(l.dt_finalizado))}</td>
+            <td>${esc(l.maquina_processamento || '-')}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+        detLotesBody.innerHTML = `<tr><td colspan="10" class="vazio">${esc(e.message || 'Erro ao carregar lotes.')}</td></tr>`;
+      }
     }
 
     async function salvarContagem(codigo, campo, valor, inputEl, botaoEl){
@@ -1032,6 +1373,8 @@
       kpiD2.textContent = n(resumo.total_presentes_d2);
       kpiRed.textContent = n(resumo.total_presentes_red);
       kpiParticipantes.textContent = n(resumo.total_participantes);
+      kpiArquivos.textContent = n(resumo.total_arquivos);
+      kpiDifArquivos.textContent = n(Number(resumo.total_participantes || 0) - Number(resumo.total_arquivos || 0));
 
       infoBar.textContent = `${rows.length} unidade(s) encontrada(s).`;
 
@@ -1054,7 +1397,9 @@ let subtotal = {
   inscritos: 0,
   d1: 0,
   d2: 0,
-  red: 0
+  red: 0,
+  arqD1: 0,
+  arqD2: 0
 };
 
 function zerarSubtotal(){
@@ -1063,11 +1408,16 @@ function zerarSubtotal(){
     inscritos: 0,
     d1: 0,
     d2: 0,
-    red: 0
+    red: 0,
+    arqD1: 0,
+    arqD2: 0
   };
 }
 
 function linhaSubtotal(label){
+  const difD1 = Number(subtotal.d1 || 0) - Number(subtotal.arqD1 || 0);
+  const difD2 = Number(subtotal.d2 || 0) - Number(subtotal.arqD2 || 0);
+
   let linha = `
     <tr class="subtotal-row">
       <td colspan="2" class="subtotal-label">Subtotal ${label}</td>
@@ -1084,14 +1434,19 @@ function linhaSubtotal(label){
     linha += `<td class="num">${n(subtotal.red)}</td>`;
   }
 
-  const colunasUsadas = 5 + (config.mostrarDia2 ? 1 : 0) + (config.mostrarRed ? 1 : 0);
-  const colunasRestantes = getColspan(config.mostrarDia2, config.mostrarRed) - colunasUsadas;
+  linha += `
+      <td class="num">${n(subtotal.arqD1)}</td>
+      <td class="num">${montarDiff(difD1)}</td>
+  `;
 
-  if (colunasRestantes > 0) {
-    linha += `<td colspan="${colunasRestantes}"></td>`;
+  if (config.mostrarDia2) {
+    linha += `
+      <td class="num">${n(subtotal.arqD2)}</td>
+      <td class="num">${montarDiff(difD2)}</td>
+    `;
   }
 
-  linha += `</tr>`;
+  linha += `<td></td></tr>`;
 
   return linha;
 }
@@ -1129,6 +1484,8 @@ rows.forEach((r, idx) => {
   subtotal.d1 += Number(r.presentes_d1 || 0);
   subtotal.d2 += Number(r.presentes_d2 || 0);
   subtotal.red += Number(r.presentes_red || 0);
+  subtotal.arqD1 += Number(r.arquivos_d1 || 0);
+  subtotal.arqD2 += Number(r.arquivos_d2 || 0);
 
   html += `
   <tr class="${isCancelada ? 'linha-cancelada' : (semContagem ? 'linha-sem-contagem' : '')}">
@@ -1171,13 +1528,13 @@ rows.forEach((r, idx) => {
         </td>
       ` : ``}
 
-      <td>${esc(r.resp_dia1_nome)}</td>
-      <td class="num">${esc(r.resp_dia1_ddd)}</td>
-      <td class="num celular">${esc(r.resp_dia1_celular)}</td>
+      <td class="num">${n(r.arquivos_d1)}</td>
+      <td class="num">${montarDiff(r.dif_arquivos_d1)}</td>
 
-      ${config.mostrarDia2 ? `<td>${esc(r.resp_dia2_nome)}</td>` : ``}
-      ${config.mostrarDia2 ? `<td class="num">${esc(r.resp_dia2_ddd)}</td>` : ``}
-      ${config.mostrarDia2 ? `<td class="num celular">${esc(r.resp_dia2_celular)}</td>` : ``}
+      ${config.mostrarDia2 ? `<td class="num">${n(r.arquivos_d2)}</td>` : ``}
+      ${config.mostrarDia2 ? `<td class="num">${montarDiff(r.dif_arquivos_d2)}</td>` : ``}
+
+      <td class="num">${montarBotaoDetalhes(r)}</td>
     </tr>
   `;
 
@@ -1315,6 +1672,7 @@ tbody.innerHTML = html;
     });
 
     btnCancelarEdicao.addEventListener('click', fecharModalEdicao);
+    btnFecharDetalhes.addEventListener('click', fecharDetalhesModal);
 
     btnSalvarEdicao.addEventListener('click', async () => {
       const ok = await salvarContagem(
@@ -1360,6 +1718,12 @@ tbody.innerHTML = html;
       }
     });
 
+    detalhesModal.addEventListener('click', (e) => {
+      if (e.target === detalhesModal) {
+        fecharDetalhesModal();
+      }
+    });
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && linkModal.classList.contains('show')) {
         fecharModalLink();
@@ -1367,9 +1731,21 @@ tbody.innerHTML = html;
       if (e.key === 'Escape' && editModal.classList.contains('show')) {
         fecharModalEdicao();
       }
+      if (e.key === 'Escape' && detalhesModal.classList.contains('show')) {
+        fecharDetalhesModal();
+      }
     });
 
     tbody.addEventListener('click', async (e) => {
+      const btnDetalhes = e.target.closest('[data-action="abrir-detalhes-unidade"]');
+      if (btnDetalhes) {
+        await abrirModalDetalhesUnidade(
+          btnDetalhes.dataset.codigo || '',
+          btnDetalhes.dataset.unidade || ''
+        );
+        return;
+      }
+
       const btn = e.target.closest('[data-action="abrir-modal-edicao"]');
       if (!btn) return;
 
