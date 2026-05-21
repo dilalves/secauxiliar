@@ -1,1847 +1,1375 @@
-<!doctype html>
-<html lang="pt-br">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    :root{
-      --bg:#f8fbff;
-      --card:#ffffff;
-      --line:#d9e5f2;
-      --text:#10233f;
-      --muted:#64748b;
-      --primary:#0b3b78;
-    }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Arquivos enviados — Simulado Fuvestão Maio/2026</title>
 
-    *{ box-sizing:border-box; }
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-    body{
-      margin:0;
-      padding:18px;
-      font-family:system-ui, Arial, sans-serif;
-      background:var(--bg);
-      color:var(--text);
-    }
+<style>
+  :root{
+    --primary:#0b3b78;
+    --accent:#2563eb;
+    --bg:#f7f8fb;
+    --card:#ffffff;
+    --line:#e9edf3;
+    --ink:#0f172a;
+    --muted:#6b7280;
+    --ok:#16a34a;
+    --warn:#f59e0b;
+    --err:#dc2626;
+    --soft:#eff6ff;
+  }
 
-    .top{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      margin-bottom:16px;
-      flex-wrap:wrap;
-    }
+  *{ box-sizing:border-box; }
 
-    h2{
-      margin:0;
-      font-size:24px;
-      color:var(--primary);
-    }
-
-    .sub{
-      margin:4px 0 0;
-      color:var(--muted);
-      font-size:14px;
-    }
-
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:16px;
-      box-shadow:0 8px 24px rgba(11,59,120,.05);
-      margin-bottom:18px;
-      overflow:visible;
-    }
-
-    .filtros{
-      display:flex;
-      gap:12px;
-      align-items:end;
-      flex-wrap:wrap;
-      margin-bottom:16px;
-    }
-
-    .campo{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      min-width:240px;
-    }
-
-    label{
-      font-size:13px;
-      color:var(--muted);
-      font-weight:600;
-    }
-
-    select, button{
-      height:40px;
-      border-radius:10px;
-      border:1px solid var(--line);
-      padding:0 12px;
-      font-size:14px;
-    }
-
-    select{
-      background:#fff;
-    }
-
-    button{
-      background:var(--primary);
-      color:#fff;
-      border:none;
-      cursor:pointer;
-      font-weight:600;
-    }
-
-    button:hover{
-      filter:brightness(1.05);
-    }
-
-    .btn-sec{
-      background:#e8f0fb;
-      color:var(--primary);
-      border:1px solid #cfe0f5;
-    }
-
-    .hidden{
-      display:none !important;
-    }
-
-    .resumo{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:14px;
-    }
-
-    .resumo-card{
-      min-width:170px;
-      background:#f4f8fe;
-      border:1px solid #dce7f6;
-      border-radius:12px;
-      padding:12px 14px;
-    }
-
-    .resumo-label{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:700;
-      text-transform:uppercase;
-      letter-spacing:.04em;
-    }
-
-    .resumo-valor{
-      margin-top:6px;
-      font-size:26px;
-      font-weight:800;
-      color:var(--primary);
-    }
-
-    .info-bar{
-      margin-bottom:12px;
-      color:var(--muted);
-      font-size:14px;
-    }
-
-    .tabela-wrap{
-      overflow-x:visible;
-      overflow-y:visible;
-      border:1px solid var(--line);
-      border-radius:12px;
-      background:#fff;
-      max-height:none;
-    }
-    
-    table{
-      width:100%;
-      border-collapse:collapse;
-      min-width:0;
-    }
-
-    th, td{
-      padding:8px 8px;
-      border-bottom:1px solid #edf2f7;
-      text-align:left;
-      vertical-align:top;
-      font-size:12px;
-      white-space:nowrap;
-    }
-
-    th{
-      position:sticky;
-      top:0;
-      background:#f2f7fd;
-      color:#17345d;
-      z-index:50;
-      box-shadow:0 2px 0 #d9e5f2;
-    }
-
-    tr:hover td{
-      background:#f0f6ff;
-    }
-
-    .grupo-row td{
-      background:#eaf2fb !important;
-      color:#0b3b78;
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.04em;
-      font-size:13px;
-      border-top:2px solid #d9e5f2;
-      border-bottom:1px solid #d9e5f2;
-    }
-
-    .vazio{
-      padding:26px;
-      text-align:center;
-      color:var(--muted);
-    }
-
-    .num{
-      text-align:center;
-      font-variant-numeric:tabular-nums;
-    }
-
-    .th-num{
-      text-align:center;
-    }
-
-    .celular{
-      white-space:nowrap;
-    }
-
-    .dialog-backdrop{
-      position:fixed;
-      inset:0;
-      background:rgba(16,35,63,.28);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
-      z-index:9999;
-    }
-
-    .dialog-backdrop.show{
-      display:flex;
-    }
-
-    .dialog{
-      width:min(720px, 100%);
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:16px;
-      box-shadow:0 18px 50px rgba(11,59,120,.18);
-      overflow:hidden;
-    }
-
-    .dialog-head{
-      padding:16px 18px 10px;
-      border-bottom:1px solid #edf2f7;
-    }
-
-    .dialog-title{
-      margin:0;
-      font-size:22px;
-      color:var(--primary);
-    }
-
-    .dialog-sub{
-      margin:6px 0 0;
-      color:var(--muted);
-      font-size:14px;
-    }
-
-    .dialog-body{
-      padding:18px;
-    }
-
-    .dialog-grid{
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0, 1fr));
-      gap:12px;
-      margin-bottom:14px;
-    }
-
-    .dialog-box{
-      background:#f4f8fe;
-      border:1px solid #dce7f6;
-      border-radius:12px;
-      padding:12px 14px;
-    }
-
-    .dialog-box-label{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:700;
-      text-transform:uppercase;
-      letter-spacing:.04em;
-      margin-bottom:5px;
-    }
-
-    .dialog-box-value{
-      font-size:18px;
-      font-weight:800;
-      color:var(--primary);
-      word-break:break-word;
-    }
-
-    .link-area{
-      background:#fbfdff;
-      border:1px solid #dce7f6;
-      border-radius:12px;
-      padding:12px 14px;
-      margin-bottom:14px;
-      font-size:14px;
-      color:var(--text);
-      word-break:break-all;
-    }
-
-    .dialog-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-
-    .dialog-note{
-      margin-bottom:12px;
-      color:var(--muted);
-      font-size:13px;
-    }
-
-    .valor-com-lapis{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-    }
-
-    .valor-editavel{
-      min-width:28px;
-      text-align:center;
-      font-weight:700;
-      color:var(--text);
-      display:inline-block;
-    }
-
-    .btn-icon-edit{
-    border:none;
-    background:transparent;
-    color:#3f4b5f;
-    cursor:pointer;
+  html,body{
+    margin:0;
     padding:0;
-    width:14px;
-    height:14px;
-    min-width:14px;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+
+  a{
+    color:inherit;
+    text-decoration:none;
+  }
+
+  .container{
+    max-width:1360px;
+    margin:0 auto;
+    padding:0 16px;
+  }
+
+  header.topbar{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    height:64px;
+    background:var(--primary);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    z-index:1000;
+    box-shadow:0 2px 10px rgba(16,24,40,.22);
+  }
+
+  .topbar .container{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    width:100%;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+    flex:1 1 auto;
+  }
+
+  .brand img{
+    height:28px;
+    display:block;
+  }
+
+  .brand .title-wrap{
+    display:flex;
+    flex-direction:column;
+    line-height:1.05;
+    min-width:0;
+  }
+
+  .brand .title{
+    font-weight:700;
+    font-size:15px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .brand .sub{
+    font-size:12px;
+    opacity:.9;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .top-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex:0 0 auto;
+  }
+
+  .chip-link,
+  .chip-user{
+    height:44px;
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    color:#fff;
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.22);
+    box-shadow:0 6px 16px rgba(0,0,0,.10);
+  }
+
+  .chip-link{
+    gap:8px;
+    padding:0 14px;
+    font-weight:700;
+    white-space:nowrap;
+    transition:.18s ease;
+  }
+
+  .chip-link:hover{
+    background:rgba(255,255,255,.20);
+    transform:translateY(-1px);
+  }
+
+  .chip-user{
+    gap:10px;
+    padding:0 12px;
+    cursor:pointer;
+    appearance:none;
+    -webkit-appearance:none;
+    outline:none;
+    margin:0;
+    font:inherit;
+    border-radius:999px !important;
+  }
+
+  .chip-user:hover{
+    background:rgba(255,255,255,.20);
+  }
+
+  .chip-user:focus{
+    outline:none;
+    box-shadow:0 0 0 3px rgba(255,255,255,.15), 0 6px 16px rgba(0,0,0,.10);
+  }
+
+  .chip-link .material-icons,
+  .chip-user .material-icons{
+    font-size:20px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+  }
+
+  .chip-user .txt{
+    display:flex;
+    flex-direction:column;
+    line-height:1.05;
+    min-width:0;
+    text-align:left;
+  }
+
+  .chip-user .txt b,
+  .chip-user .txt span{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .chip-user .txt b{
+    font-size:13px;
+    font-weight:800;
+    color:#fff;
+  }
+
+  .chip-user .txt span{
+    font-size:11px;
+    opacity:.95;
+    color:#eaf1ff;
+  }
+
+  .user-menu{
+    position:relative;
+  }
+
+  .dropdown{
+    position:absolute;
+    top:52px;
+    right:0;
+    min-width:220px;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    box-shadow:0 18px 40px rgba(15,23,42,.18);
+    padding:8px;
+    display:none;
+    z-index:1200;
+  }
+
+  .dropdown.open{
+    display:block;
+  }
+
+  .dd-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:10px;
+    color:#334155;
+    font-weight:600;
+    text-decoration:none;
+  }
+
+  .dd-item:hover{
+    background:#f1f5f9;
+  }
+
+  .dd-item i{
+    font-size:18px;
+    color:var(--accent);
+    line-height:1;
+  }
+
+  main{
+    padding-top:88px;
+    padding-bottom:40px;
+  }
+
+  .hero{
+    background:linear-gradient(180deg, rgba(11,59,120,.10), rgba(11,59,120,0));
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.05);
+    overflow:hidden;
+  }
+
+  .hero-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+
+  .hero h1{
+    margin:0;
+    font-size:24px;
+    font-weight:800;
+    color:var(--ink);
+  }
+
+  .hero p{
+    margin:6px 0 0;
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  .badges{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:7px 11px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid var(--line);
+    font-size:12px;
+    color:var(--muted);
+    font-weight:600;
+  }
+
+  .badge i{
+    font-size:16px;
+    color:var(--accent);
+  }
+
+  .content-card{
+    margin-top:16px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 10px 26px rgba(0,0,0,.05);
+  }
+
+  .section-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:0 0 6px;
+    font-size:20px;
+    font-weight:800;
+  }
+
+  .section-sub{
+    margin:0 0 16px;
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  .kpi-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:18px;
+  }
+
+  .mini-kpi{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px;
+    background:#fff;
+  }
+
+  .mini-kpi .v{
+    font-size:24px;
+    font-weight:900;
+    color:var(--primary);
+    line-height:1;
+  }
+
+  .mini-kpi .l{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:6px;
+  }
+
+  .table-shell{
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+    background:#fff;
+  }
+
+  .table-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 16px;
+    border-bottom:1px solid var(--line);
+    background:#fbfdff;
+    flex-wrap:wrap;
+  }
+
+  .table-top .left{
+    font-weight:800;
+    color:var(--ink);
+  }
+
+  .table-top .right{
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .table-container{
+    overflow:visible;
+  }
+
+  table.listing{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    min-width:1220px;
+  }
+
+  table.listing thead th{
+    position:sticky;
+    top:0;
+    background:#f8fbff;
+    z-index:2;
+    font-size:12px;
+    letter-spacing:.02em;
+    text-transform:uppercase;
+    color:#475569;
+    border-bottom:1px solid var(--line);
+    padding:14px 12px;
+    white-space:nowrap;
+  }
+
+  table.listing tbody td{
+    padding:14px 12px;
+    border-bottom:1px solid #eef2f7;
+    vertical-align:middle;
+    font-size:14px;
+  }
+
+  table.listing th:nth-child(3),
+  table.listing td:nth-child(3){
+    min-width:300px;
+  }
+
+  table.listing th:nth-child(4),
+  table.listing td:nth-child(4){
+    min-width:250px;
+  }
+
+  table.listing th:nth-child(5),
+  table.listing td:nth-child(5){
+    min-width:150px;
+  }
+
+  table.listing th:nth-child(6),
+  table.listing td:nth-child(6){
+    min-width:140px;
+  }
+
+  table.listing tbody tr:nth-child(even){
+    background:#f8fbff;
+  }
+
+  table.listing tbody tr:hover{
+    background:#eef6ff;
+  }
+
+  .col-cod{
+    font-weight:700;
+    color:var(--primary);
+    white-space:nowrap;
+  }
+
+  .dia-pill{
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    vertical-align:middle;
-    }
+    min-width:42px;
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--primary);
+  }
 
-    .btn-icon-edit:hover{
-    color:#0b3b78;
-    filter:none;
-    }
+  .file-link{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color:#1d4ed8;
+    font-weight:600;
+    word-break:break-word;
+  }
 
-    .btn-icon-edit:disabled{
-    opacity:.6;
+  .file-link i{
+    font-size:18px;
+  }
+
+  .file-name{
+    word-break:break-word;
+    font-weight:600;
+    color:#0f172a;
+  }
+
+  .ts{
+    white-space:nowrap;
+    color:#334155;
+  }
+
+  .action-cell{
+    text-align:right;
+    white-space:nowrap;
+  }
+
+  .icon-btn{
+    width:40px;
+    height:40px;
+    border:none;
+    border-radius:12px;
+    background:#fff5f5;
+    color:var(--err);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:.18s ease;
+    border:1px solid #fee2e2;
+  }
+
+  .icon-btn:hover{
+    transform:translateY(-1px);
+    background:#ffe8e8;
+  }
+
+  .icon-btn:disabled,
+  .icon-btn.disabled{
+    opacity:1;
     cursor:not-allowed;
-    }
+    transform:none;
+    background:#f1f5f9;
+    color:#94a3b8;
+    border-color:#e2e8f0;
+  }
 
-    .btn-icon-edit svg{
-    width:12px;
-    height:12px;
-    fill:currentColor;
+  .footer-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:16px;
+  }
+
+  .summary{
+    color:var(--muted);
+    font-size:14px;
+    font-weight:600;
+  }
+
+  .btn-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .btnx{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:none;
+    border-radius:12px;
+    padding:0 16px;
+    height:44px;
+    cursor:pointer;
+    font-weight:700;
+    transition:.18s ease;
+  }
+
+  .btnx:hover{
+    transform:translateY(-1px);
+  }
+
+  .btn-primary{
+    background:var(--accent);
+    color:#fff;
+  }
+
+  .btn-secondary{
+    background:#fff;
+    color:var(--ink);
+    border:1px solid var(--line);
+  }
+
+  .empty-state{
+    padding:36px 18px;
+    text-align:center;
+    color:var(--muted);
+  }
+
+  .empty-state i{
+    font-size:44px;
+    color:#94a3b8;
     display:block;
+    margin-bottom:8px;
+  }
+
+  .loading-row{
+    padding:22px 16px;
+    color:var(--muted);
+    font-weight:600;
+  }
+
+  .status-chip{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:110px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+    border:1px solid var(--line);
+    background:#fff;
+    white-space:nowrap;
+  }
+
+  .status-aguardando{
+    background:#fff7ed;
+    color:#b45309;
+    border-color:#fed7aa;
+  }
+
+  .status-processando{
+    background:#eff6ff;
+    color:#1d4ed8;
+    border-color:#bfdbfe;
+  }
+
+  .status-processado{
+    background:#f0fdf4;
+    color:#15803d;
+    border-color:#bbf7d0;
+  }
+
+  .status-finalizado{
+    background:#ecfdf5;
+    color:#047857;
+    border-color:#a7f3d0;
+  }
+
+  .status-recusado{
+    background:#fef2f2;
+    color:#b91c1c;
+    border-color:#fecaca;
+  }
+
+  .status-sem-lote{
+    background:#f8fafc;
+    color:#64748b;
+    border-color:#e2e8f0;
+  }
+
+  .status-summary{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:0 0 18px;
+  }
+
+  .status-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+    border:1px solid var(--line);
+    background:#fff;
+  }
+
+  @media (max-width: 980px){
+    .kpi-row{
+      grid-template-columns:1fr 1fr;
+    }
+  }
+
+  @media (max-width: 768px){
+    .topbar .container{
+      gap:8px;
     }
 
-    .modal-edit-backdrop{
-      position:fixed;
-      inset:0;
-      background:rgba(16,35,63,.28);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
-      z-index:10000;
+    .brand{
+      min-width:0;
     }
 
-    .modal-edit-backdrop.show{
-      display:flex;
+    .top-actions{
+      gap:8px;
     }
 
-    .modal-edit{
-      width:min(460px, 100%);
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:16px;
-      box-shadow:0 18px 50px rgba(11,59,120,.18);
-      overflow:hidden;
+    .chip-user .txt{
+      max-width:120px;
+    }
+  }
+
+  @media (max-width: 640px){
+    .kpi-row{
+      grid-template-columns:1fr;
     }
 
-    .modal-edit-head{
-      padding:16px 18px 10px;
-      border-bottom:1px solid #edf2f7;
+    .hero h1{
+      font-size:21px;
     }
 
-    .modal-edit-title{
-      margin:0;
-      font-size:22px;
-      color:var(--primary);
-    }
-
-    .modal-edit-sub{
-      margin:6px 0 0;
-      color:var(--muted);
+    .brand .title{
       font-size:14px;
     }
 
-    .modal-edit-body{
-      padding:18px;
-    }
-
-    .modal-edit-box{
-      background:#f4f8fe;
-      border:1px solid #dce7f6;
-      border-radius:12px;
-      padding:12px 14px;
-      margin-bottom:14px;
-    }
-
-    .modal-edit-box div{
-      margin-bottom:4px;
-    }
-
-    .modal-edit-box div:last-child{
-      margin-bottom:0;
-    }
-
-    .modal-edit-input{
-      width:100%;
-      height:42px;
-      border:1px solid #cfe0f5;
-      border-radius:10px;
-      padding:0 12px;
-      font-size:16px;
-      font-weight:600;
-    }
-
-    .modal-edit-input:focus{
-      outline:none;
-      border-color:#0b3b78;
-      box-shadow:0 0 0 3px rgba(11,59,120,.10);
-    }
-
-    .modal-edit-actions{
-      display:flex;
-      gap:10px;
-      justify-content:flex-end;
-      margin-top:14px;
-      flex-wrap:wrap;
-    }
-
-    .salvo-ok{
-      border-color:#19a974 !important;
-      background:#f3fff9 !important;
-    }
-
-    .salvo-erro{
-      border-color:#d64545 !important;
-      background:#fff6f6 !important;
-    }
-
-    .subtotal-row td{
-      background:#f7faff !important;
-      color:#0b3b78;
-      font-weight:800;
-      border-top:1px solid #d9e5f2;
-      border-bottom:2px solid #d9e5f2;
-    }
-
-    .subtotal-label{
-      text-align:right;
-    }
-
-    .linha-cancelada td{
-      color:#c62828; /* vermelho elegante, não gritante */
-      font-weight:600;
-      background:#fff5f5; /* leve fundo rosado */
-    }
-
-    .linha-sem-contagem td{
-      background:#fff7d6 !important;
-      color:#5f4300;
-      font-weight:600;
-    }
-
-    .linha-sem-contagem:hover td{
-      background:#ffefb0 !important;
-    }
-
-
-
-    .diff-badge{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width:42px;
-      padding:3px 8px;
-      border-radius:999px;
-      font-weight:800;
-      font-variant-numeric:tabular-nums;
-      border:1px solid transparent;
-    }
-
-    .diff-ok{
-      color:#116b38;
-      background:#ecfdf3;
-      border-color:#b7efc7;
-    }
-
-    .diff-alerta{
-      color:#92400e;
-      background:#fff7ed;
-      border-color:#fed7aa;
-    }
-
-    .diff-erro{
-      color:#991b1b;
-      background:#fef2f2;
-      border-color:#fecaca;
-    }
-
-    .btn-detalhes{
-      height:28px;
-      padding:0 10px;
-      border-radius:999px;
-      font-size:12px;
-      background:#e8f0fb;
-      color:var(--primary);
-      border:1px solid #cfe0f5;
-      display:inline-flex;
-      align-items:center;
-      gap:5px;
-    }
-
-    .btn-detalhes:hover{
-      filter:brightness(1.03);
-    }
-
-    .dialog-large{
-      width:min(1100px, 100%);
-      max-height:92vh;
-      display:flex;
-      flex-direction:column;
-    }
-
-    .dialog-large .dialog-body{
-      overflow:auto;
-    }
-
-    .detalhe-section-title{
-      margin:18px 0 10px;
-      color:var(--primary);
-      font-size:16px;
-      font-weight:800;
-    }
-
-    .mini-table-wrap{
-      border:1px solid var(--line);
-      border-radius:12px;
-      overflow:auto;
-      background:#fff;
-      max-height:360px;
-    }
-
-    .mini-table{
-      width:100%;
-      border-collapse:collapse;
-      min-width:860px;
-    }
-
-    .mini-table th,
-    .mini-table td{
-      padding:8px 8px;
-      font-size:12px;
-      border-bottom:1px solid #edf2f7;
-      white-space:nowrap;
-    }
-
-    .mini-table th{
-      position:sticky;
-      top:0;
-      background:#f2f7fd;
-      color:#17345d;
-      z-index:2;
-    }
-
-    .status-pill-lote{
-      display:inline-flex;
-      align-items:center;
-      padding:3px 8px;
-      border-radius:999px;
-      background:#eef4ff;
-      color:#17345d;
-      font-weight:800;
+    .brand .sub{
       font-size:11px;
-      border:1px solid #d8e6ff;
     }
 
-    @media (max-width: 900px){
-      .resumo-card{
-        min-width:calc(50% - 6px);
-      }
-
-      .dialog-grid{
-        grid-template-columns:1fr;
-      }
+    .chip-link span{
+      display:none;
     }
 
-    @media (max-width: 640px){
-      .resumo-card{
-        min-width:100%;
-      }
+    .chip-link{
+      width:44px;
+      min-width:44px;
+      justify-content:center;
+      padding:0;
     }
-  </style>
+
+    .chip-user .txt{
+      display:none;
+    }
+
+    .chip-user{
+      width:44px;
+      min-width:44px;
+      justify-content:center;
+      padding:0;
+    }
+
+    .dropdown{
+      right:0;
+      min-width:200px;
+    }
+  }
+</style>
 </head>
 <body>
 
-  <div class="top">
-    <div>
-      <h2>Contagem de Presentes</h2>
-      <div class="sub">Conferência das quantidades de presentes informadas pelas unidades</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="filtros">
-      <div class="campo">
-        <label for="evento">Evento</label>
-        <select id="evento">
-          <option value="">Selecione</option>
-        </select>
-      </div>
-
-      <button id="btnBuscar">Buscar</button>
-      <button id="btnLimpar" class="btn-sec">Limpar filtro</button>
-
-      <button id="btnGerarLinkD1" class="btn-sec hidden">Gerar link Presença D1</button>
-      <button id="btnGerarLinkD2" class="btn-sec hidden">Gerar link Presença D2</button>
-    </div>
-
-    <div class="resumo">
-      <div class="resumo-card">
-        <div class="resumo-label">Unidades</div>
-        <div class="resumo-valor" id="kpiUnidades">0</div>
-      </div>
-
-      <div class="resumo-card">
-        <div class="resumo-label">Total de vagas</div>
-        <div class="resumo-valor" id="kpiVagas">0</div>
-      </div>
-
-      <div class="resumo-card">
-        <div class="resumo-label">Total de inscritos</div>
-        <div class="resumo-valor" id="kpiInscritos">0</div>
-      </div>
-
-      <div class="resumo-card">
-        <div class="resumo-label" id="lblKpiD1">Presentes D1</div>
-        <div class="resumo-valor" id="kpiD1">0</div>
-      </div>
-
-      <div class="resumo-card" id="cardKpiD2">
-        <div class="resumo-label">Presentes D2</div>
-        <div class="resumo-valor" id="kpiD2">0</div>
-      </div>
-
-      <div class="resumo-card" id="cardKpiRed">
-        <div class="resumo-label">Presentes Redação</div>
-        <div class="resumo-valor" id="kpiRed">0</div>
-      </div>
-
-      <div class="resumo-card">
-        <div class="resumo-label">Total de participantes</div>
-        <div class="resumo-valor" id="kpiParticipantes">0</div>
-      </div>
-
-      <div class="resumo-card">
-        <div class="resumo-label">Total de arquivos</div>
-        <div class="resumo-valor" id="kpiArquivos">0</div>
-      </div>
-
-      <div class="resumo-card">
-        <div class="resumo-label">Diferença</div>
-        <div class="resumo-valor" id="kpiDifArquivos">0</div>
+<header class="topbar">
+  <div class="container">
+    <div class="brand">
+      <img src="/fuvestao0526/logo-mini.png" alt="Logo">
+      <div class="title-wrap">
+        <div class="title">Simulado Aberto Fuvestão — Maio/2026</div>        
       </div>
     </div>
 
-    <div class="info-bar" id="infoBar">Selecione um evento e clique em Buscar.</div>
+    <div class="top-actions">
+      <a href="./painel.html" class="chip-link">
+        <i class="material-icons">dashboard</i>
+        <span>Painel</span>
+      </a>
 
-    <div class="tabela-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Unidade</th>
-            <th class="th-num">Vagas</th>
-            <th class="th-num">Inscritos</th>
-            <th class="th-num" id="thD1">Presentes D1</th>
-            <th class="th-num" id="thD2">Presentes D2</th>
-            <th class="th-num" id="thRed">Presentes Red.</th>
-            <th class="th-num" id="thArqD1">Arq. D1</th>
-            <th class="th-num" id="thDifD1">Dif. D1</th>
-            <th class="th-num" id="thArqD2">Arq. D2</th>
-            <th class="th-num" id="thDifD2">Dif. D2</th>
-            <th class="th-num">Detalhes</th>
-          </tr>
-        </thead>
-        <tbody id="tbody">
-          <tr>
-            <td colspan="13" class="vazio">Selecione um evento para carregar a contagem.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="dialog-backdrop" id="linkModal">
-    <div class="dialog">
-      <div class="dialog-head">
-        <h3 class="dialog-title" id="modalTitulo">Link gerado</h3>
-        <p class="dialog-sub" id="modalSubtitulo">Use este link para informar a quantidade de presentes.</p>
-      </div>
-
-      <div class="dialog-body">
-        <div class="dialog-grid">
-          <div class="dialog-box">
-            <div class="dialog-box-label">Evento</div>
-            <div class="dialog-box-value" id="mEvento">-</div>
+      <div class="user-menu" id="userMenu">
+        <button class="chip-user btn-user" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <i class="material-icons mat">account_circle</i>
+          <div class="txt">
+            <b id="uLogin" class="skeleton sk-line"></b>
+            <span id="uNome" class="skeleton sk-mini"></span>
           </div>
+          <i class="material-icons caret">arrow_drop_down</i>
+        </button>
 
-          <div class="dialog-box">
-            <div class="dialog-box-label">Dia</div>
-            <div class="dialog-box-value" id="mDia">-</div>
-          </div>
-
-          <div class="dialog-box">
-            <div class="dialog-box-label">Válido até</div>
-            <div class="dialog-box-value" id="mExpira">-</div>
-          </div>
-        </div>
-
-        <div class="dialog-note" id="modalNota">
-          Compartilhe o link abaixo com as unidades para que informem a quantidade de presentes.
-        </div>
-
-        <div class="link-area" id="mUrl">-</div>
-
-        <div class="dialog-actions">
-          <button class="btn-sec" id="btnCopiarLink" type="button">Copiar link</button>
-          <button class="btn-sec" id="btnAbrirLink" type="button">Abrir link</button>
-          <button id="btnFecharModal" type="button">Fechar</button>
+        <div class="dropdown" id="userDropdown">
+          <a href="./alterar_senha.html" class="dd-item">
+            <i class="material-icons">lock</i> Alterar senha
+          </a>
+          <a href="#" class="dd-item" onclick="logout(); return false;">
+            <i class="material-icons">logout</i> Sair
+          </a>
         </div>
       </div>
     </div>
   </div>
+</header>
 
-  <div class="modal-edit-backdrop" id="editModal">
-    <div class="modal-edit">
-      <div class="modal-edit-head">
-        <h3 class="modal-edit-title">Editar contagem</h3>
-        <p class="modal-edit-sub">Altere o valor e clique em salvar.</p>
-      </div>
+<main>
+  <div class="container">
 
-      <div class="modal-edit-body">
-        <div class="modal-edit-box">
-          <div><strong>Unidade:</strong> <span id="editUnidade">-</span></div>
-          <div><strong>Código:</strong> <span id="editCodigo">-</span></div>
-          <div><strong>Campo:</strong> <span id="editCampoLabel">-</span></div>
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>Arquivos enviados pela unidade</h1>
+          <p>
+            Consulte os arquivos já recebidos, abra a imagem enviada e exclua duplicidades quando necessário.
+          </p>
         </div>
 
-        <input type="number" min="0" step="1" id="editValor" class="modal-edit-input">
-
-        <div class="modal-edit-actions">
-          <button type="button" class="btn-sec" id="btnCancelarEdicao">Cancelar</button>
-          <button type="button" id="btnSalvarEdicao">Salvar</button>
+        <div class="badges">
+          <span class="badge"><i class="material-icons">apartment</i> <span id="badgeLogin">...</span></span>
+          <span class="badge"><i class="material-icons">place</i> <span id="badgeUnidade">...</span></span>
+          <span class="badge"><i class="material-icons">photo_library</i> <span id="totAllHero">0</span> arquivos</span>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
 
+    <section class="content-card">
+      <h2 class="section-title">
+        <i class="material-icons" style="color:var(--accent)">folder_open</i>
+        Lista de imagens
+      </h2>
+      <p class="section-sub">
+        Visualize os arquivos recebidos por dia de prova. A exclusão fica disponível apenas para arquivos de lotes com status <b>Aguardando</b>.
+      </p>
 
+      <div class="kpi-row">
+        <div class="mini-kpi">
+          <div class="v" id="totAll">0</div>
+          <div class="l">Total de arquivos</div>
+        </div>
 
-  <div class="dialog-backdrop" id="detalhesModal">
-    <div class="dialog dialog-large">
-      <div class="dialog-head">
-        <h3 class="dialog-title" id="detalhesTitulo">Detalhes da unidade</h3>
-        <p class="dialog-sub" id="detalhesSubtitulo">Contato da unidade e lotes enviados no evento selecionado.</p>
+        <div class="mini-kpi">
+          <div class="v" id="totD1">0</div>
+          <div class="l">Dia 1</div>
+        </div>
+
+        
+        <!-- <div class="mini-kpi">
+          <div class="v" id="totD2">0</div>
+          <div class="l">Dia 2</div>
+        </div> -->
+
+        <div class="mini-kpi" id="cardRedacao">
+          <div class="v" id="totR1">0</div>
+          <div class="l" id="lblR1">Redação</div>
+        </div>
       </div>
 
-      <div class="dialog-body">
-        <div class="dialog-grid">
-          <div class="dialog-box">
-            <div class="dialog-box-label" id="detKpi1Label">Presentes informados</div>
-            <div class="dialog-box-value" id="detKpi1Valor">0</div>
-          </div>
-          <div class="dialog-box">
-            <div class="dialog-box-label" id="detKpi2Label">Arquivos enviados</div>
-            <div class="dialog-box-value" id="detKpi2Valor">0</div>
-          </div>
-          <div class="dialog-box">
-            <div class="dialog-box-label" id="detKpi3Label">Processados</div>
-            <div class="dialog-box-value" id="detKpi3Valor">0</div>
-          </div>
-          <div class="dialog-box">
-            <div class="dialog-box-label" id="detKpi4Label">Diferença</div>
-            <div class="dialog-box-value" id="detKpi4Valor">0</div>
-          </div>
-        </div>
-        <div class="detalhe-section-title">Contato</div>
-        <div class="dialog-grid">
-          <div class="dialog-box">
-            <div class="dialog-box-label">Responsável Dia 1</div>
-            <div class="dialog-box-value" id="detRespD1">-</div>
-          </div>
-          <div class="dialog-box">
-            <div class="dialog-box-label">DDD / Celular Dia 1</div>
-            <div class="dialog-box-value" id="detCelD1">-</div>
-          </div>
-          <div class="dialog-box">
-            <div class="dialog-box-label">Responsável Dia 2</div>
-            <div class="dialog-box-value" id="detRespD2">-</div>
-          </div>
+      <div class="status-summary">
+        <span class="status-pill status-aguardando">🟡 Aguardando: <b id="sumAguardando">0</b></span>
+        <span class="status-pill status-processando">🔵 Processando: <b id="sumProcessando">0</b></span>
+        <span class="status-pill status-processado">🟢 Processado: <b id="sumProcessado">0</b></span>
+        <span class="status-pill status-finalizado">✅ Finalizado: <b id="sumFinalizado">0</b></span>
+        <span class="status-pill status-recusado">🔴 Recusado: <b id="sumRecusado">0</b></span>
+        <span class="status-pill status-sem-lote">⚪ Sem lote: <b id="sumSemLote">0</b></span>
+      </div>
+
+      <div class="table-shell">
+        <div class="table-top">
+          <div class="left">Arquivos recebidos</div>
+          <div class="right">Clique no nome do arquivo para abrir a imagem</div>
         </div>
 
-        <div class="detalhe-section-title">Lotes enviados</div>
-        <div class="mini-table-wrap">
-          <table class="mini-table">
+        <div class="table-container">
+          <table class="listing">
             <thead>
               <tr>
-                <th>Lote</th>
+                <th>Cod. unidade</th>
                 <th>Dia</th>
-                <th>Data envio</th>
-                <th class="th-num">Qnt</th>
-                <th class="th-num">Processada</th>
-                <th>Status</th>
-                <th>Baixado</th>
-                <th>Processado</th>
-                <th>Finalizado</th>
-                <th>Máquina</th>
+                <th>Nome arquivo unidade</th>
+                <th>Nome arquivo recebido</th>
+                <th>Status do lote</th>
+                <th>Timestamp</th>
+                <th class="right-align">Ações</th>
               </tr>
             </thead>
-            <tbody id="detLotesBody">
-              <tr><td colspan="10" class="vazio">Clique em detalhes para carregar os lotes.</td></tr>
+            <tbody id="tbodyArquivos">
+              <tr>
+                <td colspan="7" class="loading-row">Carregando arquivos...</td>
+              </tr>
             </tbody>
           </table>
         </div>
+      </div>
 
-        <div class="dialog-actions" style="margin-top:14px;">
-          <button id="btnFecharDetalhes" type="button">Fechar</button>
+      <div class="footer-row">
+        <div class="summary" id="resumoRodape">
+          Resumo: carregando...
+        </div>
+
+        <div class="btn-row">
+          <button class="btnx btn-secondary" type="button" onclick="goBack()">
+            <i class="material-icons">arrow_back</i>
+            Voltar
+          </button>
         </div>
       </div>
-    </div>
+    </section>
+
   </div>
+</main>
 
-  <script>
-    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
+<script>
+  const API = 'https://apisec.secauxiliar.com.br/fuvestao0526/';
+  const EVENTO = 'FUVESTAO0526';
 
-    const evento = document.getElementById('evento');
-    const tbody = document.getElementById('tbody');
-    const infoBar = document.getElementById('infoBar');
+  function goBack() {
+    history.back();
+  }
 
-    const kpiUnidades = document.getElementById('kpiUnidades');
-    const kpiVagas = document.getElementById('kpiVagas');
-    const kpiInscritos = document.getElementById('kpiInscritos');
-    const kpiD1 = document.getElementById('kpiD1');
-    const kpiD2 = document.getElementById('kpiD2');
-    const kpiRed = document.getElementById('kpiRed');
-    const kpiParticipantes = document.getElementById('kpiParticipantes');
-    const kpiArquivos = document.getElementById('kpiArquivos');
-    const kpiDifArquivos = document.getElementById('kpiDifArquivos');
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
 
-    const cardKpiD2 = document.getElementById('cardKpiD2');
-    const cardKpiRed = document.getElementById('cardKpiRed');
-    const lblKpiD1 = document.getElementById('lblKpiD1');
+  function decText(id){
+    const el = document.getElementById(id);
+    if (!el) return;
+    const atual = parseInt(el.textContent, 10) || 0;
+    el.textContent = Math.max(0, atual - 1);
+  }
 
-    const thD1 = document.getElementById('thD1');
-    const thD2 = document.getElementById('thD2');
-    const thRed = document.getElementById('thRed');
-    const thArqD1 = document.getElementById('thArqD1');
-    const thDifD1 = document.getElementById('thDifD1');
-    const thArqD2 = document.getElementById('thArqD2');
-    const thDifD2 = document.getElementById('thDifD2');
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, function(s) {
+      return {
+        '&':'&amp;',
+        '<':'&lt;',
+        '>':'&gt;',
+        '"':'&quot;',
+        "'":'&#039;'
+      }[s];
+    });
+  }
 
-    const btnGerarLinkD1 = document.getElementById('btnGerarLinkD1');
-    const btnGerarLinkD2 = document.getElementById('btnGerarLinkD2');
+  function extractPayload(json) {
+    if (!json || typeof json !== 'object') return null;
+    return json.data ?? json;
+  }
 
-    const linkModal = document.getElementById('linkModal');
-    const modalTitulo = document.getElementById('modalTitulo');
-    const modalSubtitulo = document.getElementById('modalSubtitulo');
-    const modalNota = document.getElementById('modalNota');
-    const mEvento = document.getElementById('mEvento');
-    const mDia = document.getElementById('mDia');
-    const mExpira = document.getElementById('mExpira');
-    const mUrl = document.getElementById('mUrl');
-    const btnCopiarLink = document.getElementById('btnCopiarLink');
-    const btnAbrirLink = document.getElementById('btnAbrirLink');
-    const btnFecharModal = document.getElementById('btnFecharModal');
+  function updateResumo(redacaoHabilitada) {
+    const all = document.getElementById('totAll')?.textContent || '0';
+    const d1  = document.getElementById('totD1')?.textContent || '0';
+    const d2  = document.getElementById('totD2')?.textContent || '0';
+    const r1  = document.getElementById('totR1')?.textContent || '0';
 
-    const editModal = document.getElementById('editModal');
-    const editUnidade = document.getElementById('editUnidade');
-    const editCodigo = document.getElementById('editCodigo');
-    const editCampoLabel = document.getElementById('editCampoLabel');
-    const editValor = document.getElementById('editValor');
-    const btnCancelarEdicao = document.getElementById('btnCancelarEdicao');
-    const btnSalvarEdicao = document.getElementById('btnSalvarEdicao');
-
-    const detalhesModal = document.getElementById('detalhesModal');
-    const detalhesTitulo = document.getElementById('detalhesTitulo');
-    const detalhesSubtitulo = document.getElementById('detalhesSubtitulo');
-    const detKpi1Label = document.getElementById('detKpi1Label');
-    const detKpi1Valor = document.getElementById('detKpi1Valor');
-    const detKpi2Label = document.getElementById('detKpi2Label');
-    const detKpi2Valor = document.getElementById('detKpi2Valor');
-    const detKpi3Label = document.getElementById('detKpi3Label');
-    const detKpi3Valor = document.getElementById('detKpi3Valor');
-    const detKpi4Label = document.getElementById('detKpi4Label');
-    const detKpi4Valor = document.getElementById('detKpi4Valor');
-    const detRespD1 = document.getElementById('detRespD1');
-    const detCelD1 = document.getElementById('detCelD1');
-    const detRespD2 = document.getElementById('detRespD2');
-    const detLotesBody = document.getElementById('detLotesBody');
-    const btnFecharDetalhes = document.getElementById('btnFecharDetalhes');
-
-    let autoRefreshTimer = null;
-    let carregandoAuto = false;
-    let ultimoLinkGerado = '';
-
-    let editState = {
-      codigo: '',
-      campo: '',
-      unidade: '',
-      valor: 0
-    };
-
-    function esc(v){
-      return String(v ?? '')
-        .replaceAll('&','&amp;')
-        .replaceAll('<','&lt;')
-        .replaceAll('>','&gt;')
-        .replaceAll('"','&quot;');
+    let txt = `Resumo: Total = ${all} — Dia 1 = ${d1} — Dia 2 = ${d2}`;
+    if (redacaoHabilitada) {
+      txt += ` — Redação = ${r1}`;
     }
 
-    function n(v){
-      return Number(v || 0).toLocaleString('pt-BR');
+    setText('resumoRodape', txt);
+  }
+
+  async function logout(){
+    try {
+      await fetch(API + 'auth_login_out.php', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store'
+      });
+    } catch(e){
+      console.error(e);
     }
+    location.href = './index.html?logout=1';
+  }
 
-    function fmtDataHora(v){
-      if (!v) return '-';
-      const d = new Date(String(v).replace(' ', 'T'));
-      if (isNaN(d)) return v;
-      return d.toLocaleString('pt-BR');
-    }
-
-    function getTipoEventoPorValorEvento(ev){
-      const e = String(ev || '').toUpperCase();
-      if (e.startsWith('ENEM')) return 'ENEM';
-      if (e.startsWith('FUVESTAO')) return 'FUVESTAO';
-      return 'OUTRO';
-    }
-
-    function getLabelCampo(campo, isFuvestao = false){
-      if (campo === 'presentes_d1') return isFuvestao ? 'Contagem' : 'Presentes D1';
-      if (campo === 'presentes_d2') return 'Presentes D2';
-      if (campo === 'presentes_red') return 'Presentes Redação';
-      return 'Valor';
-    }
-
-    function atualizarBotoesLink(){
-      const tipo = getTipoEventoPorValorEvento(evento.value);
-      const temEvento = !!evento.value;
-
-      if (!temEvento) {
-        btnGerarLinkD1.classList.add('hidden');
-        btnGerarLinkD2.classList.add('hidden');
-        return;
-      }
-
-      if (tipo === 'ENEM') {
-        btnGerarLinkD1.classList.remove('hidden');
-        btnGerarLinkD2.classList.remove('hidden');
-        btnGerarLinkD1.textContent = 'Gerar link Presença D1';
-        btnGerarLinkD2.textContent = 'Gerar link Presença D2';
-        return;
-      }
-
-      btnGerarLinkD1.classList.remove('hidden');
-      btnGerarLinkD2.classList.add('hidden');
-      btnGerarLinkD1.textContent = 'Gerar link Presença';
-    }
-
-    function abrirModalLink(data){
-      ultimoLinkGerado = data.url || '';
-
-      const diaLabel = data.dia === 'D2'
-        ? '2º dia'
-        : (getTipoEventoPorValorEvento(data.evento) === 'FUVESTAO' ? 'Dia único' : '1º dia');
-
-      modalTitulo.textContent = data.reused ? 'Link já existente' : 'Link gerado com sucesso';
-      modalSubtitulo.textContent = data.reused
-        ? 'Já existia um link válido para este evento/dia e ele foi reaproveitado.'
-        : 'Compartilhe o link abaixo com as unidades para informar a quantidade de presentes.';
-      modalNota.textContent = 'Esse link ficará disponível somente até a data da prova.';
-      mEvento.textContent = data.evento || '-';
-      mDia.textContent = diaLabel;
-      mExpira.textContent = fmtDataHora(data.expires_at);
-      mUrl.textContent = data.url || '-';
-
-      linkModal.classList.add('show');
-    }
-
-    function fecharModalLink(){
-      linkModal.classList.remove('show');
-    }
-
-    function abrirModalEdicao({ codigo, campo, unidade, valor, label }) {
-      editState = {
-        codigo: codigo || '',
-        campo: campo || '',
-        unidade: unidade || '',
-        valor: Number(valor || 0)
-      };
-
-      editUnidade.textContent = unidade || '-';
-      editCodigo.textContent = codigo || '-';
-      editCampoLabel.textContent = label || '-';
-      editValor.value = Number(valor || 0);
-
-      editModal.classList.add('show');
-
-      setTimeout(() => {
-        editValor.focus();
-        editValor.select();
-      }, 50);
-    }
-
-    function fecharModalEdicao() {
-      editModal.classList.remove('show');
-    }
-
-    function resetTela(){
-      kpiUnidades.textContent = '0';
-      kpiVagas.textContent = '0';
-      kpiInscritos.textContent = '0';
-      kpiD1.textContent = '0';
-      kpiD2.textContent = '0';
-      kpiRed.textContent = '0';
-      kpiParticipantes.textContent = '0';
-      kpiArquivos.textContent = '0';
-      kpiDifArquivos.textContent = '0';
-
-      lblKpiD1.textContent = 'Presentes D1';
-      infoBar.textContent = 'Selecione um evento e clique em Buscar.';
-
-      configurarColunas({
-        tem_dia2: true,
-        tipo_evento: 'ENEM'
+  async function gatePainel() {
+    try {
+      const r = await fetch(API + 'auth_me_unidade.php', {
+        credentials: 'include',
+        cache: 'no-store'
       });
 
-      atualizarBotoesLink();
+      const data = await r.json().catch(() => ({}));
 
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="13" class="vazio">Selecione um evento para carregar a contagem.</td>
-        </tr>
-      `;
-    }
-
-    function configurarColunas(data){
-      const mostrarDia2 = !!data.tem_dia2;
-      const isFuvestao = String(data.tipo_evento || '').toUpperCase() === 'FUVESTAO';
-      const mostrarRed = !isFuvestao;
-
-      cardKpiD2.classList.toggle('hidden', !mostrarDia2);
-      thD2.classList.toggle('hidden', !mostrarDia2);
-      thArqD2.classList.toggle('hidden', !mostrarDia2);
-      thDifD2.classList.toggle('hidden', !mostrarDia2);
-
-      cardKpiRed.classList.toggle('hidden', !mostrarRed);
-      thRed.classList.toggle('hidden', !mostrarRed);
-
-      if (isFuvestao) {
-        lblKpiD1.textContent = 'Presentes';
-        thD1.textContent = 'Contagem';
-        thArqD1.textContent = 'Arquivos';
-        thDifD1.textContent = 'Dif.';
-      } else {
-        lblKpiD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
-        thD1.textContent = mostrarDia2 ? 'Presentes D1' : 'Presentes';
-        thArqD1.textContent = mostrarDia2 ? 'Arq. D1' : 'Arquivos';
-        thDifD1.textContent = mostrarDia2 ? 'Dif. D1' : 'Dif.';
+      if (!r.ok || !data.ok) {
+        location.replace('./index.html');
+        return false;
       }
 
-      atualizarBotoesLink();
+      const st = (data.adesao?.status || '').toUpperCase();
 
-      return {
-        mostrarDia2,
-        mostrarRed,
-        isFuvestao
-      };
-    }
-
-    function getColspan(mostrarDia2, mostrarRed){
-      let base = 8; // código, unidade, vagas, inscritos, D1, arq D1, dif D1, detalhes
-      if (mostrarDia2) base += 3; // presentes D2, arq D2, dif D2
-      if (mostrarRed) base += 1;
-      return base;
-    }
-
-    function montarCampoEdicao({ valor = 0, campo = '', codigo = '', unidade = '', isFuvestao = false }) {
-    return `
-        <div class="valor-com-lapis">
-        <span class="valor-editavel">${Number(valor || 0)}</span>
-        <button
-            type="button"
-            class="btn-icon-edit"
-            data-action="abrir-modal-edicao"
-            data-campo="${esc(campo)}"
-            data-codigo="${esc(codigo)}"
-            data-unidade="${esc(unidade)}"
-            data-valor="${Number(valor || 0)}"
-            data-label="${esc(getLabelCampo(campo, isFuvestao))}"
-            title="Editar"
-            aria-label="Editar"
-        >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.33H5v-.92l8.06-8.06.92.92L5.92 19.58zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.13 1.13 3.75 3.75 1.14-1.12z"/>
-            </svg>
-        </button>
-        </div>
-    `;
-    }
-
-
-    function classeDiff(valor){
-      const v = Number(valor || 0);
-      if (v === 0) return 'diff-ok';
-      if (v > 0) return 'diff-alerta';
-      return 'diff-erro';
-    }
-
-    function montarDiff(valor){
-      const v = Number(valor || 0);
-      return `<span class="diff-badge ${classeDiff(v)}">${n(v)}</span>`;
-    }
-
-    function montarBotaoDetalhes(r){
-      return `
-        <button
-          type="button"
-          class="btn-detalhes"
-          data-action="abrir-detalhes-unidade"
-          data-codigo="${esc(r.codigo)}"
-          data-unidade="${esc(r.unidade)}"
-          data-presentes-d1="${Number(r.presentes_d1 || 0)}"
-          data-presentes-d2="${Number(r.presentes_d2 || 0)}"
-          data-arquivos-d1="${Number(r.arquivos_d1 || 0)}"
-          data-arquivos-d2="${Number(r.arquivos_d2 || 0)}"
-          data-dif-d1="${Number(r.dif_arquivos_d1 || 0)}"
-          data-dif-d2="${Number(r.dif_arquivos_d2 || 0)}"
-          title="Ver contato e lotes enviados"
-        >
-          Detalhes
-        </button>
-      `;
-    }
-
-    function limparDetalhesModal(){
-      detalhesTitulo.textContent = 'Detalhes da unidade';
-      detalhesSubtitulo.textContent = 'Contato da unidade e lotes enviados no evento selecionado.';
-
-      detKpi1Label.textContent = 'Presentes informados';
-      detKpi1Valor.textContent = '0';
-      detKpi2Label.textContent = 'Arquivos enviados';
-      detKpi2Valor.textContent = '0';
-      detKpi3Label.textContent = 'Processados';
-      detKpi3Valor.textContent = '0';
-      detKpi4Label.textContent = 'Diferença';
-      detKpi4Valor.textContent = '0';
-
-      detRespD1.textContent = '-';
-      detCelD1.textContent = '-';
-      detRespD2.textContent = '-';
-      detLotesBody.innerHTML = `<tr><td colspan="10" class="vazio">Carregando lotes...</td></tr>`;
-    }
-
-    function fecharDetalhesModal(){
-      detalhesModal.classList.remove('show');
-    }
-
-    async function abrirModalDetalhesUnidade(info){
-      const codigo = info.codigo || '';
-      const unidadeNome = info.unidade || '';
-      const tipoEvento = getTipoEventoPorValorEvento(evento.value);
-      const isEnem = tipoEvento === 'ENEM';
-
-      if (!evento.value) {
-        alert('Selecione um evento antes de abrir os detalhes.');
-        return;
-      }
-
-      limparDetalhesModal();
-
-      detalhesTitulo.textContent = unidadeNome || 'Detalhes da unidade';
-      detalhesSubtitulo.textContent = `Evento ${evento.value} • Unidade ${codigo}`;
-      detalhesModal.classList.add('show');
-
-      const presentesD1 = Number(info.presentes_d1 || 0);
-      const presentesD2 = Number(info.presentes_d2 || 0);
-      const arquivosD1 = Number(info.arquivos_d1 || 0);
-      const arquivosD2 = Number(info.arquivos_d2 || 0);
-      const difD1 = Number(info.dif_d1 || 0);
-      const difD2 = Number(info.dif_d2 || 0);
-
-      if (isEnem) {
-        detKpi1Label.textContent = 'Presentes D1';
-        detKpi1Valor.textContent = n(presentesD1);
-        detKpi2Label.textContent = 'Arq. D1';
-        detKpi2Valor.textContent = n(arquivosD1);
-        detKpi3Label.textContent = 'Presentes D2';
-        detKpi3Valor.textContent = n(presentesD2);
-        detKpi4Label.textContent = 'Arq. D2';
-        detKpi4Valor.textContent = n(arquivosD2);
-      } else {
-        detKpi1Label.textContent = 'Presentes informados';
-        detKpi1Valor.textContent = n(presentesD1);
-        detKpi2Label.textContent = 'Arquivos enviados';
-        detKpi2Valor.textContent = n(arquivosD1);
-        detKpi3Label.textContent = 'Processados';
-        detKpi3Valor.textContent = 'Carregando...';
-        detKpi4Label.textContent = 'Diferença';
-        detKpi4Valor.textContent = n(difD1);
-      }
-
-      try {
-        const qs = new URLSearchParams();
-        qs.set('evento', evento.value);
-        qs.set('codigo', codigo);
-
-        const r = await fetch(API + 'api_contagem_lotes_unidade.php?' + qs.toString(), {
-          credentials: 'include',
-          cache: 'no-store'
+      if (st !== 'ATIVA') {
+        await Swal.fire({
+          title: 'Acesso indisponível',
+          html: `
+            <div style="text-align:left;line-height:1.5">
+              <p>Sua adesão ainda não foi liberada.</p>
+              <p>Status atual: <b>${escapeHtml(st || 'SEM ADESÃO')}</b></p>
+              <p>⏳ Aguarde a conferência e liberação.</p>
+            </div>
+          `,
+          icon: 'info',
+          confirmButtonColor: '#0b3b78',
+          confirmButtonText: 'OK'
         });
 
-        const data = await r.json();
+        location.replace('./index.html');
+        return false;
+      }
 
-        if (!r.ok || !data.ok) {
-          throw new Error(data.error || 'Falha ao carregar detalhes da unidade.');
-        }
+      return data;
+    } catch (e) {
+      console.error(e);
+      location.replace('./index.html');
+      return false;
+    }
+  }
 
-        const u = data.unidade || {};
-        const resumo = data.resumo || {};
-        const lotes = data.lotes || [];
+  async function carregarArquivos() {
+    try {
+      const resp = await fetch(API + `folhas_enviadas.php?evento=${encodeURIComponent(EVENTO)}`, {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store'
+      });
 
-        if (isEnem) {
-          detKpi1Valor.textContent = n(presentesD1);
-          detKpi2Valor.textContent = n(arquivosD1);
-          detKpi3Valor.textContent = n(presentesD2);
-          detKpi4Valor.textContent = n(arquivosD2);
-        } else {
-          detKpi1Valor.textContent = n(presentesD1);
-          detKpi2Valor.textContent = n(resumo.total_qnt ?? arquivosD1);
-          detKpi3Valor.textContent = n(resumo.total_processado);
-          detKpi4Valor.textContent = n(presentesD1 - Number(resumo.total_qnt ?? arquivosD1));
-        }
+      const json = await resp.json().catch(() => ({}));
 
-        detRespD1.textContent = u.resp_dia1_nome || '-';
-        detCelD1.textContent = `${u.resp_dia1_ddd || ''} ${u.resp_dia1_celular || ''}`.trim() || '-';
-        detRespD2.textContent = [u.resp_dia2_nome, `${u.resp_dia2_ddd || ''} ${u.resp_dia2_celular || ''}`.trim()]
-          .filter(Boolean)
-          .join(' • ') || '-';
-
-        const tituloLotes = document.querySelector('#detalhesModal .detalhe-section-title:nth-of-type(2)');
-        if (tituloLotes) {
-          tituloLotes.textContent = `Lotes enviados (${n(resumo.total_lotes || lotes.length)})`;
-        }
-
-        if (!lotes.length) {
-          detLotesBody.innerHTML = `<tr><td colspan="10" class="vazio">Nenhum lote encontrado para esta unidade neste evento.</td></tr>`;
+      if (!resp.ok || !json.ok) {
+        if (resp.status === 401 || resp.status === 403) {
+          await Swal.fire({
+            icon: 'warning',
+            title: 'Sessão expirada',
+            text: 'Faça login novamente.'
+          });
+          location.replace('./index.html');
           return;
         }
 
-        detLotesBody.innerHTML = lotes.map(l => `
-          <tr>
-            <td class="num">${esc(l.lote)}</td>
-            <td class="num">${esc(l.dia)}</td>
-            <td>${esc(fmtDataHora(l.data_reg))}</td>
-            <td class="num">${n(l.qnt)}</td>
-            <td class="num">${n(l.quantidade_processada)}</td>
-            <td><span class="status-pill-lote">${esc(l.status || '-')}</span></td>
-            <td>${esc(fmtDataHora(l.dt_baixado))}</td>
-            <td>${esc(fmtDataHora(l.dt_processado))}</td>
-            <td>${esc(fmtDataHora(l.dt_finalizado))}</td>
-            <td>${esc(l.maquina_processamento || '-')}</td>
-          </tr>
-        `).join('');
-      } catch (e) {
-        console.error(e);
-        detLotesBody.innerHTML = `<tr><td colspan="10" class="vazio">${esc(e.message || 'Erro ao carregar lotes.')}</td></tr>`;
-        if (!isEnem) detKpi3Valor.textContent = '-';
-      }
-    }
-
-    async function salvarContagem(codigo, campo, valor, inputEl, botaoEl){
-      const valorLimpo = String(valor ?? '').trim();
-
-      if (!/^\d+$/.test(valorLimpo) && valorLimpo !== '') {
-        alert('Informe apenas números inteiros.');
-        inputEl?.focus();
-        return false;
+        throw new Error(json.msg || 'Falha ao carregar arquivos.');
       }
 
-      const fd = new FormData();
-      fd.append('evento', evento.value);
-      fd.append('codigo', codigo);
-      fd.append('campo', campo);
-      fd.append('valor', valorLimpo === '' ? '0' : valorLimpo);
+      const data = extractPayload(json);
+      const redacaoHabilitada = !!data.redacaoHabilitada;
 
-      try {
-        if (inputEl) inputEl.disabled = true;
-        if (botaoEl) botaoEl.disabled = true;
+      setText('badgeLogin', data.login || '-');
+      setText('badgeUnidade', data.unidade || '-');
 
-        const r = await fetch(API + 'api_contagem_presentes_update.php', {
-          method: 'POST',
-          body: fd,
-          credentials: 'include'
-        });
+      setText('totAllHero', data.totais?.all ?? 0);
+      setText('totAll', data.totais?.all ?? 0);
+      setText('totD1', data.totais?.d1 ?? 0);
+      setText('totD2', data.totais?.d2 ?? 0);
+      setText('sumAguardando',  data.status_resumo?.aguardando ?? 0);
+      setText('sumProcessando', data.status_resumo?.processando ?? 0);
+      setText('sumProcessado',  data.status_resumo?.processado ?? 0);
+      setText('sumFinalizado',  data.status_resumo?.finalizado ?? 0);
+      setText('sumRecusado',    data.status_resumo?.recusado ?? 0);
+      setText('sumSemLote',     data.status_resumo?.sem_lote ?? 0);
 
-        const txt = await r.text();
-        let data = {};
+        const cardRedacao = document.getElementById('cardRedacao');
 
-        try {
-          data = txt ? JSON.parse(txt) : {};
-        } catch (e) {
-          throw new Error('O endpoint não retornou JSON válido.');
+        if (redacaoHabilitada) {
+        if (cardRedacao) cardRedacao.style.display = '';
+        setText('totR1', data.totais?.r1 ?? 0);
+        setText('lblR1', 'Redação');
+        } else {
+        if (cardRedacao) cardRedacao.style.display = 'none';
         }
 
-        if (!r.ok || !data.ok) {
-          throw new Error(data.error || 'Erro ao salvar.');
-        }
+      updateResumo(redacaoHabilitada);
 
-        if (inputEl) {
-          inputEl.value = data.valor ?? valorLimpo;
-          inputEl.classList.remove('salvo-erro');
-          inputEl.classList.add('salvo-ok');
-          setTimeout(() => inputEl.classList.remove('salvo-ok'), 1200);
-        }
+      const tbody = document.getElementById('tbodyArquivos');
+      tbody.innerHTML = '';
 
-        await carregarContagem({ silencioso: true });
-        return true;
-      } catch (e) {
-        console.error(e);
-        if (inputEl) {
-          inputEl.classList.remove('salvo-ok');
-          inputEl.classList.add('salvo-erro');
-          setTimeout(() => inputEl.classList.remove('salvo-erro'), 1800);
-          inputEl.focus();
-        }
-        alert(e.message || 'Erro ao salvar contagem.');
-        return false;
-      } finally {
-        if (inputEl) inputEl.disabled = false;
-        if (botaoEl) botaoEl.disabled = false;
-      }
-    }
-
-    async function carregarEventos(){
-      const r = await fetch(API + 'api_adesoes_eventos.php', {
-        credentials: 'include',
-        cache: 'no-store'
-      });
-
-      const data = await r.json();
-
-      if (!r.ok || !data.ok) {
-        throw new Error(data.error || 'Falha ao carregar eventos');
-      }
-
-      evento.innerHTML = `<option value="">Selecione</option>`;
-
-      (data.eventos || []).forEach(ev => {
-        const opt = document.createElement('option');
-        opt.value = ev;
-        opt.textContent = ev;
-        evento.appendChild(opt);
-      });
-
-      atualizarBotoesLink();
-    }
-
-    async function carregarContagem(opcoes = {}){
-      const silencioso = !!opcoes.silencioso;
-
-      if (!evento.value) {
-        resetTela();
-        return;
-      }
-
-      if (!silencioso) {
-        infoBar.textContent = 'Carregando...';
-        tbody.innerHTML = `<tr><td colspan="13" class="vazio">Carregando...</td></tr>`;
-      }
-
-      const qs = new URLSearchParams();
-      qs.set('evento', evento.value);
-
-      const r = await fetch(API + 'api_contagem_presentes.php?' + qs.toString(), {
-        credentials: 'include',
-        cache: 'no-store'
-      });
-
-      const data = await r.json();
-
-      if (!r.ok || !data.ok) {
-        throw new Error(data.error || 'Falha ao carregar contagem de presentes');
-      }
-
-      const rows = data.rows || [];
-      const resumo = data.resumo || {};
-      const config = configurarColunas(data);
-
-      kpiUnidades.textContent = n(resumo.total_unidades);
-      kpiVagas.textContent = n(resumo.total_vagas);
-      kpiInscritos.textContent = n(resumo.total_inscritos);
-      kpiD1.textContent = n(resumo.total_presentes_d1);
-      kpiD2.textContent = n(resumo.total_presentes_d2);
-      kpiRed.textContent = n(resumo.total_presentes_red);
-      kpiParticipantes.textContent = n(resumo.total_participantes);
-      kpiArquivos.textContent = n(resumo.total_arquivos);
-      kpiDifArquivos.textContent = n(Number(resumo.total_participantes || 0) - Number(resumo.total_arquivos || 0));
-
-      infoBar.textContent = `${rows.length} unidade(s) encontrada(s).`;
-
-      if (!rows.length) {
+      if (!data.list || !data.list.length) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="${getColspan(config.mostrarDia2, config.mostrarRed)}" class="vazio">
-              Nenhum registro encontrado para o evento selecionado.
+            <td colspan="7">
+              <div class="empty-state">
+                <i class="material-icons">inventory_2</i>
+                Nenhum arquivo encontrado para esta unidade.
+              </div>
             </td>
           </tr>
         `;
         return;
       }
 
-let grupoAtual = '';
-let html = '';
+      data.list.forEach(function(item) {
+        const statusLote = item.status_lote || 'Sem lote';
+        const statusClass = getStatusClass(statusLote);
+        const tr = document.createElement('tr');
+        tr.dataset.dia = (item.dia_norm || '').toUpperCase();
+        tr.dataset.statusLote = item.status_lote || 'Sem lote';
 
-let subtotal = {
-  vagas: 0,
-  inscritos: 0,
-  d1: 0,
-  d2: 0,
-  red: 0,
-  arqD1: 0,
-  arqD2: 0
-};
+        const nomeRecebido = item.nome_arquivo_recebido || '';
+        const keyImagem = item.key || `SIM_ABERTO/${EVENTO}/imagens/${nomeRecebido}`;
+        const keySeguroJs = JSON.stringify(keyImagem);
 
-function zerarSubtotal(){
-  subtotal = {
-    vagas: 0,
-    inscritos: 0,
-    d1: 0,
-    d2: 0,
-    red: 0,
-    arqD1: 0,
-    arqD2: 0
-  };
-}
+        const nomeLink = nomeRecebido
+        ? `
+            <a href="#!"
+                onclick='abrirImagemArquivo(${keySeguroJs}); return false;'
+                class="file-link">
+                <span>${escapeHtml(nomeRecebido)}</span>
+                <i class="material-icons">open_in_new</i>
+            </a>
+            `
+        : `<span class="file-name">${escapeHtml(nomeRecebido)}</span>`;
+        tr.innerHTML = `
+          <td class="col-cod">${escapeHtml(item.login || '')}</td>
+          <td><span class="dia-pill">${escapeHtml(item.dia_norm || item.dia || '')}</span></td>
+          <td>${escapeHtml(item.nome_arquivo_unidade || '')}</td>
+          <td>${nomeLink}</td>
+          <td>
+            <span class="status-chip ${statusClass}">
+              ${escapeHtml(statusLote)}
+            </span>
+          </td>
+          <td class="ts">${escapeHtml(item.timestamp || '')}</td>
+          <td class="action-cell">
+            <button
+              type="button"
+              class="icon-btn delete-link"
+              data-filename="${escapeHtml(item.nome_arquivo_recebido || '')}"
+              ${item.pode_excluir ? '' : 'disabled'}
+              aria-label="Excluir arquivo"
+              title="${item.pode_excluir ? 'Excluir arquivo' : `Não pode excluir: lote em ${statusLote}`}"
+            >
+              <i class="material-icons">delete</i>
+            </button>
+          </td>
+        `;
 
-function linhaSubtotal(label){
-  const difD1 = Number(subtotal.d1 || 0) - Number(subtotal.arqD1 || 0);
-  const difD2 = Number(subtotal.d2 || 0) - Number(subtotal.arqD2 || 0);
-
-  let linha = `
-    <tr class="subtotal-row">
-      <td colspan="2" class="subtotal-label">Subtotal ${label}</td>
-      <td class="num">${n(subtotal.vagas)}</td>
-      <td class="num">${n(subtotal.inscritos)}</td>
-      <td class="num">${n(subtotal.d1)}</td>
-  `;
-
-  if (config.mostrarDia2) {
-    linha += `<td class="num">${n(subtotal.d2)}</td>`;
-  }
-
-  if (config.mostrarRed) {
-    linha += `<td class="num">${n(subtotal.red)}</td>`;
-  }
-
-  linha += `
-      <td class="num">${n(subtotal.arqD1)}</td>
-      <td class="num">${montarDiff(difD1)}</td>
-  `;
-
-  if (config.mostrarDia2) {
-    linha += `
-      <td class="num">${n(subtotal.arqD2)}</td>
-      <td class="num">${montarDiff(difD2)}</td>
-    `;
-  }
-
-  linha += `<td></td></tr>`;
-
-  return linha;
-}
-
-rows.forEach((r, idx) => {
-  const isCancelada = String(r.status || '').toUpperCase() === 'CANCELADA';
-  const semContagem = !isCancelada
-    && Number(r.total_inscritos || 0) > 0
-    && Number(r.presentes_d1 || 0) === 0;
-  const tipo = String(r.tipo_unidade || 'CONVENIADA').toUpperCase();
-  const grupoLabel = tipo === 'PROPRIA'
-    ? 'UNIDADES PRÓPRIAS'
-    : 'UNIDADES CONVENIADAS';
-
-  if (grupoLabel !== grupoAtual) {
-    if (grupoAtual !== '') {
-      html += linhaSubtotal(grupoAtual);
-      zerarSubtotal();
-    }
-
-    html += `
-      <tr class="grupo-row">
-        <td colspan="${getColspan(config.mostrarDia2, config.mostrarRed)}">${grupoLabel}</td>
-      </tr>
-      
-    `;
-
-    
-
-    grupoAtual = grupoLabel;
-  }
-
-  subtotal.vagas += Number(r.vagas || 0);
-  subtotal.inscritos += Number(r.total_inscritos || 0);
-  subtotal.d1 += Number(r.presentes_d1 || 0);
-  subtotal.d2 += Number(r.presentes_d2 || 0);
-  subtotal.red += Number(r.presentes_red || 0);
-  subtotal.arqD1 += Number(r.arquivos_d1 || 0);
-  subtotal.arqD2 += Number(r.arquivos_d2 || 0);
-
-  html += `
-  <tr class="${isCancelada ? 'linha-cancelada' : (semContagem ? 'linha-sem-contagem' : '')}">
-    <td>${esc(r.codigo)}</td>
-    <td>${esc(r.unidade)}</td>
-    <td class="num">${n(r.vagas)}</td>
-    <td class="num">${n(r.total_inscritos)}</td>
-
-      <td class="num">
-        ${montarCampoEdicao({
-          valor: r.presentes_d1,
-          campo: 'presentes_d1',
-          codigo: r.codigo,
-          unidade: r.unidade,
-          isFuvestao: config.isFuvestao
-        })}
-      </td>
-
-      ${config.mostrarDia2 ? `
-        <td class="num">
-          ${montarCampoEdicao({
-            valor: r.presentes_d2,
-            campo: 'presentes_d2',
-            codigo: r.codigo,
-            unidade: r.unidade,
-            isFuvestao: config.isFuvestao
-          })}
-        </td>
-      ` : ``}
-
-      ${config.mostrarRed ? `
-        <td class="num">
-          ${montarCampoEdicao({
-            valor: r.presentes_red,
-            campo: 'presentes_red',
-            codigo: r.codigo,
-            unidade: r.unidade,
-            isFuvestao: config.isFuvestao
-          })}
-        </td>
-      ` : ``}
-
-      <td class="num">${n(r.arquivos_d1)}</td>
-      <td class="num">${montarDiff(r.dif_arquivos_d1)}</td>
-
-      ${config.mostrarDia2 ? `<td class="num">${n(r.arquivos_d2)}</td>` : ``}
-      ${config.mostrarDia2 ? `<td class="num">${montarDiff(r.dif_arquivos_d2)}</td>` : ``}
-
-      <td class="num">${montarBotaoDetalhes(r)}</td>
-    </tr>
-  `;
-
-  if (idx === rows.length - 1) {
-    html += linhaSubtotal(grupoAtual);
-  }
-});
-
-tbody.innerHTML = html;
-}
-
-    async function gerarLinkPresenca(dia){
-      try {
-        if (!evento.value) {
-          alert('Selecione um evento antes de gerar o link.');
-          return;
-        }
-
-        const tipo = getTipoEventoPorValorEvento(evento.value);
-        const diaEnvio = (tipo === 'FUVESTAO') ? 'D1' : dia;
-
-        if (!['D1', 'D2'].includes(diaEnvio)) {
-          alert('Dia inválido para geração de link.');
-          return;
-        }
-
-        const botao = (dia === 'D2') ? btnGerarLinkD2 : btnGerarLinkD1;
-        const textoOriginal = botao.textContent;
-        botao.disabled = true;
-        botao.textContent = 'Gerando...';
-
-        const fd = new FormData();
-        fd.append('evento', evento.value);
-        fd.append('dia', diaEnvio);
-
-        const r = await fetch(API + 'api_presenca_link_create.php', {
-          method: 'POST',
-          body: fd,
-          credentials: 'include'
-        });
-
-        const data = await r.json();
-
-        if (!r.ok || !data.ok) {
-          throw new Error(data.error || 'Falha ao gerar link de presença.');
-        }
-
-        abrirModalLink(data);
-
-        botao.disabled = false;
-        botao.textContent = textoOriginal;
-      } catch (e) {
-        console.error(e);
-        alert(e.message || 'Erro ao gerar link de presença.');
-
-        btnGerarLinkD1.disabled = false;
-        btnGerarLinkD2.disabled = false;
-        atualizarBotoesLink();
-      }
-    }
-
-    function iniciarAutoRefresh() {
-      pararAutoRefresh();
-
-      autoRefreshTimer = setInterval(async () => {
-        if (!evento.value || carregandoAuto) return;
-
-        try {
-          carregandoAuto = true;
-          await carregarContagem({ silencioso: true });
-        } catch (e) {
-          console.error('Erro no auto refresh:', e);
-        } finally {
-          carregandoAuto = false;
-        }
-      }, 15000);
-    }
-
-    function pararAutoRefresh() {
-      if (autoRefreshTimer) {
-        clearInterval(autoRefreshTimer);
-        autoRefreshTimer = null;
-      }
-    }
-
-    document.getElementById('btnBuscar').addEventListener('click', async () => {
-      try {
-        await carregarContagem();
-      } catch (e) {
-        console.error(e);
-        alert(e.message || 'Erro ao carregar dados.');
-      }
-    });
-
-    document.getElementById('btnLimpar').addEventListener('click', () => {
-      evento.value = '';
-      resetTela();
-    });
-
-    evento.addEventListener('change', () => {
-      atualizarBotoesLink();
-    });
-
-    btnGerarLinkD1.addEventListener('click', async () => {
-      await gerarLinkPresenca('D1');
-    });
-
-    btnGerarLinkD2.addEventListener('click', async () => {
-      await gerarLinkPresenca('D2');
-    });
-
-    btnFecharModal.addEventListener('click', fecharModalLink);
-
-    btnAbrirLink.addEventListener('click', () => {
-      if (ultimoLinkGerado) {
-        window.open(ultimoLinkGerado, '_blank');
-      }
-    });
-
-    btnCopiarLink.addEventListener('click', async () => {
-      if (!ultimoLinkGerado) return;
-
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(ultimoLinkGerado);
-          btnCopiarLink.textContent = 'Link copiado!';
-          setTimeout(() => btnCopiarLink.textContent = 'Copiar link', 1500);
-        } else {
-          window.prompt('Copie o link abaixo:', ultimoLinkGerado);
-        }
-      } catch (e) {
-        console.error(e);
-        window.prompt('Copie o link abaixo:', ultimoLinkGerado);
-      }
-    });
-
-    btnCancelarEdicao.addEventListener('click', fecharModalEdicao);
-    btnFecharDetalhes.addEventListener('click', fecharDetalhesModal);
-
-    btnSalvarEdicao.addEventListener('click', async () => {
-      const ok = await salvarContagem(
-        editState.codigo,
-        editState.campo,
-        editValor.value,
-        editValor,
-        btnSalvarEdicao
-      );
-
-      if (ok) {
-        fecharModalEdicao();
-      }
-    });
-
-    editValor.addEventListener('keydown', async (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-
-        const ok = await salvarContagem(
-          editState.codigo,
-          editState.campo,
-          editValor.value,
-          editValor,
-          btnSalvarEdicao
-        );
-
-        if (ok) {
-          fecharModalEdicao();
-        }
-      }
-    });
-
-    linkModal.addEventListener('click', (e) => {
-      if (e.target === linkModal) {
-        fecharModalLink();
-      }
-    });
-
-    editModal.addEventListener('click', (e) => {
-      if (e.target === editModal) {
-        fecharModalEdicao();
-      }
-    });
-
-    detalhesModal.addEventListener('click', (e) => {
-      if (e.target === detalhesModal) {
-        fecharDetalhesModal();
-      }
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && linkModal.classList.contains('show')) {
-        fecharModalLink();
-      }
-      if (e.key === 'Escape' && editModal.classList.contains('show')) {
-        fecharModalEdicao();
-      }
-      if (e.key === 'Escape' && detalhesModal.classList.contains('show')) {
-        fecharDetalhesModal();
-      }
-    });
-
-    tbody.addEventListener('click', async (e) => {
-      const btnDetalhes = e.target.closest('[data-action="abrir-detalhes-unidade"]');
-      if (btnDetalhes) {
-        await abrirModalDetalhesUnidade({
-          codigo: btnDetalhes.dataset.codigo || '',
-          unidade: btnDetalhes.dataset.unidade || '',
-          presentes_d1: btnDetalhes.dataset.presentesD1 || '0',
-          presentes_d2: btnDetalhes.dataset.presentesD2 || '0',
-          arquivos_d1: btnDetalhes.dataset.arquivosD1 || '0',
-          arquivos_d2: btnDetalhes.dataset.arquivosD2 || '0',
-          dif_d1: btnDetalhes.dataset.difD1 || '0',
-          dif_d2: btnDetalhes.dataset.difD2 || '0'
-        });
-        return;
-      }
-
-      const btn = e.target.closest('[data-action="abrir-modal-edicao"]');
-      if (!btn) return;
-
-      abrirModalEdicao({
-        codigo: btn.dataset.codigo || '',
-        campo: btn.dataset.campo || '',
-        unidade: btn.dataset.unidade || '',
-        valor: btn.dataset.valor || '0',
-        label: btn.dataset.label || ''
+        tbody.appendChild(tr);
       });
-    });
 
-    document.addEventListener('visibilitychange', async () => {
-      if (document.hidden) {
-        pararAutoRefresh();
-        return;
-      }
+    } catch (err) {
+      console.error(err);
 
-      iniciarAutoRefresh();
-
-      if (evento.value) {
-        try {
-          await carregarContagem({ silencioso: true });
-        } catch (e) {
-          console.error('Erro ao atualizar ao voltar para a aba:', e);
-        }
-      }
-    });
-
-    (async function init(){
-      try{
-        await carregarEventos();
-        resetTela();
-        iniciarAutoRefresh();
-      } catch(e){
-        console.error(e);
-        infoBar.textContent = 'Erro ao carregar dados.';
+      const tbody = document.getElementById('tbodyArquivos');
+      if (tbody) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="13" class="vazio">Erro ao carregar dados.</td>
+            <td colspan="7">
+              <div class="empty-state">
+                <i class="material-icons">error_outline</i>
+                Falha ao carregar os arquivos.
+              </div>
+            </td>
           </tr>
         `;
       }
-    })();
-  </script>
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro ao carregar',
+        text: String(err.message || err)
+      });
+    }
+  }
+
+  document.addEventListener('click', async function(e){
+    const btn = e.target.closest('.delete-link');
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (btn.disabled) return;
+
+    const tr = btn.closest('tr');
+    const fileName = btn.dataset.filename;
+    const dia = (tr?.dataset.dia || '').toUpperCase();
+    const statusLoteLinha = tr?.dataset.statusLote || 'Sem lote';
+    const redacaoHabilitada = (document.getElementById('lblR1')?.textContent || '') === 'Redação';
+
+    const res = await Swal.fire({
+      icon: 'warning',
+      title: 'Excluir arquivo?',
+      html:
+        'Vai remover <b>' + escapeHtml(fileName) + '</b> do relatório e enviar o arquivo para exclusão no armazenamento.<br><small>(Só é permitido se o arquivo <b>não</b> tiver "PROCESSADO" no nome.)</small>',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, excluir',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#64748b'
+    });
+
+    if (!res.isConfirmed) return;
+
+    btn.classList.add('disabled');
+    btn.disabled = true;
+
+    try {
+      const resp = await fetch(API + 'folhas_enviadas_excluir.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: new URLSearchParams({
+          evento: EVENTO,
+          arquivo: fileName
+        }).toString()
+      });
+
+      const json = await resp.json().catch(() => ({}));
+
+      if (!resp.ok || !json.ok) {
+        // 401 = sessão realmente expirada
+        if (resp.status === 401) {
+          await Swal.fire({
+            icon: 'warning',
+            title: 'Sessão expirada',
+            text: 'Faça login novamente.'
+          });
+          location.replace('./index.html');
+          return;
+        }
+
+        // 403 = bloqueio de regra de negócio, NÃO redireciona
+        if (resp.status === 403) {
+          let msg = json.msg || json.error || 'Essa imagem não pode ser excluída.';
+          let code = 'blocked';
+
+          if (json && json.reason === 'processed') {
+            msg = 'Este arquivo já foi processado e não pode ser excluído.';
+            code = 'processed';
+          } else if (json && json.reason === 'missing_lote') {
+            msg = 'Essa imagem não pode ser excluída porque foi enviada antes da implantação do controle de lotes.';
+            code = 'missing_lote';
+          } else if (json && json.reason === 'lote_not_found') {
+            msg = 'Essa imagem não pode ser excluída porque não foi encontrado o lote correspondente.';
+            code = 'lote_not_found';
+          } else if (json && json.reason === 'lote_locked') {
+            msg = `Essa imagem não pode ser excluída porque o lote está com status "${json.status_lote || 'bloqueado'}".`;
+            code = 'lote_locked';
+          }
+
+          throw Object.assign(new Error(msg), { code });
+        }
+
+        throw new Error(json.msg || json.error || 'Tente novamente.');
+      }
+
+      tr.remove();
+
+      decText('totAll');
+      decText('totAllHero');
+      decStatusResumo(statusLoteLinha);
+
+      if (dia === 'D1') {
+        decText('totD1');
+      } else if (dia === 'D2') {
+        decText('totD2');
+      } else if (dia === 'R1' && redacaoHabilitada) {
+        decText('totR1');
+      }
+
+      updateResumo(redacaoHabilitada);
+
+      const tbody = document.getElementById('tbodyArquivos');
+      if (tbody && !tbody.querySelector('tr')) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <i class="material-icons">inventory_2</i>
+                Nenhum arquivo encontrado para esta unidade.
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      Swal.fire({
+        icon:'success',
+        title:'Excluído',
+        text:'Arquivo removido com sucesso.'
+      });
+
+    } catch (err) {
+      console.error(err);
+
+      const isRegraNegocio = ['processed', 'missing_lote', 'lote_not_found', 'lote_locked', 'blocked'].includes(err.code);
+
+      Swal.fire({
+        icon: isRegraNegocio ? 'info' : 'error',
+        title: isRegraNegocio ? 'Exclusão não permitida' : 'Erro',
+        text: String(err.message || err)
+      });
+
+      btn.classList.remove('disabled');
+      btn.disabled = false;
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const ok = await gatePainel();
+    if (!ok) return;
+
+    await carregarUsuario(ok);
+    await carregarArquivos();
+  });
+
+async function abrirImagemArquivo(key) {
+  try {
+    console.log('Abrindo key:', key);
+
+    const url = `${API}ver_imagem.php?evento=${encodeURIComponent(EVENTO)}&key=${encodeURIComponent(key)}`;
+
+    const resp = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store'
+    });
+
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error(txt || 'Erro ao abrir imagem.');
+    }
+
+    const blob = await resp.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank', 'noopener');
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Erro ao abrir imagem',
+      text: String(err.message || err)
+    });
+  }
+}
+
+function getStatusClass(status) {
+  const s = String(status || '').trim().toLowerCase();
+
+  if (s === 'aguardando') return 'status-aguardando';
+  if (s === 'processando') return 'status-processando';
+  if (s === 'processado') return 'status-processado';
+  if (s === 'finalizado') return 'status-finalizado';
+  if (s === 'recusado') return 'status-recusado';
+  return 'status-sem-lote';
+}
+
+function decStatusResumo(status) {
+  const s = String(status || '').trim().toLowerCase();
+
+  if (s === 'aguardando') return decText('sumAguardando');
+  if (s === 'processando') return decText('sumProcessando');
+  if (s === 'processado') return decText('sumProcessado');
+  if (s === 'finalizado') return decText('sumFinalizado');
+  if (s === 'recusado') return decText('sumRecusado');
+  return decText('sumSemLote');
+}
+
+  const userBtn = document.getElementById('userBtn');
+  const userDropdown = document.getElementById('userDropdown');
+  const userMenu = document.getElementById('userMenu');
+
+  if (userBtn && userDropdown && userMenu) {
+    userBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      userDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', function(e){
+      if (!userMenu.contains(e.target)) {
+        userDropdown.classList.remove('open');
+      }
+    });
+  }
+ 
+  async function carregarUsuario(dataAuth = null) {
+    const uLogin = document.getElementById('uLogin');
+    const uNome  = document.getElementById('uNome');
+
+    if (!uLogin || !uNome) return;
+
+    try {
+      let data = dataAuth;
+
+      if (!data) {
+        const res = await fetch(API + 'auth_me_unidade.php', {
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          uLogin.textContent = 'Sessão';
+          uNome.textContent = 'Faça login novamente';
+          return;
+        }
+      }
+
+      const login = data.login || '';
+      const unidade = data.unidade || '';
+
+      uLogin.textContent = login ? `Unidade ${login}` : 'Unidade';
+      uNome.textContent = unidade || '';
+    } catch (e) {
+      console.error(e);
+      uLogin.textContent = 'Erro';
+      uNome.textContent = 'Sem conexão';
+    }
+  }
+</script>
+
 </body>
 </html>
+
+
