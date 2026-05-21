@@ -760,6 +760,7 @@
   let lotesCache = [];
   let pendenciasCache = [];
   let linhaSelecionada = null;
+  let ultimoResumoData = {};
 
   function escapeHtml(str) {
     return String(str ?? '')
@@ -894,6 +895,7 @@ function buildCropStyle(tipo) {
 
       const data = await fetchJson(`${URL_LOTES}?evento=${encodeURIComponent(evento)}`);
       lotesCache = data.rows || [];
+      ultimoResumoData = data;
 
       montarResumo(lotesCache, data);
       montarTabelaLotes(lotesCache);
@@ -1435,18 +1437,36 @@ async function marcarConferido(row, tipo) {
         confirmButtonColor: '#0b3b78'
       });
 
-      await carregarLotes();
+    // Atualiza somente o lote em memória
+    row.status = 'FINALIZADO';
+    row.ok_habilitado = false;
+    row.pendencias = 0;
 
-      const novoIdx = lotesCache.findIndex(r =>
-        String(r.ftp || '').trim() === lote &&
-        String(r.id_und || '').trim() === unidade &&
-        String(r.simulado || '').trim() === evento &&
-        String(r.dia || '').trim().toUpperCase() === dia
-      );
+    // Atualiza a linha na tabela sem recarregar tudo
+    montarTabelaLotes(lotesCache);
 
-      if (novoIdx >= 0) {
-        await selecionarLote(novoIdx);
-      }
+    // Atualiza os cards do topo sem buscar tudo de novo
+    montarResumo(lotesCache, ultimoResumoData);
+
+    // Mantém o lote selecionado visualmente
+    const novoIdx = lotesCache.findIndex(r =>
+      String(r.ftp || '').trim() === lote &&
+      String(r.id_und || '').trim() === unidade &&
+      String(r.dia || '').trim().toUpperCase() === dia
+    );
+
+    if (novoIdx >= 0) {
+      linhaSelecionada = novoIdx;
+
+      const tr = tbodyLotes.querySelector(`tr[data-idx="${novoIdx}"]`);
+      if (tr) tr.classList.add('selected');
+    }
+
+    // Limpa painel da direita
+    tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Lote finalizado.</td></tr>`;
+    infoPendencias.textContent = 'Lote finalizado com sucesso.';
+    contextoLote.style.display = 'none';
+    pendenciasCache = [];
 
     } catch (err) {
       Swal.fire('Erro', err.message || 'Falha ao finalizar lote.', 'error');
