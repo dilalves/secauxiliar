@@ -784,31 +784,22 @@
       <div class="dialog-body">
         <div class="dialog-grid">
           <div class="dialog-box">
-            <div class="dialog-box-label">Código</div>
-            <div class="dialog-box-value" id="detCodigo">-</div>
+            <div class="dialog-box-label" id="detKpi1Label">Presentes informados</div>
+            <div class="dialog-box-value" id="detKpi1Valor">0</div>
           </div>
           <div class="dialog-box">
-            <div class="dialog-box-label">Evento</div>
-            <div class="dialog-box-value" id="detEvento">-</div>
+            <div class="dialog-box-label" id="detKpi2Label">Arquivos enviados</div>
+            <div class="dialog-box-value" id="detKpi2Valor">0</div>
           </div>
           <div class="dialog-box">
-            <div class="dialog-box-label">Lotes</div>
-            <div class="dialog-box-value" id="detTotalLotes">0</div>
+            <div class="dialog-box-label" id="detKpi3Label">Processados</div>
+            <div class="dialog-box-value" id="detKpi3Valor">0</div>
           </div>
           <div class="dialog-box">
-            <div class="dialog-box-label">Arquivos enviados</div>
-            <div class="dialog-box-value" id="detTotalQnt">0</div>
-          </div>
-          <div class="dialog-box">
-            <div class="dialog-box-label">Processados</div>
-            <div class="dialog-box-value" id="detTotalProcessado">0</div>
-          </div>
-          <div class="dialog-box">
-            <div class="dialog-box-label">Unidade</div>
-            <div class="dialog-box-value" id="detUnidade">-</div>
+            <div class="dialog-box-label" id="detKpi4Label">Diferença</div>
+            <div class="dialog-box-value" id="detKpi4Valor">0</div>
           </div>
         </div>
-
         <div class="detalhe-section-title">Contato</div>
         <div class="dialog-grid">
           <div class="dialog-box">
@@ -910,12 +901,14 @@
     const detalhesModal = document.getElementById('detalhesModal');
     const detalhesTitulo = document.getElementById('detalhesTitulo');
     const detalhesSubtitulo = document.getElementById('detalhesSubtitulo');
-    const detCodigo = document.getElementById('detCodigo');
-    const detEvento = document.getElementById('detEvento');
-    const detTotalLotes = document.getElementById('detTotalLotes');
-    const detTotalQnt = document.getElementById('detTotalQnt');
-    const detTotalProcessado = document.getElementById('detTotalProcessado');
-    const detUnidade = document.getElementById('detUnidade');
+    const detKpi1Label = document.getElementById('detKpi1Label');
+    const detKpi1Valor = document.getElementById('detKpi1Valor');
+    const detKpi2Label = document.getElementById('detKpi2Label');
+    const detKpi2Valor = document.getElementById('detKpi2Valor');
+    const detKpi3Label = document.getElementById('detKpi3Label');
+    const detKpi3Valor = document.getElementById('detKpi3Valor');
+    const detKpi4Label = document.getElementById('detKpi4Label');
+    const detKpi4Valor = document.getElementById('detKpi4Valor');
     const detRespD1 = document.getElementById('detRespD1');
     const detCelD1 = document.getElementById('detCelD1');
     const detRespD2 = document.getElementById('detRespD2');
@@ -1152,6 +1145,12 @@
           data-action="abrir-detalhes-unidade"
           data-codigo="${esc(r.codigo)}"
           data-unidade="${esc(r.unidade)}"
+          data-presentes-d1="${Number(r.presentes_d1 || 0)}"
+          data-presentes-d2="${Number(r.presentes_d2 || 0)}"
+          data-arquivos-d1="${Number(r.arquivos_d1 || 0)}"
+          data-arquivos-d2="${Number(r.arquivos_d2 || 0)}"
+          data-dif-d1="${Number(r.dif_arquivos_d1 || 0)}"
+          data-dif-d2="${Number(r.dif_arquivos_d2 || 0)}"
           title="Ver contato e lotes enviados"
         >
           Detalhes
@@ -1162,12 +1161,16 @@
     function limparDetalhesModal(){
       detalhesTitulo.textContent = 'Detalhes da unidade';
       detalhesSubtitulo.textContent = 'Contato da unidade e lotes enviados no evento selecionado.';
-      detCodigo.textContent = '-';
-      detEvento.textContent = evento.value || '-';
-      detTotalLotes.textContent = '0';
-      detTotalQnt.textContent = '0';
-      detTotalProcessado.textContent = '0';
-      detUnidade.textContent = '-';
+
+      detKpi1Label.textContent = 'Presentes informados';
+      detKpi1Valor.textContent = '0';
+      detKpi2Label.textContent = 'Arquivos enviados';
+      detKpi2Valor.textContent = '0';
+      detKpi3Label.textContent = 'Processados';
+      detKpi3Valor.textContent = '0';
+      detKpi4Label.textContent = 'Diferença';
+      detKpi4Valor.textContent = '0';
+
       detRespD1.textContent = '-';
       detCelD1.textContent = '-';
       detRespD2.textContent = '-';
@@ -1178,18 +1181,49 @@
       detalhesModal.classList.remove('show');
     }
 
-    async function abrirModalDetalhesUnidade(codigo, unidadeNome){
+    async function abrirModalDetalhesUnidade(info){
+      const codigo = info.codigo || '';
+      const unidadeNome = info.unidade || '';
+      const tipoEvento = getTipoEventoPorValorEvento(evento.value);
+      const isEnem = tipoEvento === 'ENEM';
+
       if (!evento.value) {
         alert('Selecione um evento antes de abrir os detalhes.');
         return;
       }
 
       limparDetalhesModal();
-      detCodigo.textContent = codigo || '-';
-      detUnidade.textContent = unidadeNome || '-';
+
       detalhesTitulo.textContent = unidadeNome || 'Detalhes da unidade';
       detalhesSubtitulo.textContent = `Evento ${evento.value} • Unidade ${codigo}`;
       detalhesModal.classList.add('show');
+
+      const presentesD1 = Number(info.presentes_d1 || 0);
+      const presentesD2 = Number(info.presentes_d2 || 0);
+      const arquivosD1 = Number(info.arquivos_d1 || 0);
+      const arquivosD2 = Number(info.arquivos_d2 || 0);
+      const difD1 = Number(info.dif_d1 || 0);
+      const difD2 = Number(info.dif_d2 || 0);
+
+      if (isEnem) {
+        detKpi1Label.textContent = 'Presentes D1';
+        detKpi1Valor.textContent = n(presentesD1);
+        detKpi2Label.textContent = 'Arq. D1';
+        detKpi2Valor.textContent = n(arquivosD1);
+        detKpi3Label.textContent = 'Presentes D2';
+        detKpi3Valor.textContent = n(presentesD2);
+        detKpi4Label.textContent = 'Arq. D2';
+        detKpi4Valor.textContent = n(arquivosD2);
+      } else {
+        detKpi1Label.textContent = 'Presentes informados';
+        detKpi1Valor.textContent = n(presentesD1);
+        detKpi2Label.textContent = 'Arquivos enviados';
+        detKpi2Valor.textContent = n(arquivosD1);
+        detKpi3Label.textContent = 'Processados';
+        detKpi3Valor.textContent = 'Carregando...';
+        detKpi4Label.textContent = 'Diferença';
+        detKpi4Valor.textContent = n(difD1);
+      }
 
       try {
         const qs = new URLSearchParams();
@@ -1211,17 +1245,28 @@
         const resumo = data.resumo || {};
         const lotes = data.lotes || [];
 
-        detCodigo.textContent = data.codigo || codigo || '-';
-        detEvento.textContent = data.evento || evento.value || '-';
-        detUnidade.textContent = u.unidade || unidadeNome || '-';
-        detTotalLotes.textContent = n(resumo.total_lotes);
-        detTotalQnt.textContent = n(resumo.total_qnt);
-        detTotalProcessado.textContent = n(resumo.total_processado);
+        if (isEnem) {
+          detKpi1Valor.textContent = n(presentesD1);
+          detKpi2Valor.textContent = n(arquivosD1);
+          detKpi3Valor.textContent = n(presentesD2);
+          detKpi4Valor.textContent = n(arquivosD2);
+        } else {
+          detKpi1Valor.textContent = n(presentesD1);
+          detKpi2Valor.textContent = n(resumo.total_qnt ?? arquivosD1);
+          detKpi3Valor.textContent = n(resumo.total_processado);
+          detKpi4Valor.textContent = n(presentesD1 - Number(resumo.total_qnt ?? arquivosD1));
+        }
+
         detRespD1.textContent = u.resp_dia1_nome || '-';
         detCelD1.textContent = `${u.resp_dia1_ddd || ''} ${u.resp_dia1_celular || ''}`.trim() || '-';
         detRespD2.textContent = [u.resp_dia2_nome, `${u.resp_dia2_ddd || ''} ${u.resp_dia2_celular || ''}`.trim()]
           .filter(Boolean)
           .join(' • ') || '-';
+
+        const tituloLotes = document.querySelector('#detalhesModal .detalhe-section-title:nth-of-type(2)');
+        if (tituloLotes) {
+          tituloLotes.textContent = `Lotes enviados (${n(resumo.total_lotes || lotes.length)})`;
+        }
 
         if (!lotes.length) {
           detLotesBody.innerHTML = `<tr><td colspan="10" class="vazio">Nenhum lote encontrado para esta unidade neste evento.</td></tr>`;
@@ -1245,6 +1290,7 @@
       } catch (e) {
         console.error(e);
         detLotesBody.innerHTML = `<tr><td colspan="10" class="vazio">${esc(e.message || 'Erro ao carregar lotes.')}</td></tr>`;
+        if (!isEnem) detKpi3Valor.textContent = '-';
       }
     }
 
@@ -1458,8 +1504,8 @@ rows.forEach((r, idx) => {
     && Number(r.presentes_d1 || 0) === 0;
   const tipo = String(r.tipo_unidade || 'CONVENIADA').toUpperCase();
   const grupoLabel = tipo === 'PROPRIA'
-    ? 'DIFERENÇAS PRÓPRIAS'
-    : 'DIFERENÇAS CONVENIADAS';
+    ? 'UNIDADES PRÓPRIAS'
+    : 'UNIDADES CONVENIADAS';
 
   if (grupoLabel !== grupoAtual) {
     if (grupoAtual !== '') {
@@ -1739,10 +1785,16 @@ tbody.innerHTML = html;
     tbody.addEventListener('click', async (e) => {
       const btnDetalhes = e.target.closest('[data-action="abrir-detalhes-unidade"]');
       if (btnDetalhes) {
-        await abrirModalDetalhesUnidade(
-          btnDetalhes.dataset.codigo || '',
-          btnDetalhes.dataset.unidade || ''
-        );
+        await abrirModalDetalhesUnidade({
+          codigo: btnDetalhes.dataset.codigo || '',
+          unidade: btnDetalhes.dataset.unidade || '',
+          presentes_d1: btnDetalhes.dataset.presentesD1 || '0',
+          presentes_d2: btnDetalhes.dataset.presentesD2 || '0',
+          arquivos_d1: btnDetalhes.dataset.arquivosD1 || '0',
+          arquivos_d2: btnDetalhes.dataset.arquivosD2 || '0',
+          dif_d1: btnDetalhes.dataset.difD1 || '0',
+          dif_d2: btnDetalhes.dataset.difD2 || '0'
+        });
         return;
       }
 
