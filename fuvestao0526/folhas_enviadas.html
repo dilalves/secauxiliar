@@ -743,13 +743,6 @@
     font-weight:900;
   }
 
-  .modal-grid-2{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:12px;
-    margin-bottom:18px;
-  }
-
   .mini-table-wrap{
     border:1px solid var(--line);
     border-radius:14px;
@@ -823,8 +816,7 @@
   }
 
   @media (max-width: 900px){
-    .modal-grid,
-    .modal-grid-2{
+    .modal-grid{
       grid-template-columns:1fr;
     }
   }
@@ -1083,20 +1075,6 @@
         </div>
       </div>
 
-      <h4 class="modal-section-title">Contato</h4>
-
-      <div class="modal-grid-2">
-        <div class="modal-box">
-          <div class="modal-box-label">Responsável Dia 1</div>
-          <div class="modal-box-value" id="respDia1Modal">-</div>
-        </div>
-
-        <div class="modal-box">
-          <div class="modal-box-label">Responsável Dia 2</div>
-          <div class="modal-box-value" id="respDia2Modal">-</div>
-        </div>
-      </div>
-
       <h4 class="modal-section-title" id="tituloTabelaLotes">Lotes enviados</h4>
 
       <div class="mini-table-wrap">
@@ -1111,13 +1089,12 @@
               <th>Status</th>
               <th>Baixado</th>
               <th>Processado</th>
-              <th>Finalizado</th>
-              <th>Máquina</th>
+              <th>Finalizado</th>              
             </tr>
           </thead>
           <tbody id="tbodyLotesModal">
             <tr>
-              <td colspan="10">Carregando lotes...</td>
+              <td colspan="9">Carregando lotes...</td>
             </tr>
           </tbody>
         </table>
@@ -1546,7 +1523,7 @@
     abrirModalLotesVisual();
 
     const tbody = document.getElementById('tbodyLotesModal');
-    tbody.innerHTML = '<tr><td colspan="10">Carregando lotes...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9">Carregando lotes...</td></tr>';
 
     try{
 
@@ -1574,17 +1551,11 @@
       document.getElementById('kpiProcModal').textContent = fmt(resumo.total_processado || 0);
       document.getElementById('kpiDifModal').innerHTML = badgeDif(resumo.dif_d1 || 0);
 
-      const d1 = `${u.resp_dia1_nome || ''} • ${(u.resp_dia1_ddd || '')} ${(u.resp_dia1_celular || '')}`.replace(/^ •|• $/g,'').trim();
-      const d2 = `${u.resp_dia2_nome || ''} • ${(u.resp_dia2_ddd || '')} ${(u.resp_dia2_celular || '')}`.replace(/^ •|• $/g,'').trim();
-
-      document.getElementById('respDia1Modal').textContent = d1 || '-';
-      document.getElementById('respDia2Modal').textContent = d2 || '-';
-
       document.getElementById('tituloTabelaLotes').textContent =
         `Lotes enviados (${fmt(resumo.total_lotes || lotes.length)})`;
 
       if(!lotes.length){
-        tbody.innerHTML = '<tr><td colspan="10">Nenhum lote encontrado.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9">Nenhum lote encontrado.</td></tr>';
         return;
       }
 
@@ -1599,13 +1570,12 @@
           <td>${l.dt_baixado || '-'}</td>
           <td>${l.dt_processado || '-'}</td>
           <td>${l.dt_finalizado || '-'}</td>
-          <td>${l.maquina_processamento || '-'}</td>
         </tr>
       `).join('');
 
     }catch(err){
       console.error(err);
-      tbody.innerHTML = `<tr><td colspan="10">${err.message || 'Erro ao carregar lotes.'}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9">${err.message || 'Erro ao carregar lotes.'}</td></tr>`;
     }
   }
 
