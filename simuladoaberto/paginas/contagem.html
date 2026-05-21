@@ -443,6 +443,10 @@
       flex-wrap:wrap;
     }
 
+    body.modal-aberto{
+      overflow:hidden;
+    }
+
     .salvo-ok{
       border-color:#19a974 !important;
       background:#f3fff9 !important;
@@ -1185,6 +1189,7 @@
 
     function fecharDetalhesModal(){
       detalhesModal.classList.remove('show');
+      document.body.classList.remove('modal-aberto');
     }
 
     async function abrirModalDetalhesUnidade(info){
@@ -1203,6 +1208,7 @@
       detalhesTitulo.textContent = unidadeNome || 'Detalhes da unidade';
       detalhesSubtitulo.textContent = `Evento ${evento.value} • Unidade ${codigo}`;
       detalhesModal.classList.add('show');
+      document.body.classList.add('modal-aberto');
 
       const presentesD1 = Number(info.presentes_d1 || 0);
       const presentesD2 = Number(info.presentes_d2 || 0);
