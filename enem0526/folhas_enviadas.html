@@ -324,7 +324,7 @@
 
   .kpi-row{
     display:grid;
-    grid-template-columns:repeat(4,1fr);
+    grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
     gap:12px;
     margin-bottom:18px;
   }
@@ -653,6 +653,176 @@
     background:#fff;
   }
 
+  body.modal-open{
+    overflow:hidden;
+  }
+
+  .modal-lotes-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.45);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:5000;
+  }
+
+  .modal-lotes-overlay.show{
+    display:flex;
+  }
+
+  .modal-lotes{
+    width:min(1100px, 100%);
+    max-height:92vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    background:#fff;
+    border-radius:22px;
+    border:1px solid #dbe7f5;
+    box-shadow:0 25px 60px rgba(15,23,42,.28);
+  }
+
+  .modal-lotes-header{
+    padding:18px 22px 12px;
+    border-bottom:1px solid #edf2f7;
+  }
+
+  .modal-lotes-title{
+    margin:0;
+    font-size:22px;
+    font-weight:900;
+    color:var(--primary);
+  }
+
+  .modal-lotes-sub{
+    margin-top:6px;
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  .modal-lotes-body{
+    padding:18px 22px 22px;
+    overflow:hidden;
+  }
+
+  .modal-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:18px;
+  }
+
+  .modal-box{
+    border:1px solid #dbe7f5;
+    background:#f6f9fe;
+    border-radius:14px;
+    padding:14px;
+  }
+
+  .modal-box-label{
+    font-size:12px;
+    font-weight:800;
+    color:#64748b;
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+
+  .modal-box-value{
+    font-size:18px;
+    font-weight:900;
+    color:var(--primary);
+  }
+
+  .modal-section-title{
+    margin:0 0 10px;
+    color:var(--primary);
+    font-size:18px;
+    font-weight:900;
+  }
+
+  .mini-table-wrap{
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow-y:auto;
+    overflow-x:auto;
+    max-height:280px;
+    background:#fff;
+  }
+
+  .mini-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:900px;
+  }
+
+  .mini-table th{
+    position:sticky;
+    top:0;
+    background:#f2f7fd;
+    z-index:2;
+    color:#17345d;
+    font-size:12px;
+    text-transform:uppercase;
+  }
+
+  .mini-table th,
+  .mini-table td{
+    padding:10px 10px;
+    border-bottom:1px solid #edf2f7;
+    white-space:nowrap;
+    font-size:12px;
+  }
+
+  .mini-status{
+    display:inline-flex;
+    align-items:center;
+    padding:5px 10px;
+    border-radius:999px;
+    background:#eef4ff;
+    color:#17345d;
+    border:1px solid #dbeafe;
+    font-weight:800;
+  }
+
+  .modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:16px;
+  }
+
+  .diff-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:40px;
+    padding:4px 10px;
+    border-radius:999px;
+    font-weight:900;
+  }
+
+  .diff-ok{
+    background:#ecfdf5;
+    color:#166534;
+    border:1px solid #bbf7d0;
+  }
+
+  .diff-alert{
+    background:#fff7ed;
+    color:#b45309;
+    border:1px solid #fed7aa;
+  }
+
+  @media (max-width: 900px){
+    .modal-grid{
+      grid-template-columns:1fr;
+    }
+  }
+
+
+
+
   @media (max-width: 980px){
     .kpi-row{
       grid-template-columns:1fr 1fr;
@@ -741,6 +911,11 @@
         <span>Painel</span>
       </a>
 
+      <a href="#!" class="chip-link" id="btnAbrirLotes">
+        <i class="material-icons">analytics</i>
+        <span>Lotes</span>
+      </a>
+
       <div class="user-menu" id="userMenu">
         <button class="chip-user btn-user" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
           <i class="material-icons mat">account_circle</i>
@@ -809,6 +984,11 @@
           <div class="l">Dia 2</div>
         </div>
 
+        <div class="mini-kpi">
+          <div class="v" id="percCorrecaoGeral">0,00%</div>
+          <div class="l">Correção geral</div>
+        </div>
+
         <div class="mini-kpi" id="cardRedacao">
           <div class="v" id="totR1">0</div>
           <div class="l" id="lblR1">Redação</div>
@@ -868,6 +1048,74 @@
 
   </div>
 </main>
+
+
+<div class="modal-lotes-overlay" id="modalLotes">
+  <div class="modal-lotes">
+    <div class="modal-lotes-header">
+      <h3 class="modal-lotes-title" id="tituloLotes">Andamento dos lotes</h3>
+      <div class="modal-lotes-sub" id="subtituloLotes">Resumo de processamento da unidade.</div>
+    </div>
+
+    <div class="modal-lotes-body">
+
+      <div class="modal-grid">
+        <div class="modal-box">
+          <div class="modal-box-label">Presentes informados</div>
+          <div class="modal-box-value" id="kpiPresModal">0</div>
+        </div>
+
+        <div class="modal-box">
+          <div class="modal-box-label">Arquivos enviados</div>
+          <div class="modal-box-value" id="kpiArqModal">0</div>
+        </div>
+
+        <div class="modal-box">
+          <div class="modal-box-label">Processados</div>
+          <div class="modal-box-value" id="kpiProcModal">0</div>
+        </div>
+
+        <div class="modal-box">
+          <div class="modal-box-label">Diferença</div>
+          <div class="modal-box-value" id="kpiDifModal">0</div>
+        </div>
+      </div>
+
+      <h4 class="modal-section-title" id="tituloTabelaLotes">Lotes enviados</h4>
+
+      <div class="mini-table-wrap">
+        <table class="mini-table">
+          <thead>
+            <tr>
+              <th>Lote</th>
+              <th>Dia</th>
+              <th>Data envio</th>
+              <th>Qnt</th>
+              <th>Processada</th>
+              <th>Status</th>
+              <th>Baixado</th>
+              <th>Processado</th>
+              <th>Finalizado</th>              
+            </tr>
+          </thead>
+          <tbody id="tbodyLotesModal">
+            <tr>
+              <td colspan="9">Carregando lotes...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btnx btn-primary" id="btnFecharModalLotes">
+          <i class="material-icons">close</i>
+          Fechar
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <script>
   const API = 'https://apisec.secauxiliar.com.br/enem0526/';
@@ -1010,6 +1258,7 @@
       setText('totAll', data.totais?.all ?? 0);
       setText('totD1', data.totais?.d1 ?? 0);
       setText('totD2', data.totais?.d2 ?? 0);
+      setText('percCorrecaoGeral', data.correcao_geral?.percentual_formatado ?? '0,00%');
       setText('sumAguardando',  data.status_resumo?.aguardando ?? 0);
       setText('sumProcessando', data.status_resumo?.processando ?? 0);
       setText('sumProcessado',  data.status_resumo?.processado ?? 0);
@@ -1256,12 +1505,145 @@
     }
   });
 
+
+  function abrirModalLotesVisual(){
+    document.getElementById('modalLotes')?.classList.add('show');
+    document.body.classList.add('modal-open');
+  }
+
+  function fecharModalLotes(){
+    document.getElementById('modalLotes')?.classList.remove('show');
+    document.body.classList.remove('modal-open');
+  }
+
+  function fmt(v){
+    return Number(v || 0).toLocaleString('pt-BR');
+  }
+
+  function num(v){
+    const n = Number(v || 0);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function firstNumber(){
+    for (const v of arguments) {
+      if (v !== undefined && v !== null && v !== '') return num(v);
+    }
+    return 0;
+  }
+
+  function badgeDif(v){
+    const n = num(v);
+    const cls = n === 0 ? 'diff-ok' : 'diff-alert';
+    return `<span class="diff-badge ${cls}">${fmt(n)}</span>`;
+  }
+
+  async function carregarModalLotes(){
+    abrirModalLotesVisual();
+
+    const tbody = document.getElementById('tbodyLotesModal');
+    tbody.innerHTML = '<tr><td colspan="9">Carregando lotes...</td></tr>';
+
+    try{
+      const resp = await fetch(API + `lotes_unidade.php?evento=${encodeURIComponent(EVENTO)}`,{
+        credentials:'include',
+        cache:'no-store'
+      });
+
+      const json = await resp.json().catch(() => ({}));
+
+      if(!resp.ok || !json.ok){
+        throw new Error(json.msg || 'Erro ao carregar lotes.');
+      }
+
+      const u = json.unidade || {};
+      const resumo = json.resumo || {};
+      const lotes = json.lotes || [];
+
+      const presentesTotal = firstNumber(
+        resumo.presentes_total,
+        resumo.total_presentes,
+        u.presentes_total,
+        num(u.presentes_d1) + num(u.presentes_d2) + num(u.presentes_r1) + num(u.presentes_redacao) + num(u.presentes_red)
+      );
+
+      const arquivosTotal = firstNumber(
+        resumo.total_qnt,
+        resumo.arquivos_total,
+        num(resumo.arquivos_d1) + num(resumo.arquivos_d2) + num(resumo.arquivos_r1) + num(resumo.arquivos_redacao) + num(resumo.arquivos_red)
+      );
+
+      const processadosTotal = firstNumber(
+        resumo.total_processado,
+        resumo.processados_total,
+        num(resumo.processados_d1) + num(resumo.processados_d2) + num(resumo.processados_r1) + num(resumo.processados_redacao) + num(resumo.processados_red)
+      );
+
+      const difTotal = firstNumber(
+        resumo.dif_total,
+        resumo.diferenca_total,
+        resumo.dif_geral,
+        num(resumo.dif_d1) + num(resumo.dif_d2) + num(resumo.dif_r1) + num(resumo.dif_redacao) + num(resumo.dif_red),
+        presentesTotal - arquivosTotal
+      );
+
+      document.getElementById('tituloLotes').textContent = u.unidade || 'Andamento dos lotes';
+      document.getElementById('subtituloLotes').textContent =
+        `Evento ${json.evento || EVENTO} • Unidade ${json.codigo || '-'}`;
+
+      document.getElementById('kpiPresModal').textContent = fmt(presentesTotal);
+      document.getElementById('kpiArqModal').textContent = fmt(arquivosTotal);
+      document.getElementById('kpiProcModal').textContent = fmt(processadosTotal);
+      document.getElementById('kpiDifModal').innerHTML = badgeDif(difTotal);
+
+      document.getElementById('tituloTabelaLotes').textContent =
+        `Lotes enviados (${fmt(resumo.total_lotes || lotes.length)})`;
+
+      if(!lotes.length){
+        tbody.innerHTML = '<tr><td colspan="9">Nenhum lote encontrado.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = lotes.map(l => `
+        <tr>
+          <td>${escapeHtml(l.lote || '-')}</td>
+          <td>${escapeHtml(l.dia || '-')}</td>
+          <td>${escapeHtml(l.data_reg || '-')}</td>
+          <td>${fmt(l.qnt || 0)}</td>
+          <td>${fmt(l.quantidade_processada || 0)}</td>
+          <td><span class="mini-status">${escapeHtml(l.status || '-')}</span></td>
+          <td>${escapeHtml(l.dt_baixado || '-')}</td>
+          <td>${escapeHtml(l.dt_processado || '-')}</td>
+          <td>${escapeHtml(l.dt_finalizado || '-')}</td>
+        </tr>
+      `).join('');
+
+    }catch(err){
+      console.error(err);
+      tbody.innerHTML = `<tr><td colspan="9">${escapeHtml(err.message || 'Erro ao carregar lotes.')}</td></tr>`;
+    }
+  }
+
+
   document.addEventListener('DOMContentLoaded', async () => {
     const ok = await gatePainel();
     if (!ok) return;
 
     await carregarUsuario(ok);
     await carregarArquivos();
+
+    document.getElementById('btnAbrirLotes')?.addEventListener('click', function(e){
+      e.preventDefault();
+      carregarModalLotes();
+    });
+
+    document.getElementById('btnFecharModalLotes')?.addEventListener('click', fecharModalLotes);
+
+    document.getElementById('modalLotes')?.addEventListener('click', function(e){
+      if(e.target === this){
+        fecharModalLotes();
+      }
+    });
   });
 
 async function abrirImagemArquivo(key) {
