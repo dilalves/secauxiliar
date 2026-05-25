@@ -482,6 +482,37 @@
       pointer-events:none;
     }
 
+    .recorte-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:8px 0 10px;
+    }
+
+    .btn-rotacao{
+      height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      background:#e8f0fb;
+      color:#0b3b78;
+      border:1px solid #cfe0f5;
+    }
+
+    .btn-rotacao.principal{
+      background:#0b3b78;
+      color:#fff;
+      border-color:#0b3b78;
+    }
+
+    .rotacao-info{
+      font-size:12px;
+      color:#64748b;
+      font-weight:700;
+    }
+
     .crop-badge{
       position:absolute;
       top:10px;
@@ -760,6 +791,36 @@
   let lotesCache = [];
   let pendenciasCache = [];
   let linhaSelecionada = null;
+  let rotacaoRecorteAtual = 0;
+
+  function aplicarRotacaoRecorte() {
+    const img = document.getElementById('imgRecortePendencia');
+    const info = document.getElementById('rotacaoRecorteInfo');
+
+    if (!img) return;
+
+    const baseTransform = img.dataset.baseTransform || '';
+    img.style.transform = `${baseTransform} rotate(${rotacaoRecorteAtual}deg)`.trim();
+
+    if (info) {
+      info.textContent = `Rotação: ${rotacaoRecorteAtual}°`;
+    }
+  }
+
+  function girarRecorteModal(graus) {
+    rotacaoRecorteAtual = (rotacaoRecorteAtual + Number(graus || 0)) % 360;
+
+    if (rotacaoRecorteAtual < 0) {
+      rotacaoRecorteAtual += 360;
+    }
+
+    aplicarRotacaoRecorte();
+  }
+
+  function resetarRotacaoRecorte() {
+    rotacaoRecorteAtual = 0;
+    aplicarRotacaoRecorte();
+  }
 
   function escapeHtml(str) {
     return String(str ?? '')
@@ -1113,9 +1174,17 @@ function buildCropStyle(tipo) {
               <div class="recorte-hint">Recorte automático da área de interesse</div>
             </div>
 
+            <div class="recorte-actions">
+              <button type="button" class="btn-rotacao principal" onclick="girarRecorteModal(180)">Girar 180°</button>
+              <button type="button" class="btn-rotacao" onclick="girarRecorteModal(-90)">↶ 90°</button>
+              <button type="button" class="btn-rotacao" onclick="girarRecorteModal(90)">↷ 90°</button>
+              <button type="button" class="btn-rotacao" onclick="resetarRotacaoRecorte()">Resetar</button>
+              <span class="rotacao-info" id="rotacaoRecorteInfo">Rotação: 0°</span>
+            </div>
+
             <div class="crop-frame">
               <span class="crop-badge">${escapeHtml(labelCampo)}</span>
-              <img src="${imagemUrl}" alt="Recorte da imagem" style="${cropStyle}" onerror="this.onerror=null;this.src='';this.closest('.crop-frame').innerHTML='<div style=&quot;padding:20px;color:#64748b;font-size:13px;&quot;>Não foi possível carregar a imagem.<br>Depois ligamos este ponto ao PHP da imagem.</div>';">
+              <img id="imgRecortePendencia" data-base-transform="${escapeHtml(cropStyle.replace('transform:', '').replace(';', '').trim())}" src="${imagemUrl}" alt="Recorte da imagem" style="${cropStyle}" onerror="this.onerror=null;this.src='';this.closest('.crop-frame').innerHTML='<div style=&quot;padding:20px;color:#64748b;font-size:13px;&quot;>Não foi possível carregar a imagem.<br>Depois ligamos este ponto ao PHP da imagem.</div>';">
             </div>
 
             <div class="full-image-box">
@@ -1199,6 +1268,8 @@ function buildCropStyle(tipo) {
       },
       focusConfirm: false,
     didOpen: () => {
+      resetarRotacaoRecorte();
+
       const input = document.getElementById('swal-input-valor');
       if (input) {
         input.focus();
