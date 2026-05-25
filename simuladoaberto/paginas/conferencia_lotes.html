@@ -476,10 +476,11 @@
       width:100%;
       height:auto;
       min-height:100%;
-      transform-origin:top left;
+      transform-origin:center center;
       user-select:none;
       -webkit-user-drag:none;
       pointer-events:none;
+      transition:transform .18s ease;
     }
 
     .recorte-actions{
@@ -800,10 +801,18 @@
     if (!img) return;
 
     const baseTransform = img.dataset.baseTransform || '';
-    img.style.transform = `${baseTransform} rotate(${rotacaoRecorteAtual}deg)`.trim();
+    const rot = ((Number(rotacaoRecorteAtual || 0) % 360) + 360) % 360;
+
+    /*
+      O giro precisa acontecer pelo centro da imagem.
+      Se girar pelo canto superior esquerdo, a imagem sai do quadro
+      e o overflow:hidden do crop esconde tudo.
+    */
+    img.style.transformOrigin = 'center center';
+    img.style.transform = `${baseTransform} rotate(${rot}deg)`.trim();
 
     if (info) {
-      info.textContent = `Rotação: ${rotacaoRecorteAtual}°`;
+      info.textContent = `Rotação: ${rot}°`;
     }
   }
 
@@ -1184,7 +1193,13 @@ function buildCropStyle(tipo) {
 
             <div class="crop-frame">
               <span class="crop-badge">${escapeHtml(labelCampo)}</span>
-              <img id="imgRecortePendencia" data-base-transform="${escapeHtml(cropStyle.replace('transform:', '').replace(';', '').trim())}" src="${imagemUrl}" alt="Recorte da imagem" style="${cropStyle}" onerror="this.onerror=null;this.src='';this.closest('.crop-frame').innerHTML='<div style=&quot;padding:20px;color:#64748b;font-size:13px;&quot;>Não foi possível carregar a imagem.<br>Depois ligamos este ponto ao PHP da imagem.</div>';">
+              <img
+                id="imgRecortePendencia"
+                data-base-transform="${escapeHtml(cropStyle.replace('transform:', '').replace(';', '').trim())}"
+                src="${imagemUrl}"
+                alt="Recorte da imagem"
+                style="${cropStyle}"
+                onerror="this.onerror=null;this.src='';this.closest('.crop-frame').innerHTML='<div style=&quot;padding:20px;color:#64748b;font-size:13px;&quot;>Não foi possível carregar a imagem.<br>Depois ligamos este ponto ao PHP da imagem.</div>';">
             </div>
 
             <div class="full-image-box">
