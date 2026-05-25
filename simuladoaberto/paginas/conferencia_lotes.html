@@ -615,6 +615,32 @@
       text-decoration:underline;
     }
 
+
+    .full-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:10px 0 12px;
+    }
+
+    .full-image-frame{
+      border:1px solid #d7e2f1;
+      border-radius:12px;
+      overflow:auto;
+      background:#f8fbff;
+      max-height:70vh;
+      text-align:center;
+    }
+
+    .full-image-frame img{
+      max-width:100%;
+      height:auto;
+      display:inline-block;
+      transform-origin:center center;
+      transition:transform .18s ease;
+    }
+
     @media (max-width: 1200px){
       .layout{
         grid-template-columns:1fr;
@@ -793,6 +819,7 @@
   let pendenciasCache = [];
   let linhaSelecionada = null;
   let rotacaoRecorteAtual = 0;
+  let rotacaoImagemCompletaAtual = 0;
 
   function aplicarRotacaoRecorte() {
     const img = document.getElementById('imgRecortePendencia');
@@ -1183,14 +1210,6 @@ function buildCropStyle(tipo) {
               <div class="recorte-hint">Recorte automático da área de interesse</div>
             </div>
 
-            <div class="recorte-actions">
-              <button type="button" class="btn-rotacao principal" onclick="girarRecorteModal(180)">Girar 180°</button>
-              <button type="button" class="btn-rotacao" onclick="girarRecorteModal(-90)">↶ 90°</button>
-              <button type="button" class="btn-rotacao" onclick="girarRecorteModal(90)">↷ 90°</button>
-              <button type="button" class="btn-rotacao" onclick="resetarRotacaoRecorte()">Resetar</button>
-              <span class="rotacao-info" id="rotacaoRecorteInfo">Rotação: 0°</span>
-            </div>
-
             <div class="crop-frame">
               <span class="crop-badge">${escapeHtml(labelCampo)}</span>
               <img
@@ -1412,6 +1431,37 @@ async function marcarConferido(row, tipo) {
   });
 }
 
+
+function aplicarRotacaoImagemCompleta() {
+  const img = document.getElementById('imgImagemCompleta');
+  const info = document.getElementById('rotacaoImagemCompletaInfo');
+
+  if (!img) return;
+
+  const rot = ((Number(rotacaoImagemCompletaAtual || 0) % 360) + 360) % 360;
+  img.style.transform = `rotate(${rot}deg)`;
+
+  if (info) {
+    info.textContent = `Rotação: ${rot}°`;
+  }
+}
+
+function girarImagemCompleta(graus) {
+  rotacaoImagemCompletaAtual = (rotacaoImagemCompletaAtual + Number(graus || 0)) % 360;
+
+  if (rotacaoImagemCompletaAtual < 0) {
+    rotacaoImagemCompletaAtual += 360;
+  }
+
+  aplicarRotacaoImagemCompleta();
+}
+
+function resetarImagemCompleta() {
+  rotacaoImagemCompletaAtual = 0;
+  aplicarRotacaoImagemCompleta();
+}
+
+
   function verImagem(arquivoOrigem, dia = '') {
     const evento = encodeURIComponent(document.getElementById('evento').value || '');
     const url = `${URL_IMAGEM_RECORTE}?arquivo=${encodeURIComponent(arquivoOrigem)}&dia=${encodeURIComponent(dia)}&evento=${evento}&full=1`;
@@ -1424,16 +1474,28 @@ async function marcarConferido(row, tipo) {
           <div style="margin-bottom:10px;font-size:13px;color:#64748b;">
             Arquivo: <strong>${escapeHtml(arquivoOrigem)}</strong>
           </div>
-          <div style="border:1px solid #d7e2f1;border-radius:12px;overflow:hidden;background:#f8fbff;max-height:70vh;">
+
+          <div class="full-actions">
+            <button type="button" class="btn-rotacao principal" onclick="girarImagemCompleta(180)">Girar 180°</button>
+            <button type="button" class="btn-rotacao" onclick="girarImagemCompleta(-90)">↶ 90°</button>
+            <button type="button" class="btn-rotacao" onclick="girarImagemCompleta(90)">↷ 90°</button>
+            <button type="button" class="btn-rotacao" onclick="resetarImagemCompleta()">Resetar</button>
+            <span class="rotacao-info" id="rotacaoImagemCompletaInfo">Rotação: 0°</span>
+          </div>
+
+          <div class="full-image-frame">
             <img
+              id="imgImagemCompleta"
               src="${url}"
               alt="Imagem completa"
-              style="width:100%;display:block;"
               onerror="this.onerror=null;this.parentNode.innerHTML='<div style=&quot;padding:20px;color:#64748b;font-size:13px;&quot;>Não foi possível carregar a imagem completa.</div>';">
           </div>
         </div>
       `,
-      confirmButtonText: 'Fechar'
+      confirmButtonText: 'Fechar',
+      didOpen: () => {
+        resetarImagemCompleta();
+      }
     });
   }
 
