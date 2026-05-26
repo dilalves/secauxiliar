@@ -307,6 +307,12 @@
       border:1px solid #fdba74;
     }
 
+    .btn-mini.reject{
+      background:#fee2e2;
+      color:#991b1b;
+      border:1px solid #fecaca;
+    }
+
     .btn-mini.ok{
       background:#dcfce7;
       color:#166534;
@@ -375,7 +381,7 @@
     .col-dif{ width:82px; }
     .col-pend{ width:92px; }
     .col-status{ width:96px; }
-    .col-acoes{ width:90px; }
+    .col-acoes{ width:210px; }
 
     .pend-col-insc{ width:120px; }
     .pend-col-cor{ width:95px; }
@@ -471,11 +477,11 @@
 
     .crop-frame img{
       position:absolute;
-      top:50%;
-      left:50%;
+      top:0;
+      left:0;
       width:100%;
       height:auto;
-      min-height:0;
+      min-height:100%;
       transform-origin:center center;
       user-select:none;
       -webkit-user-drag:none;
@@ -641,6 +647,41 @@
       transition:transform .18s ease;
     }
 
+    .arquivos-lote-wrap{
+      border:1px solid #d7e2f1;
+      border-radius:12px;
+      overflow:auto;
+      max-height:62vh;
+      background:#fff;
+    }
+
+    .arquivos-lote-wrap table{
+      min-width:900px;
+    }
+
+    .arquivos-lote-wrap th,
+    .arquivos-lote-wrap td{
+      font-size:12px;
+      padding:8px;
+    }
+
+    .modal-info-lote{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:12px;
+    }
+
+    .modal-info-lote span{
+      background:#f4f8fe;
+      border:1px solid #dce7f6;
+      border-radius:999px;
+      padding:5px 10px;
+      font-size:12px;
+      color:#35557f;
+      font-weight:700;
+    }
+
     @media (max-width: 1200px){
       .layout{
         grid-template-columns:1fr;
@@ -791,6 +832,8 @@
   const URL_SALVAR_CORRECAO = `${API_BASE}/salvar_correcao_pendencia.php`;
   const URL_MARCAR_CONFERIDO = `${API_BASE}/marcar_pendencia_conferida.php`;
   const URL_FINALIZAR_LOTE = `${API_BASE}/finalizar_lote.php`;
+  const URL_LISTAR_ARQUIVOS_LOTE = `${API_BASE}/listar_arquivos_lote_conferencia.php`;
+  const URL_RECUSAR_LOTE = `${API_BASE}/recusar_lote_conferencia.php`;
   const URL_GERAR_STATS_ALTERNATIVAS = `${API_BASE}/gerar_stats_alternativas.php`;
 
 
@@ -925,11 +968,10 @@
 
 function buildCropStyle(tipo) {
   if (tipo === 'inscricao') {
-    return 'transform: translate(-50%, -24%) scale(1);';
+    return 'transform: scale(0.8) translate(2%, 0%);';
   }
-  return 'transform: translate(-50%, -40%) scale(0.9);';
+  return 'transform: scale(0.7) translate(-6%, 1%);';
 }
-
   async function fetchJson(url, options = {}) {
     const resp = await fetch(url, {
       credentials: 'include',
@@ -1085,6 +1127,18 @@ function buildCropStyle(tipo) {
           <td>${chipStatus(r.status)}</td>
           <td>
             <div class="acoes">
+              <button
+                type="button"
+                class="btn-mini view"
+                onclick="event.stopPropagation(); listarArquivosLote(${idx})">
+                Arquivos
+              </button>
+              <button
+                type="button"
+                class="btn-mini reject"
+                onclick="event.stopPropagation(); recusarLote(${idx})">
+                Recusar
+              </button>
               ${okBtn}
             </div>
           </td>
@@ -1498,6 +1552,202 @@ function resetarImagemCompleta() {
         resetarImagemCompleta();
       }
     });
+  }
+
+  function montarUrlImagemArquivo(row, fallbackDia = '') {
+    const arquivo = row.nome_arquivo_recebido || row.arquivo_origem || row.nome_arquivo_unidade || '';
+    const dia = row.dia || fallbackDia || '';
+    const evento = encodeURIComponent(document.getElementById('evento').value || row.evento || '');
+
+    return `${URL_IMAGEM_RECORTE}?arquivo=${encodeURIComponent(arquivo)}&dia=${encodeURIComponent(dia)}&evento=${evento}&full=1`;
+  }
+
+  function montarTabelaArquivosLote(rows, diaFallback = '') {
+    if (!rows.length) {
+      return `<div class="vazio">Nenhum arquivo encontrado para este lote.</div>`;
+    }
+
+    return `
+      <div class="arquivos-lote-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>SEQ</th>
+              <th>DIA</th>
+              <th>ARQUIVO RECEBIDO</th>
+              <th>ARQUIVO UNIDADE</th>
+              <th>STATUS</th>
+              <th>DATA ENVIO</th>
+              <th>AÇÃO</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => {
+              const arquivoRecebido = r.nome_arquivo_recebido || r.arquivo_origem || '';
+              const dia = r.dia || diaFallback || '';
+              return `
+                <tr>
+                  <td>${escapeHtml(r.id || '')}</td>
+                  <td>${escapeHtml(r.seq_lote || '')}</td>
+                  <td>${escapeHtml(dia)}</td>
+                  <td class="mono">${escapeHtml(arquivoRecebido)}</td>
+                  <td class="mono">${escapeHtml(r.nome_arquivo_unidade || '')}</td>
+                  <td>${chipStatus(r.status || '')}</td>
+                  <td>${escapeHtml(r.data_envio || '')}</td>
+                  <td>
+                    <button
+                      type="button"
+                      class="btn-mini view"
+                      onclick="verImagem('${escapeHtml(arquivoRecebido)}','${escapeHtml(dia)}')">
+                      Ver
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  async function listarArquivosLote(idx) {
+    const row = lotesCache[idx];
+    if (!row) {
+      Swal.fire('Erro', 'Lote não encontrado em memória.', 'error');
+      return;
+    }
+
+    const lote = String(row.ftp || '').trim();
+    const unidade = String(row.id_und || '').trim();
+    const evento = String(row.simulado || elEvento.value || '').trim();
+    const dia = String(row.dia || '').trim().toUpperCase();
+
+    if (!lote || !unidade || !evento || !dia) {
+      Swal.fire('Erro', 'Dados insuficientes para listar os arquivos do lote.', 'error');
+      return;
+    }
+
+    try {
+      Swal.fire({
+        title: 'Carregando arquivos...',
+        html: `Buscando arquivos do lote <b>${escapeHtml(lote)}</b>.`,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const url = `${URL_LISTAR_ARQUIVOS_LOTE}?evento=${encodeURIComponent(evento)}&dia=${encodeURIComponent(dia)}&ftp=${encodeURIComponent(lote)}&unidade=${encodeURIComponent(unidade)}`;
+      const data = await fetchJson(url);
+      const rows = data.rows || [];
+
+      await Swal.fire({
+        title: 'Arquivos do lote',
+        width: 1200,
+        html: `
+          <div style="text-align:left;">
+            <div class="modal-info-lote">
+              <span>Evento: ${escapeHtml(evento)}</span>
+              <span>Unidade: ${escapeHtml(unidade)}</span>
+              <span>FTP/Lote: ${escapeHtml(lote)}</span>
+              <span>Dia: ${escapeHtml(dia)}</span>
+              <span>Arquivos: ${escapeHtml(String(data.total ?? rows.length))}</span>
+            </div>
+            ${montarTabelaArquivosLote(rows, dia)}
+          </div>
+        `,
+        confirmButtonText: 'Fechar',
+        confirmButtonColor: '#0b3b78'
+      });
+
+    } catch (err) {
+      Swal.fire('Erro', err.message || 'Falha ao listar os arquivos do lote.', 'error');
+    }
+  }
+
+  async function recusarLote(idx) {
+    const row = lotesCache[idx];
+    if (!row) {
+      Swal.fire('Erro', 'Lote não encontrado em memória.', 'error');
+      return;
+    }
+
+    const lote = String(row.ftp || '').trim();
+    const unidade = String(row.id_und || '').trim();
+    const evento = String(row.simulado || elEvento.value || '').trim();
+    const dia = String(row.dia || '').trim().toUpperCase();
+    const loteId = Number(row.id || 0);
+
+    if (!loteId || !lote || !unidade || !evento || !dia) {
+      Swal.fire('Erro', 'Dados insuficientes para recusar o lote.', 'error');
+      return;
+    }
+
+    const confirm = await Swal.fire({
+      icon: 'warning',
+      title: 'Recusar lote?',
+      html: `
+        <div style="text-align:left;line-height:1.55;">
+          <p><b>Evento:</b> ${escapeHtml(evento)}</p>
+          <p><b>Unidade:</b> ${escapeHtml(unidade)}</p>
+          <p><b>FTP:</b> ${escapeHtml(lote)}</p>
+          <p><b>Dia:</b> ${escapeHtml(dia)}</p>
+          <hr style="border:none;border-top:1px solid #e5edf7;margin:10px 0;">
+          <p>O lote será marcado como <b>RECUSADO</b> no controle de lotes e sairá desta fila.</p>
+        </div>
+      `,
+      input: 'textarea',
+      inputLabel: 'Motivo da recusa',
+      inputPlaceholder: 'Ex.: Arquivo não é folha de resposta válida.',
+      inputValue: 'Arquivo não é folha de resposta válida.',
+      inputAttributes: {
+        maxlength: 255
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Sim, recusar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#991b1b'
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    const motivo = normalizarValor(confirm.value || 'Recusado manualmente pelo administrador.');
+
+    try {
+      Swal.fire({
+        title: 'Recusando lote...',
+        html: 'Atualizando o status do lote.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      await fetchJson(URL_RECUSAR_LOTE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: loteId,
+          lote,
+          unidade,
+          evento,
+          dia,
+          motivo
+        })
+      });
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Lote recusado',
+        html: `O lote <b>${escapeHtml(lote)}</b> foi marcado como recusado.`,
+        confirmButtonColor: '#0b3b78'
+      });
+
+      await carregarLotes();
+
+    } catch (err) {
+      Swal.fire('Erro', err.message || 'Falha ao recusar lote.', 'error');
+    }
   }
 
     async function finalizarLote(idx) {
