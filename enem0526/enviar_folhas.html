@@ -768,6 +768,18 @@
     });
   }
 
+  async function verificarDpiEmBlocos(arquivos, tamanhoBloco = 10) {
+  const resultados = [];
+
+  for (let i = 0; i < arquivos.length; i += tamanhoBloco) {
+    const bloco = arquivos.slice(i, i + tamanhoBloco);
+    const res = await Promise.all(bloco.map(verificarDPIReal));
+    resultados.push(...res);
+  }
+
+  return resultados;
+}
+
 async function enviarArquivo(file, originalFileName, diaSelecionado, dpiX, dpiY, loteId, seqLote) {
   const fd = new FormData();
   fd.append('arquivo', file);
@@ -878,7 +890,7 @@ async function uploadFile() {
     return;
   }
 
-  const resultadosDpi = await Promise.all(arquivosProcessados.map(verificarDPIReal));
+  const resultadosDpi = await verificarDpiEmBlocos(arquivosProcessados, 10);
   const falhas = resultadosDpi.filter(r => !r.ok);
 
   if (falhas.length > 0) {
