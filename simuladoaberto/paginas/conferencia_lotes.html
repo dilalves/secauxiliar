@@ -473,9 +473,7 @@
       position:absolute;
       top:50%;
       left:50%;
-      max-width:92%;
-      max-height:92%;
-      width:auto;
+      width:100%;
       height:auto;
       min-height:0;
       transform-origin:center center;
@@ -925,12 +923,12 @@
     return `${URL_IMAGEM_RECORTE}?arquivo=${arquivo}&dia=${dia}&evento=${evento}&campo=${campoEnc}`;
   }
 
-function buildCropStyle(tipo) {
-  if (tipo === 'inscricao') {
-    return 'transform: translate(-50%, -50%) scale(0.92);';
+  function buildCropStyle(tipo) {
+    if (tipo === 'inscricao') {
+      return 'transform: translate(-50%, -50%) scale(1);';
+    }
+    return 'transform: translate(-50%, -50%) scale(0.9);';
   }
-  return 'transform: translate(-50%, -50%) scale(0.88);';
-}
 
   async function fetchJson(url, options = {}) {
     const resp = await fetch(url, {
