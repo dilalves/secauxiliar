@@ -832,7 +832,7 @@
   const URL_SALVAR_CORRECAO = `${API_BASE}/salvar_correcao_pendencia.php`;
   const URL_MARCAR_CONFERIDO = `${API_BASE}/marcar_pendencia_conferida.php`;
   const URL_FINALIZAR_LOTE = `${API_BASE}/finalizar_lote.php`;
-  const URL_LISTAR_ARQUIVOS_LOTE = `${API_BASE}/listar_arquivos_lote_conferencia.php`;
+  const URL_LISTAR_ARQUIVOS_LOTE = `${API_BASE}/listar_arquivos_lote_conferencia.php`; 
   const URL_RECUSAR_LOTE = `${API_BASE}/recusar_lote_conferencia.php`;
   const URL_GERAR_STATS_ALTERNATIVAS = `${API_BASE}/gerar_stats_alternativas.php`;
 
@@ -1577,8 +1577,8 @@ function resetarImagemCompleta() {
               <th>DIA</th>
               <th>ARQUIVO RECEBIDO</th>
               <th>ARQUIVO UNIDADE</th>
-              <th>STATUS</th>
               <th>DATA ENVIO</th>
+              <th>ABBYY</th>
               <th>AÇÃO</th>
             </tr>
           </thead>
@@ -1593,8 +1593,8 @@ function resetarImagemCompleta() {
                   <td>${escapeHtml(dia)}</td>
                   <td class="mono">${escapeHtml(arquivoRecebido)}</td>
                   <td class="mono">${escapeHtml(r.nome_arquivo_unidade || '')}</td>
-                  <td>${chipStatus(r.status || '')}</td>
                   <td>${escapeHtml(r.data_envio || '')}</td>
+                  <td class="mono">${escapeHtml(r.abbyy ? `HF ${r.abbyy}` : '-')}</td>
                   <td>
                     <button
                       type="button"
