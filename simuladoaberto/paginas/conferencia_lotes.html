@@ -723,6 +723,11 @@
         </select>
       </div>
 
+      <div class="campo" style="min-width:160px;">
+        <label for="filtroUnidade">Unidade</label>
+        <input id="filtroUnidade" type="text" placeholder="Todas / código UND" autocomplete="off">
+      </div>
+
       <div>
         <button id="btnFiltrar">Filtrar</button>
       </div>
@@ -848,6 +853,7 @@
 
   const elEvento = document.getElementById('evento');
   const elTipoLote = document.getElementById('tipoLote');
+  const elFiltroUnidade = document.getElementById('filtroUnidade');
   const btnFiltrar = document.getElementById('btnFiltrar');
   const btnGerarStats = document.getElementById('btnGerarStats');
   const tbodyLotes = document.getElementById('tbodyLotes');
@@ -1067,34 +1073,47 @@
     return String(row?.dia || '').trim().toUpperCase() === 'R1';
   }
 
+  function getFiltroUnidade() {
+    return String(elFiltroUnidade?.value || '').trim();
+  }
+
   function filtrarLotesPorTipo(rows) {
     const tipo = getFiltroTipoLote();
+    const unidade = getFiltroUnidade();
+
+    let filtrados;
 
     if (tipo === 'RED') {
-      return rows.filter(isLoteRedacao);
+      filtrados = rows.filter(isLoteRedacao);
+    } else if (tipo === 'TODOS') {
+      filtrados = rows;
+    } else {
+      filtrados = rows.filter(r => !isLoteRedacao(r));
     }
 
-    if (tipo === 'TODOS') {
-      return rows;
+    if (unidade) {
+      filtrados = filtrados.filter(r => String(r.id_und || '').trim() === unidade);
     }
 
-    return rows.filter(r => !isLoteRedacao(r));
+    return filtrados;
   }
 
   function montarTextoInfoEvento(evento, todos, filtrados) {
     const tipo = getFiltroTipoLote();
+    const unidade = getFiltroUnidade();
     const totalGeral = todos.length;
     const totalFiltro = filtrados.length;
+    const unidadeTxt = unidade ? ` Unidade: ${unidade}.` : '';
 
     if (tipo === 'RED') {
-      return `${totalFiltro} lote(s) de redação R1 encontrado(s) para o evento ${evento}. Total geral: ${totalGeral}.`;
+      return `${totalFiltro} lote(s) de redação R1 encontrado(s) para o evento ${evento}.${unidadeTxt} Total geral: ${totalGeral}.`;
     }
 
     if (tipo === 'TODOS') {
-      return `${totalGeral} lote(s) encontrado(s) para o evento ${evento}. Exibindo todos.`;
+      return `${totalFiltro} lote(s) encontrado(s) para o evento ${evento}.${unidadeTxt} Total geral: ${totalGeral}.`;
     }
 
-    return `${totalFiltro} lote(s) objetivos D1/D2 encontrado(s) para o evento ${evento}. Total geral: ${totalGeral}.`;
+    return `${totalFiltro} lote(s) objetivos D1/D2 encontrado(s) para o evento ${evento}.${unidadeTxt} Total geral: ${totalGeral}.`;
   }
 
   function montarResumo(rows, data = {}) {
@@ -2046,6 +2065,11 @@ function resetarImagemCompleta() {
   btnFiltrar.addEventListener('click', carregarLotes);
   if (elTipoLote) {
     elTipoLote.addEventListener('change', carregarLotes);
+  }
+  if (elFiltroUnidade) {
+    elFiltroUnidade.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') carregarLotes();
+    });
   }
   btnGerarStats.addEventListener('click', gerarStatsAlternativas);
   document.addEventListener('DOMContentLoaded', carregarEventos);
