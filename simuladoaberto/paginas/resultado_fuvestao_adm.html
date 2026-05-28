@@ -350,6 +350,7 @@
           <tr>
             <th class="num">CLS_G</th>
             <th>INSCRIÇÃO</th>
+            <th>ARQUIVO</th>
             <th>NOME</th>
             <th>UNIDADE</th>
             <th class="num">POR</th>
@@ -368,7 +369,7 @@
         </thead>
         <tbody id="tbody">
           <tr>
-            <td colspan="16" class="vazio">Selecione um evento para carregar o resultado.</td>
+            <td colspan="17" class="vazio">Selecione um evento para carregar o resultado.</td>
           </tr>
         </tbody>
       </table>
@@ -440,7 +441,7 @@
       infoBar.textContent = 'Selecione um evento e clique em Buscar.';
       tbody.innerHTML = `
         <tr>
-          <td colspan="16" class="vazio">Selecione um evento para carregar o resultado.</td>
+          <td colspan="17" class="vazio">Selecione um evento para carregar o resultado.</td>
         </tr>
       `;
     }
@@ -474,7 +475,7 @@
       }
 
       infoBar.textContent = 'Carregando resultado...';
-      tbody.innerHTML = `<tr><td colspan="16" class="vazio">Carregando...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="17" class="vazio">Carregando...</td></tr>`;
 
       const qs = new URLSearchParams();
       qs.set('evento', evento.value);
@@ -515,6 +516,7 @@
 
         const texto = normalizar([
           r.INSCRICAO,
+          r.ARQUIVO_ORIGEM,
           r.NOME,
           r.UNIDADE,
           r.CODIGO_UNIDADE,
@@ -533,7 +535,7 @@
       if (!rows.length) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="16" class="vazio">Nenhum resultado encontrado com os filtros atuais.</td>
+            <td colspan="17" class="vazio">Nenhum resultado encontrado com os filtros atuais.</td>
           </tr>
         `;
         return;
@@ -543,6 +545,15 @@
         <tr>
           <td class="num"><span class="rank">${esc(r.CLS_G || '-')}</span></td>
           <td>${esc(r.INSCRICAO)}</td>
+          <td>
+            ${r.ARQUIVO_ORIGEM ? `
+              <a
+                href="${API}buscar_imagem_pendencia.php?arquivo=${encodeURIComponent(r.ARQUIVO_ORIGEM)}"
+                target="_blank"
+                title="${esc(r.ARQUIVO_ORIGEM)}"
+              >Ver imagem</a>
+            ` : '-'}
+          </td>
           <td class="nome">${esc(r.NOME || '-')}</td>
           <td class="unidade">${esc(r.UNIDADE || '-')}</td>
           <td class="num">${n(r.POR)}</td>
@@ -570,7 +581,7 @@
       }
 
       const cols = [
-        'INSCRICAO','NOME','UNIDADE','POR','HIS','ING','SOC','BIO','QUI','FIL','FIS','MAT','GEO','TOTAL','CLS_G','ORIGEM'
+        'INSCRICAO','ARQUIVO_ORIGEM','NOME','UNIDADE','POR','HIS','ING','SOC','BIO','QUI','FIL','FIS','MAT','GEO','TOTAL','CLS_G','ORIGEM'
       ];
 
       const linhas = [
@@ -598,7 +609,7 @@
       } catch (e) {
         console.error(e);
         infoBar.textContent = 'Erro ao carregar resultado.';
-        tbody.innerHTML = `<tr><td colspan="16" class="vazio">${esc(e.message || 'Erro ao carregar resultado.')}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="17" class="vazio">${esc(e.message || 'Erro ao carregar resultado.')}</td></tr>`;
         alert(e.message || 'Erro ao carregar resultado.');
       }
     });
@@ -623,7 +634,7 @@
         resetTela();
       } else {
         infoBar.textContent = 'Clique em Buscar para carregar o resultado do evento selecionado.';
-        tbody.innerHTML = `<tr><td colspan="16" class="vazio">Clique em Buscar para carregar o resultado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="17" class="vazio">Clique em Buscar para carregar o resultado.</td></tr>`;
       }
     });
 
@@ -634,7 +645,7 @@
       } catch(e){
         console.error(e);
         infoBar.textContent = 'Erro ao carregar eventos.';
-        tbody.innerHTML = `<tr><td colspan="16" class="vazio">Erro ao carregar eventos.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="17" class="vazio">Erro ao carregar eventos.</td></tr>`;
       }
     })();
   </script>
