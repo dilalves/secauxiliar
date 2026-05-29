@@ -296,8 +296,8 @@
       </div>
 
       <div class="campo">
-        <label for="busca">Buscar aluno, inscrição ou unidade</label>
-        <input type="search" id="busca" placeholder="Digite para filtrar na tela">
+        <label for="busca">Buscar aluno, inscrição, CPF ou unidade</label>
+        <input type="search" id="busca" placeholder="Digite nome, inscrição, CPF ou unidade">
       </div>
 
       <div class="campo campo-menor">
@@ -313,6 +313,7 @@
       <button id="btnBuscar">Buscar</button>
       <button id="btnLimpar" class="btn-sec">Limpar filtro</button>
       <button id="btnCsv" class="btn-sec">Exportar CSV</button>
+      <button id="btnImprimir" class="btn-sec">Imprimir Top 100</button>
     </div>
 
     <div class="resumo">
@@ -515,6 +516,7 @@
 
         const texto = normalizar([
           r.INSCRICAO,
+          r.CPF,
           r.ARQUIVO_ORIGEM,
           r.NOME,
           r.UNIDADE,
@@ -527,9 +529,10 @@
     }
 
     function renderTabela(){
-      const rows = getRowsFiltradas();
+      const rowsFiltradas = getRowsFiltradas();
+      const rows = rowsFiltradas.slice(0, 100);
 
-      infoBar.textContent = `${rows.length} aluno(s) exibido(s) de ${rowsCache.length} carregado(s).`;
+      infoBar.textContent = `${rows.length} aluno(s) exibido(s) de ${rowsFiltradas.length} filtrado(s) / ${rowsCache.length} carregado(s). Exibição limitada aos 100 primeiros.`;
 
       if (!rows.length) {
         tbody.innerHTML = `
@@ -570,6 +573,177 @@
       `).join('');
     }
 
+    function imprimirTop100(){
+      const rows = getRowsFiltradas().slice(0, 100);
+
+      if (!rows.length) {
+        alert('Não há dados para imprimir.');
+        return;
+      }
+
+      const titulo = `Top 100 - Resultado do Simulado ${evento.value || ''}`;
+      const geradoEm = new Date().toLocaleString('pt-BR');
+
+      const linhas = rows.map(r => `
+        <tr>
+          <td class="num">${esc(r.CLS_G || '-')}</td>
+          <td class="num">${esc(r.INSCRICAO || '-')}</td>
+          <td>${esc(r.NOME || '-')}</td>
+          <td>${esc(r.UNIDADE || '-')}</td>
+          <td class="num">${n(r.POR)}</td>
+          <td class="num">${n(r.HIS)}</td>
+          <td class="num">${n(r.ING)}</td>
+          <td class="num">${n(r.SOC)}</td>
+          <td class="num">${n(r.BIO)}</td>
+          <td class="num">${n(r.QUI)}</td>
+          <td class="num">${n(r.FIL)}</td>
+          <td class="num">${n(r.FIS)}</td>
+          <td class="num">${n(r.MAT)}</td>
+          <td class="num">${n(r.GEO)}</td>
+          <td class="num total">${n(r.TOTAL)}</td>
+          <td class="num">${esc(origemLabel(r.ORIGEM))}</td>
+        </tr>
+      `).join('');
+
+      const htmlRelatorio = `
+        <!doctype html>
+        <html lang="pt-br">
+        <head>
+          <meta charset="utf-8">
+          <title>${titulo}</title>
+          <style>
+            * { box-sizing: border-box; }
+            body {
+              margin: 22px;
+              font-family: Arial, sans-serif;
+              color: #10233f;
+              background: #ffffff;
+            }
+            .cabecalho {
+              border-bottom: 4px solid #0b3b78;
+              padding-bottom: 12px;
+              margin-bottom: 16px;
+              display: flex;
+              justify-content: space-between;
+              gap: 16px;
+              align-items: flex-end;
+            }
+            h1 {
+              margin: 0;
+              color: #0b3b78;
+              font-size: 22px;
+            }
+            .sub {
+              margin-top: 5px;
+              color: #64748b;
+              font-size: 12px;
+            }
+            .selo {
+              border: 1px solid #cfe0f5;
+              background: #f4f8fe;
+              color: #0b3b78;
+              border-radius: 12px;
+              padding: 8px 12px;
+              font-size: 12px;
+              font-weight: 700;
+              white-space: nowrap;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              font-size: 10.5px;
+            }
+            th {
+              background: #0b3b78;
+              color: #fff;
+              padding: 7px 5px;
+              text-align: left;
+              border: 1px solid #0b3b78;
+            }
+            td {
+              border: 1px solid #d9e5f2;
+              padding: 5px 5px;
+              vertical-align: middle;
+            }
+            tr:nth-child(even) td {
+              background: #f4f8fe;
+            }
+            .num {
+              text-align: center;
+              font-variant-numeric: tabular-nums;
+            }
+            .total {
+              font-weight: 800;
+              color: #0b3b78;
+            }
+            .rodape {
+              margin-top: 12px;
+              color: #64748b;
+              font-size: 11px;
+              text-align: right;
+            }
+            @page {
+              size: landscape;
+              margin: 10mm;
+            }
+            @media print {
+              body { margin: 0; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="cabecalho">
+            <div>
+              <h1>${titulo}</h1>
+              <div class="sub">Relatório ADM • ${rows.length} primeiros classificados • Gerado em ${geradoEm}</div>
+            </div>
+            <div class="selo">Curso Objetivo • Simulado Aberto</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th class="num">CLS_G</th>
+                <th class="num">INSCRIÇÃO</th>
+                <th>NOME</th>
+                <th>UNIDADE</th>
+                <th class="num">POR</th>
+                <th class="num">HIS</th>
+                <th class="num">ING</th>
+                <th class="num">SOC</th>
+                <th class="num">BIO</th>
+                <th class="num">QUI</th>
+                <th class="num">FIL</th>
+                <th class="num">FIS</th>
+                <th class="num">MAT</th>
+                <th class="num">GEO</th>
+                <th class="num">TOTAL</th>
+                <th class="num">ORIGEM</th>
+              </tr>
+            </thead>
+            <tbody>${linhas}</tbody>
+          </table>
+
+          <div class="rodape">Fonte: relatório ADM do Simulado Aberto</div>
+
+          <script>
+            window.onload = () => window.print();
+          <\/script>
+        </body>
+        </html>
+      `;
+
+      const w = window.open('', '_blank');
+      if (!w) {
+        alert('O navegador bloqueou a janela de impressão. Permita pop-ups para esta página.');
+        return;
+      }
+
+      w.document.open();
+      w.document.write(htmlRelatorio);
+      w.document.close();
+    }
+
     function exportarCsv(){
       const rows = getRowsFiltradas();
 
@@ -579,7 +753,7 @@
       }
 
       const cols = [
-        'INSCRICAO','ARQUIVO_ORIGEM','NOME','UNIDADE','POR','HIS','ING','SOC','BIO','QUI','FIL','FIS','MAT','GEO','TOTAL','CLS_G','ORIGEM'
+        'INSCRICAO','CPF','ARQUIVO_ORIGEM','NOME','UNIDADE','POR','HIS','ING','SOC','BIO','QUI','FIL','FIS','MAT','GEO','TOTAL','CLS_G','ORIGEM'
       ];
 
       const linhas = [
@@ -620,6 +794,7 @@
     });
 
     document.getElementById('btnCsv').addEventListener('click', exportarCsv);
+    document.getElementById('btnImprimir').addEventListener('click', imprimirTop100);
 
     busca.addEventListener('input', renderTabela);
     origem.addEventListener('change', renderTabela);
