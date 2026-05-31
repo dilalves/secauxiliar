@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Consulta de Sala — Simulado Aberto ENEM</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e9edf3;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --warn:#f59e0b;
+      --danger:#dc2626;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    }
+
+    .container{ max-width:960px; margin:0 auto; padding:0 16px; }
+
+    header.topbar{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:64px;
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      z-index:10;
+      box-shadow:0 2px 10px rgba(16,24,40,.22);
+    }
+
+    .topbar .container{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand img{ height:28px; }
+
+    .brand .title{
+      font-weight:800;
+      font-size:15px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .public-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.22);
+      color:#fff;
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .public-pill i{
+      font-size:17px;
+    }
+
+    .banner-evento-wrap{
+      margin-top:75px;
+      margin-bottom:0;
+    }
+
+    .banner-evento{
+      width:100%;
+      display:block;
+      border-radius:16px;
+      border:1px solid var(--line);
+      box-shadow:0 10px 26px rgba(0,0,0,.05);
+    }
+
+    main{
+      padding-top:18px;
+      padding-bottom:40px;
+    }
+
+    .hero{
+      background:linear-gradient(180deg, rgba(11,59,120,.10), rgba(11,59,120,0));
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.05);
+      margin-bottom:16px;
+    }
+
+    .hero-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .hero h1{
+      margin:0;
+      font-size:23px;
+      font-weight:900;
+    }
+
+    .hero p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--line);
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    .badge i{
+      font-size:16px;
+      color:var(--accent);
+    }
+
+    .search-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 10px 26px rgba(0,0,0,.05);
+    }
+
+    .search-card h2{
+      margin:0;
+      font-size:18px;
+      font-weight:900;
+      color:var(--ink);
+    }
+
+    .search-card p{
+      margin:6px 0 18px;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 190px;
+      gap:12px;
+      align-items:end;
+    }
+
+    .field-label{
+      display:block;
+      font-size:11px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.45px;
+      margin-bottom:6px;
+      font-weight:900;
+    }
+
+    .cpf-input{
+      width:100%;
+      height:48px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:0 14px;
+      font-size:17px;
+      background:#fff;
+      color:var(--ink);
+      outline:none;
+    }
+
+    .cpf-input:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    .btn-consultar{
+      width:100%;
+      height:48px;
+      border:none;
+      border-radius:14px;
+      background:var(--primary);
+      color:#fff;
+      font-size:14px;
+      font-weight:900;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+
+    .btn-consultar:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
+    .result{
+      margin-top:16px;
+    }
+
+    .msg{
+      border-radius:14px;
+      padding:14px 16px;
+      font-size:14px;
+      line-height:1.35;
+      border:1px solid var(--line);
+    }
+
+    .msg.info{
+      background:#eaf3ff;
+      color:#0b3b78;
+    }
+
+    .msg.warn{
+      background:#fff8e1;
+      color:#795600;
+      border-color:#f0d98a;
+    }
+
+    .msg.danger{
+      background:#fdecec;
+      color:#8a1f1f;
+      border-color:#f0b7b7;
+    }
+
+    .candidate-card{
+      background:#eef5ff;
+      border:1px solid #cfe0ff;
+      border-left:6px solid var(--accent);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    .candidate-title{
+      margin:0 0 14px;
+      font-size:17px;
+      color:#0b3b78;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .candidate-title i{
+      font-size:21px;
+    }
+
+    .grid-result{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px 16px;
+    }
+
+    .info-field{
+      background:#fff;
+      border:1px solid #d7e6ff;
+      border-radius:14px;
+      padding:11px 12px;
+    }
+
+    .info-field.full{
+      grid-column:1 / -1;
+    }
+
+    .info-label{
+      font-size:10px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.45px;
+      margin-bottom:4px;
+      font-weight:900;
+    }
+
+    .info-value{
+      font-size:15px;
+      color:var(--ink);
+      word-break:break-word;
+    }
+
+    .local-box{
+      margin-top:14px;
+      background:#fff;
+      border:1px solid #cfe0ff;
+      border-radius:16px;
+      padding:16px;
+    }
+
+    .local-title{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:#0b3b78;
+      font-weight:900;
+      font-size:16px;
+      margin-bottom:12px;
+    }
+
+    .local-title i{
+      font-size:22px;
+    }
+
+    .local-grid{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:10px;
+    }
+
+    .local-item{
+      background:#f8fbff;
+      border:1px solid #d7e6ff;
+      border-radius:14px;
+      padding:12px;
+      text-align:center;
+    }
+
+    .local-item .lbl{
+      font-size:10px;
+      color:var(--muted);
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.45px;
+      margin-bottom:4px;
+    }
+
+    .local-item .val{
+      font-size:18px;
+      color:#0b3b78;
+      font-weight:900;
+    }
+
+    .qr-area{
+      margin-top:14px;
+      display:flex;
+      gap:14px;
+      align-items:center;
+      background:#fff;
+      border:1px dashed #cfdced;
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .qr-area img{
+      width:104px;
+      height:104px;
+      border-radius:10px;
+      border:1px solid var(--line);
+    }
+
+    .qr-area b{
+      color:#0b3b78;
+    }
+
+    .note{
+      margin-top:14px;
+      font-size:12px;
+      color:#5f7088;
+      background:#fff;
+      border:1px dashed #cfdced;
+      border-radius:12px;
+      padding:10px 12px;
+    }
+
+    .footer{
+      text-align:center;
+      margin-top:18px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    @media(max-width:860px){
+      .form-grid{ grid-template-columns:1fr; }
+      .local-grid{ grid-template-columns:1fr 1fr; }
+    }
+
+    @media(max-width:600px){
+      .grid-result{ grid-template-columns:1fr; }
+      .info-field.full{ grid-column:auto; }
+      .hero-top{ flex-direction:column; }
+      .badges{ justify-content:flex-start; }
+      .public-pill span{ display:none; }
+      .local-grid{ grid-template-columns:1fr; }
+      .qr-area{ flex-direction:column; text-align:center; }
+    }
+  </style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container">
+    <div class="brand">
+      <img src="/enem0526/logo-mini.png" alt="Logo">
+      <div class="title">Simulado Aberto ENEM — Maio/2026</div>
+    </div>
+
+    <div class="public-pill">
+      <i class="material-icons">public</i>
+      <span>Consulta pública</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="banner-evento-wrap">
+    <img
+      src="/enem0526/banner-enem.jpg"
+      alt="Banner do Simulado Aberto ENEM Maio 2026"
+      class="banner-evento"
+    >
+  </div>
+</div>
+
+<main>
+  <div class="container">
+
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>Consulte sua sala de prova</h1>
+          <p>Informe o CPF do candidato para visualizar a inscrição, unidade e local de prova.</p>
+        </div>
+
+        <div class="badges">
+          <span class="badge"><i class="material-icons">event</i><b>ENEM0626</b></span>
+          <span class="badge"><i class="material-icons">search</i> Consulta por CPF</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="search-card">
+      <h2>Pesquisar candidato</h2>
+      <p>Digite o CPF utilizado na inscrição do Simulado Aberto ENEM.</p>
+
+      <div class="form-grid">
+        <div>
+          <label class="field-label" for="cpf">CPF do candidato</label>
+          <input
+            id="cpf"
+            class="cpf-input"
+            type="tel"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="14"
+            placeholder="000.000.000-00"
+            autocomplete="off"
+          />
+        </div>
+
+        <button class="btn-consultar" id="btnConsultar" type="button">
+          <i class="material-icons">search</i>
+          Consultar
+        </button>
+      </div>
+
+      <div id="resultado" class="result"></div>
+    </section>
+
+    <div class="footer">
+      Esta consulta exibe apenas informações necessárias para localização do candidato no dia da prova.
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const API = 'https://apisec.secauxiliar.com.br/enem0626/';
+  const API_CPF = API + 'buscar_aluno_publico.php';
+
+  const $cpf = document.getElementById('cpf');
+  const $btn = document.getElementById('btnConsultar');
+  const $resultado = document.getElementById('resultado');
+
+  function somenteDigitos(v){
+    return String(v || '').replace(/\D/g, '');
+  }
+
+  function formatarCpf(v){
+    v = somenteDigitos(v).slice(0, 11);
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    return v;
+  }
+
+  function escapeHtml(str){
+    return String(str ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function msg(tipo, texto){
+    $resultado.innerHTML = `
+      <div class="msg ${tipo}">
+        ${escapeHtml(texto)}
+      </div>
+    `;
+  }
+
+  function montarTextoQr(c){
+    const e = c.ensalamento || {};
+    return [
+      'Simulado Aberto ENEM',
+      `Nome: ${c.nome || '-'}`,
+      `CPF: ${c.cpf_mascarado || '-'}`,
+      `Inscrição: ${c.inscricao || '-'}`,
+      `Unidade: ${c.unidade || '-'}`,
+      `Sala: ${e.sala || '-'}`,
+      `Andar: ${e.andar || '-'}`,
+      `Prédio: ${e.predio || '-'}`,
+      `Bloco: ${e.bloco || '-'}`
+    ].join('\n');
+  }
+
+  function urlQr(texto){
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(texto);
+  }
+
+  function renderAluno(c){
+    const e = c.ensalamento || {};
+    const temSala = !!e.encontrado;
+
+    $resultado.innerHTML = `
+      <div class="candidate-card">
+        <div class="candidate-title">
+          <i class="material-icons">check_circle</i>
+          Candidato encontrado
+        </div>
+
+        <div class="grid-result">
+          <div class="info-field full">
+            <div class="info-label">Nome</div>
+            <div class="info-value">${escapeHtml(c.nome || '-')}</div>
+          </div>
+
+          <div class="info-field">
+            <div class="info-label">CPF</div>
+            <div class="info-value">${escapeHtml(c.cpf_mascarado || ('Final ' + (c.cpf_final || '-')))}</div>
+          </div>
+
+          <div class="info-field">
+            <div class="info-label">Tipo de inscrição</div>
+            <div class="info-value">${escapeHtml(c.tipo_inscricao || '-')}</div>
+          </div>
+
+          <div class="info-field full">
+            <div class="info-label">Inscrição - Unidade</div>
+            <div class="info-value">${escapeHtml(c.inscricao_unidade || '-')}</div>
+          </div>
+        </div>
+
+        ${
+          temSala
+          ? `
+            <div class="local-box">
+              <div class="local-title">
+                <i class="material-icons">location_on</i>
+                Local de prova
+              </div>
+
+              <div class="local-grid">
+                <div class="local-item">
+                  <div class="lbl">Sala</div>
+                  <div class="val">${escapeHtml(e.sala || '-')}</div>
+                </div>
+
+                <div class="local-item">
+                  <div class="lbl">Andar</div>
+                  <div class="val">${escapeHtml(e.andar || '-')}</div>
+                </div>
+
+                <div class="local-item">
+                  <div class="lbl">Prédio</div>
+                  <div class="val">${escapeHtml(e.predio || '-')}</div>
+                </div>
+
+                <div class="local-item">
+                  <div class="lbl">Bloco</div>
+                  <div class="val">${escapeHtml(e.bloco || '-')}</div>
+                </div>
+              </div>
+
+              <div class="qr-area">
+                <img src="${urlQr(montarTextoQr(c))}" alt="QR Code do local de prova">
+                <div>
+                  <b>QR Code do local de prova</b><br>
+                  Apresente ou salve esta tela para localizar sua sala com mais facilidade.
+                </div>
+              </div>
+            </div>
+          `
+          : `
+            <div class="msg warn" style="margin-top:14px;">
+              Candidato encontrado, mas o local de prova ainda não foi localizado no ensalamento.
+            </div>
+          `
+        }
+
+        <div class="note">
+          Confira seus dados com atenção. Em caso de divergência, procure a equipe de atendimento da unidade.
+        </div>
+      </div>
+    `;
+  }
+
+  async function consultarCpf(){
+    const cpf = somenteDigitos($cpf.value);
+
+    if (cpf.length !== 11) {
+      msg('warn', 'Informe um CPF válido com 11 dígitos.');
+      return;
+    }
+
+    $btn.disabled = true;
+    $btn.innerHTML = '<i class="material-icons">hourglass_empty</i> Consultando...';
+    msg('info', 'Consultando candidato...');
+
+    try {
+      const resp = await fetch(`${API_CPF}?cpf=${encodeURIComponent(cpf)}`, {
+        method: 'GET',
+        credentials: 'omit',
+        cache: 'no-store'
+      });
+
+      const json = await resp.json();
+
+      if (!resp.ok || !json.ok) {
+        msg('danger', json.msg || json.error || 'Erro ao consultar CPF.');
+        return;
+      }
+
+      if (!json.encontrado) {
+        msg('warn', json.msg || 'Nenhum candidato encontrado para este CPF.');
+        return;
+      }
+
+      renderAluno(json.aluno || {});
+
+    } catch (e) {
+      console.error(e);
+      msg('danger', 'Erro de comunicação com o servidor.');
+    } finally {
+      $btn.disabled = false;
+      $btn.innerHTML = '<i class="material-icons">search</i> Consultar';
+    }
+  }
+
+  $cpf.addEventListener('input', () => {
+    $cpf.value = formatarCpf($cpf.value);
+  });
+
+  $cpf.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') consultarCpf();
+  });
+
+  $btn.addEventListener('click', consultarCpf);
+</script>
+</body>
+</html>
