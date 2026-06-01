@@ -3,808 +3,450 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Resultado da Unidade — Simulado Aberto Fuvestão</title>
-
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
   <style>
-    :root {
-      --azul: #0b3f7f;
-      --azul2: #123f7a;
-      --azul3: #0d4b95;
-
-      --bg: #eaf2fb;
-      --card: #ffffff;
-      --line: #d7e4f3;
-      --text: #0f2544;
-      --muted: #64748b;
-      --soft: #f3f7fc;
-
-      --ok-bg: #e8f7ee;
-      --ok-line: #bfe7cc;
-      --ok-text: #206a3a;
-
-      --warn-bg: #fff7ed;
-      --warn-line: #fed7aa;
-      --warn-text: #92400e;
-
-      --bad-bg: #fff1f2;
-      --bad-line: #fecdd3;
-      --bad-text: #9f1239;
-
-      --shadow: 0 12px 30px rgba(11, 63, 127, .10);
+    :root{
+      --bg:#f8fbff;
+      --card:#ffffff;
+      --line:#d9e5f2;
+      --text:#10233f;
+      --muted:#64748b;
+      --primary:#0b3b78;
+      --soft:#f4f8fe;
     }
 
-    * {
-      box-sizing: border-box;
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      padding:18px;
+      font-family:system-ui, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
     }
 
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
     }
 
-    /* =========================
-       TOPO / PADRÃO UNIDADE
-    ========================= */
-
-    .topbar {
-      background: linear-gradient(90deg, var(--azul), var(--azul2));
-      color: #fff;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, .14);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+    h2{
+      margin:0;
+      font-size:24px;
+      color:var(--primary);
     }
 
-    .topbar-inner {
-      width: min(1240px, calc(100% - 28px));
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
+    .sub{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:14px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 900;
-      letter-spacing: -.02em;
-      white-space: nowrap;
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      box-shadow:0 8px 24px rgba(11,59,120,.05);
+      margin-bottom:18px;
+      overflow:visible;
     }
 
-    .brand-logo {
-      width: 44px;
-      height: 34px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 30px;
-      line-height: 1;
+    .filtros{
+      display:flex;
+      gap:12px;
+      align-items:end;
+      flex-wrap:wrap;
+      margin-bottom:16px;
     }
 
-    .brand-title {
-      font-size: 16px;
+    .campo{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:220px;
     }
 
-    .top-actions {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 8px;
-      flex-wrap: wrap;
+    .campo-menor{
+      min-width:150px;
     }
 
-    .top-pill {
-      min-height: 38px;
-      border-radius: 999px;
-      padding: 7px 14px;
-      background: rgba(255, 255, 255, .13);
-      border: 1px solid rgba(255, 255, 255, .24);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: #fff;
-      font-weight: 800;
-      text-decoration: none;
-      line-height: 1.05;
+    label{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:600;
     }
 
-    .top-pill small {
-      display: block;
-      font-size: 11px;
-      font-weight: 700;
-      opacity: .92;
+    select, input, button{
+      height:40px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      padding:0 12px;
+      font-size:14px;
+      font-family:inherit;
     }
 
-    /* =========================
-       PAINEL PRINCIPAL
-    ========================= */
-
-    .page {
-      width: min(1240px, calc(100% - 28px));
-      margin: 22px auto 34px;
+    select, input{
+      background:#fff;
+      color:var(--text);
     }
 
-    .panel {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
+    input:focus, select:focus{
+      outline:none;
+      border-color:#0b3b78;
+      box-shadow:0 0 0 3px rgba(11,59,120,.10);
     }
 
-    .panel-head {
-      padding: 22px 22px 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-      border-bottom: 1px solid #edf3fb;
-      flex-wrap: wrap;
+    button{
+      background:var(--primary);
+      color:#fff;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
     }
 
-    h1 {
-      margin: 0;
-      color: var(--azul);
-      font-size: 28px;
-      letter-spacing: -.03em;
-      line-height: 1.05;
+    button:hover{
+      filter:brightness(1.05);
     }
 
-    .subtitle {
-      margin-top: 6px;
-      color: #52637c;
-      font-size: 14px;
+    .btn-sec{
+      background:#e8f0fb;
+      color:var(--primary);
+      border:1px solid #cfe0f5;
     }
 
-    .actions {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 10px;
-      flex-wrap: wrap;
+    .resumo{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
     }
 
-    button,
-    .btn-link {
-      height: 40px;
-      border-radius: 10px;
-      border: 1px solid var(--line);
-      padding: 0 14px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 900;
-      cursor: pointer;
-      text-decoration: none;
-      transition: .12s ease;
-      white-space: nowrap;
+    .resumo-card{
+      min-width:170px;
+      background:#f4f8fe;
+      border:1px solid #dce7f6;
+      border-radius:12px;
+      padding:12px 14px;
     }
 
-    button.primary {
-      background: var(--azul);
-      color: #fff;
-      border-color: var(--azul);
-      box-shadow: 0 4px 12px rgba(11, 63, 127, .22);
+    .resumo-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
     }
 
-    button.secondary,
-    .btn-link.secondary {
-      background: #fff;
-      color: var(--azul);
-      border-color: #cfe0f5;
+    .resumo-valor{
+      margin-top:6px;
+      font-size:26px;
+      font-weight:800;
+      color:var(--primary);
     }
 
-    button:hover,
-    .btn-link:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.03);
+    .info-bar{
+      margin-bottom:12px;
+      color:var(--muted);
+      font-size:14px;
     }
 
-    button:disabled {
-      opacity: .55;
-      cursor: not-allowed;
-      transform: none;
+    .tabela-wrap{
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      max-height:calc(100vh - 295px);
+      min-height:280px;
     }
 
-    .panel-body {
-      padding: 16px 22px 22px;
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1180px;
     }
 
-    .msg {
-      margin: 0 0 15px;
-      padding: 11px 13px;
-      border-radius: 10px;
-      font-size: 13px;
-      border: 1px solid var(--line);
-      background: #f8fbff;
-      color: #40546f;
+    th, td{
+      padding:8px 8px;
+      border-bottom:1px solid #edf2f7;
+      text-align:left;
+      vertical-align:middle;
+      font-size:12px;
+      white-space:nowrap;
     }
 
-    .msg.ok {
-      background: var(--ok-bg);
-      border-color: var(--ok-line);
-      color: var(--ok-text);
+    th{
+      position:sticky;
+      top:0;
+      background:#f2f7fd;
+      color:#17345d;
+      z-index:50;
+      box-shadow:0 2px 0 #d9e5f2;
     }
 
-    .msg.err {
-      background: var(--bad-bg);
-      border-color: var(--bad-line);
-      color: var(--bad-text);
+    tr:hover td{
+      background:#f0f6ff;
     }
 
-    /* =========================
-       KPIs
-    ========================= */
-
-    .kpis {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(150px, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
+    .vazio{
+      padding:26px;
+      text-align:center;
+      color:var(--muted);
     }
 
-    .kpi {
-      background: linear-gradient(180deg, #f8fbff, #f3f7fc);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 14px;
-      min-height: 78px;
+    .num{
+      text-align:center;
+      font-variant-numeric:tabular-nums;
     }
 
-    .kpi-label {
-      color: #657792;
-      font-size: 11px;
-      text-transform: uppercase;
-      font-weight: 900;
-      letter-spacing: .04em;
-      margin-bottom: 6px;
+    .nome{
+      min-width:220px;
+      white-space:normal;
+      font-weight:600;
     }
 
-    .kpi-value {
-      color: var(--azul);
-      font-size: 24px;
-      font-weight: 950;
-      line-height: 1.05;
+    .unidade{
+      min-width:220px;
+      white-space:normal;
     }
 
-    .kpi-note {
-      color: #71829a;
-      font-size: 12px;
-      margin-top: 4px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:3px 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      border:1px solid #d8e6ff;
+      background:#eef4ff;
+      color:#17345d;
     }
 
-    /* =========================
-       FILTROS
-    ========================= */
-
-    .filters {
-      background: #fbfdff;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
-      display: grid;
-      grid-template-columns: 1fr 170px 170px auto;
-      gap: 10px;
-      align-items: end;
-      margin-bottom: 14px;
+    .pill-avulsa{
+      background:#fff7ed;
+      border-color:#fed7aa;
+      color:#92400e;
     }
 
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
+    .rank{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:34px;
+      padding:3px 8px;
+      border-radius:999px;
+      background:#e8f0fb;
+      color:var(--primary);
+      font-weight:900;
+      border:1px solid #cfe0f5;
     }
 
-    label {
-      color: #64748b;
-      font-size: 12px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: .03em;
+    .total{
+      font-weight:900;
+      color:var(--primary);
     }
 
-    input,
-    select {
-      width: 100%;
-      height: 40px;
-      border-radius: 10px;
-      border: 1px solid #d7e4f3;
-      background: #fff;
-      color: var(--text);
-      padding: 0 12px;
-      font-family: inherit;
-      font-size: 14px;
-      outline: none;
+    .acoes{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
     }
 
-    input:focus,
-    select:focus {
-      border-color: var(--azul3);
-      box-shadow: 0 0 0 3px rgba(13, 75, 149, .10);
-    }
-
-    /* =========================
-       TABELA
-    ========================= */
-
-    .table-wrap {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      overflow: auto;
-      background: #fff;
-      max-height: calc(100vh - 355px);
-      min-height: 360px;
-    }
-
-    table {
-      width: 100%;
-      min-width: 1180px;
-      border-collapse: separate;
-      border-spacing: 0;
-    }
-
-    th,
-    td {
-      padding: 9px 8px;
-      border-bottom: 1px solid #edf2f7;
-      font-size: 12px;
-      text-align: left;
-      vertical-align: middle;
-      white-space: nowrap;
-    }
-
-    th {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      background: #edf4fd;
-      color: #07336c;
-      font-weight: 950;
-      box-shadow: 0 1px 0 #d7e4f3;
-    }
-
-    tbody tr:hover td {
-      background: #f4f8ff;
-    }
-
-    .num {
-      text-align: center;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .nome {
-      min-width: 250px;
-      white-space: normal;
-      font-weight: 800;
-      color: #132c4e;
-    }
-
-    .insc a {
-      color: var(--azul);
-      font-weight: 950;
-      text-decoration: none;
-      border-bottom: 1px dashed rgba(11, 63, 127, .35);
-    }
-
-    .insc a:hover {
-      border-bottom-style: solid;
-    }
-
-    .rank {
-      min-width: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: #e7f0fb;
-      border: 1px solid #cfe0f5;
-      color: var(--azul);
-      font-weight: 950;
-    }
-
-    .rank-u {
-      background: #e9f8ef;
-      border-color: #bfe7cc;
-      color: #1e6b3a;
-    }
-
-    .total {
-      font-weight: 950;
-      color: var(--azul);
-      font-size: 13px;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: #eef4ff;
-      border: 1px solid #d8e6ff;
-      color: #17345d;
-      font-size: 11px;
-      font-weight: 950;
-    }
-
-    .pill.avulsa {
-      background: var(--warn-bg);
-      border-color: var(--warn-line);
-      color: var(--warn-text);
-    }
-
-    .pill.nao {
-      background: var(--bad-bg);
-      border-color: var(--bad-line);
-      color: var(--bad-text);
-    }
-
-    .empty {
-      padding: 28px;
-      text-align: center;
-      color: #64748b;
-      font-size: 14px;
-    }
-
-    .footer-hint {
-      margin-top: 10px;
-      color: #64748b;
-      font-size: 12px;
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    /* =========================
-       RESPONSIVO / PRINT
-    ========================= */
-
-    @media (max-width: 1050px) {
-      .kpis {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .filters {
-        grid-template-columns: 1fr 1fr;
+    @media (max-width: 900px){
+      .resumo-card{
+        min-width:calc(50% - 6px);
       }
     }
 
-    @media (max-width: 720px) {
-      .topbar {
-        height: auto;
-        padding: 10px 0;
+    @media (max-width: 640px){
+      body{ padding:12px; }
+      .campo, .campo-menor{
+        min-width:100%;
       }
-
-      .topbar-inner {
-        align-items: flex-start;
+      .resumo-card{
+        min-width:100%;
       }
-
-      .brand-title {
-        font-size: 14px;
-      }
-
-      .page {
-        width: calc(100% - 18px);
-        margin-top: 14px;
-      }
-
-      .panel-head {
-        padding: 18px 16px;
-      }
-
-      .panel-body {
-        padding: 14px 16px 18px;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-
-      .actions {
-        width: 100%;
-        justify-content: stretch;
-      }
-
-      .actions button {
-        flex: 1;
-      }
-
-      .kpis {
-        grid-template-columns: 1fr;
-      }
-
-      .filters {
-        grid-template-columns: 1fr;
-      }
-
-      .table-wrap {
-        max-height: none;
-      }
-    }
-
-    @media print {
-      .topbar,
-      .actions,
-      .filters,
-      .footer-hint {
-        display: none !important;
-      }
-
-      body {
-        background: #fff;
-      }
-
-      .page {
-        width: 100%;
-        margin: 0;
-      }
-
-      .panel {
-        box-shadow: none;
-        border: none;
-        border-radius: 0;
-      }
-
-      .table-wrap {
-        max-height: none;
-        overflow: visible;
-        border: none;
-      }
-
-      table {
-        min-width: 0;
-      }
-
-      th,
-      td {
-        font-size: 9px;
-        padding: 5px;
+      .acoes button{
+        width:100%;
       }
     }
   </style>
 </head>
-
 <body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">
-        <div class="brand-logo">➤➤</div>
-        <div class="brand-title">Simulado Aberto Fuvestão — Maio/2026</div>
+
+  <div class="top">
+    <div>
+      <h2>Resultado do Simulado</h2>
+      <div class="sub">Relatório ADM com classificação geral e identificação de alunos/unidades</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="filtros">
+      <div class="campo">
+        <label for="evento">Evento</label>
+        <select id="evento">
+          <option value="">Selecione</option>
+        </select>
       </div>
 
-      <div class="top-actions">
-        <a class="top-pill" href="painel.html" title="Voltar ao painel">
-          <span class="material-icons" style="font-size:19px">dashboard</span>
-          Painel
-        </a>
+      <div class="campo">
+        <label for="busca">Buscar aluno, inscrição, CPF ou unidade</label>
+        <input type="search" id="busca" placeholder="Digite nome, inscrição, CPF ou unidade">
+      </div>
 
-        <div class="top-pill" title="Unidade logada">
-          <span class="material-icons" style="font-size:18px">account_circle</span>
-          <span>
-            <small id="topUnidadeCodigo">Unidade</small>
-            <span id="topUnidadeNome">Carregando...</span>
-          </span>
-        </div>
+      <div class="campo campo-menor">
+        <label for="origem">Origem</label>
+        <select id="origem">
+          <option value="">Todas</option>
+          <option value="SITE">Site</option>
+          <option value="AVULSA">Avulsa</option>
+          <option value="NAO_LOCALIZADA">Não localizada</option>
+        </select>
+      </div>
+
+      <button id="btnBuscar">Buscar</button>
+      <button id="btnLimpar" class="btn-sec">Limpar filtro</button>
+      <button id="btnCsv" class="btn-sec">Exportar CSV</button>
+      <button id="btnImprimir" class="btn-sec">Imprimir Top 100</button>
+    </div>
+
+    <div class="resumo">
+      <div class="resumo-card">
+        <div class="resumo-label">Alunos no resultado</div>
+        <div class="resumo-valor" id="kpiAlunos">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Unidades</div>
+        <div class="resumo-valor" id="kpiUnidades">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Média geral</div>
+        <div class="resumo-valor" id="kpiMedia">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Maior nota</div>
+        <div class="resumo-valor" id="kpiMaior">0</div>
+      </div>
+
+      <div class="resumo-card">
+        <div class="resumo-label">Avulsos</div>
+        <div class="resumo-valor" id="kpiAvulsos">0</div>
       </div>
     </div>
-  </header>
 
-  <main class="page">
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h1>Resultado da Unidade</h1>
-          <div class="subtitle">
-            Classificação, notas por disciplina e acesso à imagem da prova enviada.
-          </div>
+    <div class="info-bar" id="infoBar">Selecione um evento e clique em Buscar.</div>
+
+    <div class="tabela-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="num">CLS_G</th>
+            <th>INSCRIÇÃO</th>            
+            <th>NOME</th>
+            <th>UNIDADE</th>
+            <th class="num">POR</th>
+            <th class="num">HIS</th>
+            <th class="num">ING</th>
+            <th class="num">SOC</th>
+            <th class="num">BIO</th>
+            <th class="num">QUI</th>
+            <th class="num">FIL</th>
+            <th class="num">FIS</th>
+            <th class="num">MAT</th>
+            <th class="num">GEO</th>
+            <th class="num">TOTAL</th>
+            <th>ORIGEM</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr>
+            <td colspan="16" class="vazio">Selecione um evento para carregar o resultado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <div id="modalImagem" class="modal-img-backdrop" onclick="fecharModalImagemSeFundo(event)">
+    <div class="modal-img-box">
+      <div class="modal-img-head">
+        <div class="modal-img-title">
+          <span class="material-icons" style="font-size:20px">image</span>
+          <span id="modalTituloImagem">Imagem da prova</span>
         </div>
 
-        <div class="actions">
-          <button type="button" class="secondary" id="btnExcel">
-            <span class="material-icons" style="font-size:20px">download</span>
-            Baixar Excel
+        <div class="modal-img-actions">
+          <button type="button" onclick="girarImagem(-90)" title="Girar para a esquerda">
+            <span class="material-icons" style="font-size:19px">rotate_left</span>
+            Esquerda
           </button>
 
-          <button type="button" class="secondary" id="btnImprimir">
-            <span class="material-icons" style="font-size:20px">print</span>
-            Imprimir Top 100
+          <button type="button" onclick="girarImagem(90)" title="Girar para a direita">
+            <span class="material-icons" style="font-size:19px">rotate_right</span>
+            Direita
           </button>
 
-          <button type="button" class="primary" id="btnRecarregar">
-            <span class="material-icons" style="font-size:20px">refresh</span>
-            Recarregar
+          <button type="button" onclick="fecharModalImagem()" title="Fechar">
+            <span class="material-icons" style="font-size:19px">close</span>
+            Fechar
           </button>
         </div>
       </div>
 
-      <div class="panel-body">
-        <div class="msg" id="msg">Carregando resultado da unidade...</div>
-
-        <div class="kpis">
-          <div class="kpi">
-            <div class="kpi-label">Evento</div>
-            <div class="kpi-value" id="kpiEvento">—</div>
-            <div class="kpi-note" id="kpiUnidade">—</div>
-          </div>
-
-          <div class="kpi">
-            <div class="kpi-label">Alunos no resultado</div>
-            <div class="kpi-value" id="kpiAlunos">0</div>
-            <div class="kpi-note">da unidade logada</div>
-          </div>
-
-          <div class="kpi">
-            <div class="kpi-label">Média da unidade</div>
-            <div class="kpi-value" id="kpiMedia">0,0</div>
-            <div class="kpi-note">pontuação total</div>
-          </div>
-
-          <div class="kpi">
-            <div class="kpi-label">Maior nota</div>
-            <div class="kpi-value" id="kpiMaior">0</div>
-            <div class="kpi-note">melhor desempenho</div>
-          </div>
-
-          <div class="kpi">
-            <div class="kpi-label">Avulsos</div>
-            <div class="kpi-value" id="kpiAvulsos">0</div>
-            <div class="kpi-note">inscrições avulsas</div>
-          </div>
-        </div>
-
-        <div class="filters">
-          <div class="field">
-            <label for="busca">Buscar</label>
-            <input type="search" id="busca" placeholder="Nome, inscrição, CPF, lote ou arquivo">
-          </div>
-
-          <div class="field">
-            <label for="origem">Origem</label>
-            <select id="origem">
-              <option value="">Todas</option>
-              <option value="SITE">Site</option>
-              <option value="AVULSA">Avulsa</option>
-              <option value="NAO_LOCALIZADA">Não localizada</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="ordem">Ordenar por</label>
-            <select id="ordem">
-              <option value="CLS_U">Classificação unidade</option>
-              <option value="CLS_G">Classificação geral</option>
-              <option value="TOTAL">Total</option>
-              <option value="NOME">Nome</option>
-            </select>
-          </div>
-
-          <button type="button" class="secondary" id="btnLimpar">
-            <span class="material-icons" style="font-size:19px">filter_alt_off</span>
-            Limpar
-          </button>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th class="num">CLS_U</th>
-                <th class="num">CLS_G</th>
-                <th>INSCRIÇÃO</th>
-                <th>NOME</th>
-                <th class="num">POR</th>
-                <th class="num">HIS</th>
-                <th class="num">ING</th>
-                <th class="num">SOC</th>
-                <th class="num">BIO</th>
-                <th class="num">QUI</th>
-                <th class="num">FIL</th>
-                <th class="num">FIS</th>
-                <th class="num">MAT</th>
-                <th class="num">GEO</th>
-                <th class="num">TOTAL</th>
-                <th class="num">LOTE</th>
-                <th>ORIGEM</th>
-              </tr>
-            </thead>
-
-            <tbody id="tbody">
-              <tr>
-                <td colspan="17" class="empty">Carregando resultado...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="footer-hint">
-          <span id="infoBar">Aguardando carregamento...</span>
-          <span>Clique na inscrição para abrir a imagem da prova.</span>
-        </div>
+      <div class="modal-img-body">
+        <div id="modalImagemLoading" class="modal-img-loading">Carregando imagem...</div>
+        <img id="imgProva" src="" alt="Imagem da prova" style="display:none;">
       </div>
-    </section>
-  </main>
+    </div>
+  </div>
 
   <script>
-    /* =========================
-       CONFIGURAÇÕES
-    ========================= */
+    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
 
-    const API = 'https://apisec.secauxiliar.com.br/fuvestao0526/';
-    const ENDPOINT_RESULTADO = API + 'api_resultado_fuvestao_unidade.php';
-    const ENDPOINT_IMAGEM = API + 'buscar_imagem_pendencia.php';
-
-    /* =========================
-       ELEMENTOS
-    ========================= */
-
-    const tbody = document.getElementById('tbody');
-    const msg = document.getElementById('msg');
-    const infoBar = document.getElementById('infoBar');
-
+    const evento = document.getElementById('evento');
     const busca = document.getElementById('busca');
     const origem = document.getElementById('origem');
-    const ordem = document.getElementById('ordem');
+    const tbody = document.getElementById('tbody');
+    const infoBar = document.getElementById('infoBar');
 
-    const kpiEvento = document.getElementById('kpiEvento');
-    const kpiUnidade = document.getElementById('kpiUnidade');
     const kpiAlunos = document.getElementById('kpiAlunos');
+    const kpiUnidades = document.getElementById('kpiUnidades');
     const kpiMedia = document.getElementById('kpiMedia');
     const kpiMaior = document.getElementById('kpiMaior');
     const kpiAvulsos = document.getElementById('kpiAvulsos');
 
-    const topUnidadeCodigo = document.getElementById('topUnidadeCodigo');
-    const topUnidadeNome = document.getElementById('topUnidadeNome');
-
-    /* =========================
-       ESTADO
-    ========================= */
-
     let rowsCache = [];
-    let eventoAtual = '';
-    let unidadeAtual = '';
-    let unidadeNomeAtual = '';
 
-    /* =========================
-       HELPERS
-    ========================= */
-
-    function esc(v) {
+    function esc(v){
       return String(v ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;');
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;');
     }
 
-    function n(v) {
+    function n(v){
       return Number(v || 0).toLocaleString('pt-BR');
     }
 
-    function decimal(v) {
+    function decimal(v){
       return Number(v || 0).toLocaleString('pt-BR', {
         minimumFractionDigits: 1,
         maximumFractionDigits: 1
       });
     }
 
-    function normalizar(v) {
+    function normalizar(v){
       return String(v ?? '')
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
@@ -812,73 +454,67 @@
         .trim();
     }
 
-    function origemLabel(v) {
+    function origemLabel(v){
       const o = String(v || '').toUpperCase();
-
       if (o === 'AVULSA') return 'AVULSA';
       if (o === 'SITE') return 'SITE';
-
       return 'NÃO LOCALIZADA';
     }
 
-    function origemClasse(v) {
-      const o = String(v || '').toUpperCase();
-
-      if (o === 'AVULSA') return 'pill avulsa';
-      if (o === 'NAO_LOCALIZADA') return 'pill nao';
-
-      return 'pill';
+    function origemClasse(v){
+      return String(v || '').toUpperCase() === 'AVULSA' ? 'pill pill-avulsa' : 'pill';
     }
 
-    function urlImagem(r) {
+    function resetTela(){
+      rowsCache = [];
+      kpiAlunos.textContent = '0';
+      kpiUnidades.textContent = '0';
+      kpiMedia.textContent = '0';
+      kpiMaior.textContent = '0';
+      kpiAvulsos.textContent = '0';
+      infoBar.textContent = 'Selecione um evento e clique em Buscar.';
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="16" class="vazio">Selecione um evento para carregar o resultado.</td>
+        </tr>
+      `;
+    }
+
+    async function carregarEventos(){
+      const r = await fetch(API + 'api_adesoes_eventos.php', {
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      const data = await r.json();
+
+      if (!r.ok || !data.ok) {
+        throw new Error(data.error || 'Falha ao carregar eventos.');
+      }
+
+      evento.innerHTML = `<option value="">Selecione</option>`;
+
+      (data.eventos || []).forEach(ev => {
+        const opt = document.createElement('option');
+        opt.value = ev;
+        opt.textContent = ev;
+        evento.appendChild(opt);
+      });
+    }
+
+    async function carregarResultado(){
+      if (!evento.value) {
+        resetTela();
+        return;
+      }
+
+      infoBar.textContent = 'Carregando resultado...';
+      tbody.innerHTML = `<tr><td colspan="16" class="vazio">Carregando...</td></tr>`;
+
       const qs = new URLSearchParams();
+      qs.set('evento', evento.value);
 
-      qs.set('arquivo', r.ARQUIVO_ORIGEM || '');
-      qs.set('dia', r.DIA || 'D1');
-      qs.set('evento', eventoAtual || '');
-      qs.set('full', '1');
-
-      return ENDPOINT_IMAGEM + '?' + qs.toString();
-    }
-
-    /* =========================
-       STATUS
-    ========================= */
-
-    function setLoading() {
-      msg.className = 'msg';
-      msg.textContent = 'Carregando resultado da unidade...';
-
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="17" class="empty">Carregando resultado...</td>
-        </tr>
-      `;
-
-      infoBar.textContent = 'Aguardando retorno do servidor...';
-    }
-
-    function setError(texto) {
-      msg.className = 'msg err';
-      msg.textContent = texto;
-
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="17" class="empty">${esc(texto)}</td>
-        </tr>
-      `;
-
-      infoBar.textContent = 'Erro ao carregar resultado.';
-    }
-
-    /* =========================
-       CARREGAMENTO PRINCIPAL
-    ========================= */
-
-    async function carregarResultado() {
-      setLoading();
-
-      const r = await fetch(ENDPOINT_RESULTADO, {
+      const r = await fetch(API + 'api_resultado_fuvestao.php?' + qs.toString(), {
         credentials: 'include',
         cache: 'no-store'
       });
@@ -890,44 +526,22 @@
       }
 
       rowsCache = data.rows || [];
-      eventoAtual = data.evento || '';
-      unidadeAtual = data.unidade_logada || '';
-      unidadeNomeAtual = data.unidade_nome || '';
-
       const resumo = data.resumo || {};
 
-      kpiEvento.textContent = eventoAtual || '—';
-
-      kpiUnidade.textContent = unidadeAtual && unidadeNomeAtual
-        ? `Unidade ${unidadeAtual} • ${unidadeNomeAtual}`
-        : 'Unidade logada';
-
-      topUnidadeCodigo.textContent = unidadeAtual
-        ? `Unidade ${unidadeAtual}`
-        : 'Unidade';
-
-      topUnidadeNome.textContent = unidadeNomeAtual || 'Logada';
-
       kpiAlunos.textContent = n(resumo.total_alunos);
+      kpiUnidades.textContent = n(resumo.total_unidades);
       kpiMedia.textContent = decimal(resumo.media_total);
       kpiMaior.textContent = n(resumo.maior_total);
       kpiAvulsos.textContent = n(resumo.total_avulsos);
 
-      msg.className = 'msg ok';
-      msg.textContent = `Dados carregados com sucesso. Total: ${n(resumo.total_alunos)} aluno(s) no resultado da unidade.`;
-
       renderTabela();
     }
 
-    /* =========================
-       FILTROS / ORDENAÇÃO
-    ========================= */
-
-    function getRowsFiltradas() {
+    function getRowsFiltradas(){
       const termo = normalizar(busca.value);
       const filtroOrigem = String(origem.value || '').toUpperCase();
 
-      let rows = rowsCache.filter(r => {
+      return rowsCache.filter(r => {
         if (filtroOrigem && String(r.ORIGEM || '').toUpperCase() !== filtroOrigem) {
           return false;
         }
@@ -941,185 +555,59 @@
           r.NOME,
           r.UNIDADE,
           r.CODIGO_UNIDADE,
-          r.LOTE,
           r.ORIGEM
         ].join(' '));
 
         return texto.includes(termo);
       });
-
-      const ord = ordem.value;
-
-      rows = [...rows].sort((a, b) => {
-        if (ord === 'NOME') {
-          return normalizar(a.NOME).localeCompare(normalizar(b.NOME), 'pt-BR');
-        }
-
-        if (ord === 'TOTAL') {
-          return Number(b.TOTAL || 0) - Number(a.TOTAL || 0)
-              || Number(a.CLS_U || 999999) - Number(b.CLS_U || 999999);
-        }
-
-        if (ord === 'CLS_G') {
-          return Number(a.CLS_G || 999999) - Number(b.CLS_G || 999999)
-              || Number(b.TOTAL || 0) - Number(a.TOTAL || 0);
-        }
-
-        return Number(a.CLS_U || 999999) - Number(b.CLS_U || 999999)
-            || Number(a.CLS_G || 999999) - Number(b.CLS_G || 999999);
-      });
-
-      return rows;
     }
 
-    /* =========================
-       RENDERIZAÇÃO DA TABELA
-    ========================= */
+    function renderTabela(){
+      const rowsFiltradas = getRowsFiltradas();
+      const rows = rowsFiltradas.slice(0, 100);
 
-    function renderTabela() {
-      const rows = getRowsFiltradas();
-
-      infoBar.textContent = `${n(rows.length)} aluno(s) exibido(s) de ${n(rowsCache.length)} carregado(s).`;
+      infoBar.textContent = `${rows.length} aluno(s) exibido(s) de ${rowsFiltradas.length} filtrado(s) / ${rowsCache.length} carregado(s). Exibição limitada aos 100 primeiros.`;
 
       if (!rows.length) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="17" class="empty">Nenhum resultado encontrado com os filtros atuais.</td>
+            <td colspan="16" class="vazio">Nenhum resultado encontrado com os filtros atuais.</td>
           </tr>
         `;
         return;
       }
 
-      tbody.innerHTML = rows.map(r => {
-        const temImagem = !!r.ARQUIVO_ORIGEM;
-
-        return `
-          <tr>
-            <td class="num">
-              <span class="rank rank-u">${esc(r.CLS_U || '-')}</span>
-            </td>
-
-            <td class="num">
-              <span class="rank">${esc(r.CLS_G || '-')}</span>
-            </td>
-
-            <td class="insc">
-              ${temImagem ? `
-                <a href="${urlImagem(r)}"
-                   target="_blank"
-                   title="Abrir imagem: ${esc(r.ARQUIVO_ORIGEM)}">
-                  ${esc(r.INSCRICAO || '-')}
-                </a>
-              ` : esc(r.INSCRICAO || '-')}
-            </td>
-
-            <td class="nome">${esc(r.NOME || 'NÃO LOCALIZADO')}</td>
-
-            <td class="num">${n(r.POR)}</td>
-            <td class="num">${n(r.HIS)}</td>
-            <td class="num">${n(r.ING)}</td>
-            <td class="num">${n(r.SOC)}</td>
-            <td class="num">${n(r.BIO)}</td>
-            <td class="num">${n(r.QUI)}</td>
-            <td class="num">${n(r.FIL)}</td>
-            <td class="num">${n(r.FIS)}</td>
-            <td class="num">${n(r.MAT)}</td>
-            <td class="num">${n(r.GEO)}</td>
-
-            <td class="num total">${n(r.TOTAL)}</td>
-            <td class="num">${esc(r.LOTE || '-')}</td>
-
-            <td>
-              <span class="${origemClasse(r.ORIGEM)}">${esc(origemLabel(r.ORIGEM))}</span>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    /* =========================
-       EXPORTAR EXCEL
-    ========================= */
-
-    function exportarExcel() {
-      const rows = getRowsFiltradas();
-
-      if (!rows.length) {
-        alert('Não há dados para exportar.');
-        return;
-      }
-
-      const cols = [
-        ['CLS_U', 'Classificação Unidade'],
-        ['CLS_G', 'Classificação Geral'],
-        ['INSCRICAO', 'Inscrição'],
-        ['CPF', 'CPF'],
-        ['NOME', 'Nome'],
-        ['UNIDADE', 'Unidade'],
-        ['POR', 'POR'],
-        ['HIS', 'HIS'],
-        ['ING', 'ING'],
-        ['SOC', 'SOC'],
-        ['BIO', 'BIO'],
-        ['QUI', 'QUI'],
-        ['FIL', 'FIL'],
-        ['FIS', 'FIS'],
-        ['MAT', 'MAT'],
-        ['GEO', 'GEO'],
-        ['TOTAL', 'Total'],
-        ['LOTE', 'Lote'],
-        ['ORIGEM', 'Origem'],
-        ['ARQUIVO_ORIGEM', 'Arquivo origem']
-      ];
-
-      const cabecalho = cols
-        .map(c => `<th>${esc(c[1])}</th>`)
-        .join('');
-
-      const linhas = rows.map(r => `
+      tbody.innerHTML = rows.map(r => `
         <tr>
-          ${cols.map(([key]) => `<td>${esc(r[key] ?? '')}</td>`).join('')}
+          <td class="num"><span class="rank">${esc(r.CLS_G || '-')}</span></td>
+          <td>
+            ${r.ARQUIVO_ORIGEM ? `
+              <a
+                href="${API}buscar_imagem_pendencia.php?arquivo=${encodeURIComponent(r.ARQUIVO_ORIGEM)}&dia=${encodeURIComponent(r.DIA || 'D1')}&evento=${encodeURIComponent(evento.value)}&full=1"
+                target="_blank"
+                title="Abrir imagem: ${esc(r.ARQUIVO_ORIGEM)}"
+              >${esc(r.INSCRICAO || '-')}</a>
+            ` : esc(r.INSCRICAO || '-')}
+          </td>
+          <td class="nome">${esc(r.NOME || '-')}</td>
+          <td class="unidade">${esc(r.UNIDADE || '-')}</td>
+          <td class="num">${n(r.POR)}</td>
+          <td class="num">${n(r.HIS)}</td>
+          <td class="num">${n(r.ING)}</td>
+          <td class="num">${n(r.SOC)}</td>
+          <td class="num">${n(r.BIO)}</td>
+          <td class="num">${n(r.QUI)}</td>
+          <td class="num">${n(r.FIL)}</td>
+          <td class="num">${n(r.FIS)}</td>
+          <td class="num">${n(r.MAT)}</td>
+          <td class="num">${n(r.GEO)}</td>
+          <td class="num total">${n(r.TOTAL)}</td>
+          <td><span class="${origemClasse(r.ORIGEM)}">${esc(origemLabel(r.ORIGEM))}</span></td>
         </tr>
       `).join('');
-
-      const htmlExcel = `
-        <html>
-        <head>
-          <meta charset="utf-8">
-        </head>
-        <body>
-          <table border="1">
-            <thead>
-              <tr>${cabecalho}</tr>
-            </thead>
-            <tbody>${linhas}</tbody>
-          </table>
-        </body>
-        </html>
-      `;
-
-      const blob = new Blob(['\ufeff' + htmlExcel], {
-        type: 'application/vnd.ms-excel;charset=utf-8;'
-      });
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-
-      a.href = url;
-      a.download = `resultado_unidade_${unidadeAtual || 'unidade'}_${eventoAtual || 'simulado'}.xls`;
-
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      URL.revokeObjectURL(url);
     }
 
-    /* =========================
-       IMPRESSÃO
-    ========================= */
-
-    function imprimirTop100() {
+    function imprimirTop100(){
       const rows = getRowsFiltradas().slice(0, 100);
 
       if (!rows.length) {
@@ -1127,126 +615,150 @@
         return;
       }
 
+      const titulo = `Top 100 - Resultado do Simulado ${evento.value || ''}`;
       const geradoEm = new Date().toLocaleString('pt-BR');
-      const titulo = `Top 100 da Unidade ${unidadeAtual || ''} - ${eventoAtual || 'Simulado'}`;
 
-      const linhas = rows.map(r => `
+      const linhas = rows.map((r, idx) => `
         <tr>
-          <td>${esc(r.CLS_U || '-')}</td>
-          <td>${esc(r.CLS_G || '-')}</td>
-          <td>${esc(r.INSCRICAO || '-')}</td>
-          <td>${esc(r.NOME || 'NÃO LOCALIZADO')}</td>
-          <td>${n(r.POR)}</td>
-          <td>${n(r.HIS)}</td>
-          <td>${n(r.ING)}</td>
-          <td>${n(r.SOC)}</td>
-          <td>${n(r.BIO)}</td>
-          <td>${n(r.QUI)}</td>
-          <td>${n(r.FIL)}</td>
-          <td>${n(r.FIS)}</td>
-          <td>${n(r.MAT)}</td>
-          <td>${n(r.GEO)}</td>
-          <td><strong>${n(r.TOTAL)}</strong></td>
-          <td>${esc(origemLabel(r.ORIGEM))}</td>
+          <td class="num">${idx + 1}</td>
+          <td class="num">${esc(r.INSCRICAO || '-')}</td>
+          <td>${esc(r.NOME || '-')}</td>
+          <td>${esc(r.UNIDADE || '-')}</td>
+          <td class="num">${n(r.POR)}</td>
+          <td class="num">${n(r.HIS)}</td>
+          <td class="num">${n(r.ING)}</td>
+          <td class="num">${n(r.SOC)}</td>
+          <td class="num">${n(r.BIO)}</td>
+          <td class="num">${n(r.QUI)}</td>
+          <td class="num">${n(r.FIL)}</td>
+          <td class="num">${n(r.FIS)}</td>
+          <td class="num">${n(r.MAT)}</td>
+          <td class="num">${n(r.GEO)}</td>
+          <td class="num total">${n(r.TOTAL)}</td>
+          <td class="num">${esc(origemLabel(r.ORIGEM))}</td>
         </tr>
       `).join('');
 
-      const html = `
+      const htmlRelatorio = `
         <!doctype html>
         <html lang="pt-br">
         <head>
           <meta charset="utf-8">
-          <title>${esc(titulo)}</title>
+          <title>${titulo}</title>
           <style>
+            * { box-sizing: border-box; }
             body {
+              margin: 22px;
               font-family: Arial, sans-serif;
               color: #10233f;
-              margin: 22px;
+              background: #ffffff;
             }
-
-            .head {
-              border-bottom: 4px solid #0b3f7f;
-              margin-bottom: 14px;
-              padding-bottom: 10px;
+            .cabecalho {
+              border-bottom: 4px solid #0b3b78;
+              padding-bottom: 12px;
+              margin-bottom: 16px;
+              display: flex;
+              justify-content: space-between;
+              gap: 16px;
+              align-items: flex-end;
             }
-
             h1 {
               margin: 0;
-              color: #0b3f7f;
+              color: #0b3b78;
               font-size: 22px;
             }
-
             .sub {
+              margin-top: 5px;
               color: #64748b;
-              margin-top: 4px;
               font-size: 12px;
             }
-
+            .selo {
+              border: 1px solid #cfe0f5;
+              background: #f4f8fe;
+              color: #0b3b78;
+              border-radius: 12px;
+              padding: 8px 12px;
+              font-size: 12px;
+              font-weight: 700;
+              white-space: nowrap;
+            }
             table {
               width: 100%;
               border-collapse: collapse;
-              font-size: 10px;
+              font-size: 10.5px;
             }
-
             th {
-              background: #0b3f7f;
+              background: #0b3b78;
               color: #fff;
-              padding: 6px 4px;
-              border: 1px solid #0b3f7f;
-            }
-
-            td {
-              border: 1px solid #d7e4f3;
-              padding: 5px 4px;
-              text-align: center;
-            }
-
-            td:nth-child(4),
-            th:nth-child(4) {
+              padding: 7px 5px;
               text-align: left;
+              border: 1px solid #0b3b78;
             }
-
+            td {
+              border: 1px solid #d9e5f2;
+              padding: 5px 5px;
+              vertical-align: middle;
+            }
             tr:nth-child(even) td {
-              background: #f3f7fc;
+              background: #f4f8fe;
             }
-
+            .num {
+              text-align: center;
+              font-variant-numeric: tabular-nums;
+            }
+            .total {
+              font-weight: 800;
+              color: #0b3b78;
+            }
+            .rodape {
+              margin-top: 12px;
+              color: #64748b;
+              font-size: 11px;
+              text-align: right;
+            }
             @page {
               size: landscape;
               margin: 10mm;
             }
+            @media print {
+              body { margin: 0; }
+            }
           </style>
         </head>
-
         <body>
-          <div class="head">
-            <h1>${esc(titulo)}</h1>
-            <div class="sub">${esc(unidadeNomeAtual || '')} • Gerado em ${geradoEm}</div>
+          <div class="cabecalho">
+            <div>
+              <h1>${titulo}</h1>
+              <div class="sub">Relatório ADM • ${rows.length} primeiros classificados • Gerado em ${geradoEm}</div>
+            </div>
+            <div class="selo">Curso Objetivo • Simulado Aberto</div>
           </div>
 
           <table>
             <thead>
               <tr>
-                <th>CLS_U</th>
-                <th>CLS_G</th>
-                <th>INSCRIÇÃO</th>
+                <th class="num">CLS_G</th>
+                <th class="num">INSCRIÇÃO</th>
                 <th>NOME</th>
-                <th>POR</th>
-                <th>HIS</th>
-                <th>ING</th>
-                <th>SOC</th>
-                <th>BIO</th>
-                <th>QUI</th>
-                <th>FIL</th>
-                <th>FIS</th>
-                <th>MAT</th>
-                <th>GEO</th>
-                <th>TOTAL</th>
-                <th>ORIGEM</th>
+                <th>UNIDADE</th>
+                <th class="num">POR</th>
+                <th class="num">HIS</th>
+                <th class="num">ING</th>
+                <th class="num">SOC</th>
+                <th class="num">BIO</th>
+                <th class="num">QUI</th>
+                <th class="num">FIL</th>
+                <th class="num">FIS</th>
+                <th class="num">MAT</th>
+                <th class="num">GEO</th>
+                <th class="num">TOTAL</th>
+                <th class="num">ORIGEM</th>
               </tr>
             </thead>
-
             <tbody>${linhas}</tbody>
           </table>
+
+          <div class="rodape">Fonte: relatório ADM do Simulado Aberto</div>
 
           <script>
             window.onload = () => window.print();
@@ -1256,56 +768,94 @@
       `;
 
       const w = window.open('', '_blank');
-
       if (!w) {
         alert('O navegador bloqueou a janela de impressão. Permita pop-ups para esta página.');
         return;
       }
 
       w.document.open();
-      w.document.write(html);
+      w.document.write(htmlRelatorio);
       w.document.close();
     }
 
-    /* =========================
-       EVENTOS
-    ========================= */
+    function exportarCsv(){
+      const rows = getRowsFiltradas();
 
-    document.getElementById('btnRecarregar').addEventListener('click', async () => {
+      if (!rows.length) {
+        alert('Não há dados para exportar.');
+        return;
+      }
+
+      const cols = [
+        'INSCRICAO','CPF','ARQUIVO_ORIGEM','NOME','UNIDADE','POR','HIS','ING','SOC','BIO','QUI','FIL','FIS','MAT','GEO','TOTAL','CLS_G','ORIGEM'
+      ];
+
+      const linhas = [
+        cols.join(';'),
+        ...rows.map(r => cols.map(c => {
+          const valor = String(r[c] ?? '').replaceAll('"', '""');
+          return `"${valor}"`;
+        }).join(';'))
+      ];
+
+      const blob = new Blob(['\ufeff' + linhas.join('\n')], { type:'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `resultado_${evento.value || 'simulado'}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('btnBuscar').addEventListener('click', async () => {
       try {
         await carregarResultado();
       } catch (e) {
         console.error(e);
-        setError(e.message || 'Erro ao carregar resultado.');
+        infoBar.textContent = 'Erro ao carregar resultado.';
+        tbody.innerHTML = `<tr><td colspan="16" class="vazio">${esc(e.message || 'Erro ao carregar resultado.')}</td></tr>`;
+        alert(e.message || 'Erro ao carregar resultado.');
       }
     });
 
-    document.getElementById('btnExcel').addEventListener('click', exportarExcel);
-    document.getElementById('btnImprimir').addEventListener('click', imprimirTop100);
-
     document.getElementById('btnLimpar').addEventListener('click', () => {
+      evento.value = '';
       busca.value = '';
       origem.value = '';
-      ordem.value = 'CLS_U';
-      renderTabela();
+      resetTela();
     });
+
+    document.getElementById('btnCsv').addEventListener('click', exportarCsv);
+    document.getElementById('btnImprimir').addEventListener('click', imprimirTop100);
 
     busca.addEventListener('input', renderTabela);
     origem.addEventListener('change', renderTabela);
-    ordem.addEventListener('change', renderTabela);
 
-    /* =========================
-       INIT
-    ========================= */
+    evento.addEventListener('change', () => {
+      rowsCache = [];
+      busca.value = '';
+      origem.value = '';
+      if (!evento.value) {
+        resetTela();
+      } else {
+        infoBar.textContent = 'Clique em Buscar para carregar o resultado do evento selecionado.';
+        tbody.innerHTML = `<tr><td colspan="16" class="vazio">Clique em Buscar para carregar o resultado.</td></tr>`;
+      }
+    });
 
-    (async function init() {
-      try {
-        await carregarResultado();
-      } catch (e) {
+    (async function init(){
+      try{
+        await carregarEventos();
+        resetTela();
+      } catch(e){
         console.error(e);
-        setError(e.message || 'Erro ao carregar resultado.');
+        infoBar.textContent = 'Erro ao carregar eventos.';
+        tbody.innerHTML = `<tr><td colspan="16" class="vazio">Erro ao carregar eventos.</td></tr>`;
       }
     })();
   </script>
 </body>
 </html>
+
