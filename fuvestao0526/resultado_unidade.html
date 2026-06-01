@@ -4,39 +4,1308 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Resultado da Unidade — Simulado Aberto Fuvestão</title>
+
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
   <style>
-    :root{--azul:#0b3f7f;--azul2:#123f7a;--azul3:#0d4b95;--bg:#eaf2fb;--card:#fff;--line:#d7e4f3;--text:#0f2544;--muted:#64748b;--soft:#f3f7fc;--ok-bg:#e8f7ee;--ok-line:#bfe7cc;--ok-text:#206a3a;--warn-bg:#fff7ed;--warn-line:#fed7aa;--warn-text:#92400e;--bad-bg:#fff1f2;--bad-line:#fecdd3;--bad-text:#9f1239;--shadow:0 12px 30px rgba(11,63,127,.10)}
-    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
-    .topbar{background:linear-gradient(90deg,var(--azul),var(--azul2));color:#fff;height:64px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.14);position:sticky;top:0;z-index:100}.topbar-inner{width:min(1240px,calc(100% - 28px));display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:-.02em;white-space:nowrap}.brand-logo{width:44px;height:34px;display:inline-flex;align-items:center;justify-content:center;font-size:30px}.brand-title{font-size:16px}.top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.top-pill{min-height:38px;border-radius:999px;padding:7px 14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.24);display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:800;text-decoration:none;line-height:1.05}.top-pill small{display:block;font-size:11px;font-weight:700;opacity:.92}
-    .page{width:min(1240px,calc(100% - 28px));margin:22px auto 34px}.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.panel-head{padding:22px 22px 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:1px solid #edf3fb;flex-wrap:wrap}h1{margin:0;color:var(--azul);font-size:28px;letter-spacing:-.03em;line-height:1.05}.subtitle{margin-top:6px;color:#52637c;font-size:14px}.actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
-    button,.btn-link{height:40px;border-radius:10px;border:1px solid var(--line);padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;font-size:13px;font-weight:900;cursor:pointer;text-decoration:none;transition:.12s ease;white-space:nowrap}button.primary{background:var(--azul);color:#fff;border-color:var(--azul);box-shadow:0 4px 12px rgba(11,63,127,.22)}button.secondary{background:#fff;color:var(--azul);border-color:#cfe0f5}button:hover{transform:translateY(-1px);filter:brightness(1.03)}
-    .panel-body{padding:16px 22px 22px}.msg{margin:0 0 15px;padding:11px 13px;border-radius:10px;font-size:13px;border:1px solid var(--line);background:#f8fbff;color:#40546f}.msg.ok{background:var(--ok-bg);border-color:var(--ok-line);color:var(--ok-text)}.msg.err{background:var(--bad-bg);border-color:var(--bad-line);color:var(--bad-text)}
-    .kpis{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px;margin-bottom:16px}.kpi{background:linear-gradient(180deg,#f8fbff,#f3f7fc);border:1px solid var(--line);border-radius:14px;padding:14px;min-height:78px}.kpi-label{color:#657792;font-size:11px;text-transform:uppercase;font-weight:900;letter-spacing:.04em;margin-bottom:6px}.kpi-value{color:var(--azul);font-size:24px;font-weight:950;line-height:1.05}.kpi-note{color:#71829a;font-size:12px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .filters{background:#fbfdff;border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;grid-template-columns:1fr 170px 170px auto;gap:10px;align-items:end;margin-bottom:14px}.field{display:flex;flex-direction:column;gap:5px}label{color:#64748b;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.03em}input,select{width:100%;height:40px;border-radius:10px;border:1px solid #d7e4f3;background:#fff;color:var(--text);padding:0 12px;font-family:inherit;font-size:14px;outline:none}input:focus,select:focus{border-color:var(--azul3);box-shadow:0 0 0 3px rgba(13,75,149,.10)}
-    .table-wrap{border:1px solid var(--line);border-radius:14px;overflow:auto;background:#fff;max-height:calc(100vh - 355px);min-height:360px}table{width:100%;min-width:1180px;border-collapse:separate;border-spacing:0}th,td{padding:9px 8px;border-bottom:1px solid #edf2f7;font-size:12px;text-align:left;vertical-align:middle;white-space:nowrap}th{position:sticky;top:0;z-index:20;background:#edf4fd;color:#07336c;font-weight:950;box-shadow:0 1px 0 #d7e4f3}tbody tr:hover td{background:#f4f8ff}.num{text-align:center;font-variant-numeric:tabular-nums}.nome{min-width:250px;white-space:normal;font-weight:800;color:#132c4e}.insc a{color:var(--azul);font-weight:950;text-decoration:none;border-bottom:1px dashed rgba(11,63,127,.35)}.insc a:hover{border-bottom-style:solid}.rank{min-width:36px;display:inline-flex;align-items:center;justify-content:center;padding:3px 8px;border-radius:999px;background:#e7f0fb;border:1px solid #cfe0f5;color:var(--azul);font-weight:950}.rank-u{background:#e9f8ef;border-color:#bfe7cc;color:#1e6b3a}.total{font-weight:950;color:var(--azul);font-size:13px}.pill{display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:999px;background:#eef4ff;border:1px solid #d8e6ff;color:#17345d;font-size:11px;font-weight:950}.pill.avulsa{background:var(--warn-bg);border-color:var(--warn-line);color:var(--warn-text)}.pill.nao{background:var(--bad-bg);border-color:var(--bad-line);color:var(--bad-text)}.empty{padding:28px;text-align:center;color:#64748b;font-size:14px}.footer-hint{margin-top:10px;color:#64748b;font-size:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-    @media(max-width:1050px){.kpis{grid-template-columns:repeat(3,1fr)}.filters{grid-template-columns:1fr 1fr}}@media(max-width:720px){.topbar{height:auto;padding:10px 0}.topbar-inner{align-items:flex-start}.brand-title{font-size:14px}.page{width:calc(100% - 18px);margin-top:14px}.panel-head{padding:18px 16px}.panel-body{padding:14px 16px 18px}h1{font-size:24px}.actions{width:100%;justify-content:stretch}.actions button{flex:1}.kpis{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.table-wrap{max-height:none}}
+    :root {
+      --azul: #0b3f7f;
+      --azul2: #123f7a;
+      --azul3: #0d4b95;
+
+      --bg: #eaf2fb;
+      --card: #ffffff;
+      --line: #d7e4f3;
+      --text: #0f2544;
+      --muted: #64748b;
+      --soft: #f3f7fc;
+
+      --ok-bg: #e8f7ee;
+      --ok-line: #bfe7cc;
+      --ok-text: #206a3a;
+
+      --warn-bg: #fff7ed;
+      --warn-line: #fed7aa;
+      --warn-text: #92400e;
+
+      --bad-bg: #fff1f2;
+      --bad-line: #fecdd3;
+      --bad-text: #9f1239;
+
+      --shadow: 0 12px 30px rgba(11, 63, 127, .10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* =========================
+       TOPO / PADRÃO UNIDADE
+    ========================= */
+
+    .topbar {
+      background: linear-gradient(90deg, var(--azul), var(--azul2));
+      color: #fff;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, .14);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-inner {
+      width: min(1240px, calc(100% - 28px));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      letter-spacing: -.02em;
+      white-space: nowrap;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .brand-title {
+      font-size: 16px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .top-pill {
+      min-height: 38px;
+      border-radius: 999px;
+      padding: 7px 14px;
+      background: rgba(255, 255, 255, .13);
+      border: 1px solid rgba(255, 255, 255, .24);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+      font-weight: 800;
+      text-decoration: none;
+      line-height: 1.05;
+    }
+
+    .top-pill small {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      opacity: .92;
+    }
+
+    /* =========================
+       PAINEL PRINCIPAL
+    ========================= */
+
+    .page {
+      width: min(1240px, calc(100% - 28px));
+      margin: 22px auto 34px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 22px 22px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      border-bottom: 1px solid #edf3fb;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--azul);
+      font-size: 28px;
+      letter-spacing: -.03em;
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: #52637c;
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    .btn-link {
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      transition: .12s ease;
+      white-space: nowrap;
+    }
+
+    button.primary {
+      background: var(--azul);
+      color: #fff;
+      border-color: var(--azul);
+      box-shadow: 0 4px 12px rgba(11, 63, 127, .22);
+    }
+
+    button.secondary,
+    .btn-link.secondary {
+      background: #fff;
+      color: var(--azul);
+      border-color: #cfe0f5;
+    }
+
+    button:hover,
+    .btn-link:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .panel-body {
+      padding: 16px 22px 22px;
+    }
+
+    .msg {
+      margin: 0 0 15px;
+      padding: 11px 13px;
+      border-radius: 10px;
+      font-size: 13px;
+      border: 1px solid var(--line);
+      background: #f8fbff;
+      color: #40546f;
+    }
+
+    .msg.ok {
+      background: var(--ok-bg);
+      border-color: var(--ok-line);
+      color: var(--ok-text);
+    }
+
+    .msg.err {
+      background: var(--bad-bg);
+      border-color: var(--bad-line);
+      color: var(--bad-text);
+    }
+
+    /* =========================
+       KPIs
+    ========================= */
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .kpi {
+      background: linear-gradient(180deg, #f8fbff, #f3f7fc);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      min-height: 78px;
+    }
+
+    .kpi-label {
+      color: #657792;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 900;
+      letter-spacing: .04em;
+      margin-bottom: 6px;
+    }
+
+    .kpi-value {
+      color: var(--azul);
+      font-size: 24px;
+      font-weight: 950;
+      line-height: 1.05;
+    }
+
+    .kpi-note {
+      color: #71829a;
+      font-size: 12px;
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* =========================
+       FILTROS
+    ========================= */
+
+    .filters {
+      background: #fbfdff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr 170px 170px auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    label {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    input,
+    select {
+      width: 100%;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid #d7e4f3;
+      background: #fff;
+      color: var(--text);
+      padding: 0 12px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--azul3);
+      box-shadow: 0 0 0 3px rgba(13, 75, 149, .10);
+    }
+
+    /* =========================
+       TABELA
+    ========================= */
+
+    .table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: auto;
+      background: #fff;
+      max-height: calc(100vh - 355px);
+      min-height: 360px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1180px;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    th,
+    td {
+      padding: 9px 8px;
+      border-bottom: 1px solid #edf2f7;
+      font-size: 12px;
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: #edf4fd;
+      color: #07336c;
+      font-weight: 950;
+      box-shadow: 0 1px 0 #d7e4f3;
+    }
+
+    tbody tr:hover td {
+      background: #f4f8ff;
+    }
+
+    .num {
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nome {
+      min-width: 250px;
+      white-space: normal;
+      font-weight: 800;
+      color: #132c4e;
+    }
+
+    .insc a {
+      color: var(--azul);
+      font-weight: 950;
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(11, 63, 127, .35);
+    }
+
+    .insc a:hover {
+      border-bottom-style: solid;
+    }
+
+    .rank {
+      min-width: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #e7f0fb;
+      border: 1px solid #cfe0f5;
+      color: var(--azul);
+      font-weight: 950;
+    }
+
+    .rank-u {
+      background: #e9f8ef;
+      border-color: #bfe7cc;
+      color: #1e6b3a;
+    }
+
+    .total {
+      font-weight: 950;
+      color: var(--azul);
+      font-size: 13px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #eef4ff;
+      border: 1px solid #d8e6ff;
+      color: #17345d;
+      font-size: 11px;
+      font-weight: 950;
+    }
+
+    .pill.avulsa {
+      background: var(--warn-bg);
+      border-color: var(--warn-line);
+      color: var(--warn-text);
+    }
+
+    .pill.nao {
+      background: var(--bad-bg);
+      border-color: var(--bad-line);
+      color: var(--bad-text);
+    }
+
+    .empty {
+      padding: 28px;
+      text-align: center;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .footer-hint {
+      margin-top: 10px;
+      color: #64748b;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* =========================
+       RESPONSIVO / PRINT
+    ========================= */
+
+    @media (max-width: 1050px) {
+      .kpis {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .filters {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        height: auto;
+        padding: 10px 0;
+      }
+
+      .topbar-inner {
+        align-items: flex-start;
+      }
+
+      .brand-title {
+        font-size: 14px;
+      }
+
+      .page {
+        width: calc(100% - 18px);
+        margin-top: 14px;
+      }
+
+      .panel-head {
+        padding: 18px 16px;
+      }
+
+      .panel-body {
+        padding: 14px 16px 18px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .actions {
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .actions button {
+        flex: 1;
+      }
+
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+
+      .filters {
+        grid-template-columns: 1fr;
+      }
+
+      .table-wrap {
+        max-height: none;
+      }
+    }
+
+    @media print {
+      .topbar,
+      .actions,
+      .filters,
+      .footer-hint {
+        display: none !important;
+      }
+
+      body {
+        background: #fff;
+      }
+
+      .page {
+        width: 100%;
+        margin: 0;
+      }
+
+      .panel {
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+      }
+
+      .table-wrap {
+        max-height: none;
+        overflow: visible;
+        border: none;
+      }
+
+      table {
+        min-width: 0;
+      }
+
+      th,
+      td {
+        font-size: 9px;
+        padding: 5px;
+      }
+    }
   </style>
 </head>
+
 <body>
-  <header class="topbar"><div class="topbar-inner"><div class="brand"><div class="brand-logo">➤➤</div><div class="brand-title">Simulado Aberto Fuvestão — Maio/2026</div></div><div class="top-actions"><a class="top-pill" href="painel.html" title="Voltar ao painel"><span class="material-icons" style="font-size:19px">dashboard</span>Painel</a><div class="top-pill" title="Unidade logada"><span class="material-icons" style="font-size:18px">account_circle</span><span><small id="topUnidadeCodigo">Unidade</small><span id="topUnidadeNome">Carregando...</span></span></div></div></div></header>
-  <main class="page"><section class="panel"><div class="panel-head"><div><h1>Resultado da Unidade</h1><div class="subtitle">Classificação, notas por disciplina e acesso à imagem da prova enviada.</div></div><div class="actions"><button type="button" class="secondary" id="btnExcel"><span class="material-icons" style="font-size:20px">download</span>Baixar Excel</button><button type="button" class="secondary" id="btnImprimir"><span class="material-icons" style="font-size:20px">print</span>Imprimir Top 100</button><button type="button" class="primary" id="btnRecarregar"><span class="material-icons" style="font-size:20px">refresh</span>Recarregar</button></div></div><div class="panel-body"><div class="msg" id="msg">Carregando resultado da unidade...</div><div class="kpis"><div class="kpi"><div class="kpi-label">Evento</div><div class="kpi-value" id="kpiEvento">—</div><div class="kpi-note" id="kpiUnidade">—</div></div><div class="kpi"><div class="kpi-label">Alunos no resultado</div><div class="kpi-value" id="kpiAlunos">0</div><div class="kpi-note">da unidade logada</div></div><div class="kpi"><div class="kpi-label">Média da unidade</div><div class="kpi-value" id="kpiMedia">0,0</div><div class="kpi-note">pontuação total</div></div><div class="kpi"><div class="kpi-label">Maior nota</div><div class="kpi-value" id="kpiMaior">0</div><div class="kpi-note">melhor desempenho</div></div><div class="kpi"><div class="kpi-label">Avulsos</div><div class="kpi-value" id="kpiAvulsos">0</div><div class="kpi-note">inscrições avulsas</div></div></div><div class="filters"><div class="field"><label for="busca">Buscar</label><input type="search" id="busca" placeholder="Nome, inscrição, CPF, lote ou arquivo"></div><div class="field"><label for="origem">Origem</label><select id="origem"><option value="">Todas</option><option value="SITE">Site</option><option value="AVULSA">Avulsa</option><option value="NAO_LOCALIZADA">Não localizada</option></select></div><div class="field"><label for="ordem">Ordenar por</label><select id="ordem"><option value="CLS_U">Classificação unidade</option><option value="CLS_G">Classificação geral</option><option value="TOTAL">Total</option><option value="NOME">Nome</option></select></div><button type="button" class="secondary" id="btnLimpar"><span class="material-icons" style="font-size:19px">filter_alt_off</span>Limpar</button></div><div class="table-wrap"><table><thead><tr><th class="num">CLS_U</th><th class="num">CLS_G</th><th>INSCRIÇÃO</th><th>NOME</th><th class="num">POR</th><th class="num">HIS</th><th class="num">ING</th><th class="num">SOC</th><th class="num">BIO</th><th class="num">QUI</th><th class="num">FIL</th><th class="num">FIS</th><th class="num">MAT</th><th class="num">GEO</th><th class="num">TOTAL</th><th class="num">LOTE</th><th>ORIGEM</th></tr></thead><tbody id="tbody"><tr><td colspan="17" class="empty">Carregando resultado...</td></tr></tbody></table></div><div class="footer-hint"><span id="infoBar">Aguardando carregamento...</span><span>Clique na inscrição para abrir a imagem da prova.</span></div></div></section></main>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-logo">➤➤</div>
+        <div class="brand-title">Simulado Aberto Fuvestão — Maio/2026</div>
+      </div>
+
+      <div class="top-actions">
+        <a class="top-pill" href="painel.html" title="Voltar ao painel">
+          <span class="material-icons" style="font-size:19px">dashboard</span>
+          Painel
+        </a>
+
+        <div class="top-pill" title="Unidade logada">
+          <span class="material-icons" style="font-size:18px">account_circle</span>
+          <span>
+            <small id="topUnidadeCodigo">Unidade</small>
+            <span id="topUnidadeNome">Carregando...</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h1>Resultado da Unidade</h1>
+          <div class="subtitle">
+            Classificação, notas por disciplina e acesso à imagem da prova enviada.
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="secondary" id="btnExcel">
+            <span class="material-icons" style="font-size:20px">download</span>
+            Baixar Excel
+          </button>
+
+          <button type="button" class="secondary" id="btnImprimir">
+            <span class="material-icons" style="font-size:20px">print</span>
+            Imprimir Top 100
+          </button>
+
+          <button type="button" class="primary" id="btnRecarregar">
+            <span class="material-icons" style="font-size:20px">refresh</span>
+            Recarregar
+          </button>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div class="msg" id="msg">Carregando resultado da unidade...</div>
+
+        <div class="kpis">
+          <div class="kpi">
+            <div class="kpi-label">Evento</div>
+            <div class="kpi-value" id="kpiEvento">—</div>
+            <div class="kpi-note" id="kpiUnidade">—</div>
+          </div>
+
+          <div class="kpi">
+            <div class="kpi-label">Alunos no resultado</div>
+            <div class="kpi-value" id="kpiAlunos">0</div>
+            <div class="kpi-note">da unidade logada</div>
+          </div>
+
+          <div class="kpi">
+            <div class="kpi-label">Média da unidade</div>
+            <div class="kpi-value" id="kpiMedia">0,0</div>
+            <div class="kpi-note">pontuação total</div>
+          </div>
+
+          <div class="kpi">
+            <div class="kpi-label">Maior nota</div>
+            <div class="kpi-value" id="kpiMaior">0</div>
+            <div class="kpi-note">melhor desempenho</div>
+          </div>
+
+          <div class="kpi">
+            <div class="kpi-label">Avulsos</div>
+            <div class="kpi-value" id="kpiAvulsos">0</div>
+            <div class="kpi-note">inscrições avulsas</div>
+          </div>
+        </div>
+
+        <div class="filters">
+          <div class="field">
+            <label for="busca">Buscar</label>
+            <input type="search" id="busca" placeholder="Nome, inscrição, CPF, lote ou arquivo">
+          </div>
+
+          <div class="field">
+            <label for="origem">Origem</label>
+            <select id="origem">
+              <option value="">Todas</option>
+              <option value="SITE">Site</option>
+              <option value="AVULSA">Avulsa</option>
+              <option value="NAO_LOCALIZADA">Não localizada</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="ordem">Ordenar por</label>
+            <select id="ordem">
+              <option value="CLS_U">Classificação unidade</option>
+              <option value="CLS_G">Classificação geral</option>
+              <option value="TOTAL">Total</option>
+              <option value="NOME">Nome</option>
+            </select>
+          </div>
+
+          <button type="button" class="secondary" id="btnLimpar">
+            <span class="material-icons" style="font-size:19px">filter_alt_off</span>
+            Limpar
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="num">CLS_U</th>
+                <th class="num">CLS_G</th>
+                <th>INSCRIÇÃO</th>
+                <th>NOME</th>
+                <th class="num">POR</th>
+                <th class="num">HIS</th>
+                <th class="num">ING</th>
+                <th class="num">SOC</th>
+                <th class="num">BIO</th>
+                <th class="num">QUI</th>
+                <th class="num">FIL</th>
+                <th class="num">FIS</th>
+                <th class="num">MAT</th>
+                <th class="num">GEO</th>
+                <th class="num">TOTAL</th>
+                <th class="num">LOTE</th>
+                <th>ORIGEM</th>
+              </tr>
+            </thead>
+
+            <tbody id="tbody">
+              <tr>
+                <td colspan="17" class="empty">Carregando resultado...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="footer-hint">
+          <span id="infoBar">Aguardando carregamento...</span>
+          <span>Clique na inscrição para abrir a imagem da prova.</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
   <script>
-    const API='https://apisec.secauxiliar.com.br/fuvestao0526/';
-    const ENDPOINT_RESULTADO=API+'api_resultado_fuvestao_unidade.php';
-    const ENDPOINT_IMAGEM=API+'buscar_imagem_pendencia.php';
-    const tbody=document.getElementById('tbody'),msg=document.getElementById('msg'),infoBar=document.getElementById('infoBar'),busca=document.getElementById('busca'),origem=document.getElementById('origem'),ordem=document.getElementById('ordem');
-    const kpiEvento=document.getElementById('kpiEvento'),kpiUnidade=document.getElementById('kpiUnidade'),kpiAlunos=document.getElementById('kpiAlunos'),kpiMedia=document.getElementById('kpiMedia'),kpiMaior=document.getElementById('kpiMaior'),kpiAvulsos=document.getElementById('kpiAvulsos'),topUnidadeCodigo=document.getElementById('topUnidadeCodigo'),topUnidadeNome=document.getElementById('topUnidadeNome');
-    let rowsCache=[],eventoAtual='',unidadeAtual='',unidadeNomeAtual='';
-    function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;')}function n(v){return Number(v||0).toLocaleString('pt-BR')}function decimal(v){return Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}function normalizar(v){return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim()}function origemLabel(v){const o=String(v||'').toUpperCase();if(o==='AVULSA')return'AVULSA';if(o==='SITE')return'SITE';return'NÃO LOCALIZADA'}function origemClasse(v){const o=String(v||'').toUpperCase();if(o==='AVULSA')return'pill avulsa';if(o==='NAO_LOCALIZADA')return'pill nao';return'pill'}
-    function urlImagem(r){const qs=new URLSearchParams();qs.set('arquivo',r.ARQUIVO_ORIGEM||'');qs.set('dia',r.DIA||'D1');qs.set('evento',eventoAtual||'');qs.set('full','1');return ENDPOINT_IMAGEM+'?'+qs.toString()}
-    function setLoading(){msg.className='msg';msg.textContent='Carregando resultado da unidade...';tbody.innerHTML='<tr><td colspan="17" class="empty">Carregando resultado...</td></tr>';infoBar.textContent='Aguardando retorno do servidor...'}function setError(texto){msg.className='msg err';msg.textContent=texto;tbody.innerHTML=`<tr><td colspan="17" class="empty">${esc(texto)}</td></tr>`;infoBar.textContent='Erro ao carregar resultado.'}
-    async function carregarResultado(){setLoading();const r=await fetch(ENDPOINT_RESULTADO,{credentials:'include',cache:'no-store'});const data=await r.json();if(!r.ok||!data.ok)throw new Error(data.error||'Falha ao carregar resultado.');rowsCache=data.rows||[];eventoAtual=data.evento||'';unidadeAtual=data.unidade_logada||'';unidadeNomeAtual=data.unidade_nome||'';const resumo=data.resumo||{};kpiEvento.textContent=eventoAtual||'—';kpiUnidade.textContent=unidadeAtual&&unidadeNomeAtual?`Unidade ${unidadeAtual} • ${unidadeNomeAtual}`:'Unidade logada';topUnidadeCodigo.textContent=unidadeAtual?`Unidade ${unidadeAtual}`:'Unidade';topUnidadeNome.textContent=unidadeNomeAtual||'Logada';kpiAlunos.textContent=n(resumo.total_alunos);kpiMedia.textContent=decimal(resumo.media_total);kpiMaior.textContent=n(resumo.maior_total);kpiAvulsos.textContent=n(resumo.total_avulsos);msg.className='msg ok';msg.textContent=`Dados carregados com sucesso. Total: ${n(resumo.total_alunos)} aluno(s) no resultado da unidade.`;renderTabela()}
-    function getRowsFiltradas(){const termo=normalizar(busca.value),filtroOrigem=String(origem.value||'').toUpperCase();let rows=rowsCache.filter(r=>{if(filtroOrigem&&String(r.ORIGEM||'').toUpperCase()!==filtroOrigem)return false;if(!termo)return true;const texto=normalizar([r.INSCRICAO,r.CPF,r.ARQUIVO_ORIGEM,r.NOME,r.UNIDADE,r.CODIGO_UNIDADE,r.LOTE,r.ORIGEM].join(' '));return texto.includes(termo)});const ord=ordem.value;rows=[...rows].sort((a,b)=>{if(ord==='NOME')return normalizar(a.NOME).localeCompare(normalizar(b.NOME),'pt-BR');if(ord==='TOTAL')return Number(b.TOTAL||0)-Number(a.TOTAL||0)||Number(a.CLS_U||999999)-Number(b.CLS_U||999999);if(ord==='CLS_G')return Number(a.CLS_G||999999)-Number(b.CLS_G||999999)||Number(b.TOTAL||0)-Number(a.TOTAL||0);return Number(a.CLS_U||999999)-Number(b.CLS_U||999999)||Number(a.CLS_G||999999)-Number(b.CLS_G||999999)});return rows}
-    function renderTabela(){const rows=getRowsFiltradas();infoBar.textContent=`${n(rows.length)} aluno(s) exibido(s) de ${n(rowsCache.length)} carregado(s).`;if(!rows.length){tbody.innerHTML='<tr><td colspan="17" class="empty">Nenhum resultado encontrado com os filtros atuais.</td></tr>';return}tbody.innerHTML=rows.map(r=>{const temImagem=!!r.ARQUIVO_ORIGEM;return `<tr><td class="num"><span class="rank rank-u">${esc(r.CLS_U||'-')}</span></td><td class="num"><span class="rank">${esc(r.CLS_G||'-')}</span></td><td class="insc">${temImagem?`<a href="${urlImagem(r)}" target="_blank" title="Abrir imagem: ${esc(r.ARQUIVO_ORIGEM)}">${esc(r.INSCRICAO||'-')}</a>`:esc(r.INSCRICAO||'-')}</td><td class="nome">${esc(r.NOME||'NÃO LOCALIZADO')}</td><td class="num">${n(r.POR)}</td><td class="num">${n(r.HIS)}</td><td class="num">${n(r.ING)}</td><td class="num">${n(r.SOC)}</td><td class="num">${n(r.BIO)}</td><td class="num">${n(r.QUI)}</td><td class="num">${n(r.FIL)}</td><td class="num">${n(r.FIS)}</td><td class="num">${n(r.MAT)}</td><td class="num">${n(r.GEO)}</td><td class="num total">${n(r.TOTAL)}</td><td class="num">${esc(r.LOTE||'-')}</td><td><span class="${origemClasse(r.ORIGEM)}">${esc(origemLabel(r.ORIGEM))}</span></td></tr>`}).join('')}
-    function exportarExcel(){const rows=getRowsFiltradas();if(!rows.length){alert('Não há dados para exportar.');return}const cols=[['CLS_U','Classificação Unidade'],['CLS_G','Classificação Geral'],['INSCRICAO','Inscrição'],['CPF','CPF'],['NOME','Nome'],['UNIDADE','Unidade'],['POR','POR'],['HIS','HIS'],['ING','ING'],['SOC','SOC'],['BIO','BIO'],['QUI','QUI'],['FIL','FIL'],['FIS','FIS'],['MAT','MAT'],['GEO','GEO'],['TOTAL','Total'],['LOTE','Lote'],['ORIGEM','Origem'],['ARQUIVO_ORIGEM','Arquivo origem']];const cab=cols.map(c=>`<th>${esc(c[1])}</th>`).join('');const linhas=rows.map(r=>`<tr>${cols.map(([key])=>`<td>${esc(r[key]??'')}</td>`).join('')}</tr>`).join('');const htmlExcel=`<html><head><meta charset="utf-8"></head><body><table border="1"><thead><tr>${cab}</tr></thead><tbody>${linhas}</tbody></table></body></html>`;const blob=new Blob(['\ufeff'+htmlExcel],{type:'application/vnd.ms-excel;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`resultado_unidade_${unidadeAtual||'unidade'}_${eventoAtual||'simulado'}.xls`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)}
-    function imprimirTop100(){const rows=getRowsFiltradas().slice(0,100);if(!rows.length){alert('Não há dados para imprimir.');return}const geradoEm=new Date().toLocaleString('pt-BR'),titulo=`Top 100 da Unidade ${unidadeAtual||''} - ${eventoAtual||'Simulado'}`;const linhas=rows.map(r=>`<tr><td>${esc(r.CLS_U||'-')}</td><td>${esc(r.CLS_G||'-')}</td><td>${esc(r.INSCRICAO||'-')}</td><td>${esc(r.NOME||'NÃO LOCALIZADO')}</td><td>${n(r.POR)}</td><td>${n(r.HIS)}</td><td>${n(r.ING)}</td><td>${n(r.SOC)}</td><td>${n(r.BIO)}</td><td>${n(r.QUI)}</td><td>${n(r.FIL)}</td><td>${n(r.FIS)}</td><td>${n(r.MAT)}</td><td>${n(r.GEO)}</td><td><strong>${n(r.TOTAL)}</strong></td><td>${esc(origemLabel(r.ORIGEM))}</td></tr>`).join('');const html=`<!doctype html><html lang="pt-br"><head><meta charset="utf-8"><title>${esc(titulo)}</title><style>body{font-family:Arial,sans-serif;color:#10233f;margin:22px}.head{border-bottom:4px solid #0b3f7f;margin-bottom:14px;padding-bottom:10px}h1{margin:0;color:#0b3f7f;font-size:22px}.sub{color:#64748b;margin-top:4px;font-size:12px}table{width:100%;border-collapse:collapse;font-size:10px}th{background:#0b3f7f;color:#fff;padding:6px 4px;border:1px solid #0b3f7f}td{border:1px solid #d7e4f3;padding:5px 4px;text-align:center}td:nth-child(4),th:nth-child(4){text-align:left}tr:nth-child(even) td{background:#f3f7fc}@page{size:landscape;margin:10mm}</style></head><body><div class="head"><h1>${esc(titulo)}</h1><div class="sub">${esc(unidadeNomeAtual||'')} • Gerado em ${geradoEm}</div></div><table><thead><tr><th>CLS_U</th><th>CLS_G</th><th>INSCRIÇÃO</th><th>NOME</th><th>POR</th><th>HIS</th><th>ING</th><th>SOC</th><th>BIO</th><th>QUI</th><th>FIL</th><th>FIS</th><th>MAT</th><th>GEO</th><th>TOTAL</th><th>ORIGEM</th></tr></thead><tbody>${linhas}</tbody></table><script>window.onload=()=>window.print();<\/script></body></html>`;const w=window.open('','_blank');if(!w){alert('O navegador bloqueou a janela de impressão. Permita pop-ups para esta página.');return}w.document.open();w.document.write(html);w.document.close()}
-    document.getElementById('btnRecarregar').addEventListener('click',async()=>{try{await carregarResultado()}catch(e){console.error(e);setError(e.message||'Erro ao carregar resultado.')}});document.getElementById('btnExcel').addEventListener('click',exportarExcel);document.getElementById('btnImprimir').addEventListener('click',imprimirTop100);document.getElementById('btnLimpar').addEventListener('click',()=>{busca.value='';origem.value='';ordem.value='CLS_U';renderTabela()});busca.addEventListener('input',renderTabela);origem.addEventListener('change',renderTabela);ordem.addEventListener('change',renderTabela);(async function init(){try{await carregarResultado()}catch(e){console.error(e);setError(e.message||'Erro ao carregar resultado.')}})();
+    /* =========================
+       CONFIGURAÇÕES
+    ========================= */
+
+    const API = 'https://apisec.secauxiliar.com.br/fuvestao0526/';
+    const ENDPOINT_RESULTADO = API + 'api_resultado_fuvestao_unidade.php';
+    const ENDPOINT_IMAGEM = API + 'buscar_imagem_pendencia.php';
+
+    /* =========================
+       ELEMENTOS
+    ========================= */
+
+    const tbody = document.getElementById('tbody');
+    const msg = document.getElementById('msg');
+    const infoBar = document.getElementById('infoBar');
+
+    const busca = document.getElementById('busca');
+    const origem = document.getElementById('origem');
+    const ordem = document.getElementById('ordem');
+
+    const kpiEvento = document.getElementById('kpiEvento');
+    const kpiUnidade = document.getElementById('kpiUnidade');
+    const kpiAlunos = document.getElementById('kpiAlunos');
+    const kpiMedia = document.getElementById('kpiMedia');
+    const kpiMaior = document.getElementById('kpiMaior');
+    const kpiAvulsos = document.getElementById('kpiAvulsos');
+
+    const topUnidadeCodigo = document.getElementById('topUnidadeCodigo');
+    const topUnidadeNome = document.getElementById('topUnidadeNome');
+
+    /* =========================
+       ESTADO
+    ========================= */
+
+    let rowsCache = [];
+    let eventoAtual = '';
+    let unidadeAtual = '';
+    let unidadeNomeAtual = '';
+
+    /* =========================
+       HELPERS
+    ========================= */
+
+    function esc(v) {
+      return String(v ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+    }
+
+    function n(v) {
+      return Number(v || 0).toLocaleString('pt-BR');
+    }
+
+    function decimal(v) {
+      return Number(v || 0).toLocaleString('pt-BR', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+      });
+    }
+
+    function normalizar(v) {
+      return String(v ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .trim();
+    }
+
+    function origemLabel(v) {
+      const o = String(v || '').toUpperCase();
+
+      if (o === 'AVULSA') return 'AVULSA';
+      if (o === 'SITE') return 'SITE';
+
+      return 'NÃO LOCALIZADA';
+    }
+
+    function origemClasse(v) {
+      const o = String(v || '').toUpperCase();
+
+      if (o === 'AVULSA') return 'pill avulsa';
+      if (o === 'NAO_LOCALIZADA') return 'pill nao';
+
+      return 'pill';
+    }
+
+    function urlImagem(r) {
+      const qs = new URLSearchParams();
+
+      qs.set('arquivo', r.ARQUIVO_ORIGEM || '');
+      qs.set('dia', r.DIA || 'D1');
+      qs.set('evento', eventoAtual || '');
+      qs.set('full', '1');
+
+      return ENDPOINT_IMAGEM + '?' + qs.toString();
+    }
+
+    /* =========================
+       STATUS
+    ========================= */
+
+    function setLoading() {
+      msg.className = 'msg';
+      msg.textContent = 'Carregando resultado da unidade...';
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="17" class="empty">Carregando resultado...</td>
+        </tr>
+      `;
+
+      infoBar.textContent = 'Aguardando retorno do servidor...';
+    }
+
+    function setError(texto) {
+      msg.className = 'msg err';
+      msg.textContent = texto;
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="17" class="empty">${esc(texto)}</td>
+        </tr>
+      `;
+
+      infoBar.textContent = 'Erro ao carregar resultado.';
+    }
+
+    /* =========================
+       CARREGAMENTO PRINCIPAL
+    ========================= */
+
+    async function carregarResultado() {
+      setLoading();
+
+      const r = await fetch(ENDPOINT_RESULTADO, {
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      const data = await r.json();
+
+      if (!r.ok || !data.ok) {
+        throw new Error(data.error || 'Falha ao carregar resultado.');
+      }
+
+      rowsCache = data.rows || [];
+      eventoAtual = data.evento || '';
+      unidadeAtual = data.unidade_logada || '';
+      unidadeNomeAtual = data.unidade_nome || '';
+
+      const resumo = data.resumo || {};
+
+      kpiEvento.textContent = eventoAtual || '—';
+
+      kpiUnidade.textContent = unidadeAtual && unidadeNomeAtual
+        ? `Unidade ${unidadeAtual} • ${unidadeNomeAtual}`
+        : 'Unidade logada';
+
+      topUnidadeCodigo.textContent = unidadeAtual
+        ? `Unidade ${unidadeAtual}`
+        : 'Unidade';
+
+      topUnidadeNome.textContent = unidadeNomeAtual || 'Logada';
+
+      kpiAlunos.textContent = n(resumo.total_alunos);
+      kpiMedia.textContent = decimal(resumo.media_total);
+      kpiMaior.textContent = n(resumo.maior_total);
+      kpiAvulsos.textContent = n(resumo.total_avulsos);
+
+      msg.className = 'msg ok';
+      msg.textContent = `Dados carregados com sucesso. Total: ${n(resumo.total_alunos)} aluno(s) no resultado da unidade.`;
+
+      renderTabela();
+    }
+
+    /* =========================
+       FILTROS / ORDENAÇÃO
+    ========================= */
+
+    function getRowsFiltradas() {
+      const termo = normalizar(busca.value);
+      const filtroOrigem = String(origem.value || '').toUpperCase();
+
+      let rows = rowsCache.filter(r => {
+        if (filtroOrigem && String(r.ORIGEM || '').toUpperCase() !== filtroOrigem) {
+          return false;
+        }
+
+        if (!termo) return true;
+
+        const texto = normalizar([
+          r.INSCRICAO,
+          r.CPF,
+          r.ARQUIVO_ORIGEM,
+          r.NOME,
+          r.UNIDADE,
+          r.CODIGO_UNIDADE,
+          r.LOTE,
+          r.ORIGEM
+        ].join(' '));
+
+        return texto.includes(termo);
+      });
+
+      const ord = ordem.value;
+
+      rows = [...rows].sort((a, b) => {
+        if (ord === 'NOME') {
+          return normalizar(a.NOME).localeCompare(normalizar(b.NOME), 'pt-BR');
+        }
+
+        if (ord === 'TOTAL') {
+          return Number(b.TOTAL || 0) - Number(a.TOTAL || 0)
+              || Number(a.CLS_U || 999999) - Number(b.CLS_U || 999999);
+        }
+
+        if (ord === 'CLS_G') {
+          return Number(a.CLS_G || 999999) - Number(b.CLS_G || 999999)
+              || Number(b.TOTAL || 0) - Number(a.TOTAL || 0);
+        }
+
+        return Number(a.CLS_U || 999999) - Number(b.CLS_U || 999999)
+            || Number(a.CLS_G || 999999) - Number(b.CLS_G || 999999);
+      });
+
+      return rows;
+    }
+
+    /* =========================
+       RENDERIZAÇÃO DA TABELA
+    ========================= */
+
+    function renderTabela() {
+      const rows = getRowsFiltradas();
+
+      infoBar.textContent = `${n(rows.length)} aluno(s) exibido(s) de ${n(rowsCache.length)} carregado(s).`;
+
+      if (!rows.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="17" class="empty">Nenhum resultado encontrado com os filtros atuais.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(r => {
+        const temImagem = !!r.ARQUIVO_ORIGEM;
+
+        return `
+          <tr>
+            <td class="num">
+              <span class="rank rank-u">${esc(r.CLS_U || '-')}</span>
+            </td>
+
+            <td class="num">
+              <span class="rank">${esc(r.CLS_G || '-')}</span>
+            </td>
+
+            <td class="insc">
+              ${temImagem ? `
+                <a href="${urlImagem(r)}"
+                   target="_blank"
+                   title="Abrir imagem: ${esc(r.ARQUIVO_ORIGEM)}">
+                  ${esc(r.INSCRICAO || '-')}
+                </a>
+              ` : esc(r.INSCRICAO || '-')}
+            </td>
+
+            <td class="nome">${esc(r.NOME || 'NÃO LOCALIZADO')}</td>
+
+            <td class="num">${n(r.POR)}</td>
+            <td class="num">${n(r.HIS)}</td>
+            <td class="num">${n(r.ING)}</td>
+            <td class="num">${n(r.SOC)}</td>
+            <td class="num">${n(r.BIO)}</td>
+            <td class="num">${n(r.QUI)}</td>
+            <td class="num">${n(r.FIL)}</td>
+            <td class="num">${n(r.FIS)}</td>
+            <td class="num">${n(r.MAT)}</td>
+            <td class="num">${n(r.GEO)}</td>
+
+            <td class="num total">${n(r.TOTAL)}</td>
+            <td class="num">${esc(r.LOTE || '-')}</td>
+
+            <td>
+              <span class="${origemClasse(r.ORIGEM)}">${esc(origemLabel(r.ORIGEM))}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    /* =========================
+       EXPORTAR EXCEL
+    ========================= */
+
+    function exportarExcel() {
+      const rows = getRowsFiltradas();
+
+      if (!rows.length) {
+        alert('Não há dados para exportar.');
+        return;
+      }
+
+      const cols = [
+        ['CLS_U', 'Classificação Unidade'],
+        ['CLS_G', 'Classificação Geral'],
+        ['INSCRICAO', 'Inscrição'],
+        ['CPF', 'CPF'],
+        ['NOME', 'Nome'],
+        ['UNIDADE', 'Unidade'],
+        ['POR', 'POR'],
+        ['HIS', 'HIS'],
+        ['ING', 'ING'],
+        ['SOC', 'SOC'],
+        ['BIO', 'BIO'],
+        ['QUI', 'QUI'],
+        ['FIL', 'FIL'],
+        ['FIS', 'FIS'],
+        ['MAT', 'MAT'],
+        ['GEO', 'GEO'],
+        ['TOTAL', 'Total'],
+        ['LOTE', 'Lote'],
+        ['ORIGEM', 'Origem'],
+        ['ARQUIVO_ORIGEM', 'Arquivo origem']
+      ];
+
+      const cabecalho = cols
+        .map(c => `<th>${esc(c[1])}</th>`)
+        .join('');
+
+      const linhas = rows.map(r => `
+        <tr>
+          ${cols.map(([key]) => `<td>${esc(r[key] ?? '')}</td>`).join('')}
+        </tr>
+      `).join('');
+
+      const htmlExcel = `
+        <html>
+        <head>
+          <meta charset="utf-8">
+        </head>
+        <body>
+          <table border="1">
+            <thead>
+              <tr>${cabecalho}</tr>
+            </thead>
+            <tbody>${linhas}</tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob(['\ufeff' + htmlExcel], {
+        type: 'application/vnd.ms-excel;charset=utf-8;'
+      });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+
+      a.href = url;
+      a.download = `resultado_unidade_${unidadeAtual || 'unidade'}_${eventoAtual || 'simulado'}.xls`;
+
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+    }
+
+    /* =========================
+       IMPRESSÃO
+    ========================= */
+
+    function imprimirTop100() {
+      const rows = getRowsFiltradas().slice(0, 100);
+
+      if (!rows.length) {
+        alert('Não há dados para imprimir.');
+        return;
+      }
+
+      const geradoEm = new Date().toLocaleString('pt-BR');
+      const titulo = `Top 100 da Unidade ${unidadeAtual || ''} - ${eventoAtual || 'Simulado'}`;
+
+      const linhas = rows.map(r => `
+        <tr>
+          <td>${esc(r.CLS_U || '-')}</td>
+          <td>${esc(r.CLS_G || '-')}</td>
+          <td>${esc(r.INSCRICAO || '-')}</td>
+          <td>${esc(r.NOME || 'NÃO LOCALIZADO')}</td>
+          <td>${n(r.POR)}</td>
+          <td>${n(r.HIS)}</td>
+          <td>${n(r.ING)}</td>
+          <td>${n(r.SOC)}</td>
+          <td>${n(r.BIO)}</td>
+          <td>${n(r.QUI)}</td>
+          <td>${n(r.FIL)}</td>
+          <td>${n(r.FIS)}</td>
+          <td>${n(r.MAT)}</td>
+          <td>${n(r.GEO)}</td>
+          <td><strong>${n(r.TOTAL)}</strong></td>
+          <td>${esc(origemLabel(r.ORIGEM))}</td>
+        </tr>
+      `).join('');
+
+      const html = `
+        <!doctype html>
+        <html lang="pt-br">
+        <head>
+          <meta charset="utf-8">
+          <title>${esc(titulo)}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              color: #10233f;
+              margin: 22px;
+            }
+
+            .head {
+              border-bottom: 4px solid #0b3f7f;
+              margin-bottom: 14px;
+              padding-bottom: 10px;
+            }
+
+            h1 {
+              margin: 0;
+              color: #0b3f7f;
+              font-size: 22px;
+            }
+
+            .sub {
+              color: #64748b;
+              margin-top: 4px;
+              font-size: 12px;
+            }
+
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              font-size: 10px;
+            }
+
+            th {
+              background: #0b3f7f;
+              color: #fff;
+              padding: 6px 4px;
+              border: 1px solid #0b3f7f;
+            }
+
+            td {
+              border: 1px solid #d7e4f3;
+              padding: 5px 4px;
+              text-align: center;
+            }
+
+            td:nth-child(4),
+            th:nth-child(4) {
+              text-align: left;
+            }
+
+            tr:nth-child(even) td {
+              background: #f3f7fc;
+            }
+
+            @page {
+              size: landscape;
+              margin: 10mm;
+            }
+          </style>
+        </head>
+
+        <body>
+          <div class="head">
+            <h1>${esc(titulo)}</h1>
+            <div class="sub">${esc(unidadeNomeAtual || '')} • Gerado em ${geradoEm}</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>CLS_U</th>
+                <th>CLS_G</th>
+                <th>INSCRIÇÃO</th>
+                <th>NOME</th>
+                <th>POR</th>
+                <th>HIS</th>
+                <th>ING</th>
+                <th>SOC</th>
+                <th>BIO</th>
+                <th>QUI</th>
+                <th>FIL</th>
+                <th>FIS</th>
+                <th>MAT</th>
+                <th>GEO</th>
+                <th>TOTAL</th>
+                <th>ORIGEM</th>
+              </tr>
+            </thead>
+
+            <tbody>${linhas}</tbody>
+          </table>
+
+          <script>
+            window.onload = () => window.print();
+          <\/script>
+        </body>
+        </html>
+      `;
+
+      const w = window.open('', '_blank');
+
+      if (!w) {
+        alert('O navegador bloqueou a janela de impressão. Permita pop-ups para esta página.');
+        return;
+      }
+
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+    }
+
+    /* =========================
+       EVENTOS
+    ========================= */
+
+    document.getElementById('btnRecarregar').addEventListener('click', async () => {
+      try {
+        await carregarResultado();
+      } catch (e) {
+        console.error(e);
+        setError(e.message || 'Erro ao carregar resultado.');
+      }
+    });
+
+    document.getElementById('btnExcel').addEventListener('click', exportarExcel);
+    document.getElementById('btnImprimir').addEventListener('click', imprimirTop100);
+
+    document.getElementById('btnLimpar').addEventListener('click', () => {
+      busca.value = '';
+      origem.value = '';
+      ordem.value = 'CLS_U';
+      renderTabela();
+    });
+
+    busca.addEventListener('input', renderTabela);
+    origem.addEventListener('change', renderTabela);
+    ordem.addEventListener('change', renderTabela);
+
+    /* =========================
+       INIT
+    ========================= */
+
+    (async function init() {
+      try {
+        await carregarResultado();
+      } catch (e) {
+        console.error(e);
+        setError(e.message || 'Erro ao carregar resultado.');
+      }
+    })();
   </script>
 </body>
 </html>
