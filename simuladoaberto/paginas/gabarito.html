@@ -167,6 +167,7 @@
     const disciplina = dados?.disciplina || dados?.DISCIPLINA || '';
     const gabarito = dados?.gabarito || dados?.GABARITO || '';
     const imagem = dados?.imagem || dados?.IMAGEM || '';
+    const nomeImagem = dados?.nome_arquivo || dados?.NOME_ARQUIVO || imagem.split('/').pop() || 'ver imagem';
 
     row.innerHTML = `
       <td>
@@ -190,7 +191,7 @@
       <td class="status-cell ${imagem ? 'status-ok' : 'status-warn'}">
         ${
           imagem
-            ? `<a href="${escapeHtml(imagem)}" target="_blank" rel="noopener noreferrer">🔗 ver imagem</a>`
+            ? `<a href="${escapeHtml(imagem)}" target="_blank" rel="noopener noreferrer">🔗 ${escapeHtml(nomeImagem)}</a>`
             : 'sem imagem'
         }
       </td>
@@ -397,7 +398,7 @@
       hiddenLink.value = link;
 
       if (link && link.trim() !== '') {
-        status.innerHTML = `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">🔗 ver imagem</a>`;
+        status.innerHTML = `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">🔗 ${escapeHtml(file.name)}</a>`;
       } else {
         status.textContent = 'link não retornado';
       }
