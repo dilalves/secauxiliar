@@ -650,12 +650,12 @@
           <div class="chart-head">
             <div>
               <h2 class="chart-title">Acertos por disciplina</h2>
-              <div class="chart-sub">Percentual médio de acerto da unidade comparado com o geral do simulado.</div>
+              <div class="chart-sub">Percentual médio de acerto da sua unidade por disciplina.</div>
             </div>
             <div class="chart-toolbar">
               <span class="chip">
                 <i class="material-icons" style="font-size:16px;">bar_chart</i>
-                Unidade x Geral
+                Unidade
               </span>
             </div>
           </div>
@@ -914,13 +914,13 @@
     }
 
     function renderGraficoDisciplinas(){
-      const lista = Array.isArray(dadosResumo?.disciplinas)
-        ? dadosResumo.disciplinas
+      const labels = Array.isArray(dadosResumo?.disciplinas)
+        ? dadosResumo.disciplinas.map(i => slugDisciplina(i.disciplina))
         : [];
 
-      const labels = lista.map(i => slugDisciplina(i.disciplina));
-      const valoresUnidade = lista.map(i => Number(i.percentual_unidade ?? i.percentual ?? 0));
-      const valoresGeral = lista.map(i => Number(i.percentual_geral ?? 0));
+      const valores = Array.isArray(dadosResumo?.disciplinas)
+        ? dadosResumo.disciplinas.map(i => Number(i.percentual_unidade ?? i.percentual ?? 0))
+        : [];
 
       const ctx = document.getElementById('chartDisciplinas');
 
@@ -928,42 +928,24 @@
         type: 'bar',
         data: {
           labels,
-          datasets: [
-            {
-              label: 'Geral',
-              data: valoresGeral,
-              backgroundColor: '#60a5fa',
-              borderColor: '#60a5fa',
-              borderWidth: 1,
-              borderRadius: 8,
-              maxBarThickness: 24,
-              categoryPercentage: 0.72,
-              barPercentage: 0.82
-            },
-            {
-              label: 'Unidade',
-              data: valoresUnidade,
-              backgroundColor: '#22c55e',
-              borderColor: '#22c55e',
-              borderWidth: 1,
-              borderRadius: 8,
-              maxBarThickness: 24,
-              categoryPercentage: 0.72,
-              barPercentage: 0.82
-            }
-          ]
+          datasets: [{
+            label: '% de acerto',
+            data: valores,
+            backgroundColor: valores.map(v => corPorPercentual(v)),
+            borderColor: valores.map(v => corPorPercentual(v)),
+            borderWidth: 1,
+            borderRadius: 8,
+            maxBarThickness: 42
+          }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: {
-              display: true,
-              position: 'top'
-            },
+            legend: { display: false },
             tooltip: {
               callbacks: {
-                label: (context) => `${context.dataset.label}: ${formatPct(context.raw, 1)}`
+                label: (context) => ` ${formatPct(context.raw, 1)}`
               }
             }
           },
@@ -979,33 +961,18 @@
         }
       });
 
-      if (valoresUnidade.length) {
+      if (valores.length) {
         let maior = 0;
         let menor = 0;
-        let maiorDif = 0;
-        let menorDif = 0;
 
-        for (let i = 1; i < valoresUnidade.length; i++) {
-          if (valoresUnidade[i] > valoresUnidade[maior]) maior = i;
-          if (valoresUnidade[i] < valoresUnidade[menor]) menor = i;
-
-          const difAtual = valoresUnidade[i] - valoresGeral[i];
-          const difMaior = valoresUnidade[maiorDif] - valoresGeral[maiorDif];
-          const difMenor = valoresUnidade[menorDif] - valoresGeral[menorDif];
-
-          if (difAtual > difMaior) maiorDif = i;
-          if (difAtual < difMenor) menorDif = i;
+        for (let i = 1; i < valores.length; i++) {
+          if (valores[i] > valores[maior]) maior = i;
+          if (valores[i] < valores[menor]) menor = i;
         }
 
-        const difMaior = valoresUnidade[maiorDif] - valoresGeral[maiorDif];
-        const difMenor = valoresUnidade[menorDif] - valoresGeral[menorDif];
-
         insightDisciplinas.innerHTML =
-          `<b>Destaque da unidade:</b> melhor desempenho em <b>${labels[maior]}</b> (${formatPct(valoresUnidade[maior])}) ` +
-          `e menor aproveitamento em <b>${labels[menor]}</b> (${formatPct(valoresUnidade[menor])}). ` +
-          `<br><b>Comparando com o geral:</b> maior vantagem em <b>${labels[maiorDif]}</b> ` +
-          `(${difMaior >= 0 ? '+' : ''}${formatNum(difMaior, 1)} p.p.) e menor diferença em <b>${labels[menorDif]}</b> ` +
-          `(${difMenor >= 0 ? '+' : ''}${formatNum(difMenor, 1)} p.p.).`;
+          `<b>Destaque da unidade:</b> melhor desempenho em <b>${labels[maior]}</b> (${formatPct(valores[maior])}) ` +
+          `e menor aproveitamento em <b>${labels[menor]}</b> (${formatPct(valores[menor])}).`;
       } else {
         insightDisciplinas.textContent = 'Não há dados por disciplina para exibir.';
       }
