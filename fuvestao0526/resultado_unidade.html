@@ -551,10 +551,13 @@
       flex: 1;
       overflow: auto;
       background: #f3f7fc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: block;
+      cursor: grab;
       padding: 14px;
+    }
+
+    .modal-imagem-body.arrastando {
+      cursor: grabbing;
     }
 
     .modal-imagem-body img {
@@ -925,6 +928,12 @@
     let rotacaoImagem = 0;
     let tentativaExtensaoImagem = 0;
     let zoomImagem = 1;
+
+    let arrastandoImagem = false;
+    let inicioDragX = 0;
+    let inicioDragY = 0;
+    let scrollInicialX = 0;
+    let scrollInicialY = 0;
 
     const extensoesImagem = ['jpg', 'jpeg', 'png'];
 
@@ -1582,6 +1591,37 @@
 
       aplicarTransformImagem();
     }, { passive: false });
+
+
+    const modalImagemBody = document.querySelector('.modal-imagem-body');
+
+    modalImagemBody.addEventListener('mousedown', event => {
+      if (!document.getElementById('modalImagem').classList.contains('ativo')) return;
+
+      arrastandoImagem = true;
+      inicioDragX = event.clientX;
+      inicioDragY = event.clientY;
+      scrollInicialX = modalImagemBody.scrollLeft;
+      scrollInicialY = modalImagemBody.scrollTop;
+
+      modalImagemBody.classList.add('arrastando');
+      event.preventDefault();
+    });
+
+    document.addEventListener('mousemove', event => {
+      if (!arrastandoImagem) return;
+
+      const dx = event.clientX - inicioDragX;
+      const dy = event.clientY - inicioDragY;
+
+      modalImagemBody.scrollLeft = scrollInicialX - dx;
+      modalImagemBody.scrollTop = scrollInicialY - dy;
+    });
+
+    document.addEventListener('mouseup', () => {
+      arrastandoImagem = false;
+      modalImagemBody.classList.remove('arrastando');
+    });
 
     /* =========================
        INIT
