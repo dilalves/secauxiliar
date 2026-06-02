@@ -561,12 +561,13 @@
     }
 
     .modal-imagem-body img {
-      max-width: 100%;
-      max-height: 100%;
+      width: 100%;
+      max-width: none;
+      max-height: none;
       transform: rotate(0deg);
       transition: transform .18s ease;
       box-shadow: 0 8px 28px rgba(15, 37, 68, .16);
-      background: #fff;
+      background: #83b3e0;
     }
 
     .modal-imagem-loading {
@@ -1638,7 +1639,11 @@
 
     function aplicarTransformImagem() {
       const img = document.getElementById('imgProva');
-      img.style.transform = `rotate(${rotacaoImagem}deg) scale(${zoomImagem})`;
+
+      img.style.width = `${zoomImagem * 100}%`;
+      img.style.maxWidth = 'none';
+      img.style.maxHeight = 'none';
+      img.style.transform = `rotate(${rotacaoImagem}deg)`;
       img.style.transformOrigin = 'center center';
     }
   </script>
