@@ -1102,7 +1102,19 @@
 
       rows = [...rows].sort((a, b) => {
         if (ord === 'NOME') {
-          return normalizar(a.NOME).localeCompare(normalizar(b.NOME), 'pt-BR');
+          const nomeA = normalizar(a.NOME || ''); 
+          const nomeB = normalizar(b.NOME || '');
+
+          const origemA = normalizar(a.ORIGEM || '');
+          const origemB = normalizar(b.ORIGEM || '');
+
+          const aNaoLocalizado = !nomeA || nomeA === 'NAO LOCALIZADO' || origemA === 'NAO_LOCALIZADA';
+          const bNaoLocalizado = !nomeB || nomeB === 'NAO LOCALIZADO' || origemB === 'NAO_LOCALIZADA';
+
+          if (aNaoLocalizado && !bNaoLocalizado) return 1;
+          if (!aNaoLocalizado && bNaoLocalizado) return -1;
+
+          return nomeA.localeCompare(nomeB, 'pt-BR');
         }
 
         if (ord === 'TOTAL') {
