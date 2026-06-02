@@ -729,7 +729,7 @@
 
           <button type="button" class="secondary" id="btnImprimir">
             <span class="material-icons" style="font-size:20px">print</span>
-            Imprimir Top 100
+            Imprimir
           </button>
 
           <button type="button" class="primary" id="btnRecarregar">
@@ -1385,7 +1385,7 @@
     ========================= */
 
     function imprimirTop100() {
-      const rows = getRowsFiltradas().slice(0, 100);
+      const rows = getRowsFiltradas();
 
       if (!rows.length) {
         alert('Não há dados para imprimir.');
@@ -1393,12 +1393,10 @@
       }
 
       const geradoEm = new Date().toLocaleString('pt-BR');
-      const titulo = `Top 100 da Unidade ${unidadeAtual || ''} - ${eventoAtual || 'Simulado'}`;
+      const titulo = `Unidade ${unidadeAtual || ''} - ${unidadeNomeAtual || ''} - ${eventoAtual || 'Simulado'}`;
 
       const linhas = rows.map(r => `
         <tr>
-          <td>${esc(r.CLS_U || '-')}</td>
-          <td>${esc(r.CLS_G || '-')}</td>
           <td>${esc(r.INSCRICAO || '-')}</td>
           <td>${esc(r.NOME || 'NÃO LOCALIZADO')}</td>
           <td>${n(r.POR)}</td>
@@ -1412,10 +1410,11 @@
           <td>${n(r.MAT)}</td>
           <td>${n(r.GEO)}</td>
           <td><strong>${n(r.TOTAL)}</strong></td>
+          <td>${esc(r.CLS_G || '-')}</td>
+          <td>${esc(r.CLS_U || '-')}</td>
           <td>${esc(origemLabel(r.ORIGEM))}</td>
         </tr>
       `).join('');
-
       const html = `
         <!doctype html>
         <html lang="pt-br">
@@ -1485,14 +1484,12 @@
         <body>
           <div class="head">
             <h1>${esc(titulo)}</h1>
-            <div class="sub">${esc(unidadeNomeAtual || '')} • Gerado em ${geradoEm}</div>
+            <div class="sub">Classificação final dos alunos • Gerado em ${geradoEm}</div>
           </div>
 
           <table>
             <thead>
               <tr>
-                <th>CLS_U</th>
-                <th>CLS_G</th>
                 <th>INSCRIÇÃO</th>
                 <th>NOME</th>
                 <th>POR</th>
@@ -1506,6 +1503,8 @@
                 <th>MAT</th>
                 <th>GEO</th>
                 <th>TOTAL</th>
+                <th>CLS_G</th>
+                <th>CLS_U</th>
                 <th>ORIGEM</th>
               </tr>
             </thead>
