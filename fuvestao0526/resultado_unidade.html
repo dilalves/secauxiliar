@@ -1307,8 +1307,6 @@
       }
 
       const cols = [
-        ['CLS_U', 'Classificação Unidade'],
-        ['CLS_G', 'Classificação Geral'],
         ['INSCRICAO', 'Inscrição'],
         ['CPF', 'CPF'],
         ['NOME', 'Nome'],
@@ -1325,6 +1323,8 @@
         ['GEO', 'GEO'],
         ['TOTAL', 'Total'],
         ['LOTE', 'Lote'],
+        ['CLS_G', 'Classificação Geral'],
+        ['CLS_U', 'Classificação Unidade'],
         ['ORIGEM', 'Origem'],
         ['ARQUIVO_ORIGEM', 'Arquivo origem']
       ];
@@ -1335,7 +1335,15 @@
 
       const linhas = rows.map(r => `
         <tr>
-          ${cols.map(([key]) => `<td>${esc(r[key] ?? '')}</td>`).join('')}
+          ${cols.map(([key]) => {
+            const valor = esc(r[key] ?? '');
+
+            if (key === 'INSCRICAO' || key === 'CPF') {
+              return `<td style="mso-number-format:'\\@';">${valor}</td>`;
+            }
+
+            return `<td>${valor}</td>`;
+          }).join('')}
         </tr>
       `).join('');
 
