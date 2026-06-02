@@ -1141,12 +1141,6 @@
 
                 <div style="margin-top:12px;background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;font-size:13px;">
                   ${insight}
-                  <br>
-                  <b>Total:</b> ${escapeHtml(data.total_respostas)}
-                  &nbsp; | &nbsp;
-                  <b>Acertos:</b> ${escapeHtml(data.qtd_acertos)}
-                  &nbsp; | &nbsp;
-                  <b>Erros:</b> ${escapeHtml(data.qtd_erros)}
                 </div>
               </div>
 
@@ -1196,7 +1190,7 @@
                     ctx.fillStyle = '#0b3b78';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'bottom';
-                    ctx.fillText(valor, bar.x, bar.y - 8);
+                    ctx.fillText(formatPct(valor, 1), bar.x, bar.y - 8);
                     ctx.restore();
                   });
                 });
@@ -1208,7 +1202,7 @@
               data: {
                 labels,
                 datasets: [{
-                  label: 'Quantidade de respostas',
+                  label: 'Percentual de respostas',
                   data: valores,
                   backgroundColor: labels.map(alt => corAlternativa(alt, gabarito)),
                   borderColor: labels.map(alt => corAlternativa(alt, gabarito)),
@@ -1225,16 +1219,16 @@
                   legend: { display: false },
                   tooltip: {
                     callbacks: {
-                      label: context => ` ${context.raw} resposta(s)`
+                      label: context => ` ${formatPct(context.raw, 1)}`
                     }
                   }
                 },
                 scales: {
                   y: {
                     beginAtZero: true,
-                    suggestedMax: Math.max(...valores) + 5,
+                    max: 100,
                     ticks: {
-                      precision: 0
+                      callback: (value) => `${value}%`
                     }
                   }
                 }
