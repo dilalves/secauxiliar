@@ -924,6 +924,7 @@
     let imagemAtual = null;
     let rotacaoImagem = 0;
     let tentativaExtensaoImagem = 0;
+    let zoomImagem = 1;
 
     const extensoesImagem = ['jpg', 'jpeg', 'png'];
 
@@ -1216,6 +1217,7 @@
 
       imagemAtual = row;
       rotacaoImagem = 0;
+      zoomImagem = 1;
       tentativaExtensaoImagem = 0;
 
       const modal = document.getElementById('modalImagem');
@@ -1229,7 +1231,7 @@
       loading.textContent = 'Carregando imagem...';
 
       img.style.display = 'none';
-      img.style.transform = 'rotate(0deg)';
+      aplicarTransformImagem();
       img.src = '';
 
       img.onload = function () {
@@ -1267,19 +1269,19 @@
 
       imagemAtual = null;
       rotacaoImagem = 0;
+      zoomImagem = 1;
       tentativaExtensaoImagem = 0;
     }
 
     function girarImagem(graus) {
       rotacaoImagem = (rotacaoImagem + graus) % 360;
-
-      document.getElementById('imgProva').style.transform = `rotate(${rotacaoImagem}deg)`;
+      aplicarTransformImagem();
     }
 
     function resetarRotacaoImagem() {
       rotacaoImagem = 0;
-
-      document.getElementById('imgProva').style.transform = 'rotate(0deg)';
+      zoomImagem = 1;
+      aplicarTransformImagem();
     }
 
     /* =========================
@@ -1565,6 +1567,22 @@
       }
     });
 
+    document.getElementById('modalImagem').addEventListener('wheel', event => {
+      const modal = document.getElementById('modalImagem');
+
+      if (!modal.classList.contains('ativo')) return;
+
+      event.preventDefault();
+
+      if (event.deltaY < 0) {
+        zoomImagem = Math.min(zoomImagem + 0.1, 4);
+      } else {
+        zoomImagem = Math.max(zoomImagem - 0.1, 0.5);
+      }
+
+      aplicarTransformImagem();
+    }, { passive: false });
+
     /* =========================
        INIT
     ========================= */
@@ -1577,6 +1595,12 @@
         setError(e.message || 'Erro ao carregar resultado.');
       }
     })();
+
+    function aplicarTransformImagem() {
+      const img = document.getElementById('imgProva');
+      img.style.transform = `rotate(${rotacaoImagem}deg) scale(${zoomImagem})`;
+      img.style.transformOrigin = 'center center';
+    }
   </script>
 </body>
 </html>
