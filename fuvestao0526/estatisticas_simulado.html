@@ -304,7 +304,7 @@
 
     .meta{
       display:grid;
-      grid-template-columns:repeat(4, minmax(180px, 1fr));
+      grid-template-columns:repeat(5, minmax(170px, 1fr));
       gap:14px;
       padding:18px 20px 0;
     }
@@ -623,7 +623,13 @@
         <div class="info">
           <div class="label">Total de alunos</div>
           <div class="value" id="metaTotalAlunos">0</div>
-          <div class="subvalue">Quantidade considerada nos gráficos</div>
+          <div class="subvalue">Quantidade da unidade considerada nos gráficos</div>
+        </div>
+
+        <div class="info">
+          <div class="label">Total geral de alunos</div>
+          <div class="value" id="metaTotalGeralAlunos">0</div>
+          <div class="subvalue">Quantidade geral do evento</div>
         </div>
 
         <div class="info">
@@ -644,12 +650,12 @@
           <div class="chart-head">
             <div>
               <h2 class="chart-title">Acertos por disciplina</h2>
-              <div class="chart-sub">Percentual médio de acerto da sua unidade por disciplina.</div>
+              <div class="chart-sub">Percentual médio de acerto da unidade comparado com o geral do simulado.</div>
             </div>
             <div class="chart-toolbar">
               <span class="chip">
                 <i class="material-icons" style="font-size:16px;">bar_chart</i>
-                Unidade
+                Unidade x Geral
               </span>
             </div>
           </div>
@@ -753,6 +759,7 @@
 
     const metaEvento = document.getElementById('metaEvento');
     const metaTotalAlunos = document.getElementById('metaTotalAlunos');
+    const metaTotalGeralAlunos = document.getElementById('metaTotalGeralAlunos');
     const metaMediaUnidade = document.getElementById('metaMediaUnidade');
     const metaComparativo = document.getElementById('metaComparativo');
     const metaComparativoSub = document.getElementById('metaComparativoSub');
@@ -894,6 +901,7 @@
     function renderMeta(){
       metaEvento.textContent = dadosResumo?.evento || EVENTO;
       metaTotalAlunos.textContent = dadosResumo?.total_alunos ?? 0;
+      metaTotalGeralAlunos.textContent = dadosResumo?.total_geral_alunos ?? 0;
       metaMediaUnidade.textContent = formatPct(dadosResumo?.media_unidade ?? 0);
 
       const diff = Number(dadosResumo?.diferenca_geral ?? 0);
@@ -906,13 +914,13 @@
     }
 
     function renderGraficoDisciplinas(){
-      const labels = Array.isArray(dadosResumo?.disciplinas)
-        ? dadosResumo.disciplinas.map(i => slugDisciplina(i.disciplina))
+      const lista = Array.isArray(dadosResumo?.disciplinas)
+        ? dadosResumo.disciplinas
         : [];
 
-      const valores = Array.isArray(dadosResumo?.disciplinas)
-        ? dadosResumo.disciplinas.map(i => Number(i.percentual || 0))
-        : [];
+      const labels = lista.map(i => slugDisciplina(i.disciplina));
+      const valoresUnidade = lista.map(i => Number(i.percentual_unidade ?? i.percentual ?? 0));
+      const valoresGeral = lista.map(i => Number(i.percentual_geral ?? 0));
 
       const ctx = document.getElementById('chartDisciplinas');
 
@@ -920,24 +928,42 @@
         type: 'bar',
         data: {
           labels,
-          datasets: [{
-            label: '% de acerto',
-            data: valores,
-            backgroundColor: valores.map(v => corPorPercentual(v)),
-            borderColor: valores.map(v => corPorPercentual(v)),
-            borderWidth: 1,
-            borderRadius: 8,
-            maxBarThickness: 42
-          }]
+          datasets: [
+            {
+              label: 'Geral',
+              data: valoresGeral,
+              backgroundColor: '#60a5fa',
+              borderColor: '#60a5fa',
+              borderWidth: 1,
+              borderRadius: 8,
+              maxBarThickness: 24,
+              categoryPercentage: 0.72,
+              barPercentage: 0.82
+            },
+            {
+              label: 'Unidade',
+              data: valoresUnidade,
+              backgroundColor: '#22c55e',
+              borderColor: '#22c55e',
+              borderWidth: 1,
+              borderRadius: 8,
+              maxBarThickness: 24,
+              categoryPercentage: 0.72,
+              barPercentage: 0.82
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { display: false },
+            legend: {
+              display: true,
+              position: 'top'
+            },
             tooltip: {
               callbacks: {
-                label: (context) => ` ${formatPct(context.raw, 1)}`
+                label: (context) => `${context.dataset.label}: ${formatPct(context.raw, 1)}`
               }
             }
           },
@@ -953,18 +979,33 @@
         }
       });
 
-      if (valores.length) {
+      if (valoresUnidade.length) {
         let maior = 0;
         let menor = 0;
+        let maiorDif = 0;
+        let menorDif = 0;
 
-        for (let i = 1; i < valores.length; i++) {
-          if (valores[i] > valores[maior]) maior = i;
-          if (valores[i] < valores[menor]) menor = i;
+        for (let i = 1; i < valoresUnidade.length; i++) {
+          if (valoresUnidade[i] > valoresUnidade[maior]) maior = i;
+          if (valoresUnidade[i] < valoresUnidade[menor]) menor = i;
+
+          const difAtual = valoresUnidade[i] - valoresGeral[i];
+          const difMaior = valoresUnidade[maiorDif] - valoresGeral[maiorDif];
+          const difMenor = valoresUnidade[menorDif] - valoresGeral[menorDif];
+
+          if (difAtual > difMaior) maiorDif = i;
+          if (difAtual < difMenor) menorDif = i;
         }
 
+        const difMaior = valoresUnidade[maiorDif] - valoresGeral[maiorDif];
+        const difMenor = valoresUnidade[menorDif] - valoresGeral[menorDif];
+
         insightDisciplinas.innerHTML =
-          `<b>Destaque da unidade:</b> melhor desempenho em <b>${labels[maior]}</b> (${formatPct(valores[maior])}) ` +
-          `e menor aproveitamento em <b>${labels[menor]}</b> (${formatPct(valores[menor])}).`;
+          `<b>Destaque da unidade:</b> melhor desempenho em <b>${labels[maior]}</b> (${formatPct(valoresUnidade[maior])}) ` +
+          `e menor aproveitamento em <b>${labels[menor]}</b> (${formatPct(valoresUnidade[menor])}). ` +
+          `<br><b>Comparando com o geral:</b> maior vantagem em <b>${labels[maiorDif]}</b> ` +
+          `(${difMaior >= 0 ? '+' : ''}${formatNum(difMaior, 1)} p.p.) e menor diferença em <b>${labels[menorDif]}</b> ` +
+          `(${difMenor >= 0 ? '+' : ''}${formatNum(difMenor, 1)} p.p.).`;
       } else {
         insightDisciplinas.textContent = 'Não há dados por disciplina para exibir.';
       }
