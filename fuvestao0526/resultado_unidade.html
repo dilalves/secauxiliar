@@ -736,7 +736,7 @@
       </div>
 
       <div class="panel-body">
-        <div class="msg" id="msg">Carregando resultado da unidade...</div>
+        <div class="msg" id="msg" style="display:none;"></div>
 
         <div class="kpis">
           <div class="kpi">
@@ -998,8 +998,9 @@
     ========================= */
 
     function setLoading() {
+      msg.style.display = 'none';
       msg.className = 'msg';
-      msg.textContent = 'Carregando resultado da unidade...';
+      msg.textContent = '';
 
       tbody.innerHTML = `
         <tr>
@@ -1064,9 +1065,6 @@
       kpiMedia.textContent = decimal(resumo.media_total);
       kpiMaior.textContent = n(resumo.maior_total);
       kpiAvulsos.textContent = n(resumo.total_avulsos);
-
-      msg.className = 'msg ok';
-      msg.textContent = `Dados carregados com sucesso. Total: ${n(resumo.total_alunos)} aluno(s) no resultado da unidade.`;
 
       renderTabela();
     }
