@@ -830,8 +830,27 @@
       return s;
     }
 
+    function getGabaritos(gabarito) {
+      return String(gabarito || '')
+        .toUpperCase()
+        .split(/[,;\/| ]+/)
+        .map(g => g.trim())
+        .filter(Boolean);
+    }
+
+    function formatGabarito(gabarito) {
+      const lista = getGabaritos(gabarito);
+      if (!lista.length) return '-';
+      if (lista.length === 1) return lista[0];
+      return lista.slice(0, -1).join(', ') + ' e ' + lista[lista.length - 1];
+    }
+
+    function alternativaEhCorreta(alt, gabarito) {
+      return getGabaritos(gabarito).includes(String(alt || '').toUpperCase());
+    }
+
     function corAlternativa(alt, gabarito) {
-      if (String(alt).toUpperCase() === String(gabarito).toUpperCase()) {
+      if (alternativaEhCorreta(alt, gabarito)) {
         return '#22c55e';
       }
 
@@ -1096,14 +1115,15 @@
         const valores = labels.map(k => Number(alternativas[k] || 0));
 
         const gabarito = String(data.gabarito || '').toUpperCase();
+        const gabaritoFmt = formatGabarito(gabarito);
         const imagemSrc = normalizarImagemSrc(data.imagem || '');
 
         let insight = '';
 
-        if (data.mais_marcada && data.mais_marcada !== gabarito) {
-          insight = `A alternativa mais marcada foi <b>${escapeHtml(data.mais_marcada)}</b>, mas o gabarito é <b>${escapeHtml(gabarito)}</b>.`;
-        } else if (data.mais_marcada === gabarito) {
-          insight = `A alternativa correta <b>${escapeHtml(gabarito)}</b> também foi a mais marcada pelos alunos.`;
+        if (data.mais_marcada && !alternativaEhCorreta(data.mais_marcada, gabarito)) {
+          insight = `A alternativa mais marcada foi <b>${escapeHtml(data.mais_marcada)}</b>, mas o gabarito é <b>${escapeHtml(gabaritoFmt)}</b>.`;
+        } else if (data.mais_marcada && alternativaEhCorreta(data.mais_marcada, gabarito)) {
+          insight = `A alternativa correta <b>${escapeHtml(data.mais_marcada)}</b> também foi a mais marcada pelos alunos.`;
         } else {
           insight = `Distribuição das alternativas da questão selecionada.`;
         }
@@ -1123,7 +1143,7 @@
 
               <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
                 <div style="font-size:11px;color:#64748b;font-weight:700;">GABARITO</div>
-                <div style="font-size:22px;color:#16a34a;font-weight:800;">${escapeHtml(gabarito || '-')}</div>
+                <div style="font-size:22px;color:#16a34a;font-weight:800;">${escapeHtml(gabaritoFmt)}</div>
               </div>
 
               <div style="background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;">
