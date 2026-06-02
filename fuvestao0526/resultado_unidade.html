@@ -64,7 +64,7 @@
     }
 
     .topbar-inner {
-      width: min(1240px, calc(100% - 28px));
+      width: min(1500px, calc(100% - 28px));
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -129,7 +129,7 @@
     ========================= */
 
     .page {
-      width: min(1240px, calc(100% - 28px));
+      width: min(1500px, calc(100% - 28px));
       margin: 22px auto 34px;
     }
 
@@ -806,8 +806,6 @@
           <table>
             <thead>
               <tr>
-                <th class="num">CLS_U</th>
-                <th class="num">CLS_G</th>
                 <th>INSCRIÇÃO</th>
                 <th>NOME</th>
                 <th class="num">POR</th>
@@ -822,6 +820,8 @@
                 <th class="num">GEO</th>
                 <th class="num">TOTAL</th>
                 <th class="num">LOTE</th>
+                <th class="num">CLS_G</th>
+                <th class="num">CLS_U</th>
                 <th>ORIGEM</th>
               </tr>
             </thead>
@@ -1147,14 +1147,6 @@
 
         return `
           <tr>
-            <td class="num">
-              <span class="rank rank-u">${esc(r.CLS_U || '-')}</span>
-            </td>
-
-            <td class="num">
-              <span class="rank">${esc(r.CLS_G || '-')}</span>
-            </td>
-
             <td class="insc">
               ${temImagem ? `
                 <a href="javascript:void(0)"
@@ -1181,6 +1173,14 @@
 
             <td class="num total">${n(r.TOTAL)}</td>
             <td class="num">${esc(r.LOTE || '-')}</td>
+
+            <td class="num">
+              <span class="rank">${esc(r.CLS_G || '-')}</span>
+            </td>
+
+            <td class="num">
+              <span class="rank rank-u">${esc(r.CLS_U || '-')}</span>
+            </td>
 
             <td>
               <span class="${origemClasse(r.ORIGEM)}">${esc(origemLabel(r.ORIGEM))}</span>
