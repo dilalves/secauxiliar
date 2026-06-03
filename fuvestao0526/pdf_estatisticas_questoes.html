@@ -175,9 +175,11 @@
       logBox.textContent = log || 'Sem log ainda...';
       logBox.scrollTop = logBox.scrollHeight;
 
-      if (st.finalizado && st.download_url) {
+      if (st.finalizado) {
         document.getElementById('downloadArea').style.display = 'block';
-        document.getElementById('btnDownload').href = st.download_url;
+
+        document.getElementById('btnDownload').href =
+          `${PHP_ENDPOINT}?modo=baixar&job=${jobAtual}`;
       }
     }
 
