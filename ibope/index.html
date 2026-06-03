@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IBOPE Online - Painel</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+  <style>
+    :root {
+      --azul: #0d47a1;
+      --azul2: #1565c0;
+      --azulClaro: #e3f2fd;
+      --amarelo: #fff59d;
+    }
+
+    body {
+      background: #f4f7fb;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #263238;
+    }
+
+    .topo {
+      background: linear-gradient(135deg, var(--azul), var(--azul2));
+      color: white;
+      padding: 32px 16px;
+      border-bottom: 5px solid #ffcc00;
+      box-shadow: 0 3px 10px rgba(0,0,0,.18);
+    }
+
+    .topo h4 {
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: .5px;
+    }
+
+    .topo p {
+      margin: 8px 0 0;
+      opacity: .95;
+      font-size: 1.05rem;
+    }
+
+    .painel {
+      margin-top: 28px;
+    }
+
+    .card-link {
+      border-radius: 14px;
+      overflow: hidden;
+      border-top: 5px solid var(--azul);
+      box-shadow: 0 4px 14px rgba(0,0,0,.12);
+    }
+
+    .card-link .card-content {
+      padding-bottom: 14px;
+    }
+
+    .turma-label {
+      display: inline-block;
+      background: var(--azulClaro);
+      color: var(--azul);
+      font-weight: 800;
+      padding: 5px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .link-box {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 11px;
+      font-size: .9rem;
+      word-break: break-all;
+      color: #333;
+      margin: 12px 0;
+    }
+
+    .btn-azul {
+      background: var(--azul) !important;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .btn-contorno {
+      border: 1px solid var(--azul);
+      color: var(--azul);
+      background: white;
+      border-radius: 8px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .btn-contorno:hover {
+      background: var(--azulClaro);
+    }
+
+    .orientacao {
+      border-left: 5px solid var(--azul);
+      border-radius: 10px;
+      background: white;
+      padding: 18px;
+      box-shadow: 0 3px 10px rgba(0,0,0,.08);
+    }
+
+    .orientacao h6 {
+      color: var(--azul);
+      font-weight: 800;
+      margin-top: 0;
+    }
+
+    .rodape {
+      margin-top: 30px;
+      color: #607d8b;
+      font-size: .85rem;
+      text-align: center;
+    }
+
+    .toast-ok {
+      background: #1b5e20 !important;
+      font-weight: 700;
+    }
+
+    @media (max-width: 600px) {
+      .topo {
+        padding: 24px 14px;
+      }
+
+      .topo h4 {
+        font-size: 1.7rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topo center-align">
+    <h4>IBOPE Online</h4>
+    <p>Pesquisa de Opinião — Curso Extensivo Online</p>
+  </div>
+
+  <div class="container painel">
+    <div class="row">
+      <div class="col s12">
+        <div class="orientacao">
+          <h6><i class="material-icons left">link</i>Painel de links das turmas</h6>
+          <p>
+            Use os botões abaixo para copiar o link correto e enviar aos alunos.
+            Cada link abre a avaliação já filtrada com os professores da turma correspondente.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- TARDE -->
+      <div class="col s12 m6">
+        <div class="card card-link">
+          <div class="card-content">
+            <span class="turma-label">TURMA TARDE</span>
+            <h5>Link para alunos da tarde</h5>
+            <p>Envie este link apenas para os alunos da turma da tarde.</p>
+
+            <div id="linkTarde" class="link-box"></div>
+
+            <button class="btn btn-azul waves-effect waves-light" onclick="copiarLink('TARDE')">
+              <i class="material-icons left">content_copy</i>
+              Copiar link
+            </button>
+
+            <a id="abrirTarde" class="btn-flat btn-contorno waves-effect" target="_blank">
+              <i class="material-icons left">open_in_new</i>
+              Abrir avaliação
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOITE -->
+      <div class="col s12 m6">
+        <div class="card card-link">
+          <div class="card-content">
+            <span class="turma-label">TURMA NOITE</span>
+            <h5>Link para alunos da noite</h5>
+            <p>Envie este link apenas para os alunos da turma da noite.</p>
+
+            <div id="linkNoite" class="link-box"></div>
+
+            <button class="btn btn-azul waves-effect waves-light" onclick="copiarLink('NOITE')">
+              <i class="material-icons left">content_copy</i>
+              Copiar link
+            </button>
+
+            <a id="abrirNoite" class="btn-flat btn-contorno waves-effect" target="_blank">
+              <i class="material-icons left">open_in_new</i>
+              Abrir avaliação
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rodape">
+      Sistema IBOPE Online · SecAuxiliar · 3A Sistemas
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    const baseUrl = window.location.origin + window.location.pathname.replace(/index\.html$/i, '');
+    const links = {
+      TARDE: `${baseUrl}avaliacao.html?turma=TARDE`,
+      NOITE: `${baseUrl}avaliacao.html?turma=NOITE`
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('linkTarde').textContent = links.TARDE;
+      document.getElementById('linkNoite').textContent = links.NOITE;
+
+      document.getElementById('abrirTarde').href = links.TARDE;
+      document.getElementById('abrirNoite').href = links.NOITE;
+    });
+
+    async function copiarLink(turma) {
+      const link = links[turma];
+
+      try {
+        await navigator.clipboard.writeText(link);
+        M.toast({
+          html: `Link da turma ${turma} copiado!`,
+          classes: 'toast-ok'
+        });
+      } catch (e) {
+        const campo = document.createElement('textarea');
+        campo.value = link;
+        document.body.appendChild(campo);
+        campo.select();
+        document.execCommand('copy');
+        document.body.removeChild(campo);
+
+        M.toast({
+          html: `Link da turma ${turma} copiado!`,
+          classes: 'toast-ok'
+        });
+      }
+    }
+  </script>
+</body>
+</html>
