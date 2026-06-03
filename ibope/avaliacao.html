@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IBOPE Online - Avaliação</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+  <style>
+    :root {
+      --azul: #0d47a1;
+      --azul2: #1565c0;
+      --azulClaro: #e3f2fd;
+      --amarelo: #fff59d;
+      --cinza: #f4f7fb;
+    }
+
+    body {
+      background: var(--cinza);
+      font-family: Arial, Helvetica, sans-serif;
+      color: #263238;
+    }
+
+    .topo {
+      background: linear-gradient(135deg, var(--azul), var(--azul2));
+      color: white;
+      padding: 22px 16px;
+      border-bottom: 5px solid #ffcc00;
+      box-shadow: 0 3px 10px rgba(0,0,0,.18);
+    }
+
+    .logo-box img {
+      max-width: 340px;
+      width: 90%;
+      background: white;
+      border-radius: 10px;
+      padding: 8px;
+      margin-bottom: 12px;
+    }
+
+    .topo h4 {
+      margin: 4px 0 0;
+      font-weight: 900;
+      letter-spacing: .5px;
+    }
+
+    .turma-chip {
+      display: inline-block;
+      margin-top: 10px;
+      background: #ffcc00;
+      color: #0d47a1;
+      font-weight: 900;
+      padding: 6px 16px;
+      border-radius: 20px;
+    }
+
+    .container-principal {
+      width: 96%;
+      max-width: 1250px;
+      margin: 24px auto;
+    }
+
+    .box {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.10);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .box h6 {
+      color: var(--azul);
+      font-weight: 900;
+      margin-top: 0;
+    }
+
+    .lembre {
+      background: #fffde7;
+      border-left: 6px solid #ffcc00;
+    }
+
+    .criterios {
+      background: #e3f2fd;
+      border-left: 6px solid var(--azul);
+    }
+
+    .criterios .linha {
+      margin: 4px 0;
+      font-size: .95rem;
+    }
+
+    .criterios b {
+      background: var(--azul);
+      color: white;
+      border-radius: 50%;
+      display: inline-block;
+      width: 23px;
+      height: 23px;
+      text-align: center;
+      line-height: 23px;
+      margin-right: 8px;
+    }
+
+    .tabela-wrap {
+      overflow-x: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.10);
+    }
+
+    table {
+      min-width: 980px;
+      margin: 0;
+    }
+
+    thead th {
+      background: var(--amarelo);
+      color: #263238;
+      text-align: center;
+      font-weight: 900;
+      border: 1px solid #bbb;
+      font-size: .82rem;
+      padding: 8px 5px;
+    }
+
+    tbody td {
+      border: 1px solid #ddd;
+      padding: 6px 5px;
+      vertical-align: middle;
+      font-size: .9rem;
+    }
+
+    .disc {
+      text-align: center;
+      font-weight: 900;
+      width: 60px;
+    }
+
+    .codigo {
+      text-align: center;
+      width: 70px;
+    }
+
+    .prof {
+      font-weight: 700;
+      min-width: 150px;
+    }
+
+    .opcoes {
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .radio-letra {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 3px;
+    }
+
+    .radio-letra input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .radio-letra span {
+      width: 28px;
+      height: 28px;
+      border: 2px solid #90a4ae;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: .78rem;
+      color: #455a64;
+      cursor: pointer;
+      background: white;
+    }
+
+    .radio-letra input:checked + span {
+      background: var(--azul);
+      color: white;
+      border-color: var(--azul);
+    }
+
+    .check-item {
+      text-align: center;
+    }
+
+    .check-item label {
+      display: inline-block;
+      width: 26px;
+      height: 26px;
+      cursor: pointer;
+    }
+
+    .check-item input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .check-item span {
+      display: inline-flex;
+      width: 26px;
+      height: 26px;
+      border: 2px solid #90a4ae;
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      background: white;
+    }
+
+    .check-item input:checked + span {
+      background: #d32f2f;
+      border-color: #d32f2f;
+    }
+
+    .check-item input:checked + span::after {
+      content: "✓";
+      color: white;
+      font-weight: 900;
+      font-size: 1rem;
+    }
+
+    .acoes {
+      margin: 22px 0 40px;
+      text-align: center;
+    }
+
+    .btn-enviar {
+      background: var(--azul) !important;
+      border-radius: 9px;
+      font-weight: 900;
+      height: 48px;
+      line-height: 48px;
+      padding: 0 32px;
+    }
+
+    .erro-linha {
+      background: #ffebee !important;
+    }
+
+    .msg-final {
+      max-width: 700px;
+      margin: 45px auto;
+      text-align: center;
+      display: none;
+    }
+
+    .msg-final i {
+      font-size: 4rem;
+      color: #2e7d32;
+    }
+
+    .carregando {
+      text-align: center;
+      margin: 45px 0;
+      color: var(--azul);
+      font-weight: 800;
+    }
+
+    @media (max-width: 600px) {
+      .topo h4 {
+        font-size: 1.55rem;
+      }
+
+      .box {
+        padding: 14px;
+      }
+
+      .container-principal {
+        width: 98%;
+        margin-top: 14px;
+      }
+
+      table {
+        min-width: 940px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="topo center-align">
+    <div class="logo-box">
+      <img src="logo.png" alt="Curso Objetivo">
+    </div>
+    <h4>Pesquisa de Opinião</h4>
+    <div id="turmaTitulo" class="turma-chip">TURMA</div>
+  </div>
+
+  <div id="conteudo" class="container-principal">
+
+    <div id="carregando" class="carregando">
+      <div class="preloader-wrapper small active">
+        <div class="spinner-layer spinner-blue-only">
+          <div class="circle-clipper left"><div class="circle"></div></div>
+          <div class="gap-patch"><div class="circle"></div></div>
+          <div class="circle-clipper right"><div class="circle"></div></div>
+        </div>
+      </div>
+      <p>Carregando avaliação...</p>
+    </div>
+
+    <div id="formArea" style="display:none;">
+
+      <div class="row">
+        <div class="col s12 m7">
+          <div class="box">
+            <h6><i class="material-icons left">school</i>Caro aluno</h6>
+            <p>Nesta pesquisa você fará a avaliação dos seus professores.</p>
+            <p>Solicitamos o preenchimento criterioso deste questionário.</p>
+            <p>Na avaliação de cada professor, use os critérios indicados, assinalando um dos conceitos de <b>A</b> a <b>E</b>.</p>
+
+            <h6>Atenção</h6>
+            <p>Se você não conhece ou não tem opinião formada sobre algum professor, assinale a opção <b>E</b>.</p>
+            <p>Se julgar necessário, assinale os itens de 1 a 4 em que o desempenho do professor, na sua opinião, <b>não é satisfatório</b>.</p>
+
+            <h6>Observações</h6>
+            <p>Não deixe nenhum professor sem avaliação.</p>
+            <p>Não é necessário identificar-se.</p>
+          </div>
+        </div>
+
+        <div class="col s12 m5">
+          <div class="box criterios">
+            <h6>Critérios de avaliação</h6>
+            <div class="linha"><b>A</b> Ótimo</div>
+            <div class="linha"><b>B</b> Bom</div>
+            <div class="linha"><b>C</b> Regular</div>
+            <div class="linha"><b>D</b> Insatisfatório</div>
+            <div class="linha"><b>E</b> Não tem opinião</div>
+          </div>
+
+          <div class="box lembre">
+            <h6>LEMBRE-SE</h6>
+            <p>
+              Se julgar necessário, indique em que itens abaixo o desempenho do professor,
+              na sua opinião, <b>NÃO</b> é satisfatório.
+            </p>
+            <p><b>1</b> Explicação da matéria</p>
+            <p><b>2</b> Conhecimento/domínio da matéria</p>
+            <p><b>3</b> Atendimento ao aluno</p>
+            <p><b>4</b> Manutenção da disciplina em classe</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabela-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th colspan="4">Avaliação</th>
+              <th>1<br>Explicação<br>da matéria</th>
+              <th>2<br>Conhecimento<br>da matéria</th>
+              <th>3<br>Atendimento<br>ao aluno</th>
+              <th>4<br>Manutenção<br>da disciplina</th>
+            </tr>
+            <tr>
+              <th>Disc.</th>
+              <th>Professor</th>
+              <th>Código</th>
+              <th>Conceito</th>
+              <th colspan="4">Itens não satisfatórios</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyProfessores"></tbody>
+        </table>
+      </div>
+
+      <div class="acoes">
+        <button id="btnEnviar" class="btn btn-enviar waves-effect waves-light" onclick="enviarAvaliacao()">
+          <i class="material-icons left">send</i>
+          Enviar avaliação
+        </button>
+      </div>
+
+    </div>
+
+    <div id="msgFinal" class="box msg-final">
+      <i class="material-icons">check_circle</i>
+      <h5>Pesquisa enviada com sucesso!</h5>
+      <p>Obrigado pela sua participação.</p>
+      <p id="protocoloFinal"></p>
+    </div>
+
+    <div id="msgJaRespondido" class="box msg-final">
+      <i class="material-icons" style="color:#0d47a1;">info</i>
+      <h5>Pesquisa já respondida neste dispositivo.</h5>
+      <p>Obrigado pela sua participação.</p>
+    </div>
+
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/ibope/';
+    const letras = ['A', 'B', 'C', 'D', 'E'];
+    let turma = '';
+    let professores = [];
+
+    document.addEventListener('DOMContentLoaded', iniciar);
+
+    function iniciar() {
+      const params = new URLSearchParams(window.location.search);
+      turma = (params.get('turma') || '').toUpperCase().trim();
+
+      if (!['TARDE', 'NOITE'].includes(turma)) {
+        mostrarErro('Turma inválida. Verifique o link recebido.');
+        return;
+      }
+
+      document.getElementById('turmaTitulo').textContent = `TURMA ${turma}`;
+
+      const chaveRespondido = `ibope_${turma}_respondido`;
+      if (localStorage.getItem(chaveRespondido) === 'SIM') {
+        document.getElementById('carregando').style.display = 'none';
+        document.getElementById('msgJaRespondido').style.display = 'block';
+        return;
+      }
+
+      carregarProfessores();
+    }
+
+    async function carregarProfessores() {
+      try {
+        const resp = await fetch(`${API}api_professores.php?turma=${encodeURIComponent(turma)}`, {
+          method: 'GET',
+          cache: 'no-store'
+        });
+
+        const json = await resp.json();
+
+        if (!json.ok) {
+          throw new Error(json.error || 'Erro ao carregar professores.');
+        }
+
+        professores = json.professores || [];
+
+        if (!professores.length) {
+          throw new Error('Nenhum professor cadastrado para esta turma.');
+        }
+
+        montarTabela();
+        document.getElementById('carregando').style.display = 'none';
+        document.getElementById('formArea').style.display = 'block';
+
+      } catch (e) {
+        mostrarErro(e.message);
+      }
+    }
+
+    function montarTabela() {
+      const tbody = document.getElementById('tbodyProfessores');
+      tbody.innerHTML = '';
+
+      professores.forEach((p, idx) => {
+        const tr = document.createElement('tr');
+        tr.id = `linha_${idx}`;
+
+        const conceitoHtml = letras.map(letra => `
+          <label class="radio-letra" title="${letra}">
+            <input type="radio" name="conceito_${idx}" value="${letra}">
+            <span>${letra}</span>
+          </label>
+        `).join('');
+
+        tr.innerHTML = `
+          <td class="disc">${escapeHtml(p.disciplina)}</td>
+          <td class="prof">${escapeHtml(p.nome_professor)}</td>
+          <td class="codigo">${escapeHtml(p.codigo_professor)}</td>
+          <td class="opcoes">${conceitoHtml}</td>
+
+          <td class="check-item">
+            <label>
+              <input type="checkbox" id="explicacao_${idx}">
+              <span></span>
+            </label>
+          </td>
+
+          <td class="check-item">
+            <label>
+              <input type="checkbox" id="conhecimento_${idx}">
+              <span></span>
+            </label>
+          </td>
+
+          <td class="check-item">
+            <label>
+              <input type="checkbox" id="atendimento_${idx}">
+              <span></span>
+            </label>
+          </td>
+
+          <td class="check-item">
+            <label>
+              <input type="checkbox" id="manutencao_${idx}">
+              <span></span>
+            </label>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function coletarRespostas() {
+      let ok = true;
+      const respostas = [];
+
+      professores.forEach((p, idx) => {
+        const linha = document.getElementById(`linha_${idx}`);
+        linha.classList.remove('erro-linha');
+
+        const selecionado = document.querySelector(`input[name="conceito_${idx}"]:checked`);
+
+        if (!selecionado) {
+          ok = false;
+          linha.classList.add('erro-linha');
+          return;
+        }
+
+        respostas.push({
+          disciplina: p.disciplina,
+          codigo_professor: p.codigo_professor,
+          nome_professor: p.nome_professor,
+          conceito: selecionado.value,
+
+          explicacao: document.getElementById(`explicacao_${idx}`).checked ? 'X' : '',
+          conhecimento: document.getElementById(`conhecimento_${idx}`).checked ? 'X' : '',
+          atendimento: document.getElementById(`atendimento_${idx}`).checked ? 'X' : '',
+          manutencao: document.getElementById(`manutencao_${idx}`).checked ? 'X' : ''
+        });
+      });
+
+      return { ok, respostas };
+    }
+
+    async function enviarAvaliacao() {
+      const coleta = coletarRespostas();
+
+      if (!coleta.ok) {
+        M.toast({
+          html: 'Marque um conceito de A a E para todos os professores.',
+          classes: 'red darken-3'
+        });
+        return;
+      }
+
+      const btn = document.getElementById('btnEnviar');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="material-icons left">hourglass_empty</i>Enviando...';
+
+      try {
+        const resp = await fetch(`${API}api_salvar.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            turma,
+            respostas: coleta.respostas
+          })
+        });
+
+        const json = await resp.json();
+
+        if (!json.ok) {
+          throw new Error(json.error || 'Erro ao salvar avaliação.');
+        }
+
+        localStorage.setItem(`ibope_${turma}_respondido`, 'SIM');
+        localStorage.setItem(`ibope_${turma}_protocolo`, json.protocolo || '');
+
+        document.getElementById('formArea').style.display = 'none';
+        document.getElementById('msgFinal').style.display = 'block';
+
+        if (json.protocolo) {
+          document.getElementById('protocoloFinal').textContent = `Protocolo: ${json.protocolo}`;
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      } catch (e) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="material-icons left">send</i>Enviar avaliação';
+
+        M.toast({
+          html: e.message,
+          classes: 'red darken-3'
+        });
+      }
+    }
+
+    function mostrarErro(msg) {
+      document.getElementById('carregando').innerHTML = `
+        <div class="box center-align">
+          <i class="material-icons red-text" style="font-size:4rem;">error</i>
+          <h5>Não foi possível abrir a avaliação</h5>
+          <p>${escapeHtml(msg)}</p>
+        </div>
+      `;
+    }
+
+    function escapeHtml(texto) {
+      return String(texto ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+  </script>
+</body>
+</html>
