@@ -210,43 +210,40 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
   <script>
-    const baseUrl = window.location.origin + window.location.pathname.replace(/index\.html$/i, '');
-    const links = {
-      TARDE: `${baseUrl}avaliacao.html?turma=TARDE`,
-      NOITE: `${baseUrl}avaliacao.html?turma=NOITE`
-    };
+  const API = 'https://apisec.secauxiliar.com.br/ibope/';
 
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('linkTarde').textContent = links.TARDE;
-      document.getElementById('linkNoite').textContent = links.NOITE;
+  const links = {
+    TARDE: `${API}avaliacao.html?turma=TARDE`,
+    NOITE: `${API}avaliacao.html?turma=NOITE`
+  };
 
-      document.getElementById('abrirTarde').href = links.TARDE;
-      document.getElementById('abrirNoite').href = links.NOITE;
-    });
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('linkTarde').textContent = links.TARDE;
+    document.getElementById('linkNoite').textContent = links.NOITE;
 
-    async function copiarLink(turma) {
-      const link = links[turma];
+    document.getElementById('abrirTarde').href = links.TARDE;
+    document.getElementById('abrirNoite').href = links.NOITE;
+  });
 
-      try {
-        await navigator.clipboard.writeText(link);
-        M.toast({
-          html: `Link da turma ${turma} copiado!`,
-          classes: 'toast-ok'
-        });
-      } catch (e) {
-        const campo = document.createElement('textarea');
-        campo.value = link;
-        document.body.appendChild(campo);
-        campo.select();
-        document.execCommand('copy');
-        document.body.removeChild(campo);
+  async function copiarLink(turma) {
+    const link = links[turma];
 
-        M.toast({
-          html: `Link da turma ${turma} copiado!`,
-          classes: 'toast-ok'
-        });
-      }
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch (e) {
+      const campo = document.createElement('textarea');
+      campo.value = link;
+      document.body.appendChild(campo);
+      campo.select();
+      document.execCommand('copy');
+      document.body.removeChild(campo);
     }
-  </script>
+
+    M.toast({
+      html: `Link da turma ${turma} copiado!`,
+      classes: 'toast-ok'
+    });
+  }
+</script>
 </body>
 </html>
