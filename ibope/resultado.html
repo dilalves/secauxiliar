@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IBOPE Online - Resultados</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+  <style>
+    :root {
+      --azul: #0d47a1;
+      --azul2: #1565c0;
+      --amarelo: #fff59d;
+      --fundo: #f4f7fb;
+    }
+
+    body {
+      background: var(--fundo);
+      font-family: Arial, Helvetica, sans-serif;
+      color: #263238;
+    }
+
+    .topo {
+      background: linear-gradient(135deg, var(--azul), var(--azul2));
+      color: white;
+      padding: 26px 16px;
+      border-bottom: 5px solid #ffcc00;
+      box-shadow: 0 3px 10px rgba(0,0,0,.18);
+    }
+
+    .topo img {
+      max-width: 300px;
+      width: 90%;
+      background: white;
+      border-radius: 10px;
+      padding: 8px;
+      margin-bottom: 12px;
+    }
+
+    .topo h4 {
+      margin: 0;
+      font-weight: 900;
+    }
+
+    .container-principal {
+      width: 96%;
+      max-width: 1250px;
+      margin: 24px auto;
+    }
+
+    .box {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.10);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .kpi {
+      border-top: 5px solid var(--azul);
+      text-align: center;
+    }
+
+    .kpi h5 {
+      color: var(--azul);
+      font-weight: 900;
+      margin: 0;
+    }
+
+    .kpi p {
+      margin: 6px 0 0;
+      color: #607d8b;
+      font-weight: 700;
+    }
+
+    .btn-azul {
+      background: var(--azul) !important;
+      border-radius: 8px;
+      font-weight: 800;
+    }
+
+    .btn-contorno {
+      border: 1px solid var(--azul);
+      color: var(--azul);
+      background: white;
+      border-radius: 8px;
+      font-weight: 800;
+    }
+
+    table {
+      background: white;
+      font-size: .9rem;
+    }
+
+    thead th {
+      background: var(--amarelo);
+      color: #263238;
+      font-weight: 900;
+      text-align: center;
+      border: 1px solid #ccc;
+    }
+
+    tbody td {
+      border: 1px solid #e0e0e0;
+      text-align: center;
+    }
+
+    .td-left {
+      text-align: left;
+      font-weight: 700;
+    }
+
+    .chip-turma {
+      background: #e3f2fd;
+      color: var(--azul);
+      font-weight: 900;
+      border-radius: 20px;
+      padding: 5px 12px;
+      display: inline-block;
+    }
+
+    .tabela-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.10);
+    }
+
+    .carregando {
+      text-align: center;
+      color: var(--azul);
+      font-weight: 900;
+      margin: 35px 0;
+    }
+
+    select {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="topo center-align">
+    <img src="logo.png" alt="Curso Objetivo">
+    <h4>Resultados - IBOPE Online</h4>
+  </div>
+
+  <div class="container-principal">
+
+    <div class="box">
+      <div class="row" style="margin-bottom:0;">
+        <div class="col s12 m4">
+          <label>Filtrar turma</label>
+          <select id="filtroTurma">
+            <option value="">Todas</option>
+            <option value="TARDE">Tarde</option>
+            <option value="NOITE">Noite</option>
+          </select>
+        </div>
+
+        <div class="col s12 m8" style="margin-top:22px;">
+          <button class="btn btn-azul waves-effect" onclick="carregarResultados()">
+            <i class="material-icons left">refresh</i>
+            Atualizar
+          </button>
+
+          <a href="index.html" class="btn-flat btn-contorno waves-effect">
+            <i class="material-icons left">arrow_back</i>
+            Voltar
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div id="carregando" class="carregando">Carregando resultados...</div>
+
+    <div id="areaResultados" style="display:none;">
+
+      <div class="row" id="cardsResumo"></div>
+
+      <div class="tabela-wrap">
+        <table class="striped highlight responsive-table">
+          <thead>
+            <tr>
+              <th>Turma</th>
+              <th>Disc.</th>
+              <th>Código</th>
+              <th>Professor</th>
+              <th>Total</th>
+              <th>A<br>Ótimo</th>
+              <th>B<br>Bom</th>
+              <th>C<br>Regular</th>
+              <th>D<br>Insat.</th>
+              <th>E<br>Sem opinião</th>
+              <th>Item 1<br>Explicação</th>
+              <th>Item 2<br>Conhecimento</th>
+              <th>Item 3<br>Atendimento</th>
+              <th>Item 4<br>Disciplina</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyResultados"></tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/ibope/';
+
+    document.addEventListener('DOMContentLoaded', carregarResultados);
+
+    async function carregarResultados() {
+      const turma = document.getElementById('filtroTurma').value;
+
+      document.getElementById('carregando').style.display = 'block';
+      document.getElementById('areaResultados').style.display = 'none';
+
+      try {
+        const url = `${API}api_resultados.php${turma ? '?turma=' + encodeURIComponent(turma) : ''}`;
+        const resp = await fetch(url, { cache: 'no-store' });
+        const json = await resp.json();
+
+        if (!json.ok) {
+          throw new Error(json.error || 'Erro ao buscar resultados.');
+        }
+
+        montarResumo(json.resumo || []);
+        montarTabela(json.professores || []);
+
+        document.getElementById('carregando').style.display = 'none';
+        document.getElementById('areaResultados').style.display = 'block';
+
+      } catch (e) {
+        document.getElementById('carregando').innerHTML = `
+          <div class="box center-align">
+            <i class="material-icons red-text" style="font-size:4rem;">error</i>
+            <h5>Erro ao carregar resultados</h5>
+            <p>${escapeHtml(e.message)}</p>
+          </div>
+        `;
+      }
+    }
+
+    function montarResumo(resumo) {
+      const div = document.getElementById('cardsResumo');
+      div.innerHTML = '';
+
+      if (!resumo.length) {
+        div.innerHTML = `
+          <div class="col s12">
+            <div class="box center-align">
+              Nenhuma resposta registrada ainda.
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      resumo.forEach(r => {
+        div.innerHTML += `
+          <div class="col s12 m6">
+            <div class="box kpi">
+              <span class="chip-turma">${escapeHtml(r.turma)}</span>
+              <h5>${Number(r.total_questionarios || 0)}</h5>
+              <p>questionários respondidos</p>
+              <p>${Number(r.total_avaliacoes || 0)} avaliações de professores</p>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function montarTabela(lista) {
+      const tbody = document.getElementById('tbodyResultados');
+      tbody.innerHTML = '';
+
+      if (!lista.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="14">Nenhum resultado encontrado.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      lista.forEach(p => {
+        tbody.innerHTML += `
+          <tr>
+            <td><span class="chip-turma">${escapeHtml(p.turma)}</span></td>
+            <td><b>${escapeHtml(p.disciplina)}</b></td>
+            <td>${escapeHtml(p.codigo_professor)}</td>
+            <td class="td-left">${escapeHtml(p.nome_professor)}</td>
+            <td><b>${num(p.total)}</b></td>
+            <td>${num(p.qtd_a)}</td>
+            <td>${num(p.qtd_b)}</td>
+            <td>${num(p.qtd_c)}</td>
+            <td>${num(p.qtd_d)}</td>
+            <td>${num(p.qtd_e)}</td>
+            <td>${num(p.item1)}</td>
+            <td>${num(p.item2)}</td>
+            <td>${num(p.item3)}</td>
+            <td>${num(p.item4)}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function num(v) {
+      return Number(v || 0);
+    }
+
+    function escapeHtml(texto) {
+      return String(texto ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+  </script>
+</body>
+</html>
