@@ -728,6 +728,26 @@
         <input id="filtroUnidade" type="text" placeholder="Todas / código UND" autocomplete="off">
       </div>
 
+      <div class="campo" style="min-width:210px;">
+        <label for="filtroSituacao">Situação</label>
+        <select id="filtroSituacao">
+          <option value="TODOS" selected>Todos os lotes</option>
+          <option value="OK_BAIXA">OK para dar baixa</option>
+          <option value="AGUARDANDO">Aguardando</option>
+          <option value="PROCESSANDO">Processando</option>
+          <option value="PROCESSADO">Processado</option>
+          <option value="FINALIZADO">Finalizado</option>
+          <option value="COM_PEND">Com pendência</option>
+          <option value="COM_DIF">Com diferença</option>
+        </select>
+      </div>
+
+      <div>
+        <button id="btnAptos" type="button" class="btn-alert" title="Mostra somente lotes liberados para clicar em OK">
+          Ver OK para baixa
+        </button>
+      </div>
+
       <div>
         <button id="btnFiltrar">Filtrar</button>
       </div>
@@ -854,6 +874,8 @@
   const elEvento = document.getElementById('evento');
   const elTipoLote = document.getElementById('tipoLote');
   const elFiltroUnidade = document.getElementById('filtroUnidade');
+  const elFiltroSituacao = document.getElementById('filtroSituacao');
+  const btnAptos = document.getElementById('btnAptos');
   const btnFiltrar = document.getElementById('btnFiltrar');
   const btnGerarStats = document.getElementById('btnGerarStats');
   const tbodyLotes = document.getElementById('tbodyLotes');
@@ -1077,9 +1099,18 @@
     return String(elFiltroUnidade?.value || '').trim();
   }
 
+  function getFiltroSituacao() {
+    return String(elFiltroSituacao?.value || 'TODOS').toUpperCase();
+  }
+
+  function loteAptoParaBaixa(row) {
+    return !!row?.ok_habilitado && !isLoteRedacao(row);
+  }
+
   function filtrarLotesPorTipo(rows) {
     const tipo = getFiltroTipoLote();
     const unidade = getFiltroUnidade();
+    const situacao = getFiltroSituacao();
 
     let filtrados;
 
@@ -1095,25 +1126,42 @@
       filtrados = filtrados.filter(r => String(r.id_und || '').trim() === unidade);
     }
 
+    if (situacao === 'OK_BAIXA') {
+      filtrados = filtrados.filter(loteAptoParaBaixa);
+
+    } else if (situacao === 'COM_PEND') {
+      filtrados = filtrados.filter(r => Number(r.pendencias || 0) > 0);
+
+    } else if (situacao === 'COM_DIF') {
+      filtrados = filtrados.filter(r => Number(r.diferenca || 0) !== 0);
+
+    } else if (situacao !== 'TODOS') {
+      filtrados = filtrados.filter(r => String(r.status || '').trim().toUpperCase() === situacao);
+    }
+
     return filtrados;
   }
 
   function montarTextoInfoEvento(evento, todos, filtrados) {
     const tipo = getFiltroTipoLote();
     const unidade = getFiltroUnidade();
+    const situacao = getFiltroSituacao();
     const totalGeral = todos.length;
     const totalFiltro = filtrados.length;
     const unidadeTxt = unidade ? ` Unidade: ${unidade}.` : '';
+    const situacaoTxt = situacao !== 'TODOS'
+      ? ` Situação: ${situacao === 'OK_BAIXA' ? 'OK para baixa' : situacao}.`
+      : '';
 
     if (tipo === 'RED') {
-      return `${totalFiltro} lote(s) de redação R1 encontrado(s) para o evento ${evento}.${unidadeTxt} Total geral: ${totalGeral}.`;
+      return `${totalFiltro} lote(s) de redação R1 encontrado(s) para o evento ${evento}.${unidadeTxt}${situacaoTxt} Total geral: ${totalGeral}.`;
     }
 
     if (tipo === 'TODOS') {
-      return `${totalFiltro} lote(s) encontrado(s) para o evento ${evento}.${unidadeTxt} Total geral: ${totalGeral}.`;
+      return `${totalFiltro} lote(s) encontrado(s) para o evento ${evento}.${unidadeTxt}${situacaoTxt} Total geral: ${totalGeral}.`;
     }
 
-    return `${totalFiltro} lote(s) objetivos D1/D2 encontrado(s) para o evento ${evento}.${unidadeTxt} Total geral: ${totalGeral}.`;
+    return `${totalFiltro} lote(s) objetivos D1/D2 encontrado(s) para o evento ${evento}.${unidadeTxt}${situacaoTxt} Total geral: ${totalGeral}.`;
   }
 
   function montarResumo(rows, data = {}) {
@@ -1168,7 +1216,7 @@
       const diff = Number(r.diferenca || 0);
       const pend = Number(r.pendencias || 0);
       const redacao = isLoteRedacao(r);
-      const ok = !!r.ok_habilitado && !redacao;
+      const ok = loteAptoParaBaixa(r);
 
       const diffHtml = diff === 0 ? chipNumero(diff, 'ok') : chipNumero(diff, 'bad');
       const pendHtml = pend === 0 ? chipNumero(pend, 'ok') : chipNumero(pend, 'warn');
@@ -2067,9 +2115,22 @@ function resetarImagemCompleta() {
 
 
   btnFiltrar.addEventListener('click', carregarLotes);
+
+  if (btnAptos) {
+    btnAptos.addEventListener('click', () => {
+      if (elFiltroSituacao) elFiltroSituacao.value = 'OK_BAIXA';
+      carregarLotes();
+    });
+  }
+
   if (elTipoLote) {
     elTipoLote.addEventListener('change', carregarLotes);
   }
+
+  if (elFiltroSituacao) {
+    elFiltroSituacao.addEventListener('change', carregarLotes);
+  }
+
   if (elFiltroUnidade) {
     elFiltroUnidade.addEventListener('keydown', ev => {
       if (ev.key === 'Enter') carregarLotes();
