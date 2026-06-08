@@ -1219,6 +1219,7 @@
       const pend = Number(r.pendencias || 0);
       const redacao = isLoteRedacao(r);
       const ok = loteAptoParaBaixa(r);
+      const podeRecusar = !ok && String(r.status || '').trim().toUpperCase() !== 'FINALIZADO';
 
       const diffHtml = diff === 0 ? chipNumero(diff, 'ok') : chipNumero(diff, 'bad');
       const pendHtml = pend === 0 ? chipNumero(pend, 'ok') : chipNumero(pend, 'warn');
@@ -1258,12 +1259,22 @@
                 onclick="event.stopPropagation(); listarArquivosLote(${idx})">
                 Arq.
               </button>
-              <button
-                type="button"
-                class="btn-mini reject"
-                onclick="event.stopPropagation(); recusarLote(${idx})">
-                Rec.
-              </button>
+              ${
+                podeRecusar
+                  ? `<button
+                      type="button"
+                      class="btn-mini reject"
+                      onclick="event.stopPropagation(); recusarLote(${idx})">
+                      Rec.
+                    </button>`
+                  : `<button
+                      type="button"
+                      class="btn-mini block"
+                      onclick="event.stopPropagation();"
+                      title="Lote OK/finalizado não pode ser recusado">
+                      Rec.
+                    </button>`
+              }
               ${okBtn}
             </div>
           </td>
@@ -2073,18 +2084,29 @@ function resetarImagemCompleta() {
         confirmButtonColor: '#0b3b78'
       });
 
-      await carregarLotes();
+      // Atualiza o lote localmente, sem recarregar tudo
+      const chaveFinalizada = getChaveLote(row);
 
-      const novoIdx = lotesCache.findIndex(r =>
-        String(r.ftp || '').trim() === lote &&
-        String(r.id_und || '').trim() === unidade &&
-        String(r.simulado || '').trim() === evento &&
-        String(r.dia || '').trim().toUpperCase() === dia
-      );
+      [lotesTodosCache, lotesCache].forEach(lista => {
+        const loteLocal = lista.find(r => getChaveLote(r) === chaveFinalizada);
 
-      if (novoIdx >= 0) {
-        await selecionarLote(novoIdx);
-      }
+        if (loteLocal) {
+          loteLocal.status = 'FINALIZADO';
+          loteLocal.ok_habilitado = false;
+          loteLocal.pendencias = 0;
+          loteLocal.diferenca = 0;
+        }
+      });
+
+      // Limpa o painel da direita
+      pendenciasCache = [];
+      linhaSelecionada = null;
+      contextoLote.style.display = 'none';
+      infoPendencias.textContent = 'Lote finalizado. Selecione outro lote à esquerda.';
+      tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Lote finalizado com sucesso.</td></tr>`;
+
+      // Reaplica os filtros atuais sem consultar o PHP
+      reaplicarFiltrosSemRecarregar('');
 
     } catch (err) {
       Swal.fire('Erro', err.message || 'Falha ao finalizar lote.', 'error');
