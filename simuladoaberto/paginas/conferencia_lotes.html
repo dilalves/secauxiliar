@@ -898,6 +898,7 @@
 
   let lotesTodosCache = [];
   let lotesCache = [];
+  let resumoBaseCache = {};
   let pendenciasCache = [];
   let linhaSelecionada = null;
   let rotacaoRecorteAtual = 0;
@@ -1073,6 +1074,7 @@
       pendenciasCache = [];
 
       const data = await fetchJson(`${URL_LOTES}?evento=${encodeURIComponent(evento)}`);
+      resumoBaseCache = data || {};
       lotesTodosCache = data.rows || [];
       lotesCache = filtrarLotesPorTipo(lotesTodosCache);
 
@@ -1544,7 +1546,7 @@
 
         try {
           await salvarCorrecao(row, tipo, valor);
-          await recarregarLoteSelecionado();
+          atualizarTelaAposCorrecaoLocal(row.id, tipo, valor);
           return true;
         } catch (err) {
           Swal.showValidationMessage(err.message || 'Falha ao salvar correção.');
@@ -1555,7 +1557,7 @@
       if (result.isDenied && mostrarConferido) {
         try {
           await marcarConferido(row, tipo);
-          await recarregarLoteSelecionado();
+          atualizarTelaAposConferidoLocal(row.id, tipo);
           Swal.fire('Conferido', 'Pendência marcada como conferida.', 'success');
         } catch (err) {
           Swal.fire('Erro', err.message || 'Falha ao marcar como conferido.', 'error');
@@ -1564,6 +1566,97 @@
         Swal.fire('Salvo', 'Correção registrada com sucesso.', 'success');
       }
     });
+  }
+
+
+  function getChaveLote(row) {
+    return [
+      String(row?.id || ''),
+      String(row?.simulado || elEvento.value || '').trim(),
+      String(row?.id_und || '').trim(),
+      String(row?.ftp || '').trim(),
+      String(row?.dia || '').trim().toUpperCase()
+    ].join('|');
+  }
+
+  function reaplicarFiltrosSemRecarregar(chaveSelecionada = '') {
+    lotesCache = filtrarLotesPorTipo(lotesTodosCache);
+    montarResumo(lotesCache, resumoBaseCache);
+    montarTabelaLotes(lotesCache);
+    infoEvento.textContent = montarTextoInfoEvento(elEvento.value || '', lotesTodosCache, lotesCache);
+
+    linhaSelecionada = null;
+
+    if (chaveSelecionada) {
+      const novoIdx = lotesCache.findIndex(r => getChaveLote(r) === chaveSelecionada);
+
+      if (novoIdx >= 0) {
+        linhaSelecionada = novoIdx;
+        const tr = tbodyLotes.querySelector(`tr[data-idx="${novoIdx}"]`);
+        if (tr) tr.classList.add('selected');
+      }
+    }
+  }
+
+  function atualizarLoteSelecionadoLocal() {
+    const loteAtual = lotesCache[linhaSelecionada];
+    if (!loteAtual) return '';
+
+    const chave = getChaveLote(loteAtual);
+    const novaQtdPend = pendenciasCache.length;
+
+    [lotesCache, lotesTodosCache].forEach(lista => {
+      const lote = lista.find(r => getChaveLote(r) === chave);
+      if (!lote) return;
+
+      lote.pendencias = novaQtdPend;
+      lote.ok_habilitado = !isLoteRedacao(lote) && Number(lote.diferenca || 0) === 0 && novaQtdPend === 0;
+    });
+
+    return chave;
+  }
+
+  function atualizarTelaAposCorrecaoLocal(id, tipo, valor) {
+    const row = getPendenciaById(id);
+    if (!row) return;
+
+    atualizarPendenciaLocal(id, tipo, valor);
+
+    const inscricaoOk = !valorVazioOuPendente(row.INSCRICAO);
+    const corOk = !valorVazioOuPendente(row.CORPROVA);
+
+    if (inscricaoOk && corOk) {
+      pendenciasCache = pendenciasCache.filter(r => Number(r.id) !== Number(id));
+    }
+
+    montarTabelaPendencias(pendenciasCache);
+
+    const chave = atualizarLoteSelecionadoLocal();
+
+    if (ctxPend) {
+      ctxPend.textContent = `Pendências: ${pendenciasCache.length}`;
+    }
+
+    infoPendencias.textContent = `${pendenciasCache.length} pendência(s) encontrada(s) para este lote.`;
+    reaplicarFiltrosSemRecarregar(chave);
+  }
+
+  function atualizarTelaAposConferidoLocal(id, tipo) {
+    const row = getPendenciaById(id);
+    if (!row) return;
+
+    // Quando é conferido, o backend já resolveu aquela pendência.
+    pendenciasCache = pendenciasCache.filter(r => Number(r.id) !== Number(id));
+    montarTabelaPendencias(pendenciasCache);
+
+    const chave = atualizarLoteSelecionadoLocal();
+
+    if (ctxPend) {
+      ctxPend.textContent = `Pendências: ${pendenciasCache.length}`;
+    }
+
+    infoPendencias.textContent = `${pendenciasCache.length} pendência(s) encontrada(s) para este lote.`;
+    reaplicarFiltrosSemRecarregar(chave);
   }
 
   async function recarregarLoteSelecionado() {
@@ -2114,21 +2207,51 @@ function resetarImagemCompleta() {
 }         
 
 
+  function filtrarTelaSemRecarregar() {
+    /*
+      Filtra apenas o que já foi carregado na tela.
+      Mas se ainda não existir cache, faz a busca normal no PHP.
+    */
+    if (!Array.isArray(lotesTodosCache) || lotesTodosCache.length === 0) {
+      carregarLotes();
+      return;
+    }
+
+    const chave = linhaSelecionada !== null && lotesCache[linhaSelecionada]
+      ? getChaveLote(lotesCache[linhaSelecionada])
+      : '';
+
+    tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Selecione um lote à esquerda para visualizar as pendências manuais.</td></tr>`;
+    infoPendencias.textContent = 'Selecione um lote à esquerda para visualizar as pendências manuais.';
+    contextoLote.style.display = 'none';
+    pendenciasCache = [];
+
+    reaplicarFiltrosSemRecarregar(chave);
+  }
+
+  /*
+    Botão Filtrar e troca de Evento precisam consultar o PHP.
+    Tipo/Situação/Unidade podem trabalhar em cima do cache já carregado.
+  */
   btnFiltrar.addEventListener('click', carregarLotes);
+
+  if (elEvento) {
+    elEvento.addEventListener('change', carregarLotes);
+  }
 
   if (btnAptos) {
     btnAptos.addEventListener('click', () => {
       if (elFiltroSituacao) elFiltroSituacao.value = 'OK_BAIXA';
-      carregarLotes();
+      filtrarTelaSemRecarregar();
     });
   }
 
   if (elTipoLote) {
-    elTipoLote.addEventListener('change', carregarLotes);
+    elTipoLote.addEventListener('change', filtrarTelaSemRecarregar);
   }
 
   if (elFiltroSituacao) {
-    elFiltroSituacao.addEventListener('change', carregarLotes);
+    elFiltroSituacao.addEventListener('change', filtrarTelaSemRecarregar);
   }
 
   if (elFiltroUnidade) {
