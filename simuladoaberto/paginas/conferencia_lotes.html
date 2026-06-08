@@ -1124,6 +1124,9 @@
       filtrados = rows.filter(r => !isLoteRedacao(r));
     }
 
+    // Oculta da fila os lotes finalizados localmente após OK
+    filtrados = filtrados.filter(r => !r.oculto_na_fila);
+
     if (unidade) {
       filtrados = filtrados.filter(r => String(r.id_und || '').trim() === unidade);
     }
@@ -2091,11 +2094,11 @@ function resetarImagemCompleta() {
         const loteLocal = lista.find(r => getChaveLote(r) === chaveFinalizada);
 
         if (loteLocal) {
-          loteLocal.status = 'FINALIZADO';
-          loteLocal.ok_habilitado = false;
-          loteLocal.pendencias = 0;
-          loteLocal.diferenca = 0;
-        }
+        loteLocal.status = 'FINALIZADO';
+        loteLocal.ok_habilitado = false;
+        loteLocal.pendencias = 0;
+        loteLocal.diferenca = 0;
+        loteLocal.oculto_na_fila = true;        }
       });
 
       // Limpa o painel da direita
