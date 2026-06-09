@@ -184,7 +184,7 @@
       const tbody = document.getElementById('tbodyResultados');
       tbody.innerHTML = '';
 
-      const colunaExtra = modoAtual === 'professor' ? '<th rowspan="2">Unidade</th>' : '';
+      const colunaExtra = '';
 
       thead.innerHTML = `
         <tr>
@@ -207,7 +207,7 @@
       `;
 
       if (!lista.length) {
-        tbody.innerHTML = `<tr><td colspan="20">Nenhum resultado encontrado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="19">Nenhum resultado encontrado.</td></tr>`;
         return;
       }
 
@@ -220,7 +220,7 @@
     }
 
     function linhaTabela(p, totalRow) {
-      const unidade = modoAtual === 'professor' ? `<td class="td-unidade">${escapeHtml(p.unidade || '')}</td>` : '';
+      const unidade = '';
       return `
         <tr class="${totalRow ? 'total-row' : ''}">
           <td>${escapeHtml(p.codigo_professor)}</td>
@@ -259,14 +259,13 @@
       if (!dadosAtuais.length) return alert('Nenhum dado para exportar.');
 
       const cab = ['Cod','Nome','Disciplina'];
-      if (modoAtual === 'professor') cab.push('Unidade');
+      
       cab.push('Turma','OTIMO','% OTIMO','BOM','% BOM','REG','% REG','INS','% INS','NOP','BRC','TOTAL','Insat 1','Insat 2','Insat 3','Insat 4');
 
       const linhas = [cab.join(';')];
 
       dadosAtuais.forEach(p => {
-        const row = [p.codigo_professor, p.nome_professor, p.disciplina];
-        if (modoAtual === 'professor') row.push(p.unidade || '');
+        const row = [p.codigo_professor, p.nome_professor, p.disciplina];        
         row.push(p.turma, num(p.otimo), p.perc_otimo, num(p.bom), p.perc_bom, num(p.regular), p.perc_regular, num(p.insatisfatorio), p.perc_insatisfatorio, num(p.nop), num(p.brc), num(p.total), num(p.item1), num(p.item2), num(p.item3), num(p.item4));
         linhas.push(row.map(csvSafe).join(';'));
       });
