@@ -394,6 +394,19 @@
         </table>
       </div>
 
+      <div class="box">
+        <h6><i class="material-icons left">comment</i>Observações gerais</h6>
+        <p>
+          Caso queira, deixe aqui comentários, sugestões ou reclamações sobre professores,
+          materiais, aulas ou qualquer outro ponto que achar pertinente.
+        </p>
+
+        <div class="input-field">
+          <textarea id="observacoes" class="materialize-textarea" maxlength="3000"></textarea>
+          <label for="observacoes">Escreva suas observações aqui (opcional)</label>
+        </div>
+      </div>
+
       <div class="acoes">
         <button id="btnEnviar" class="btn btn-enviar waves-effect waves-light" onclick="enviarAvaliacao()">
           <i class="material-icons left">send</i>
@@ -584,7 +597,8 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             turma,
-            respostas: coleta.respostas
+            respostas: coleta.respostas,
+            observacoes: document.getElementById('observacoes').value.trim()
           })
         });
 
