@@ -6,202 +6,79 @@
   <title>Relatório Pesquisa de Opinião</title>
 
   <style>
-    body {
-      margin: 0;
-      background: #ddd;
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 12px;
-      color: #000;
-    }
-
-    .page {
-      width: 960px;
-      margin: 20px auto;
-      background: white;
-      border: 1px solid #9eb6cf;
-      padding: 12px 18px 25px;
-    }
-
-    .logo {
-      text-align: left;
-      margin-bottom: 6px;
-    }
-
-    .logo img {
-      max-width: 250px;
-    }
-
-    .aba {
-      display: inline-block;
-      border: 1px solid #9eb6cf;
-      border-bottom: none;
-      background: white;
-      padding: 8px 14px;
-      font-weight: bold;
-      color: #333;
-      margin-left: 8px;
-      margin-bottom: -1px;
-    }
-
-    .painel {
-      border: 1px solid #9eb6cf;
-      padding: 14px;
-      background: #fff;
-    }
-
-    .linha-filtros {
-      margin-bottom: 12px;
-    }
-
-    select, button {
-      font-size: 12px;
-      height: 26px;
-    }
-
-    .tabs {
-      display: flex;
-      background: linear-gradient(#dce8f5, #315f91);
-      border: 1px solid #315f91;
-      margin-bottom: 14px;
-    }
-
-    .tab {
-      padding: 8px 16px;
-      border-right: 1px solid #315f91;
-      background: linear-gradient(#fff, #dbe7f2);
-      color: #333;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .tab.active {
-      background: white;
-      border-bottom: 2px solid white;
-    }
-
-    .filtro-turma {
-      margin: 10px 0 12px;
-    }
-
-    .btn-excel {
-      background: linear-gradient(#fff, #dbe7f2);
-      border: 1px solid #315f91;
-      padding: 6px 14px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    table {
-      border-collapse: separate;
-      border-spacing: 2px;
-      width: 100%;
-      font-size: 12px;
-    }
-
-    th {
-      background: #1f4e79;
-      color: white;
-      padding: 5px 4px;
-      border: 1px solid #12344f;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    td {
-      border: 2px solid #1f4e79;
-      padding: 3px 4px;
-      text-align: center;
-      background: white;
-    }
-
-    tbody tr:nth-child(even) td {
-      background: #d9ecf7;
-    }
-
-    .td-nome,
-    .td-disc {
-      text-align: left;
-      white-space: nowrap;
-    }
-
-    .insat-head {
-      background: #1f4e79;
-      color: white;
-      text-align: center;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 20px;
-      font-weight: bold;
-      color: #1f4e79;
-    }
-
-    .erro {
-      color: #b71c1c;
-      font-weight: bold;
-      text-align: center;
-      padding: 18px;
-    }
-
-    .rodape {
-      margin-top: 12px;
-      color: #555;
-      font-size: 11px;
-    }
+    body { margin:0; background:#ddd; font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#000; }
+    .page { width:960px; margin:20px auto; background:white; border:1px solid #9eb6cf; padding:12px 18px 25px; }
+    .logo { text-align:left; margin-bottom:6px; }
+    .logo img { max-width:250px; }
+    .aba { display:inline-block; border:1px solid #9eb6cf; border-bottom:none; background:white; padding:8px 14px; font-weight:bold; color:#333; margin-left:8px; margin-bottom:-1px; }
+    .painel { border:1px solid #9eb6cf; padding:14px; background:#fff; }
+    .linha-filtros { margin-bottom:12px; }
+    select, button { font-size:12px; height:26px; }
+    .tabs { display:flex; background:linear-gradient(#dce8f5, #315f91); border:1px solid #315f91; margin-bottom:14px; }
+    .tab { padding:6px 14px; border:0; border-right:1px solid #315f91; background:linear-gradient(#fff, #dbe7f2); color:#333; font-weight:bold; cursor:pointer; height:30px; }
+    .tab.active { background:white; border-bottom:2px solid white; }
+    .filtros-relatorio { margin:10px 0 12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .btn-excel { background:linear-gradient(#fff, #dbe7f2); border:1px solid #315f91; padding:4px 12px; cursor:pointer; font-weight:bold; }
+    table { border-collapse:separate; border-spacing:2px; width:100%; font-size:12px; }
+    th { background:#1f4e79; color:white; padding:5px 4px; border:1px solid #12344f; text-align:center; font-weight:bold; }
+    td { border:2px solid #1f4e79; padding:3px 4px; text-align:center; background:white; }
+    tbody tr:nth-child(even) td { background:#d9ecf7; }
+    .td-nome, .td-disc, .td-unidade { text-align:left; white-space:nowrap; }
+    .loading { text-align:center; padding:20px; font-weight:bold; color:#1f4e79; }
+    .erro { color:#b71c1c; font-weight:bold; text-align:center; padding:18px; }
+    .rodape { margin-top:12px; color:#555; font-size:11px; }
+    .obs { margin-top:14px; font-size:12px; }
+    .total-row td { background:#b7d7ea !important; font-weight:bold; }
 
     @media print {
-      body {
-        background: white;
-      }
-
-      .page {
-        margin: 0;
-        width: auto;
-        border: none;
-      }
-
-      .btn-excel,
-      .tabs,
-      .linha-filtros {
-        display: none;
-      }
+      body { background:white; }
+      .page { margin:0; width:auto; border:none; }
+      .tabs, .linha-filtros, .filtros-relatorio, .btn-excel { display:none; }
     }
   </style>
 </head>
 
 <body>
   <div class="page">
-    <div class="logo">
-      <img src="logo.png" alt="Curso Objetivo">
-    </div>
-
+    <div class="logo"><img src="logo.png" alt="Curso Objetivo"></div>
     <div class="aba">Pesquisa de Opinião</div>
 
     <div class="painel">
       <div class="linha-filtros">
-        <select id="ano">
-          <option>2026</option>
-        </select>
-
-        <select id="semestre">
-          <option>1</option>
-          <option>2</option>
-        </select>
+        <select id="ano"><option>2026</option></select>
+        <select id="semestre"><option>1</option><option>2</option></select>
       </div>
 
       <div class="tabs">
         <button class="tab" onclick="window.print()">Imprimir</button>
-        <button class="tab active">Perc Prof/Turma</button>
+        <button id="tabTurma" class="tab active" onclick="trocarModo('turma')">Perc Prof/Turma</button>
+        <button id="tabProfessor" class="tab" onclick="trocarModo('professor')">Perc Prof</button>
+        <button id="tabDisciplina" class="tab" onclick="trocarModo('disciplina')">Perc Disciplina</button>
       </div>
 
-      <div class="filtro-turma">
-        <b>Selecione a Turma:</b>
-        <select id="filtroTurma" onchange="carregarResultados()">
-          <option value="">Todas</option>
-          <option value="TARDE">TARDE</option>
-          <option value="NOITE">NOITE</option>
-        </select>
+      <div class="filtros-relatorio">
+        <span id="boxTurma">
+          <b>Turma:</b>
+          <select id="filtroTurma" onchange="carregarResultados()">
+            <option value="">Todas</option>
+            <option value="TARDE">TARDE</option>
+            <option value="NOITE">NOITE</option>
+          </select>
+        </span>
+
+        <span id="boxProfessor" style="display:none;">
+          <b>Selecione o Professor:</b>
+          <select id="filtroProfessor" onchange="carregarResultados()">
+            <option value="">Todos</option>
+          </select>
+        </span>
+
+        <span id="boxDisciplina" style="display:none;">
+          <b>Selecione a Disciplina:</b>
+          <select id="filtroDisciplina" onchange="carregarResultados()">
+            <option value="">Todas</option>
+          </select>
+        </span>
 
         <button class="btn-excel" onclick="carregarResultados()">Atualizar</button>
         <button class="btn-excel" onclick="exportarCSV()">Exportar Excel</button>
@@ -210,50 +87,43 @@
       <div id="loading" class="loading">Carregando resultados...</div>
 
       <table id="tabela" style="display:none;">
-        <thead>
-          <tr>
-            <th rowspan="2">Cod</th>
-            <th rowspan="2">Nome</th>
-            <th rowspan="2">Disciplina</th>
-            <th rowspan="2">Turma</th>
-            <th>ÓTIMO</th>
-            <th>%</th>
-            <th>BOM</th>
-            <th>%</th>
-            <th>REG</th>
-            <th>%</th>
-            <th>INS</th>
-            <th>%</th>
-            <th>NOP</th>
-            <th>BRC</th>
-            <th>TOTAL</th>
-            <th colspan="4">Insatisfatório</th>
-          </tr>
-          <tr>
-            <th colspan="11"></th>
-            <th>1</th>
-            <th>2</th>
-            <th>3</th>
-            <th>4</th>
-          </tr>
-        </thead>
+        <thead id="theadResultados"></thead>
         <tbody id="tbodyResultados"></tbody>
       </table>
 
-      <div class="rodape">
-        Sistema IBOPE Online · SecAuxiliar · 3A Sistemas
+      <div class="obs">
+        Observação: no cálculo das porcentagens acima, foram desconsiderados os casos em que o aluno declarou não ter opinião ou deixou a avaliação em branco.
       </div>
+
+      <div class="rodape">Sistema IBOPE Online · SecAuxiliar · 3A Sistemas</div>
     </div>
   </div>
 
   <script>
     const API = 'https://apisec.secauxiliar.com.br/ibope/';
+    let modoAtual = 'turma';
     let dadosAtuais = [];
+    let filtrosCarregados = false;
 
     document.addEventListener('DOMContentLoaded', carregarResultados);
 
+    function trocarModo(modo) {
+      modoAtual = modo;
+
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab' + capitalize(modo)).classList.add('active');
+
+      document.getElementById('boxProfessor').style.display = modo === 'professor' ? 'inline' : 'none';
+      document.getElementById('boxDisciplina').style.display = modo === 'disciplina' ? 'inline' : 'none';
+      document.getElementById('boxTurma').style.display = 'inline';
+
+      carregarResultados();
+    }
+
     async function carregarResultados() {
       const turma = document.getElementById('filtroTurma').value;
+      const codigoProfessor = document.getElementById('filtroProfessor').value;
+      const disciplina = document.getElementById('filtroDisciplina').value;
       const loading = document.getElementById('loading');
       const tabela = document.getElementById('tabela');
 
@@ -263,12 +133,20 @@
       tabela.style.display = 'none';
 
       try {
-        const url = `${API}api_resultados.php${turma ? '?turma=' + encodeURIComponent(turma) : ''}`;
-        const resp = await fetch(url, { cache: 'no-store' });
+        const qs = new URLSearchParams();
+        qs.set('modo', modoAtual);
+        if (turma) qs.set('turma', turma);
+        if (modoAtual === 'professor' && codigoProfessor) qs.set('codigo_professor', codigoProfessor);
+        if (modoAtual === 'disciplina' && disciplina) qs.set('disciplina', disciplina);
+
+        const resp = await fetch(`${API}api_resultados.php?${qs.toString()}`, { cache: 'no-store' });
         const json = await resp.json();
 
-        if (!json.ok) {
-          throw new Error(json.error || 'Erro ao buscar resultados.');
+        if (!json.ok) throw new Error(json.error || 'Erro ao buscar resultados.');
+
+        if (!filtrosCarregados) {
+          montarFiltros(json.filtros || {});
+          filtrosCarregados = true;
         }
 
         dadosAtuais = json.professores || [];
@@ -276,128 +154,139 @@
 
         loading.style.display = 'none';
         tabela.style.display = 'table';
-
       } catch (e) {
         loading.className = 'erro';
         loading.textContent = e.message;
       }
     }
 
+    function montarFiltros(filtros) {
+      const selProf = document.getElementById('filtroProfessor');
+      const selDisc = document.getElementById('filtroDisciplina');
+
+      (filtros.professores || []).forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.codigo_professor;
+        opt.textContent = `${p.nome_professor} - Cod.: ${p.codigo_professor}`;
+        selProf.appendChild(opt);
+      });
+
+      (filtros.disciplinas || []).forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        selDisc.appendChild(opt);
+      });
+    }
+
     function montarTabela(lista) {
+      const thead = document.getElementById('theadResultados');
       const tbody = document.getElementById('tbodyResultados');
       tbody.innerHTML = '';
 
+      const colunaExtra = modoAtual === 'professor' ? '<th rowspan="2">Unidade</th>' : '';
+
+      thead.innerHTML = `
+        <tr>
+          <th rowspan="2">Cod</th>
+          <th rowspan="2">Nome</th>
+          <th rowspan="2">Disciplina</th>
+          ${colunaExtra}
+          <th rowspan="2">Turma</th>
+          <th>ÓTIMO</th><th>%</th>
+          <th>BOM</th><th>%</th>
+          <th>REG</th><th>%</th>
+          <th>INS</th><th>%</th>
+          <th>NOP</th><th>BRC</th><th>TOTAL</th>
+          <th colspan="4">Insatisfatório</th>
+        </tr>
+        <tr>
+          <th colspan="11"></th>
+          <th>1</th><th>2</th><th>3</th><th>4</th>
+        </tr>
+      `;
+
       if (!lista.length) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="19">Nenhum resultado encontrado.</td>
-          </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="20">Nenhum resultado encontrado.</td></tr>`;
         return;
       }
 
       lista.forEach(p => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${escapeHtml(p.codigo_professor)}</td>
-            <td class="td-nome">${escapeHtml(p.nome_professor)}</td>
-            <td class="td-disc">${escapeHtml(p.disciplina)}</td>
-            <td>${escapeHtml(p.turma)}</td>
-
-            <td>${num(p.otimo)}</td>
-            <td>${escapeHtml(p.perc_otimo)}</td>
-
-            <td>${num(p.bom)}</td>
-            <td>${escapeHtml(p.perc_bom)}</td>
-
-            <td>${num(p.regular)}</td>
-            <td>${escapeHtml(p.perc_regular)}</td>
-
-            <td>${num(p.insatisfatorio)}</td>
-            <td>${escapeHtml(p.perc_insatisfatorio)}</td>
-
-            <td>${num(p.nop)}</td>
-            <td>${num(p.brc)}</td>
-            <td>${num(p.total)}</td>
-
-            <td>${num(p.item1)}</td>
-            <td>${num(p.item2)}</td>
-            <td>${num(p.item3)}</td>
-            <td>${num(p.item4)}</td>
-          </tr>
-        `;
+        tbody.innerHTML += linhaTabela(p, false);
       });
+
+      const total = somarTotais(lista);
+      tbody.innerHTML += linhaTabela(total, true);
+    }
+
+    function linhaTabela(p, totalRow) {
+      const unidade = modoAtual === 'professor' ? `<td class="td-unidade">${escapeHtml(p.unidade || '')}</td>` : '';
+      return `
+        <tr class="${totalRow ? 'total-row' : ''}">
+          <td>${escapeHtml(p.codigo_professor)}</td>
+          <td class="td-nome">${escapeHtml(p.nome_professor)}</td>
+          <td class="td-disc">${escapeHtml(p.disciplina)}</td>
+          ${unidade}
+          <td>${escapeHtml(p.turma)}</td>
+          <td>${num(p.otimo)}</td><td>${escapeHtml(p.perc_otimo)}</td>
+          <td>${num(p.bom)}</td><td>${escapeHtml(p.perc_bom)}</td>
+          <td>${num(p.regular)}</td><td>${escapeHtml(p.perc_regular)}</td>
+          <td>${num(p.insatisfatorio)}</td><td>${escapeHtml(p.perc_insatisfatorio)}</td>
+          <td>${num(p.nop)}</td><td>${num(p.brc)}</td><td>${num(p.total)}</td>
+          <td>${num(p.item1)}</td><td>${num(p.item2)}</td><td>${num(p.item3)}</td><td>${num(p.item4)}</td>
+        </tr>`;
+    }
+
+    function somarTotais(lista) {
+      const t = {
+        codigo_professor: '', nome_professor: 'TOTAL', disciplina: '', unidade: '', turma: '',
+        otimo:0, bom:0, regular:0, insatisfatorio:0, nop:0, brc:0, total:0, item1:0, item2:0, item3:0, item4:0
+      };
+
+      lista.forEach(p => {
+        ['otimo','bom','regular','insatisfatorio','nop','brc','total','item1','item2','item3','item4'].forEach(k => t[k] += num(p[k]));
+      });
+
+      const base = Math.max(1, t.total - t.nop - t.brc);
+      t.perc_otimo = percJs(t.otimo, base);
+      t.perc_bom = percJs(t.bom, base);
+      t.perc_regular = percJs(t.regular, base);
+      t.perc_insatisfatorio = percJs(t.insatisfatorio, base);
+      return t;
     }
 
     function exportarCSV() {
-      if (!dadosAtuais.length) {
-        alert('Nenhum dado para exportar.');
-        return;
-      }
+      if (!dadosAtuais.length) return alert('Nenhum dado para exportar.');
 
-      const linhas = [];
-      linhas.push([
-        'Cod', 'Nome', 'Disciplina', 'Turma',
-        'OTIMO', '% OTIMO',
-        'BOM', '% BOM',
-        'REG', '% REG',
-        'INS', '% INS',
-        'NOP', 'BRC', 'TOTAL',
-        'Insat 1', 'Insat 2', 'Insat 3', 'Insat 4'
-      ].join(';'));
+      const cab = ['Cod','Nome','Disciplina'];
+      if (modoAtual === 'professor') cab.push('Unidade');
+      cab.push('Turma','OTIMO','% OTIMO','BOM','% BOM','REG','% REG','INS','% INS','NOP','BRC','TOTAL','Insat 1','Insat 2','Insat 3','Insat 4');
+
+      const linhas = [cab.join(';')];
 
       dadosAtuais.forEach(p => {
-        linhas.push([
-          p.codigo_professor,
-          p.nome_professor,
-          p.disciplina,
-          p.turma,
-          num(p.otimo),
-          p.perc_otimo,
-          num(p.bom),
-          p.perc_bom,
-          num(p.regular),
-          p.perc_regular,
-          num(p.insatisfatorio),
-          p.perc_insatisfatorio,
-          num(p.nop),
-          num(p.brc),
-          num(p.total),
-          num(p.item1),
-          num(p.item2),
-          num(p.item3),
-          num(p.item4)
-        ].map(csvSafe).join(';'));
+        const row = [p.codigo_professor, p.nome_professor, p.disciplina];
+        if (modoAtual === 'professor') row.push(p.unidade || '');
+        row.push(p.turma, num(p.otimo), p.perc_otimo, num(p.bom), p.perc_bom, num(p.regular), p.perc_regular, num(p.insatisfatorio), p.perc_insatisfatorio, num(p.nop), num(p.brc), num(p.total), num(p.item1), num(p.item2), num(p.item3), num(p.item4));
+        linhas.push(row.map(csvSafe).join(';'));
       });
 
-      const blob = new Blob(['\uFEFF' + linhas.join('\n')], {
-        type: 'text/csv;charset=utf-8;'
-      });
-
+      const blob = new Blob(['\uFEFF' + linhas.join('\n')], { type:'text/csv;charset=utf-8;' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'resultado_ibope_online.csv';
+      a.download = `resultado_ibope_${modoAtual}.csv`;
       a.click();
-
       URL.revokeObjectURL(a.href);
     }
 
-    function csvSafe(v) {
-      const s = String(v ?? '');
-      return `"${s.replaceAll('"', '""')}"`;
-    }
-
-    function num(v) {
-      return Number(v || 0);
-    }
-
+    function percJs(qtd, total) { return ((qtd / total) * 100).toFixed(2).replace('.', ','); }
+    function csvSafe(v) { return `"${String(v ?? '').replaceAll('"', '""')}"`; }
+    function num(v) { return Number(v || 0); }
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
     function escapeHtml(texto) {
       return String(texto ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
+        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+        .replaceAll('"','&quot;').replaceAll("'",'&#039;');
     }
   </script>
 </body>
