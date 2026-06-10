@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Direção | Alunos de Interesse</title>
+
+  <style>
+    :root {
+      --azul: #0b4ea2;
+      --azul2: #083b7a;
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --texto: #1f2937;
+      --muted: #6b7280;
+      --borda: #d9e2ef;
+      --ok: #15803d;
+      --warn: #b45309;
+      --erro: #b91c1c;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--texto);
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--azul), var(--azul2));
+      color: white;
+      padding: 24px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      opacity: .9;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px 40px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.06);
+      margin-bottom: 18px;
+    }
+
+    .filtros {
+      display: grid;
+      grid-template-columns: 160px 1fr 180px 140px;
+      gap: 12px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #374151;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      font-size: 14px;
+      background: white;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 16px;
+      background: var(--azul);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover { background: var(--azul2); }
+
+    .abas {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .aba {
+      background: #e8eef8;
+      color: var(--azul);
+    }
+
+    .aba.ativa {
+      background: var(--azul);
+      color: white;
+    }
+
+    .resumo {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .kpi {
+      background: #f8fafc;
+      border: 1px solid var(--borda);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .kpi .num {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--azul);
+    }
+
+    .kpi .txt {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+    }
+
+    th, td {
+      padding: 10px 9px;
+      border-bottom: 1px solid #edf1f7;
+      font-size: 13px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f1f5fb;
+      color: #374151;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    tr:hover td {
+      background: #fafcff;
+    }
+
+    .status-ok {
+      color: var(--ok);
+      font-weight: bold;
+    }
+
+    .status-sem {
+      color: var(--warn);
+      font-weight: bold;
+    }
+
+    .status-erro {
+      color: var(--erro);
+      font-weight: bold;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .loading {
+      display: none;
+      color: var(--azul);
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .erro-box {
+      display: none;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .filtros {
+        grid-template-columns: 1fr;
+      }
+
+      .resumo {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Alunos de Interesse</h1>
+    <p>Consulta de resultados por aluno ou por evento</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="abas">
+        <button class="aba ativa" id="btnModoEvento" onclick="setModo('evento')">Por evento</button>
+        <button class="aba" id="btnModoAluno" onclick="setModo('aluno')">Por aluno</button>
+      </div>
+
+      <div class="filtros">
+        <div>
+          <label for="anoLetivo">Ano letivo</label>
+          <input id="anoLetivo" type="number" value="2026" />
+        </div>
+
+        <div>
+          <label for="evento">Evento</label>
+          <input id="evento" type="text" value="FUVESTAO0526" />
+        </div>
+
+        <div>
+          <label for="cpfAluno">CPF / aluno</label>
+          <input id="cpfAluno" type="text" placeholder="opcional" />
+        </div>
+
+        <div>
+          <button onclick="carregarResultados()">Buscar</button>
+        </div>
+      </div>
+
+      <div id="loading" class="loading">Carregando...</div>
+      <div id="erroBox" class="erro-box"></div>
+    </section>
+
+    <section class="card">
+      <div class="resumo">
+        <div class="kpi">
+          <div class="num" id="kpiTotal">0</div>
+          <div class="txt">Alunos monitorados</div>
+        </div>
+        <div class="kpi">
+          <div class="num" id="kpiComResultado">0</div>
+          <div class="txt">Com resultado</div>
+        </div>
+        <div class="kpi">
+          <div class="num" id="kpiSemInscricao">0</div>
+          <div class="txt">Sem inscrição</div>
+        </div>
+        <div class="kpi">
+          <div class="num" id="kpiMedia">-</div>
+          <div class="txt">Média dos monitorados</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>CPF</th>
+              <th>Aluno</th>
+              <th>Unidade cadastro</th>
+              <th>Unidade inscrição</th>
+              <th>Inscrição</th>
+              <th>Total</th>
+              <th>Class.</th>
+              <th>POR</th>
+              <th>HIS</th>
+              <th>ING</th>
+              <th>SOC</th>
+              <th>BIO</th>
+              <th>QUI</th>
+              <th>FIL</th>
+              <th>FIS</th>
+              <th>MAT</th>
+              <th>GEO</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyResultados">
+            <tr>
+              <td colspan="18" class="muted">Faça uma busca para carregar os dados.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API_RESULTADOS = 'https://apisec.secauxiliar.com.br/sim_adm/direcao_resultados_fuvestao.php';
+
+    let modoAtual = 'evento';
+
+    function setModo(modo) {
+      modoAtual = modo;
+
+      document.getElementById('btnModoEvento').classList.toggle('ativa', modo === 'evento');
+      document.getElementById('btnModoAluno').classList.toggle('ativa', modo === 'aluno');
+
+      const cpf = document.getElementById('cpfAluno');
+
+      if (modo === 'aluno') {
+        cpf.placeholder = 'digite CPF do aluno';
+        cpf.focus();
+      } else {
+        cpf.placeholder = 'opcional';
+      }
+    }
+
+    function escapeHtml(v) {
+      return String(v ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function limparCpf(v) {
+      return String(v ?? '').replace(/\D/g, '');
+    }
+
+    function getNota(item, campo) {
+      return item?.notas?.[campo] ?? '';
+    }
+
+    function setLoading(on) {
+      document.getElementById('loading').style.display = on ? 'block' : 'none';
+    }
+
+    function mostrarErro(msg) {
+      const box = document.getElementById('erroBox');
+      box.textContent = msg;
+      box.style.display = msg ? 'block' : 'none';
+    }
+
+    async function carregarResultados() {
+      mostrarErro('');
+      setLoading(true);
+
+      const anoLetivo = document.getElementById('anoLetivo').value.trim();
+      const evento = document.getElementById('evento').value.trim();
+      const cpf = limparCpf(document.getElementById('cpfAluno').value);
+
+      if (!anoLetivo || !evento) {
+        setLoading(false);
+        mostrarErro('Informe o ano letivo e o evento.');
+        return;
+      }
+
+      if (modoAtual === 'aluno' && !cpf) {
+        setLoading(false);
+        mostrarErro('No modo por aluno, informe o CPF.');
+        return;
+      }
+
+      const params = new URLSearchParams();
+      params.set('evento', evento);
+      params.set('ano_letivo', anoLetivo);
+
+      if (cpf) params.set('cpf', cpf);
+
+      try {
+        const resp = await fetch(`${API_RESULTADOS}?${params.toString()}`, {
+          method: 'GET',
+          cache: 'no-store'
+        });
+
+        const data = await resp.json();
+
+        if (!data.ok) {
+          throw new Error(data.msg || data.error || 'Erro ao carregar resultados.');
+        }
+
+        montarTela(data.itens || []);
+      } catch (e) {
+        montarTela([]);
+        mostrarErro(e.message || 'Erro inesperado.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function montarTela(itens) {
+      const tbody = document.getElementById('tbodyResultados');
+
+      if (!itens.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="18" class="muted">Nenhum aluno encontrado.</td>
+          </tr>
+        `;
+        atualizarKpis([]);
+        return;
+      }
+
+      itens.sort((a, b) => {
+        const na = String(a.nome_aluno || '').localeCompare(String(b.nome_aluno || ''), 'pt-BR');
+        if (na !== 0) return na;
+        return String(a.cpf || '').localeCompare(String(b.cpf || ''));
+      });
+
+      tbody.innerHTML = itens.map(item => {
+        const status = item.status || '';
+        const temResultado = status === 'COM_RESULTADO';
+        const semInscricao = status === 'SEM_INSCRICAO';
+
+        const statusLabel = temResultado
+          ? '<span class="status-ok">COM RESULTADO</span>'
+          : semInscricao
+            ? '<span class="status-sem">SEM INSCRIÇÃO</span>'
+            : `<span class="status-erro">${escapeHtml(status || 'SEM RESULTADO')}</span>`;
+
+        const nome = item.nome_aluno || (semInscricao ? 'SEM INSCRIÇÃO' : '');
+
+        return `
+          <tr>
+            <td>${statusLabel}</td>
+            <td>${escapeHtml(item.cpf)}</td>
+            <td>${escapeHtml(nome)}</td>
+            <td>${escapeHtml(item.unidade_monitorada || item.unidade_cadastro || item.unidade || '')}</td>
+            <td>${escapeHtml(item.unidade_inscricao || '')}</td>
+            <td>${escapeHtml(item.inscricao || '')}</td>
+            <td><strong>${escapeHtml(getNota(item, 'TOTAL'))}</strong></td>
+            <td>${escapeHtml(getNota(item, 'CLS_G'))}</td>
+            <td>${escapeHtml(getNota(item, 'POR'))}</td>
+            <td>${escapeHtml(getNota(item, 'HIS'))}</td>
+            <td>${escapeHtml(getNota(item, 'ING'))}</td>
+            <td>${escapeHtml(getNota(item, 'SOC'))}</td>
+            <td>${escapeHtml(getNota(item, 'BIO'))}</td>
+            <td>${escapeHtml(getNota(item, 'QUI'))}</td>
+            <td>${escapeHtml(getNota(item, 'FIL'))}</td>
+            <td>${escapeHtml(getNota(item, 'FIS'))}</td>
+            <td>${escapeHtml(getNota(item, 'MAT'))}</td>
+            <td>${escapeHtml(getNota(item, 'GEO'))}</td>
+          </tr>
+        `;
+      }).join('');
+
+      atualizarKpis(itens);
+    }
+
+    function atualizarKpis(itens) {
+      const total = itens.length;
+      const comResultado = itens.filter(i => i.status === 'COM_RESULTADO').length;
+      const semInscricao = itens.filter(i => i.status === 'SEM_INSCRICAO').length;
+
+      const totais = itens
+        .map(i => Number(i?.notas?.TOTAL))
+        .filter(n => Number.isFinite(n));
+
+      const media = totais.length
+        ? (totais.reduce((a, b) => a + b, 0) / totais.length).toFixed(2)
+        : '-';
+
+      document.getElementById('kpiTotal').textContent = total;
+      document.getElementById('kpiComResultado').textContent = comResultado;
+      document.getElementById('kpiSemInscricao').textContent = semInscricao;
+      document.getElementById('kpiMedia').textContent = media;
+    }
+
+    carregarResultados();
+  </script>
+</body>
+</html>
