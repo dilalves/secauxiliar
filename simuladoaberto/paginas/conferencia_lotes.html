@@ -954,17 +954,25 @@
     return String(valor ?? '').trim();
   }
 
-  function valorVazioOuPendente(valor) {
-    const v = normalizarValor(valor).toUpperCase();
+function valorVazioOuPendente(valor, tipo = '') {
+  const v = normalizarValor(valor).toUpperCase();
 
-    return (
-      !v ||
-      v === 'NULL' ||
-      v === 'SEM LEITURA' ||
-      v === 'N/D' ||
-      /^#+$/.test(v)
-    );
+  if (
+    !v ||
+    v === 'NULL' ||
+    v === 'SEM LEITURA' ||
+    v === 'N/D' ||
+    v.includes('#')
+  ) {
+    return true;
   }
+
+  if (tipo === 'inscricao') {
+    return !/^\d{7}$/.test(v);
+  }
+
+  return false;
+}
 
   function chipStatus(status) {
     const s = String(status || '').toUpperCase();
@@ -1636,8 +1644,8 @@
 
     atualizarPendenciaLocal(id, tipo, valor);
 
-    const inscricaoOk = !valorVazioOuPendente(row.INSCRICAO);
-    const corOk = !valorVazioOuPendente(row.CORPROVA);
+    const inscricaoOk = !valorVazioOuPendente(row.INSCRICAO, 'inscricao');
+    const corOk = !valorVazioOuPendente(row.CORPROVA, 'corprova');
 
     if (inscricaoOk && corOk) {
       pendenciasCache = pendenciasCache.filter(r => Number(r.id) !== Number(id));
