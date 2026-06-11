@@ -212,7 +212,7 @@
 
     .info-row{
       display:grid;
-      grid-template-columns:repeat(3,1fr);
+      grid-template-columns:repeat(4,1fr);
       gap:10px;
       margin-top:8px;
     }
@@ -451,6 +451,10 @@
             <div class="mini-kpi">
               <div class="v" id="kpiEnviados">-</div>
               <div class="l">Já enviados</div>
+            </div>
+            <div class="mini-kpi">
+              <div class="v" id="kpiFaltam">-</div>
+              <div class="l">Faltam enviar</div>
             </div>
             <div class="mini-kpi">
               <div class="v" id="kpiSelecionados">0</div>
@@ -707,8 +711,15 @@
   }
 
   function atualizarKPIs(presentes = '-', enviados = '-', selecionados = 0) {
+    const nPresentes = Number(presentes);
+    const nEnviados = Number(enviados);
+    const faltam = Number.isFinite(nPresentes) && Number.isFinite(nEnviados)
+      ? Math.max(0, nPresentes - nEnviados)
+      : '-';
+
     document.getElementById('kpiPermitido').textContent = presentes;
     document.getElementById('kpiEnviados').textContent = enviados;
+    document.getElementById('kpiFaltam').textContent = faltam;
     document.getElementById('kpiSelecionados').textContent = selecionados;
   }
 
