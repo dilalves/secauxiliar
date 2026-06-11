@@ -1489,8 +1489,14 @@ function valorVazioOuPendente(valor, tipo = '') {
     `;
   }
 
-  function valorAtualVazioParaInput(valor) {
-    return valorVazioOuPendente(valor) ? '' : valor;
+  function valorAtualVazioParaInput(valor, tipo = '') {
+    const v = normalizarValor(valor);
+
+    if (tipo === 'inscricao' && v.includes('#')) {
+      return v;
+    }
+
+    return valorVazioOuPendente(v, tipo) ? '' : v;
   }
 
   async function abrirModalCorrecao(id, tipo) {
@@ -2322,7 +2328,7 @@ function montarCampoEdicao(row, tipo, valorAtual) {
       <input
         id="swal-input-valor"
         type="text"
-        value="${escapeHtml(valorAtualVazioParaInput(valorAtual))}"
+        value="${escapeHtml(valorAtualVazioParaInput(valorAtual, tipo))}"
         placeholder="Digite a inscrição correta"
         autocomplete="off">
     `;
