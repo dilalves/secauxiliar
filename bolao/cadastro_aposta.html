@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Cadastro de Aposta - Bolão Copa 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f3f6fb;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  background: #fff;
+  padding: 24px;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.08);
+}
+
+h1 {
+  margin-top: 0;
+  color: #123c69;
+}
+
+.dados {
+  display: grid;
+  grid-template-columns: 1fr 220px 100px;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #ccd5e0;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.pago-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.grupo {
+  margin-top: 24px;
+  border: 1px solid #d9e2ef;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.grupo h2 {
+  margin: 0;
+  background: #123c69;
+  color: white;
+  padding: 10px 14px;
+  font-size: 18px;
+}
+
+.jogo {
+  display: grid;
+  grid-template-columns: 80px 1fr 60px 20px 60px 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.jogo:last-child {
+  border-bottom: 0;
+}
+
+.jogo input {
+  text-align: center;
+  font-weight: bold;
+}
+
+.time-a {
+  text-align: right;
+}
+
+.time-b {
+  text-align: left;
+}
+
+.data {
+  color: #666;
+  font-size: 13px;
+}
+
+.acoes {
+  margin-top: 28px;
+  display: flex;
+  gap: 12px;
+}
+
+button {
+  border: 0;
+  padding: 12px 20px;
+  border-radius: 9px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.btn-salvar {
+  background: #0b7a3b;
+  color: white;
+}
+
+.btn-limpar {
+  background: #d9e2ef;
+}
+
+.msg {
+  margin-top: 16px;
+  font-weight: bold;
+}
+
+.ok { color: #0b7a3b; }
+.erro { color: #b00020; }
+
+@media(max-width: 700px) {
+  .dados {
+    grid-template-columns: 1fr;
+  }
+
+  .jogo {
+    grid-template-columns: 50px 1fr 44px 16px 44px 1fr;
+    font-size: 13px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Bolão Copa 2026 - Cadastro de Aposta</h1>
+
+  <div class="dados">
+    <input type="text" id="nome" placeholder="Nome do participante">
+    <input type="text" id="telefone" placeholder="Telefone">
+    <label class="pago-box">
+      <input type="checkbox" id="pago">
+      Pago
+    </label>
+  </div>
+
+  <div id="listaJogos"></div>
+
+  <div class="acoes">
+    <button class="btn-salvar" onclick="salvarAposta()">Salvar aposta</button>
+    <button class="btn-limpar" onclick="limparFormulario()">Limpar</button>
+  </div>
+
+  <div id="msg" class="msg"></div>
+</div>
+
+<script>
+const API_SALVAR = 'https://apisec.secauxiliar.com.br/bolao/bolao_salvar_aposta.php';
+
+const jogos = [
+  [1,'A','11/06','México','África do Sul'],
+  [2,'A','11/06','Coreia do Sul','Rep. Tcheca'],
+  [3,'A','18/06','Rep. Tcheca','África do Sul'],
+  [4,'A','18/06','México','Coreia do Sul'],
+  [5,'A','24/06','Rep. Tcheca','México'],
+  [6,'A','24/06','África do Sul','Coreia do Sul'],
+
+  [7,'B','12/06','Canadá','Bósnia'],
+  [8,'B','13/06','Catar','Suíça'],
+  [9,'B','18/06','Suíça','Bósnia'],
+  [10,'B','18/06','Canadá','Catar'],
+  [11,'B','24/06','Suíça','Canadá'],
+  [12,'B','24/06','Bósnia','Catar'],
+
+  [13,'C','13/06','BRASIL','Marrocos'],
+  [14,'C','13/06','Haiti','Escócia'],
+  [15,'C','19/06','BRASIL','Haiti'],
+  [16,'C','19/06','Escócia','Marrocos'],
+  [17,'C','24/06','Escócia','BRASIL'],
+  [18,'C','24/06','Marrocos','Haiti'],
+
+  [19,'D','12/06','EUA','Paraguai'],
+  [20,'D','14/06','Austrália','Turquia'],
+  [21,'D','19/06','EUA','Austrália'],
+  [22,'D','20/06','Turquia','Paraguai'],
+  [23,'D','25/06','Turquia','EUA'],
+  [24,'D','25/06','Paraguai','Austrália'],
+
+  [25,'E','14/06','Alemanha','Curaçao'],
+  [26,'E','14/06','C. do Marfim','Equador'],
+  [27,'E','20/06','Alemanha','C. do Marfim'],
+  [28,'E','20/06','Equador','Curaçao'],
+  [29,'E','25/06','Equador','Alemanha'],
+  [30,'E','25/06','Curaçao','C. do Marfim'],
+
+  [31,'F','14/06','Holanda','Japão'],
+  [32,'F','14/06','Suécia','Tunísia'],
+  [33,'F','20/06','Holanda','Suécia'],
+  [34,'F','21/06','Tunísia','Japão'],
+  [35,'F','25/06','Tunísia','Holanda'],
+  [36,'F','25/06','Japão','Suécia'],
+
+  [37,'G','15/06','Bélgica','Egito'],
+  [38,'G','15/06','Irã','N. Zelândia'],
+  [39,'G','21/06','Bélgica','Irã'],
+  [40,'G','21/06','N. Zelândia','Egito'],
+  [41,'G','27/06','N. Zelândia','Bélgica'],
+  [42,'G','27/06','Egito','Irã'],
+
+  [43,'H','15/06','Espanha','Cabo Verde'],
+  [44,'H','15/06','Arábia Saudita','Uruguai'],
+  [45,'H','21/06','Espanha','Arábia Saudita'],
+  [46,'H','21/06','Uruguai','Cabo Verde'],
+  [47,'H','26/06','Uruguai','Espanha'],
+  [48,'H','26/06','Cabo Verde','Arábia Saudita'],
+
+  [49,'I','16/06','França','Senegal'],
+  [50,'I','16/06','Iraque','Noruega'],
+  [51,'I','22/06','França','Iraque'],
+  [52,'I','22/06','Noruega','Senegal'],
+  [53,'I','26/06','Noruega','França'],
+  [54,'I','26/06','Senegal','Iraque'],
+
+  [55,'J','16/06','Argentina','Argélia'],
+  [56,'J','16/06','Áustria','Jordânia'],
+  [57,'J','22/06','Argentina','Áustria'],
+  [58,'J','23/06','Jordânia','Argélia'],
+  [59,'J','27/06','Jordânia','Argentina'],
+  [60,'J','27/06','Argélia','Áustria'],
+
+  [61,'K','17/06','Portugal','RD Congo'],
+  [62,'K','17/06','Uzbequistão','Colômbia'],
+  [63,'K','23/06','Portugal','Uzbequistão'],
+  [64,'K','23/06','Colômbia','RD Congo'],
+  [65,'K','27/06','Colômbia','Portugal'],
+  [66,'K','27/06','RD Congo','Uzbequistão'],
+
+  [67,'L','17/06','Inglaterra','Croácia'],
+  [68,'L','17/06','Gana','Panamá'],
+  [69,'L','23/06','Inglaterra','Gana'],
+  [70,'L','23/06','Panamá','Croácia'],
+  [71,'L','27/06','Panamá','Inglaterra'],
+  [72,'L','27/06','Croácia','Gana']
+];
+
+function montarJogos() {
+  const div = document.getElementById('listaJogos');
+  let html = '';
+  let grupoAtual = '';
+
+  jogos.forEach(j => {
+    const [id, grupo, data, timeA, timeB] = j;
+
+    if (grupo !== grupoAtual) {
+      if (grupoAtual !== '') html += '</div>';
+      grupoAtual = grupo;
+      html += `<div class="grupo"><h2>Grupo ${grupo}</h2>`;
+    }
+
+    html += `
+      <div class="jogo">
+        <div class="data">${data}</div>
+        <div class="time-a">${timeA}</div>
+        <input type="number" min="0" id="pa_${id}">
+        <div>x</div>
+        <input type="number" min="0" id="pb_${id}">
+        <div class="time-b">${timeB}</div>
+      </div>
+    `;
+  });
+
+  html += '</div>';
+  div.innerHTML = html;
+}
+
+async function salvarAposta() {
+  const msg = document.getElementById('msg');
+  msg.textContent = '';
+  msg.className = 'msg';
+
+  const nome = document.getElementById('nome').value.trim();
+  const telefone = document.getElementById('telefone').value.trim();
+  const pago = document.getElementById('pago').checked;
+
+  if (!nome) {
+    msg.textContent = 'Informe o nome do participante.';
+    msg.classList.add('erro');
+    return;
+  }
+
+  const palpites = [];
+
+  for (const j of jogos) {
+    const id = j[0];
+    const pa = document.getElementById(`pa_${id}`).value;
+    const pb = document.getElementById(`pb_${id}`).value;
+
+    if (pa === '' || pb === '') {
+      msg.textContent = `Preencha todos os jogos. Falta o jogo ${id}.`;
+      msg.classList.add('erro');
+      return;
+    }
+
+    palpites.push({
+      jogo_id: id,
+      palpite_a: pa,
+      palpite_b: pb
+    });
+  }
+
+  try {
+    const resp = await fetch(API_SALVAR, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ nome, telefone, pago, palpites })
+    });
+
+    const json = await resp.json();
+
+    if (!json.ok) {
+      throw new Error(json.error || 'Erro ao salvar');
+    }
+
+    msg.textContent = 'Aposta cadastrada com sucesso!';
+    msg.classList.add('ok');
+
+  } catch (e) {
+    msg.textContent = e.message;
+    msg.classList.add('erro');
+  }
+}
+
+function limparFormulario() {
+  document.getElementById('nome').value = '';
+  document.getElementById('telefone').value = '';
+  document.getElementById('pago').checked = false;
+
+  jogos.forEach(j => {
+    const id = j[0];
+    document.getElementById(`pa_${id}`).value = '';
+    document.getElementById(`pb_${id}`).value = '';
+  });
+
+  document.getElementById('msg').textContent = '';
+}
+
+montarJogos();
+</script>
+
+</body>
+</html>
