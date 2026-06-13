@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Cadastro de Resultado - Bolão Copa 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f3f6fb;
+  margin: 0;
+  padding: 12px;
+  font-size: 12px;
+}
+
+.container {
+  max-width: 1180px;
+  margin: auto;
+  background: #fff;
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+}
+
+h1 {
+  margin: 0 0 12px;
+  color: #123c69;
+  font-size: 20px;
+}
+
+#listaJogos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.grupo {
+  border: 1px solid #d9e2ef;
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.grupo h2 {
+  margin: 0;
+  background: #123c69;
+  color: white;
+  padding: 5px 9px;
+  font-size: 13px;
+}
+
+.jogo {
+  display: grid;
+  grid-template-columns: 45px 1fr 34px 10px 34px 1fr 64px;
+  gap: 4px;
+  align-items: center;
+  padding: 3px 6px;
+  border-bottom: 1px solid #eef2f7;
+  font-size: 11px;
+}
+
+.jogo:last-child {
+  border-bottom: 0;
+}
+
+.jogo input {
+  text-align: center;
+  font-weight: bold;
+  height: 20px;
+  padding: 1px 2px;
+  font-size: 12px;
+  border: 1px solid #ccd5e0;
+  border-radius: 6px;
+}
+
+.time-a {
+  text-align: right;
+}
+
+.time-b {
+  text-align: left;
+}
+
+.data {
+  color: #666;
+  font-size: 11px;
+}
+
+button {
+  border: 0;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.btn-salvar {
+  background: #0b7a3b;
+  color: white;
+}
+
+.btn-salvo {
+  background: #d9e2ef;
+  color: #333;
+}
+
+.msg {
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.ok { color: #0b7a3b; }
+.erro { color: #b00020; }
+
+@media(max-width: 800px) {
+  #listaJogos {
+    grid-template-columns: 1fr;
+  }
+
+  .jogo {
+    grid-template-columns: 42px 1fr 34px 10px 34px 1fr 60px;
+    font-size: 11px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Bolão Copa 2026 - Cadastro de Resultado</h1>
+
+  <div id="listaJogos"></div>
+
+  <div id="msg" class="msg"></div>
+</div>
+
+<script>
+const API_SALVAR = 'https://apisec.secauxiliar.com.br/bolao/bolao_salvar_resultado.php';
+
+const jogos = [
+  [1,'A','11/06','México','África do Sul'],
+  [2,'A','11/06','Coreia do Sul','Rep. Tcheca'],
+  [3,'A','18/06','Rep. Tcheca','África do Sul'],
+  [4,'A','18/06','México','Coreia do Sul'],
+  [5,'A','24/06','Rep. Tcheca','México'],
+  [6,'A','24/06','África do Sul','Coreia do Sul'],
+
+  [7,'B','12/06','Canadá','Bósnia'],
+  [8,'B','13/06','Catar','Suíça'],
+  [9,'B','18/06','Suíça','Bósnia'],
+  [10,'B','18/06','Canadá','Catar'],
+  [11,'B','24/06','Suíça','Canadá'],
+  [12,'B','24/06','Bósnia','Catar'],
+
+  [13,'C','13/06','BRASIL','Marrocos'],
+  [14,'C','13/06','Haiti','Escócia'],
+  [15,'C','19/06','BRASIL','Haiti'],
+  [16,'C','19/06','Escócia','Marrocos'],
+  [17,'C','24/06','Escócia','BRASIL'],
+  [18,'C','24/06','Marrocos','Haiti'],
+
+  [19,'D','12/06','EUA','Paraguai'],
+  [20,'D','14/06','Austrália','Turquia'],
+  [21,'D','19/06','EUA','Austrália'],
+  [22,'D','20/06','Turquia','Paraguai'],
+  [23,'D','25/06','Turquia','EUA'],
+  [24,'D','25/06','Paraguai','Austrália'],
+
+  [25,'E','14/06','Alemanha','Curaçao'],
+  [26,'E','14/06','C. do Marfim','Equador'],
+  [27,'E','20/06','Alemanha','C. do Marfim'],
+  [28,'E','20/06','Equador','Curaçao'],
+  [29,'E','25/06','Equador','Alemanha'],
+  [30,'E','25/06','Curaçao','C. do Marfim'],
+
+  [31,'F','14/06','Holanda','Japão'],
+  [32,'F','14/06','Suécia','Tunísia'],
+  [33,'F','20/06','Holanda','Suécia'],
+  [34,'F','21/06','Tunísia','Japão'],
+  [35,'F','25/06','Tunísia','Holanda'],
+  [36,'F','25/06','Japão','Suécia'],
+
+  [37,'G','15/06','Bélgica','Egito'],
+  [38,'G','15/06','Irã','N. Zelândia'],
+  [39,'G','21/06','Bélgica','Irã'],
+  [40,'G','21/06','N. Zelândia','Egito'],
+  [41,'G','27/06','N. Zelândia','Bélgica'],
+  [42,'G','27/06','Egito','Irã'],
+
+  [43,'H','15/06','Espanha','Cabo Verde'],
+  [44,'H','15/06','Arábia Saudita','Uruguai'],
+  [45,'H','21/06','Espanha','Arábia Saudita'],
+  [46,'H','21/06','Uruguai','Cabo Verde'],
+  [47,'H','26/06','Uruguai','Espanha'],
+  [48,'H','26/06','Cabo Verde','Arábia Saudita'],
+
+  [49,'I','16/06','França','Senegal'],
+  [50,'I','16/06','Iraque','Noruega'],
+  [51,'I','22/06','França','Iraque'],
+  [52,'I','22/06','Noruega','Senegal'],
+  [53,'I','26/06','Noruega','França'],
+  [54,'I','26/06','Senegal','Iraque'],
+
+  [55,'J','16/06','Argentina','Argélia'],
+  [56,'J','16/06','Áustria','Jordânia'],
+  [57,'J','22/06','Argentina','Áustria'],
+  [58,'J','23/06','Jordânia','Argélia'],
+  [59,'J','27/06','Jordânia','Argentina'],
+  [60,'J','27/06','Argélia','Áustria'],
+
+  [61,'K','17/06','Portugal','RD Congo'],
+  [62,'K','17/06','Uzbequistão','Colômbia'],
+  [63,'K','23/06','Portugal','Uzbequistão'],
+  [64,'K','23/06','Colômbia','RD Congo'],
+  [65,'K','27/06','Colômbia','Portugal'],
+  [66,'K','27/06','RD Congo','Uzbequistão'],
+
+  [67,'L','17/06','Inglaterra','Croácia'],
+  [68,'L','17/06','Gana','Panamá'],
+  [69,'L','23/06','Inglaterra','Gana'],
+  [70,'L','23/06','Panamá','Croácia'],
+  [71,'L','27/06','Panamá','Inglaterra'],
+  [72,'L','27/06','Croácia','Gana']
+];
+
+function montarJogos() {
+  const div = document.getElementById('listaJogos');
+  let html = '';
+  let grupoAtual = '';
+
+  jogos.forEach(j => {
+    const [id, grupo, data, timeA, timeB] = j;
+
+    if (grupo !== grupoAtual) {
+      if (grupoAtual !== '') html += '</div>';
+      grupoAtual = grupo;
+      html += `<div class="grupo"><h2>Grupo ${grupo}</h2>`;
+    }
+
+    html += `
+      <div class="jogo" id="linha_${id}">
+        <div class="data">${data}</div>
+        <div class="time-a">${timeA}</div>
+        <input type="number" min="0" id="ga_${id}">
+        <div>x</div>
+        <input type="number" min="0" id="gb_${id}">
+        <div class="time-b">${timeB}</div>
+        <button class="btn-salvar" id="btn_${id}" onclick="salvarResultado(${id})">Salvar</button>
+      </div>
+    `;
+  });
+
+  html += '</div>';
+  div.innerHTML = html;
+}
+
+async function salvarResultado(jogoId) {
+  const msg = document.getElementById('msg');
+  const btn = document.getElementById(`btn_${jogoId}`);
+  const ga = document.getElementById(`ga_${jogoId}`).value;
+  const gb = document.getElementById(`gb_${jogoId}`).value;
+
+  msg.textContent = '';
+  msg.className = 'msg';
+
+  if (ga === '' || gb === '') {
+    msg.textContent = `Informe o placar do jogo ${jogoId}.`;
+    msg.classList.add('erro');
+    return;
+  }
+
+  try {
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    const resp = await fetch(API_SALVAR, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        jogo_id: jogoId,
+        gols_a: ga,
+        gols_b: gb
+      })
+    });
+
+    const json = await resp.json();
+
+    if (!json.ok) {
+      throw new Error(json.error || 'Erro ao salvar resultado');
+    }
+
+    btn.textContent = 'OK';
+    btn.className = 'btn-salvo';
+
+    msg.textContent = `Resultado do jogo ${jogoId} salvo. Palpites recalculados: ${json.palpites_recalculados}.`;
+    msg.classList.add('ok');
+
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Salvar';
+    btn.className = 'btn-salvar';
+
+    msg.textContent = e.message;
+    msg.classList.add('erro');
+  }
+}
+
+montarJogos();
+</script>
+
+</body>
+</html>

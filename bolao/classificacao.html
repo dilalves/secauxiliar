@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Classificação - Bolão Copa 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f3f6fb;
+  margin: 0;
+  padding: 14px;
+  font-size: 13px;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+}
+
+h1 {
+  margin: 0 0 14px;
+  color: #123c69;
+  font-size: 22px;
+}
+
+.topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 10px;
+}
+
+button {
+  border: 0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  background: #123c69;
+  color: white;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: #123c69;
+  color: white;
+  padding: 8px;
+  text-align: left;
+}
+
+td {
+  padding: 7px 8px;
+  border-bottom: 1px solid #e6edf5;
+}
+
+tr:nth-child(even) {
+  background: #f8fbff;
+}
+
+.pos {
+  width: 45px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.pontos {
+  font-weight: bold;
+  font-size: 15px;
+  text-align: center;
+}
+
+.centro {
+  text-align: center;
+}
+
+.pago {
+  color: #0b7a3b;
+  font-weight: bold;
+}
+
+.naopago {
+  color: #b00020;
+  font-weight: bold;
+}
+
+.msg {
+  margin-top: 12px;
+  font-weight: bold;
+}
+
+.erro {
+  color: #b00020;
+}
+
+@media(max-width: 700px) {
+  body {
+    padding: 8px;
+  }
+
+  .container {
+    padding: 10px;
+  }
+
+  table {
+    font-size: 11px;
+  }
+
+  th, td {
+    padding: 6px 4px;
+  }
+
+  .telefone {
+    display: none;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="topo">
+    <h1>Classificação - Bolão Copa 2026</h1>
+    <button onclick="carregarClassificacao()">Atualizar</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="pos">#</th>
+        <th>Participante</th>
+        <th class="telefone">Telefone</th>
+        <th class="centro">Pago</th>
+        <th class="centro">Exatos</th>
+        <th class="centro">Resultado</th>
+        <th class="centro">Pontos</th>
+      </tr>
+    </thead>
+    <tbody id="tbody">
+      <tr>
+        <td colspan="7">Carregando...</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div id="msg" class="msg"></div>
+</div>
+
+<script>
+const API_CLASSIFICACAO = 'https://apisec.secauxiliar.com.br/bolao/bolao_classificacao.php';
+
+async function carregarClassificacao() {
+  const tbody = document.getElementById('tbody');
+  const msg = document.getElementById('msg');
+
+  tbody.innerHTML = `<tr><td colspan="7">Carregando...</td></tr>`;
+  msg.textContent = '';
+  msg.className = 'msg';
+
+  try {
+    const resp = await fetch(API_CLASSIFICACAO);
+    const json = await resp.json();
+
+    if (!json.ok) {
+      throw new Error(json.error || 'Erro ao carregar classificação');
+    }
+
+    if (!json.dados.length) {
+      tbody.innerHTML = `<tr><td colspan="7">Nenhum participante cadastrado.</td></tr>`;
+      return;
+    }
+
+    let html = '';
+
+    json.dados.forEach((p, index) => {
+      html += `
+        <tr>
+          <td class="pos">${index + 1}</td>
+          <td>${escapeHtml(p.nome)}</td>
+          <td class="telefone">${escapeHtml(p.telefone || '')}</td>
+          <td class="centro ${p.pago == 1 ? 'pago' : 'naopago'}">
+            ${p.pago == 1 ? 'Sim' : 'Não'}
+          </td>
+          <td class="centro">${p.placares_exatos || 0}</td>
+          <td class="centro">${p.resultados_corretos || 0}</td>
+          <td class="pontos">${p.total_pontos || 0}</td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = html;
+
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7">Erro ao carregar.</td></tr>`;
+    msg.textContent = e.message;
+    msg.classList.add('erro');
+  }
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+carregarClassificacao();
+</script>
+
+</body>
+</html>
