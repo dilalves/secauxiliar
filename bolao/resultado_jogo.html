@@ -39,7 +39,6 @@ h1 {
   border-radius: 9px;
   overflow: hidden;
   break-inside: avoid;
-  page-break-inside: avoid;
   display: inline-block;
   width: 100%;
   margin: 0 0 10px;
@@ -78,13 +77,8 @@ h1 {
   border-radius: 6px;
 }
 
-.time-a {
-  text-align: right;
-}
-
-.time-b {
-  text-align: left;
-}
+.time-a { text-align: right; }
+.time-b { text-align: left; }
 
 .data {
   color: #666;
@@ -143,93 +137,45 @@ button {
 </div>
 
 <script>
+const API_LISTAR = 'https://apisec.secauxiliar.com.br/bolao/bolao_listar_resultados.php';
 const API_SALVAR = 'https://apisec.secauxiliar.com.br/bolao/bolao_salvar_resultado.php';
 
-const jogos = [
-  [1,'A','11/06','México','África do Sul'],
-  [2,'A','11/06','Coreia do Sul','Rep. Tcheca'],
-  [3,'A','18/06','Rep. Tcheca','África do Sul'],
-  [4,'A','18/06','México','Coreia do Sul'],
-  [5,'A','24/06','Rep. Tcheca','México'],
-  [6,'A','24/06','África do Sul','Coreia do Sul'],
+let jogos = [];
 
-  [7,'B','12/06','Canadá','Bósnia'],
-  [8,'B','13/06','Catar','Suíça'],
-  [9,'B','18/06','Suíça','Bósnia'],
-  [10,'B','18/06','Canadá','Catar'],
-  [11,'B','24/06','Suíça','Canadá'],
-  [12,'B','24/06','Bósnia','Catar'],
+async function carregarJogos() {
+  const msg = document.getElementById('msg');
+  msg.textContent = 'Carregando jogos...';
+  msg.className = 'msg';
 
-  [13,'C','13/06','BRASIL','Marrocos'],
-  [14,'C','13/06','Haiti','Escócia'],
-  [15,'C','19/06','BRASIL','Haiti'],
-  [16,'C','19/06','Escócia','Marrocos'],
-  [17,'C','24/06','Escócia','BRASIL'],
-  [18,'C','24/06','Marrocos','Haiti'],
+  try {
+    const resp = await fetch(API_LISTAR);
+    const json = await resp.json();
 
-  [19,'D','12/06','EUA','Paraguai'],
-  [20,'D','14/06','Austrália','Turquia'],
-  [21,'D','19/06','EUA','Austrália'],
-  [22,'D','20/06','Turquia','Paraguai'],
-  [23,'D','25/06','Turquia','EUA'],
-  [24,'D','25/06','Paraguai','Austrália'],
+    if (!json.ok) {
+      throw new Error(json.error || 'Erro ao carregar jogos.');
+    }
 
-  [25,'E','14/06','Alemanha','Curaçao'],
-  [26,'E','14/06','C. do Marfim','Equador'],
-  [27,'E','20/06','Alemanha','C. do Marfim'],
-  [28,'E','20/06','Equador','Curaçao'],
-  [29,'E','25/06','Equador','Alemanha'],
-  [30,'E','25/06','Curaçao','C. do Marfim'],
+    jogos = json.dados.map(j => ({
+      id: Number(j.id),
+      grupo: j.grupo,
+      data: j.data,
+      timeA: j.time_a,
+      timeB: j.time_b,
+      golsA: j.gols_a,
+      golsB: j.gols_b,
+      encerrado: Number(j.encerrado || 0)
+    }));
 
-  [31,'F','14/06','Holanda','Japão'],
-  [32,'F','14/06','Suécia','Tunísia'],
-  [33,'F','20/06','Holanda','Suécia'],
-  [34,'F','21/06','Tunísia','Japão'],
-  [35,'F','25/06','Tunísia','Holanda'],
-  [36,'F','25/06','Japão','Suécia'],
+    montarJogos();
 
-  [37,'G','15/06','Bélgica','Egito'],
-  [38,'G','15/06','Irã','N. Zelândia'],
-  [39,'G','21/06','Bélgica','Irã'],
-  [40,'G','21/06','N. Zelândia','Egito'],
-  [41,'G','27/06','N. Zelândia','Bélgica'],
-  [42,'G','27/06','Egito','Irã'],
+    msg.textContent = '';
+    msg.className = 'msg';
 
-  [43,'H','15/06','Espanha','Cabo Verde'],
-  [44,'H','15/06','Arábia Saudita','Uruguai'],
-  [45,'H','21/06','Espanha','Arábia Saudita'],
-  [46,'H','21/06','Uruguai','Cabo Verde'],
-  [47,'H','26/06','Uruguai','Espanha'],
-  [48,'H','26/06','Cabo Verde','Arábia Saudita'],
-
-  [49,'I','16/06','França','Senegal'],
-  [50,'I','16/06','Iraque','Noruega'],
-  [51,'I','22/06','França','Iraque'],
-  [52,'I','22/06','Noruega','Senegal'],
-  [53,'I','26/06','Noruega','França'],
-  [54,'I','26/06','Senegal','Iraque'],
-
-  [55,'J','16/06','Argentina','Argélia'],
-  [56,'J','16/06','Áustria','Jordânia'],
-  [57,'J','22/06','Argentina','Áustria'],
-  [58,'J','23/06','Jordânia','Argélia'],
-  [59,'J','27/06','Jordânia','Argentina'],
-  [60,'J','27/06','Argélia','Áustria'],
-
-  [61,'K','17/06','Portugal','RD Congo'],
-  [62,'K','17/06','Uzbequistão','Colômbia'],
-  [63,'K','23/06','Portugal','Uzbequistão'],
-  [64,'K','23/06','Colômbia','RD Congo'],
-  [65,'K','27/06','Colômbia','Portugal'],
-  [66,'K','27/06','RD Congo','Uzbequistão'],
-
-  [67,'L','17/06','Inglaterra','Croácia'],
-  [68,'L','17/06','Gana','Panamá'],
-  [69,'L','23/06','Inglaterra','Gana'],
-  [70,'L','23/06','Panamá','Croácia'],
-  [71,'L','27/06','Panamá','Inglaterra'],
-  [72,'L','27/06','Croácia','Gana']
-];
+  } catch (e) {
+    msg.textContent = e.message;
+    msg.classList.add('erro');
+  }
+}
 
 function montarJogos() {
   const div = document.getElementById('listaJogos');
@@ -237,23 +183,30 @@ function montarJogos() {
   let grupoAtual = '';
 
   jogos.forEach(j => {
-    const [id, grupo, data, timeA, timeB] = j;
-
-    if (grupo !== grupoAtual) {
+    if (j.grupo !== grupoAtual) {
       if (grupoAtual !== '') html += '</div>';
-      grupoAtual = grupo;
-      html += `<div class="grupo"><h2>Grupo ${grupo}</h2>`;
+      grupoAtual = j.grupo;
+      html += `<div class="grupo"><h2>Grupo ${j.grupo}</h2>`;
     }
 
+    const valorA = j.golsA === null || j.golsA === undefined ? '' : j.golsA;
+    const valorB = j.golsB === null || j.golsB === undefined ? '' : j.golsB;
+    const salvo = j.encerrado === 1;
+
     html += `
-      <div class="jogo" id="linha_${id}">
-        <div class="data">${data}</div>
-        <div class="time-a">${timeA}</div>
-        <input type="number" min="0" id="ga_${id}">
+      <div class="jogo" id="linha_${j.id}">
+        <div class="data">${j.data}</div>
+        <div class="time-a">${j.timeA}</div>
+        <input type="number" min="0" id="ga_${j.id}" value="${valorA}">
         <div>x</div>
-        <input type="number" min="0" id="gb_${id}">
-        <div class="time-b">${timeB}</div>
-        <button class="btn-salvar" id="btn_${id}" onclick="salvarResultado(${id})">Salvar</button>
+        <input type="number" min="0" id="gb_${j.id}" value="${valorB}">
+        <div class="time-b">${j.timeB}</div>
+        <button 
+          class="${salvo ? 'btn-salvo' : 'btn-salvar'}" 
+          id="btn_${j.id}" 
+          onclick="salvarResultado(${j.id})">
+          ${salvo ? 'OK' : 'Salvar'}
+        </button>
       </div>
     `;
   });
@@ -297,8 +250,16 @@ async function salvarResultado(jogoId) {
       throw new Error(json.error || 'Erro ao salvar resultado');
     }
 
+    btn.disabled = false;
     btn.textContent = 'OK';
     btn.className = 'btn-salvo';
+
+    const idx = jogos.findIndex(j => j.id === jogoId);
+    if (idx >= 0) {
+      jogos[idx].golsA = ga;
+      jogos[idx].golsB = gb;
+      jogos[idx].encerrado = 1;
+    }
 
     msg.textContent = `Resultado do jogo ${jogoId} salvo.`;
     msg.classList.add('ok');
@@ -313,7 +274,7 @@ async function salvarResultado(jogoId) {
   }
 }
 
-montarJogos();
+carregarJogos();
 </script>
 
 </body>
