@@ -741,7 +741,44 @@
     }
   }
 
-  function verificarDPIReal(file) {
+  function obterDimensoesImagem(file) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({
+        largura: img.naturalWidth,
+        altura: img.naturalHeight
+      });
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve({
+        largura: 0,
+        altura: 0
+      });
+    };
+
+    img.src = url;
+  });
+}
+
+  async function verificarDPIReal(file) {
+    const MIN_A4_300_LARGURA = 2480;
+    const MIN_A4_300_ALTURA = 3507;
+
+    function dimensaoA4Ok(largura, altura) {
+      return (
+        (largura >= MIN_A4_300_LARGURA && altura >= MIN_A4_300_ALTURA) ||
+        (largura >= MIN_A4_300_ALTURA && altura >= MIN_A4_300_LARGURA)
+      );
+    }
+
+    const dim = await obterDimensoesImagem(file);
+
     return new Promise((resolve) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -757,28 +794,65 @@
       .then(res => res.json())
       .then(data => {
         clearTimeout(timeoutId);
+
+        const dpiX = Number(data.dpi_x || 0);
+        const dpiY = Number(data.dpi_y || 0);
+
+        if (data.ok || (dpiX >= 300 && dpiY >= 300)) {
+          resolve({
+            nome: file.name,
+            ok: true,
+            dpiX: data.dpi_x || 300,
+            dpiY: data.dpi_y || 300
+          });
+          return;
+        }
+
+        if (dimensaoA4Ok(dim.largura, dim.altura)) {
+          resolve({
+            nome: file.name,
+            ok: true,
+            dpiX: 300,
+            dpiY: 300,
+            validadoPorDimensao: true
+          });
+          return;
+        }
+
         resolve({
           nome: file.name,
-          ok: data.ok,
+          ok: false,
           dpiX: data.dpi_x || '?',
-          dpiY: data.dpi_y || '?'
+          dpiY: data.dpi_y || '?',
+          erro: `❌ <strong>${file.name}</strong> - ${data.dpi_x || '?'}x${data.dpi_y || '?'} DPI / ${dim.largura}x${dim.altura}px`
         });
       })
       .catch((err) => {
         clearTimeout(timeoutId);
+
+        if (dimensaoA4Ok(dim.largura, dim.altura)) {
+          resolve({
+            nome: file.name,
+            ok: true,
+            dpiX: 300,
+            dpiY: 300,
+            validadoPorDimensao: true
+          });
+          return;
+        }
+
         resolve({
           nome: file.name,
           ok: false,
           dpiX: '-',
           dpiY: '-',
           erro: err.name === 'AbortError'
-            ? `❌ <strong>${file.name}</strong> - falha na verificação (tempo excedido ou servidor fora do ar)`
-            : `❌ <strong>${file.name}</strong> - erro ao verificar DPI`
+            ? `❌ <strong>${file.name}</strong> - falha na verificação de DPI e imagem não atingiu A4 300dpi (${dim.largura}x${dim.altura}px)`
+            : `❌ <strong>${file.name}</strong> - erro ao verificar DPI e imagem não atingiu A4 300dpi (${dim.largura}x${dim.altura}px)`
         });
       });
     });
   }
-
   async function verificarDpiEmBlocos(arquivos, tamanhoBloco = 10) {
   const resultados = [];
 
