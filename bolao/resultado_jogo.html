@@ -30,15 +30,20 @@ h1 {
 }
 
 #listaJogos {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  column-count: 2;
+  column-gap: 10px;
 }
 
 .grupo {
   border: 1px solid #d9e2ef;
   border-radius: 9px;
   overflow: hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 10px;
+  background: #fff;
 }
 
 .grupo h2 {
@@ -116,7 +121,7 @@ button {
 
 @media(max-width: 800px) {
   #listaJogos {
-    grid-template-columns: 1fr;
+    column-count: 1;
   }
 
   .jogo {
@@ -295,7 +300,7 @@ async function salvarResultado(jogoId) {
     btn.textContent = 'OK';
     btn.className = 'btn-salvo';
 
-    msg.textContent = `Resultado do jogo ${jogoId} salvo. Palpites recalculados: ${json.palpites_recalculados}.`;
+    msg.textContent = `Resultado do jogo ${jogoId} salvo.`;
     msg.classList.add('ok');
 
   } catch (e) {
