@@ -636,7 +636,9 @@
             ? '<span class="status-sem">SEM INSCRIÇÃO</span>'
             : `<span class="status-erro">${escapeHtml(status || 'SEM RESULTADO')}</span>`;
 
-        const nome = item.nome_aluno || item.nome_monitorado || '';
+        const nome = String(
+          item.nome_aluno || item.nome_monitorado || ''
+        ).toUpperCase();
 
         const colunasNotas = enem ? `
           <td class="num-cell total-cell">${escapeHtml(getNotaFormatada(item, 'TOTAL'))}</td>
@@ -666,8 +668,12 @@
             <td class="col-status">${statusLabel}</td>
             <td class="col-cpf">${escapeHtml(item.cpf)}</td>
             <td class="col-aluno">${escapeHtml(nome)}</td>
-            <td class="col-unidade-cad">${escapeHtml(item.unidade_monitorada || item.unidade_cadastro || item.unidade || '')}</td>
-            <td class="col-unidade-insc">${escapeHtml(item.unidade_inscricao || '')}</td>
+            <td class="col-unidade-cad">${escapeHtml(
+              String(item.unidade_monitorada || item.unidade_cadastro || item.unidade || '').toUpperCase()
+            )}</td>
+            <td class="col-unidade-insc">${escapeHtml(
+              String(item.unidade_inscricao || '').toUpperCase()
+            )}</td>
             <td class="col-inscricao">${escapeHtml(item.inscricao || '')}</td>
             ${colunasNotas}
           </tr>
