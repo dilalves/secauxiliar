@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerar PDF de Estatísticas - Fuvestão</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <style>
+    body {
+      background: #eef5fb;
+      color: #0b3f7f;
+    }
+    .page-wrap {
+      max-width: 980px;
+      margin: 28px auto;
+      padding: 0 12px;
+    }
+    .card-panel {
+      border-radius: 18px;
+      box-shadow: 0 10px 28px rgba(11, 63, 127, 0.12);
+    }
+    .top-title {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .top-title i {
+      background: #0b3f7f;
+      color: white;
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .btn-azul {
+      background: #0b3f7f !important;
+      border-radius: 999px;
+      text-transform: none;
+      font-weight: 700;
+    }
+    .btn-light {
+      border-radius: 999px;
+      text-transform: none;
+      font-weight: 700;
+    }
+    .progress {
+      height: 16px;
+      border-radius: 999px;
+      background: #d8e8f8;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+    .progress .determinate {
+      background: #0b3f7f;
+      transition: width .25s ease;
+    }
+    #logBox {
+      background: #071d38;
+      color: #dbeafe;
+      min-height: 260px;
+      max-height: 420px;
+      overflow: auto;
+      padding: 14px;
+      border-radius: 14px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      margin-top: 14px;
+    }
+    .status-line {
+      margin-top: 12px;
+      color: #334155;
+      font-weight: 600;
+    }
+    .download-area {
+      display: none;
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px solid #cfe0f5;
+      background: #f8fbff;
+      border-radius: 14px;
+    }
+    .input-field input:focus + label {
+      color: #0b3f7f !important;
+    }
+    .input-field input:focus {
+      border-bottom: 1px solid #0b3f7f !important;
+      box-shadow: 0 1px 0 0 #0b3f7f !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <div class="card-panel white">
+      <div class="top-title">
+        <i class="material-icons">picture_as_pdf</i>
+        <div>
+          <h5 style="margin:0;font-weight:800;">Gerar PDF de Estatísticas por Questão</h5>
+          <div style="color:#64748b;">Processamento por questão, com log na tela para não travar.</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-bottom:0;">
+        <div class="input-field col s12 m5">
+          <input id="evento" type="text" value="FUVESTAO0526">
+          <label for="evento" class="active">Evento</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="dia" type="text" value="D1">
+          <label for="dia" class="active">Dia</label>
+        </div>
+        <div class="col s12 m4" style="padding-top:22px;">
+          <button id="btnStart" class="btn btn-azul waves-effect waves-light" onclick="iniciarGeracao()">
+            <i class="material-icons left">play_arrow</i>Gerar PDF completo
+          </button>
+        </div>
+      </div>
+
+      <div class="progress">
+        <div id="bar" class="determinate" style="width: 0%"></div>
+      </div>
+      <div id="statusLine" class="status-line">Aguardando início...</div>
+      <div id="logBox">Log aparecerá aqui...</div>
+
+      <div id="downloadArea" class="download-area">
+        <b>PDF pronto!</b><br>
+        <a id="btnDownload" class="btn btn-azul waves-effect waves-light" target="_blank" href="#" style="margin-top:10px;">
+          <i class="material-icons left">download</i>Baixar / abrir PDF final
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    const PHP_ENDPOINT = 'https://apisec.secauxiliar.com.br/fuvestao0526/pdf_estatisticas_questoes_job.php';
+
+    let jobAtual = null;
+    let rodando = false;
+
+    function qs(params) {
+      return new URLSearchParams(params).toString();
+    }
+
+    async function chamar(params) {
+      const url = `${PHP_ENDPOINT}?${qs(params)}`;
+      const resp = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      const txt = await resp.text();
+      let data;
+      try {
+        data = JSON.parse(txt);
+      } catch (e) {
+        throw new Error(txt || 'Resposta inválida do servidor.');
+      }
+
+      if (!resp.ok || data.ok === false) {
+        throw new Error(data.error || 'Erro ao processar.');
+      }
+
+      return data;
+    }
+
+    function atualizarTela(st) {
+      const pct = Number(st.percentual || 0);
+      document.getElementById('bar').style.width = `${pct}%`;
+      document.getElementById('statusLine').textContent = `${pct}% - ${st.mensagem || ''}`;
+
+      const log = Array.isArray(st.log) ? st.log.join('\n') : '';
+      const logBox = document.getElementById('logBox');
+      logBox.textContent = log || 'Sem log ainda...';
+      logBox.scrollTop = logBox.scrollHeight;
+
+      if (st.finalizado) {
+        document.getElementById('downloadArea').style.display = 'block';
+
+        document.getElementById('btnDownload').href =
+          `${PHP_ENDPOINT}?modo=baixar&job=${jobAtual}`;
+      }
+    }
+
+    async function iniciarGeracao() {
+      if (rodando) return;
+
+      const evento = document.getElementById('evento').value.trim();
+      const dia = document.getElementById('dia').value.trim().toUpperCase() || 'D1';
+
+      if (!evento) {
+        M.toast({ html: 'Informe o evento.' });
+        return;
+      }
+
+      rodando = true;
+      jobAtual = null;
+      document.getElementById('downloadArea').style.display = 'none';
+      document.getElementById('btnStart').disabled = true;
+      document.getElementById('logBox').textContent = 'Iniciando...';
+      document.getElementById('bar').style.width = '0%';
+      document.getElementById('statusLine').textContent = 'Criando job...';
+
+      try {
+        const st = await chamar({ modo: 'start', evento, dia });
+        jobAtual = st.job;
+        atualizarTela(st);
+        await loopProcessamento();
+      } catch (err) {
+        rodando = false;
+        document.getElementById('btnStart').disabled = false;
+        document.getElementById('statusLine').textContent = 'Erro na geração.';
+        document.getElementById('logBox').textContent += `\nERRO: ${err.message}`;
+        M.toast({ html: 'Erro: ' + err.message });
+      }
+    }
+
+    async function loopProcessamento() {
+      if (!jobAtual) return;
+
+      try {
+        while (rodando) {
+          const st = await chamar({ modo: 'processar', job: jobAtual });
+          atualizarTela(st);
+
+          if (st.finalizado) {
+            rodando = false;
+            document.getElementById('btnStart').disabled = false;
+            M.toast({ html: 'PDF finalizado!' });
+            break;
+          }
+
+          // Pequena pausa para o navegador respirar e a tela atualizar.
+          await new Promise(resolve => setTimeout(resolve, 250));
+        }
+      } catch (err) {
+        rodando = false;
+        document.getElementById('btnStart').disabled = false;
+        document.getElementById('statusLine').textContent = 'Erro durante o processamento.';
+        document.getElementById('logBox').textContent += `\nERRO: ${err.message}`;
+        M.toast({ html: 'Erro: ' + err.message });
+      }
+    }
+  </script>
+</body>
+</html>

@@ -250,13 +250,6 @@
       color:var(--primary);
     }
 
-    .acoes{
-      display:flex;
-      gap:10px;
-      justify-content:flex-end;
-      flex-wrap:wrap;
-    }
-
     @media (max-width: 900px){
       .resumo-card{
         min-width:calc(50% - 6px);
@@ -270,9 +263,6 @@
       }
       .resumo-card{
         min-width:100%;
-      }
-      .acoes button{
-        width:100%;
       }
     }
   </style>
@@ -347,31 +337,8 @@
 
     <div class="tabela-wrap">
       <table>
-        <thead>
-          <tr>
-            <th class="num">CLS_G</th>
-            <th>INSCRIÇÃO</th>            
-            <th>NOME</th>
-            <th>UNIDADE</th>
-            <th class="num">POR</th>
-            <th class="num">HIS</th>
-            <th class="num">ING</th>
-            <th class="num">SOC</th>
-            <th class="num">BIO</th>
-            <th class="num">QUI</th>
-            <th class="num">FIL</th>
-            <th class="num">FIS</th>
-            <th class="num">MAT</th>
-            <th class="num">GEO</th>
-            <th class="num">TOTAL</th>
-            <th>ORIGEM</th>
-          </tr>
-        </thead>
-        <tbody id="tbody">
-          <tr>
-            <td colspan="16" class="vazio">Selecione um evento para carregar o resultado.</td>
-          </tr>
-        </tbody>
+        <thead id="theadResultado"></thead>
+        <tbody id="tbody"></tbody>
       </table>
     </div>
   </div>
@@ -383,6 +350,7 @@
     const busca = document.getElementById('busca');
     const origem = document.getElementById('origem');
     const tbody = document.getElementById('tbody');
+    const theadResultado = document.getElementById('theadResultado');
     const infoBar = document.getElementById('infoBar');
 
     const kpiAlunos = document.getElementById('kpiAlunos');
@@ -392,6 +360,14 @@
     const kpiAvulsos = document.getElementById('kpiAvulsos');
 
     let rowsCache = [];
+
+    function isEnem(){
+      return /^ENEM/i.test(evento.value || '');
+    }
+
+    function colspanAtual(){
+      return isEnem() ? 10 : 16;
+    }
 
     function esc(v){
       return String(v ?? '')
@@ -410,6 +386,10 @@
         minimumFractionDigits: 1,
         maximumFractionDigits: 1
       });
+    }
+
+    function nota(v){
+      return isEnem() ? decimal(v) : n(v);
     }
 
     function normalizar(v){
@@ -431,17 +411,60 @@
       return String(v || '').toUpperCase() === 'AVULSA' ? 'pill pill-avulsa' : 'pill';
     }
 
+    function renderCabecalho(){
+      if (isEnem()) {
+        theadResultado.innerHTML = `
+          <tr>
+            <th class="num">CLS_G</th>
+            <th>INSCRIÇÃO</th>
+            <th>NOME</th>
+            <th>UNIDADE</th>
+            <th class="num">LINGUAGENS</th>
+            <th class="num">HUMANAS</th>
+            <th class="num">NATUREZA</th>
+            <th class="num">MATEMÁTICA</th>
+            <th class="num">TOTAL TRI</th>
+            <th>ORIGEM</th>
+          </tr>
+        `;
+      } else {
+        theadResultado.innerHTML = `
+          <tr>
+            <th class="num">CLS_G</th>
+            <th>INSCRIÇÃO</th>
+            <th>NOME</th>
+            <th>UNIDADE</th>
+            <th class="num">POR</th>
+            <th class="num">HIS</th>
+            <th class="num">ING</th>
+            <th class="num">SOC</th>
+            <th class="num">BIO</th>
+            <th class="num">QUI</th>
+            <th class="num">FIL</th>
+            <th class="num">FIS</th>
+            <th class="num">MAT</th>
+            <th class="num">GEO</th>
+            <th class="num">TOTAL</th>
+            <th>ORIGEM</th>
+          </tr>
+        `;
+      }
+    }
+
     function resetTela(){
       rowsCache = [];
+      renderCabecalho();
+
       kpiAlunos.textContent = '0';
       kpiUnidades.textContent = '0';
       kpiMedia.textContent = '0';
       kpiMaior.textContent = '0';
       kpiAvulsos.textContent = '0';
       infoBar.textContent = 'Selecione um evento e clique em Buscar.';
+
       tbody.innerHTML = `
         <tr>
-          <td colspan="16" class="vazio">Selecione um evento para carregar o resultado.</td>
+          <td colspan="${colspanAtual()}" class="vazio">Selecione um evento para carregar o resultado.</td>
         </tr>
       `;
     }
@@ -474,13 +497,19 @@
         return;
       }
 
+      renderCabecalho();
+
       infoBar.textContent = 'Carregando resultado...';
-      tbody.innerHTML = `<tr><td colspan="16" class="vazio">Carregando...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${colspanAtual()}" class="vazio">Carregando...</td></tr>`;
 
       const qs = new URLSearchParams();
       qs.set('evento', evento.value);
 
-      const r = await fetch(API + 'api_resultado_fuvestao.php?' + qs.toString(), {
+      const endpoint = isEnem()
+        ? 'api_resultado_enem.php'
+        : 'api_resultado_fuvestao.php';
+
+      const r = await fetch(API + endpoint + '?' + qs.toString(), {
         credentials: 'include',
         cache: 'no-store'
       });
@@ -497,7 +526,7 @@
       kpiAlunos.textContent = n(resumo.total_alunos);
       kpiUnidades.textContent = n(resumo.total_unidades);
       kpiMedia.textContent = decimal(resumo.media_total);
-      kpiMaior.textContent = n(resumo.maior_total);
+      kpiMaior.textContent = isEnem() ? decimal(resumo.maior_total) : n(resumo.maior_total);
       kpiAvulsos.textContent = n(resumo.total_avulsos);
 
       renderTabela();
@@ -518,6 +547,8 @@
           r.INSCRICAO,
           r.CPF,
           r.ARQUIVO_ORIGEM,
+          r.ARQUIVO_D1,
+          r.ARQUIVO_D2,
           r.NOME,
           r.UNIDADE,
           r.CODIGO_UNIDADE,
@@ -528,7 +559,23 @@
       });
     }
 
+    function linkInscricao(r){
+      if (!r.ARQUIVO_ORIGEM) {
+        return esc(r.INSCRICAO || '-');
+      }
+
+      return `
+        <a
+          href="${API}buscar_imagem_pendencia.php?arquivo=${encodeURIComponent(r.ARQUIVO_ORIGEM)}&dia=${encodeURIComponent(r.DIA || 'D1')}&evento=${encodeURIComponent(evento.value)}&full=1"
+          target="_blank"
+          title="Abrir imagem: ${esc(r.ARQUIVO_ORIGEM)}"
+        >${esc(r.INSCRICAO || '-')}</a>
+      `;
+    }
+
     function renderTabela(){
+      renderCabecalho();
+
       const rowsFiltradas = getRowsFiltradas();
       const rows = rowsFiltradas.slice(0, 100);
 
@@ -537,24 +584,34 @@
       if (!rows.length) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="16" class="vazio">Nenhum resultado encontrado com os filtros atuais.</td>
+            <td colspan="${colspanAtual()}" class="vazio">Nenhum resultado encontrado com os filtros atuais.</td>
           </tr>
         `;
+        return;
+      }
+
+      if (isEnem()) {
+        tbody.innerHTML = rows.map(r => `
+          <tr>
+            <td class="num"><span class="rank">${esc(r.CLS_G || '-')}</span></td>
+            <td>${linkInscricao(r)}</td>
+            <td class="nome">${esc(r.NOME || '-')}</td>
+            <td class="unidade">${esc(r.UNIDADE || '-')}</td>
+            <td class="num">${decimal(r.NOTA_LINGUAGENS)}</td>
+            <td class="num">${decimal(r.NOTA_HUMANAS)}</td>
+            <td class="num">${decimal(r.NOTA_NATUREZA)}</td>
+            <td class="num">${decimal(r.NOTA_MATEMATICA)}</td>
+            <td class="num total">${decimal(r.TOTAL)}</td>
+            <td><span class="${origemClasse(r.ORIGEM)}">${esc(origemLabel(r.ORIGEM))}</span></td>
+          </tr>
+        `).join('');
         return;
       }
 
       tbody.innerHTML = rows.map(r => `
         <tr>
           <td class="num"><span class="rank">${esc(r.CLS_G || '-')}</span></td>
-          <td>
-            ${r.ARQUIVO_ORIGEM ? `
-              <a
-                href="${API}buscar_imagem_pendencia.php?arquivo=${encodeURIComponent(r.ARQUIVO_ORIGEM)}&dia=${encodeURIComponent(r.DIA || 'D1')}&evento=${encodeURIComponent(evento.value)}&full=1"
-                target="_blank"
-                title="Abrir imagem: ${esc(r.ARQUIVO_ORIGEM)}"
-              >${esc(r.INSCRICAO || '-')}</a>
-            ` : esc(r.INSCRICAO || '-')}
-          </td>
+          <td>${linkInscricao(r)}</td>
           <td class="nome">${esc(r.NOME || '-')}</td>
           <td class="unidade">${esc(r.UNIDADE || '-')}</td>
           <td class="num">${n(r.POR)}</td>
@@ -573,6 +630,42 @@
       `).join('');
     }
 
+    function colunasRelatorio(){
+      if (isEnem()) {
+        return [
+          {key:'CLS_G', label:'CLS_G', num:true},
+          {key:'INSCRICAO', label:'INSCRIÇÃO', num:true},
+          {key:'NOME', label:'NOME'},
+          {key:'UNIDADE', label:'UNIDADE'},
+          {key:'NOTA_LINGUAGENS', label:'LINGUAGENS', num:true, dec:true},
+          {key:'NOTA_HUMANAS', label:'HUMANAS', num:true, dec:true},
+          {key:'NOTA_NATUREZA', label:'NATUREZA', num:true, dec:true},
+          {key:'NOTA_MATEMATICA', label:'MATEMÁTICA', num:true, dec:true},
+          {key:'TOTAL', label:'TOTAL TRI', num:true, dec:true},
+          {key:'ORIGEM', label:'ORIGEM', num:true}
+        ];
+      }
+
+      return [
+        {key:'CLS_G', label:'CLS_G', num:true},
+        {key:'INSCRICAO', label:'INSCRIÇÃO', num:true},
+        {key:'NOME', label:'NOME'},
+        {key:'UNIDADE', label:'UNIDADE'},
+        {key:'POR', label:'POR', num:true},
+        {key:'HIS', label:'HIS', num:true},
+        {key:'ING', label:'ING', num:true},
+        {key:'SOC', label:'SOC', num:true},
+        {key:'BIO', label:'BIO', num:true},
+        {key:'QUI', label:'QUI', num:true},
+        {key:'FIL', label:'FIL', num:true},
+        {key:'FIS', label:'FIS', num:true},
+        {key:'MAT', label:'MAT', num:true},
+        {key:'GEO', label:'GEO', num:true},
+        {key:'TOTAL', label:'TOTAL', num:true},
+        {key:'ORIGEM', label:'ORIGEM', num:true}
+      ];
+    }
+
     function imprimirTop100(){
       const rows = getRowsFiltradas().slice(0, 100);
 
@@ -583,25 +676,27 @@
 
       const titulo = `Top 100 - Resultado do Simulado ${evento.value || ''}`;
       const geradoEm = new Date().toLocaleString('pt-BR');
+      const cols = colunasRelatorio();
 
-      const linhas = rows.map((r, idx) => `
+      const ths = cols.map(c => `<th class="${c.num ? 'num' : ''}">${esc(c.label)}</th>`).join('');
+
+      const linhas = rows.map(r => `
         <tr>
-          <td class="num">${idx + 1}</td>
-          <td class="num">${esc(r.INSCRICAO || '-')}</td>
-          <td>${esc(r.NOME || '-')}</td>
-          <td>${esc(r.UNIDADE || '-')}</td>
-          <td class="num">${n(r.POR)}</td>
-          <td class="num">${n(r.HIS)}</td>
-          <td class="num">${n(r.ING)}</td>
-          <td class="num">${n(r.SOC)}</td>
-          <td class="num">${n(r.BIO)}</td>
-          <td class="num">${n(r.QUI)}</td>
-          <td class="num">${n(r.FIL)}</td>
-          <td class="num">${n(r.FIS)}</td>
-          <td class="num">${n(r.MAT)}</td>
-          <td class="num">${n(r.GEO)}</td>
-          <td class="num total">${n(r.TOTAL)}</td>
-          <td class="num">${esc(origemLabel(r.ORIGEM))}</td>
+          ${cols.map(c => {
+            let valor = r[c.key];
+
+            if (c.key === 'ORIGEM') {
+              valor = origemLabel(valor);
+            } else if (c.dec) {
+              valor = decimal(valor);
+            } else if (c.num && c.key !== 'INSCRICAO' && c.key !== 'CLS_G') {
+              valor = n(valor);
+            } else {
+              valor = valor || '-';
+            }
+
+            return `<td class="${c.num ? 'num' : ''} ${c.key === 'TOTAL' ? 'total' : ''}">${esc(valor)}</td>`;
+          }).join('')}
         </tr>
       `).join('');
 
@@ -702,24 +797,7 @@
 
           <table>
             <thead>
-              <tr>
-                <th class="num">CLS_G</th>
-                <th class="num">INSCRIÇÃO</th>
-                <th>NOME</th>
-                <th>UNIDADE</th>
-                <th class="num">POR</th>
-                <th class="num">HIS</th>
-                <th class="num">ING</th>
-                <th class="num">SOC</th>
-                <th class="num">BIO</th>
-                <th class="num">QUI</th>
-                <th class="num">FIL</th>
-                <th class="num">FIS</th>
-                <th class="num">MAT</th>
-                <th class="num">GEO</th>
-                <th class="num">TOTAL</th>
-                <th class="num">ORIGEM</th>
-              </tr>
+              <tr>${ths}</tr>
             </thead>
             <tbody>${linhas}</tbody>
           </table>
@@ -752,9 +830,44 @@
         return;
       }
 
-      const cols = [
-        'INSCRICAO','CPF','ARQUIVO_ORIGEM','NOME','UNIDADE','POR','HIS','ING','SOC','BIO','QUI','FIL','FIS','MAT','GEO','TOTAL','CLS_G','ORIGEM'
-      ];
+      const cols = isEnem()
+        ? [
+            'INSCRICAO',
+            'CPF',
+            'ARQUIVO_D1',
+            'ARQUIVO_D2',
+            'NOME',
+            'UNIDADE',
+            'CODIGO_UNIDADE',
+            'NOTA_LINGUAGENS',
+            'NOTA_HUMANAS',
+            'NOTA_NATUREZA',
+            'NOTA_MATEMATICA',
+            'TOTAL',
+            'CLS_G',
+            'CLS_U',
+            'ORIGEM'
+          ]
+        : [
+            'INSCRICAO',
+            'CPF',
+            'ARQUIVO_ORIGEM',
+            'NOME',
+            'UNIDADE',
+            'POR',
+            'HIS',
+            'ING',
+            'SOC',
+            'BIO',
+            'QUI',
+            'FIL',
+            'FIS',
+            'MAT',
+            'GEO',
+            'TOTAL',
+            'CLS_G',
+            'ORIGEM'
+          ];
 
       const linhas = [
         cols.join(';'),
@@ -781,7 +894,7 @@
       } catch (e) {
         console.error(e);
         infoBar.textContent = 'Erro ao carregar resultado.';
-        tbody.innerHTML = `<tr><td colspan="16" class="vazio">${esc(e.message || 'Erro ao carregar resultado.')}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${colspanAtual()}" class="vazio">${esc(e.message || 'Erro ao carregar resultado.')}</td></tr>`;
         alert(e.message || 'Erro ao carregar resultado.');
       }
     });
@@ -803,25 +916,27 @@
       rowsCache = [];
       busca.value = '';
       origem.value = '';
+      renderCabecalho();
+
       if (!evento.value) {
         resetTela();
       } else {
         infoBar.textContent = 'Clique em Buscar para carregar o resultado do evento selecionado.';
-        tbody.innerHTML = `<tr><td colspan="16" class="vazio">Clique em Buscar para carregar o resultado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${colspanAtual()}" class="vazio">Clique em Buscar para carregar o resultado.</td></tr>`;
       }
     });
 
     (async function init(){
       try{
+        renderCabecalho();
         await carregarEventos();
         resetTela();
       } catch(e){
         console.error(e);
         infoBar.textContent = 'Erro ao carregar eventos.';
-        tbody.innerHTML = `<tr><td colspan="16" class="vazio">Erro ao carregar eventos.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${colspanAtual()}" class="vazio">Erro ao carregar eventos.</td></tr>`;
       }
     })();
   </script>
 </body>
 </html>
-
