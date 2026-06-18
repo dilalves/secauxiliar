@@ -348,6 +348,10 @@
 
     let modoAtual = 'evento';
 
+    function getTokenUrl() {
+      return new URLSearchParams(window.location.search).get('token') || '';
+    }
+
     function isEnemEvento(ev) {
       return /^ENEM/i.test(String(ev || ''));
     }
@@ -511,11 +515,18 @@
       mostrarErro('');
       setLoading(true);
 
+      const token = getTokenUrl();
       const anoLetivo = document.getElementById('anoLetivo').value.trim();
       const evento = document.getElementById('evento').value.trim();
       const cpf = limparCpf(document.getElementById('cpfAluno').value);
 
       renderCabecalho();
+
+      if (!token) {
+        setLoading(false);
+        mostrarErro('Token de acesso não informado.');
+        return;
+      }
 
       if (!anoLetivo || !evento) {
         setLoading(false);
@@ -532,6 +543,7 @@
       const params = new URLSearchParams();
       params.set('evento', evento);
       params.set('ano_letivo', anoLetivo);
+      params.set('token', token);
 
       if (cpf) params.set('cpf', cpf);
 
@@ -557,6 +569,43 @@
       }
     }
 
+    function ordenarItens(itens) {
+      itens.sort((a, b) => {
+        const pesoStatus = {
+          COM_RESULTADO: 1,
+          SEM_RESULTADO: 2,
+          SEM_INSCRICAO: 3
+        };
+
+        const pa = pesoStatus[a.status] || 9;
+        const pb = pesoStatus[b.status] || 9;
+
+        if (pa !== pb) return pa - pb;
+
+        const ca = Number(a?.notas?.CLS_G);
+        const cb = Number(b?.notas?.CLS_G);
+
+        const temCa = Number.isFinite(ca) && ca > 0;
+        const temCb = Number.isFinite(cb) && cb > 0;
+
+        if (temCa && temCb && ca !== cb) return ca - cb;
+        if (temCa && !temCb) return -1;
+        if (!temCa && temCb) return 1;
+
+        const ta = Number(a?.notas?.TOTAL);
+        const tb = Number(b?.notas?.TOTAL);
+
+        if (Number.isFinite(ta) && Number.isFinite(tb) && ta !== tb) {
+          return tb - ta;
+        }
+
+        const na = String(a.nome_aluno || '').localeCompare(String(b.nome_aluno || ''), 'pt-BR');
+        if (na !== 0) return na;
+
+        return String(a.cpf || '').localeCompare(String(b.cpf || ''));
+      });
+    }
+
     function montarTela(itens) {
       const tbody = document.getElementById('tbodyResultados');
       const evento = document.getElementById('evento').value.trim();
@@ -574,11 +623,7 @@
         return;
       }
 
-      itens.sort((a, b) => {
-        const na = String(a.nome_aluno || '').localeCompare(String(b.nome_aluno || ''), 'pt-BR');
-        if (na !== 0) return na;
-        return String(a.cpf || '').localeCompare(String(b.cpf || ''));
-      });
+      ordenarItens(itens);
 
       tbody.innerHTML = itens.map(item => {
         const status = item.status || '';
@@ -591,7 +636,7 @@
             ? '<span class="status-sem">SEM INSCRIÇÃO</span>'
             : `<span class="status-erro">${escapeHtml(status || 'SEM RESULTADO')}</span>`;
 
-        const nome = item.nome_aluno || (semInscricao ? 'SEM INSCRIÇÃO' : '');
+        const nome = item.nome_aluno || item.nome_monitorado || '';
 
         const colunasNotas = enem ? `
           <td class="num-cell total-cell">${escapeHtml(getNotaFormatada(item, 'TOTAL'))}</td>
