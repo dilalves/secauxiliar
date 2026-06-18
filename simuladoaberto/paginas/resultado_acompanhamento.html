@@ -201,6 +201,16 @@
       margin-top: 12px;
     }
 
+    .num-cell {
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .total-cell {
+      font-weight: bold;
+      color: var(--azul2);
+    }
+
     @media (max-width: 900px) {
       .filtros {
         grid-template-columns: 1fr;
@@ -234,7 +244,9 @@
 
         <div>
           <label for="evento">Evento</label>
-          <input id="evento" type="text" value="FUVESTAO0526" />
+          <select id="evento">
+            <option value="">Carregando eventos...</option>
+          </select>
         </div>
 
         <div>
@@ -275,28 +287,7 @@
     <section class="card">
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th>CPF</th>
-              <th>Aluno</th>
-              <th>Unidade cadastro</th>
-              <th>Unidade inscrição</th>
-              <th>Inscrição</th>
-              <th>Total</th>
-              <th>Class.</th>
-              <th>POR</th>
-              <th>HIS</th>
-              <th>ING</th>
-              <th>SOC</th>
-              <th>BIO</th>
-              <th>QUI</th>
-              <th>FIL</th>
-              <th>FIS</th>
-              <th>MAT</th>
-              <th>GEO</th>
-            </tr>
-          </thead>
+          <thead id="theadResultados"></thead>
           <tbody id="tbodyResultados">
             <tr>
               <td colspan="18" class="muted">Faça uma busca para carregar os dados.</td>
@@ -308,9 +299,24 @@
   </main>
 
   <script>
-    const API_RESULTADOS = 'https://apisec.secauxiliar.com.br/sim_adm/direcao_resultados_fuvestao.php';
+    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
 
     let modoAtual = 'evento';
+
+    function isEnemEvento(ev) {
+      return /^ENEM/i.test(String(ev || ''));
+    }
+
+    function endpointResultados(ev) {
+      return isEnemEvento(ev)
+        ? API + 'direcao_resultados_enem.php'
+        : API + 'direcao_resultados_fuvestao.php';
+    }
+
+    function colspanAtual() {
+      const evento = document.getElementById('evento').value.trim();
+      return isEnemEvento(evento) ? 13 : 18;
+    }
 
     function setModo(modo) {
       modoAtual = modo;
@@ -341,8 +347,25 @@
       return String(v ?? '').replace(/\D/g, '');
     }
 
+    function formatarNota(v) {
+      if (v === null || v === undefined || v === '') return '-';
+
+      const n = Number(v);
+      if (!Number.isFinite(n)) return escapeHtml(v);
+
+      return n.toLocaleString('pt-BR', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+      });
+    }
+
     function getNota(item, campo) {
       return item?.notas?.[campo] ?? '';
+    }
+
+    function getNotaFormatada(item, campo) {
+      const valor = getNota(item, campo);
+      return formatarNota(valor);
     }
 
     function setLoading(on) {
@@ -355,6 +378,91 @@
       box.style.display = msg ? 'block' : 'none';
     }
 
+    function renderCabecalho() {
+      const evento = document.getElementById('evento').value.trim();
+      const enem = isEnemEvento(evento);
+      const thead = document.getElementById('theadResultados');
+
+      if (enem) {
+        thead.innerHTML = `
+          <tr>
+            <th>Status</th>
+            <th>CPF</th>
+            <th>Aluno</th>
+            <th>Unidade cadastro</th>
+            <th>Unidade inscrição</th>
+            <th>Inscrição</th>
+            <th>Total TRI</th>
+            <th>Class.</th>
+            <th>Linguagens</th>
+            <th>Humanas</th>
+            <th>Natureza</th>
+            <th>Matemática</th>
+            <th>Redação</th>
+          </tr>
+        `;
+      } else {
+        thead.innerHTML = `
+          <tr>
+            <th>Status</th>
+            <th>CPF</th>
+            <th>Aluno</th>
+            <th>Unidade cadastro</th>
+            <th>Unidade inscrição</th>
+            <th>Inscrição</th>
+            <th>Total</th>
+            <th>Class.</th>
+            <th>POR</th>
+            <th>HIS</th>
+            <th>ING</th>
+            <th>SOC</th>
+            <th>BIO</th>
+            <th>QUI</th>
+            <th>FIL</th>
+            <th>FIS</th>
+            <th>MAT</th>
+            <th>GEO</th>
+          </tr>
+        `;
+      }
+    }
+
+    async function carregarEventos() {
+      const select = document.getElementById('evento');
+
+      try {
+        const resp = await fetch(API + 'api_adesoes_eventos.php', {
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok || !data.ok) {
+          throw new Error(data.error || 'Falha ao carregar eventos.');
+        }
+
+        select.innerHTML = '<option value="">Selecione</option>';
+
+        (data.eventos || []).forEach(ev => {
+          const opt = document.createElement('option');
+          opt.value = ev;
+          opt.textContent = ev;
+          select.appendChild(opt);
+        });
+
+        if ([...select.options].some(o => o.value === 'FUVESTAO0526')) {
+          select.value = 'FUVESTAO0526';
+        }
+
+        renderCabecalho();
+
+      } catch (e) {
+        select.innerHTML = '<option value="">Erro ao carregar</option>';
+        mostrarErro(e.message || 'Erro ao carregar eventos.');
+      }
+    }
+
     async function carregarResultados() {
       mostrarErro('');
       setLoading(true);
@@ -362,6 +470,8 @@
       const anoLetivo = document.getElementById('anoLetivo').value.trim();
       const evento = document.getElementById('evento').value.trim();
       const cpf = limparCpf(document.getElementById('cpfAluno').value);
+
+      renderCabecalho();
 
       if (!anoLetivo || !evento) {
         setLoading(false);
@@ -382,8 +492,9 @@
       if (cpf) params.set('cpf', cpf);
 
       try {
-        const resp = await fetch(`${API_RESULTADOS}?${params.toString()}`, {
+        const resp = await fetch(`${endpointResultados(evento)}?${params.toString()}`, {
           method: 'GET',
+          credentials: 'include',
           cache: 'no-store'
         });
 
@@ -404,11 +515,15 @@
 
     function montarTela(itens) {
       const tbody = document.getElementById('tbodyResultados');
+      const evento = document.getElementById('evento').value.trim();
+      const enem = isEnemEvento(evento);
+
+      renderCabecalho();
 
       if (!itens.length) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="18" class="muted">Nenhum aluno encontrado.</td>
+            <td colspan="${colspanAtual()}" class="muted">Nenhum aluno encontrado.</td>
           </tr>
         `;
         atualizarKpis([]);
@@ -434,6 +549,29 @@
 
         const nome = item.nome_aluno || (semInscricao ? 'SEM INSCRIÇÃO' : '');
 
+        const colunasNotas = enem ? `
+          <td class="num-cell total-cell">${escapeHtml(getNotaFormatada(item, 'TOTAL'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'CLS_G'))}</td>
+          <td class="num-cell">${escapeHtml(getNotaFormatada(item, 'NOTA_LINGUAGENS'))}</td>
+          <td class="num-cell">${escapeHtml(getNotaFormatada(item, 'NOTA_HUMANAS'))}</td>
+          <td class="num-cell">${escapeHtml(getNotaFormatada(item, 'NOTA_NATUREZA'))}</td>
+          <td class="num-cell">${escapeHtml(getNotaFormatada(item, 'NOTA_MATEMATICA'))}</td>
+          <td class="num-cell">${escapeHtml(getNotaFormatada(item, 'NOTA_REDACAO'))}</td>
+        ` : `
+          <td class="num-cell total-cell">${escapeHtml(getNota(item, 'TOTAL'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'CLS_G'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'POR'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'HIS'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'ING'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'SOC'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'BIO'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'QUI'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'FIL'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'FIS'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'MAT'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'GEO'))}</td>
+        `;
+
         return `
           <tr>
             <td>${statusLabel}</td>
@@ -442,18 +580,7 @@
             <td>${escapeHtml(item.unidade_monitorada || item.unidade_cadastro || item.unidade || '')}</td>
             <td>${escapeHtml(item.unidade_inscricao || '')}</td>
             <td>${escapeHtml(item.inscricao || '')}</td>
-            <td><strong>${escapeHtml(getNota(item, 'TOTAL'))}</strong></td>
-            <td>${escapeHtml(getNota(item, 'CLS_G'))}</td>
-            <td>${escapeHtml(getNota(item, 'POR'))}</td>
-            <td>${escapeHtml(getNota(item, 'HIS'))}</td>
-            <td>${escapeHtml(getNota(item, 'ING'))}</td>
-            <td>${escapeHtml(getNota(item, 'SOC'))}</td>
-            <td>${escapeHtml(getNota(item, 'BIO'))}</td>
-            <td>${escapeHtml(getNota(item, 'QUI'))}</td>
-            <td>${escapeHtml(getNota(item, 'FIL'))}</td>
-            <td>${escapeHtml(getNota(item, 'FIS'))}</td>
-            <td>${escapeHtml(getNota(item, 'MAT'))}</td>
-            <td>${escapeHtml(getNota(item, 'GEO'))}</td>
+            ${colunasNotas}
           </tr>
         `;
       }).join('');
@@ -471,7 +598,10 @@
         .filter(n => Number.isFinite(n));
 
       const media = totais.length
-        ? (totais.reduce((a, b) => a + b, 0) / totais.length).toFixed(2)
+        ? (totais.reduce((a, b) => a + b, 0) / totais.length).toLocaleString('pt-BR', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+          })
         : '-';
 
       document.getElementById('kpiTotal').textContent = total;
@@ -480,7 +610,23 @@
       document.getElementById('kpiMedia').textContent = media;
     }
 
-    carregarResultados();
+    document.getElementById('evento').addEventListener('change', () => {
+      renderCabecalho();
+      document.getElementById('tbodyResultados').innerHTML = `
+        <tr>
+          <td colspan="${colspanAtual()}" class="muted">Clique em Buscar para carregar os dados.</td>
+        </tr>
+      `;
+    });
+
+    (async function init(){
+      await carregarEventos();
+      renderCabecalho();
+
+      if (document.getElementById('evento').value) {
+        carregarResultados();
+      }
+    })();
   </script>
 </body>
 </html>
