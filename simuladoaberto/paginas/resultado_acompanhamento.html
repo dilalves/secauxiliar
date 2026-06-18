@@ -26,49 +26,53 @@
       font-family: Arial, Helvetica, sans-serif;
       background: var(--bg);
       color: var(--texto);
+      overflow-x: hidden;
     }
 
     header {
       background: linear-gradient(135deg, var(--azul), var(--azul2));
       color: white;
-      padding: 24px;
+      padding: 18px 24px;
     }
 
     header h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 22px;
     }
 
     header p {
-      margin: 6px 0 0;
+      margin: 5px 0 0;
       opacity: .9;
+      font-size: 13px;
     }
 
     main {
-      max-width: 1200px;
-      margin: 24px auto;
-      padding: 0 16px 40px;
+      width: 100%;
+      max-width: none;
+      margin: 18px auto;
+      padding: 0 18px 36px;
     }
 
     .card {
       background: var(--card);
       border: 1px solid var(--borda);
       border-radius: 14px;
-      padding: 18px;
+      padding: 16px;
       box-shadow: 0 8px 22px rgba(0,0,0,.06);
-      margin-bottom: 18px;
+      margin-bottom: 16px;
+      width: 100%;
     }
 
     .filtros {
       display: grid;
-      grid-template-columns: 160px 1fr 180px 140px;
+      grid-template-columns: 150px minmax(260px, 1fr) 180px 130px;
       gap: 12px;
       align-items: end;
     }
 
     label {
       display: block;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: bold;
       margin-bottom: 6px;
       color: #374151;
@@ -76,7 +80,7 @@
 
     input, select {
       width: 100%;
-      padding: 11px;
+      padding: 10px;
       border: 1px solid var(--borda);
       border-radius: 10px;
       font-size: 14px;
@@ -86,7 +90,7 @@
     button {
       border: 0;
       border-radius: 10px;
-      padding: 12px 16px;
+      padding: 11px 14px;
       background: var(--azul);
       color: white;
       font-weight: bold;
@@ -121,7 +125,7 @@
       background: #f8fafc;
       border: 1px solid var(--borda);
       border-radius: 12px;
-      padding: 14px;
+      padding: 12px 14px;
     }
 
     .kpi .num {
@@ -131,34 +135,41 @@
     }
 
     .kpi .txt {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--muted);
       margin-top: 4px;
     }
 
     .table-wrap {
-      overflow-x: auto;
+      width: 100%;
+      overflow-x: hidden;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 980px;
+      table-layout: fixed;
     }
 
     th, td {
-      padding: 10px 9px;
+      padding: 8px 6px;
       border-bottom: 1px solid #edf1f7;
-      font-size: 13px;
+      font-size: 11px;
       text-align: left;
-      white-space: nowrap;
+      vertical-align: middle;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.2;
     }
 
     th {
       background: #f1f5fb;
       color: #374151;
-      font-size: 12px;
+      font-size: 10px;
       text-transform: uppercase;
+      position: sticky;
+      top: 0;
+      z-index: 2;
     }
 
     tr:hover td {
@@ -204,6 +215,7 @@
     .num-cell {
       text-align: center;
       font-variant-numeric: tabular-nums;
+      white-space: nowrap;
     }
 
     .total-cell {
@@ -211,13 +223,46 @@
       color: var(--azul2);
     }
 
+    .col-status { width: 9%; }
+    .col-cpf { width: 8%; }
+    .col-aluno { width: 18%; }
+    .col-unidade-cad { width: 8%; }
+    .col-unidade-insc { width: 14%; }
+    .col-inscricao { width: 7%; }
+    .col-nota { width: 5.1%; }
+
+    @media (max-width: 1100px) {
+      main { padding: 0 10px 30px; }
+
+      th, td {
+        font-size: 10px;
+        padding: 7px 4px;
+      }
+
+      th { font-size: 9px; }
+
+      .col-aluno { width: 16%; }
+      .col-unidade-insc { width: 12%; }
+      .col-nota { width: 5%; }
+    }
+
     @media (max-width: 900px) {
+      body { overflow-x: auto; }
+
       .filtros {
         grid-template-columns: 1fr;
       }
 
       .resumo {
         grid-template-columns: 1fr 1fr;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        min-width: 980px;
       }
     }
   </style>
@@ -364,8 +409,7 @@
     }
 
     function getNotaFormatada(item, campo) {
-      const valor = getNota(item, campo);
-      return formatarNota(valor);
+      return formatarNota(getNota(item, campo));
     }
 
     function setLoading(on) {
@@ -386,42 +430,42 @@
       if (enem) {
         thead.innerHTML = `
           <tr>
-            <th>Status</th>
-            <th>CPF</th>
-            <th>Aluno</th>
-            <th>Unidade cadastro</th>
-            <th>Unidade inscrição</th>
-            <th>Inscrição</th>
-            <th>Total TRI</th>
-            <th>Class.</th>
-            <th>Linguagens</th>
-            <th>Humanas</th>
-            <th>Natureza</th>
-            <th>Matemática</th>
-            <th>Redação</th>
+            <th class="col-status">Status</th>
+            <th class="col-cpf">CPF</th>
+            <th class="col-aluno">Aluno</th>
+            <th class="col-unidade-cad">Unid. cadastro</th>
+            <th class="col-unidade-insc">Unid. inscrição</th>
+            <th class="col-inscricao">Inscrição</th>
+            <th class="col-nota">Total TRI</th>
+            <th class="col-nota">Class.</th>
+            <th class="col-nota">Linguagens</th>
+            <th class="col-nota">Humanas</th>
+            <th class="col-nota">Natureza</th>
+            <th class="col-nota">Matemática</th>
+            <th class="col-nota">Redação</th>
           </tr>
         `;
       } else {
         thead.innerHTML = `
           <tr>
-            <th>Status</th>
-            <th>CPF</th>
-            <th>Aluno</th>
-            <th>Unidade cadastro</th>
-            <th>Unidade inscrição</th>
-            <th>Inscrição</th>
-            <th>Total</th>
-            <th>Class.</th>
-            <th>POR</th>
-            <th>HIS</th>
-            <th>ING</th>
-            <th>SOC</th>
-            <th>BIO</th>
-            <th>QUI</th>
-            <th>FIL</th>
-            <th>FIS</th>
-            <th>MAT</th>
-            <th>GEO</th>
+            <th class="col-status">Status</th>
+            <th class="col-cpf">CPF</th>
+            <th class="col-aluno">Aluno</th>
+            <th class="col-unidade-cad">Unid. cadastro</th>
+            <th class="col-unidade-insc">Unid. inscrição</th>
+            <th class="col-inscricao">Inscrição</th>
+            <th class="col-nota">Total</th>
+            <th class="col-nota">Class.</th>
+            <th class="col-nota">POR</th>
+            <th class="col-nota">HIS</th>
+            <th class="col-nota">ING</th>
+            <th class="col-nota">SOC</th>
+            <th class="col-nota">BIO</th>
+            <th class="col-nota">QUI</th>
+            <th class="col-nota">FIL</th>
+            <th class="col-nota">FIS</th>
+            <th class="col-nota">MAT</th>
+            <th class="col-nota">GEO</th>
           </tr>
         `;
       }
@@ -574,12 +618,12 @@
 
         return `
           <tr>
-            <td>${statusLabel}</td>
-            <td>${escapeHtml(item.cpf)}</td>
-            <td>${escapeHtml(nome)}</td>
-            <td>${escapeHtml(item.unidade_monitorada || item.unidade_cadastro || item.unidade || '')}</td>
-            <td>${escapeHtml(item.unidade_inscricao || '')}</td>
-            <td>${escapeHtml(item.inscricao || '')}</td>
+            <td class="col-status">${statusLabel}</td>
+            <td class="col-cpf">${escapeHtml(item.cpf)}</td>
+            <td class="col-aluno">${escapeHtml(nome)}</td>
+            <td class="col-unidade-cad">${escapeHtml(item.unidade_monitorada || item.unidade_cadastro || item.unidade || '')}</td>
+            <td class="col-unidade-insc">${escapeHtml(item.unidade_inscricao || '')}</td>
+            <td class="col-inscricao">${escapeHtml(item.inscricao || '')}</td>
             ${colunasNotas}
           </tr>
         `;
