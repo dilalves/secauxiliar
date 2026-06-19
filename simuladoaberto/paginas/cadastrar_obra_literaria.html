@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cadastrar Obras - Autorizações</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+  <style>
+    body {
+      background: #eef5fb;
+      color: #0b3f7f;
+    }
+
+    .page-wrap {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 14px;
+    }
+
+    .card-panel {
+      border-radius: 18px;
+      box-shadow: 0 10px 28px rgba(11, 63, 127, 0.12);
+    }
+
+    h4 {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      color: #5c6f84;
+      margin-bottom: 28px;
+    }
+
+    .btn {
+      border-radius: 999px;
+      background: #0b3f7f;
+    }
+
+    .btn:hover {
+      background: #072f60;
+    }
+
+    .btn-flat {
+      border-radius: 999px;
+    }
+
+    .msg {
+      display: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+
+    .msg.ok {
+      display: block;
+      background: #e8f5e9;
+      color: #1b5e20;
+    }
+
+    .msg.err {
+      display: block;
+      background: #ffebee;
+      color: #b71c1c;
+    }
+
+    .switch label input[type=checkbox]:checked + .lever {
+      background-color: #7ea6d9;
+    }
+
+    .switch label input[type=checkbox]:checked + .lever:after {
+      background-color: #0b3f7f;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-wrap">
+    <div class="card-panel white">
+      <h4>Cadastro de Obras</h4>
+      <div class="subtitle">
+        Cadastre as obras usadas na geração das autorizações de entrada.
+      </div>
+
+      <div id="msg" class="msg"></div>
+
+      <form id="formObra">
+        <input type="hidden" id="id" name="id" value="">
+
+        <div class="row">
+          <div class="input-field col s12 m3">
+            <input id="ano" name="ano" type="number" min="2000" max="2100" required>
+            <label for="ano">Ano</label>
+          </div>
+
+          <div class="input-field col s12 m9">
+            <input id="titulo" name="titulo" type="text" maxlength="150" required>
+            <label for="titulo">Título da obra</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12 m6">
+            <input id="local" name="local" type="text" maxlength="100">
+            <label for="local">Local</label>
+          </div>
+
+          <div class="input-field col s12 m3">
+            <input id="data_evento" name="data_evento" type="date" required>
+            <label for="data_evento" class="active">Data do evento</label>
+          </div>
+
+          <div class="input-field col s12 m3">
+            <input id="horario" name="horario" type="text" maxlength="20" placeholder="Ex.: 14h30" required>
+            <label for="horario">Horário</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col s12">
+            <div class="switch">
+              <label>
+                Inativo
+                <input id="ativo" name="ativo" type="checkbox" checked>
+                <span class="lever"></span>
+                Ativo
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top: 28px;">
+          <div class="col s12">
+            <button id="btnSalvar" class="btn waves-effect waves-light" type="submit">
+              <i class="material-icons left">save</i>
+              Salvar obra
+            </button>
+
+            <button class="btn-flat waves-effect" type="button" onclick="limparFormulario()">
+              Limpar
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_SALVAR = 'salvar_autorizacao_obra.php';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const anoAtual = new Date().getFullYear();
+      document.getElementById('ano').value = anoAtual;
+      M.updateTextFields();
+    });
+
+    const form = document.getElementById('formObra');
+    const msg = document.getElementById('msg');
+    const btnSalvar = document.getElementById('btnSalvar');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      limparMensagem();
+
+      const dados = {
+        id: document.getElementById('id').value || '',
+        ano: document.getElementById('ano').value,
+        titulo: document.getElementById('titulo').value.trim(),
+        local: document.getElementById('local').value.trim(),
+        data_evento: document.getElementById('data_evento').value,
+        horario: document.getElementById('horario').value.trim(),
+        ativo: document.getElementById('ativo').checked ? 1 : 0
+      };
+
+      if (!dados.ano || !dados.titulo || !dados.data_evento || !dados.horario) {
+        mostrarMensagem('Preencha os campos obrigatórios.', 'err');
+        return;
+      }
+
+      btnSalvar.disabled = true;
+      btnSalvar.innerHTML = '<i class="material-icons left">hourglass_empty</i>Salvando...';
+
+      try {
+        const resp = await fetch(API_SALVAR, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(dados)
+        });
+
+        const json = await resp.json();
+
+        if (!json.ok) {
+          throw new Error(json.message || json.error || 'Erro ao salvar.');
+        }
+
+        mostrarMensagem('Obra salva com sucesso!', 'ok');
+        limparFormulario();
+
+      } catch (err) {
+        mostrarMensagem(err.message || 'Erro ao salvar obra.', 'err');
+      } finally {
+        btnSalvar.disabled = false;
+        btnSalvar.innerHTML = '<i class="material-icons left">save</i>Salvar obra';
+      }
+    });
+
+    function limparFormulario() {
+      form.reset();
+
+      document.getElementById('id').value = '';
+      document.getElementById('ano').value = new Date().getFullYear();
+      document.getElementById('ativo').checked = true;
+
+      M.updateTextFields();
+    }
+
+    function mostrarMensagem(texto, tipo) {
+      msg.className = 'msg ' + tipo;
+      msg.textContent = texto;
+    }
+
+    function limparMensagem() {
+      msg.className = 'msg';
+      msg.textContent = '';
+    }
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
