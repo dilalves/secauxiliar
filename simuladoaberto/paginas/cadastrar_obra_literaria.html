@@ -15,7 +15,7 @@
     }
 
     .page-wrap {
-      max-width: 900px;
+      max-width: 1100px;
       margin: 32px auto;
       padding: 0 14px;
     }
@@ -25,7 +25,7 @@
       box-shadow: 0 10px 28px rgba(11, 63, 127, 0.12);
     }
 
-    h4 {
+    h4, h5 {
       font-weight: 700;
       margin-bottom: 4px;
     }
@@ -35,12 +35,12 @@
       margin-bottom: 28px;
     }
 
-    .btn {
+    .btn, .btn-small {
       border-radius: 999px;
       background: #0b3f7f;
     }
 
-    .btn:hover {
+    .btn:hover, .btn-small:hover {
       background: #072f60;
     }
 
@@ -74,6 +74,28 @@
 
     .switch label input[type=checkbox]:checked + .lever:after {
       background-color: #0b3f7f;
+    }
+
+    table th {
+      color: #0b3f7f;
+      font-weight: 700;
+    }
+
+    .badge-status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .badge-ativo {
+      background: #2e7d32;
+    }
+
+    .badge-inativo {
+      background: #777;
     }
   </style>
 </head>
@@ -147,20 +169,49 @@
         </div>
       </form>
     </div>
+
+    <div class="card-panel white">
+      <h5>Obras cadastradas</h5>
+      <div class="subtitle">
+        Clique em imprimir para gerar as autorizações da obra selecionada.
+      </div>
+
+      <table class="striped responsive-table">
+        <thead>
+          <tr>
+            <th>Ano</th>
+            <th>Obra</th>
+            <th>Local</th>
+            <th>Data</th>
+            <th>Horário</th>
+            <th>Status</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyObras">
+          <tr>
+            <td colspan="7">Carregando obras...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <script>
     const API_SALVAR = 'https://apisec.secauxiliar.com.br/sim_adm/salvar_autorizacao_obra.php';
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const anoAtual = new Date().getFullYear();
-      document.getElementById('ano').value = anoAtual;
-      M.updateTextFields();
-    });
+    const API_LISTAR = 'https://apisec.secauxiliar.com.br/sim_adm/listar_autorizacao_obras.php';
+    const API_IMPRIMIR = 'https://apisec.secauxiliar.com.br/sim_adm/gerar_autorizacoes_obras.php';
 
     const form = document.getElementById('formObra');
     const msg = document.getElementById('msg');
     const btnSalvar = document.getElementById('btnSalvar');
+    const tbodyObras = document.getElementById('tbodyObras');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('ano').value = new Date().getFullYear();
+      M.updateTextFields();
+      carregarObras();
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -188,9 +239,7 @@
       try {
         const resp = await fetch(API_SALVAR, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dados)
         });
 
@@ -202,6 +251,7 @@
 
         mostrarMensagem('Obra salva com sucesso!', 'ok');
         limparFormulario();
+        await carregarObras();
 
       } catch (err) {
         mostrarMensagem(err.message || 'Erro ao salvar obra.', 'err');
@@ -210,6 +260,72 @@
         btnSalvar.innerHTML = '<i class="material-icons left">save</i>Salvar obra';
       }
     });
+
+    async function carregarObras() {
+      tbodyObras.innerHTML = `
+        <tr>
+          <td colspan="7">Carregando obras...</td>
+        </tr>
+      `;
+
+      try {
+        const resp = await fetch(API_LISTAR, {
+          method: 'GET',
+          cache: 'no-store'
+        });
+
+        const json = await resp.json();
+
+        if (!json.ok) {
+          throw new Error(json.message || json.error || 'Erro ao listar obras.');
+        }
+
+        const obras = json.dados || [];
+
+        if (!obras.length) {
+          tbodyObras.innerHTML = `
+            <tr>
+              <td colspan="7">Nenhuma obra cadastrada.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbodyObras.innerHTML = obras.map(o => `
+          <tr>
+            <td>${escapeHtml(o.ano)}</td>
+            <td><strong>${escapeHtml(o.titulo)}</strong></td>
+            <td>${escapeHtml(o.local || '')}</td>
+            <td>${escapeHtml(o.data_evento_br || '')}</td>
+            <td>${escapeHtml(o.horario || '')}</td>
+            <td>
+              ${Number(o.ativo) === 1
+                ? '<span class="badge-status badge-ativo">Ativo</span>'
+                : '<span class="badge-status badge-inativo">Inativo</span>'}
+            </td>
+            <td>
+              <button class="btn-small waves-effect waves-light" onclick="imprimirObra(${Number(o.id)})">
+                <i class="material-icons left">picture_as_pdf</i>
+                Imprimir
+              </button>
+            </td>
+          </tr>
+        `).join('');
+
+      } catch (err) {
+        tbodyObras.innerHTML = `
+          <tr>
+            <td colspan="7" style="color:#b71c1c;">
+              ${escapeHtml(err.message || 'Erro ao carregar obras.')}
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function imprimirObra(id) {
+      window.open(`${API_IMPRIMIR}?id_obra=${encodeURIComponent(id)}`, '_blank');
+    }
 
     function limparFormulario() {
       form.reset();
@@ -229,6 +345,15 @@
     function limparMensagem() {
       msg.className = 'msg';
       msg.textContent = '';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
     }
   </script>
 
