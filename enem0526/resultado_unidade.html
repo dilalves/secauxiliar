@@ -735,13 +735,13 @@
         <div class="kpi">
           <div class="kpi-label">Média da unidade</div>
           <div class="kpi-value" id="kpiMedia">0,0</div>
-          <div class="kpi-note">total com redação</div>
+          <div class="kpi-note">média TRI</div>
         </div>
 
         <div class="kpi">
           <div class="kpi-label">Maior nota</div>
           <div class="kpi-value" id="kpiMaior">0,0</div>
-          <div class="kpi-note">total com redação</div>
+          <div class="kpi-note">maior TRI</div>
         </div>
 
         <div class="kpi">
@@ -772,8 +772,6 @@
           <select id="ordem">
             <option value="CLS_G">Classificação geral</option>
             <option value="CLS_U">Classificação unidade</option>
-            <option value="TOTAL_COM_REDACAO">Total com redação</option>
-            <option value="TOTAL_TRI">Total TRI</option>
             <option value="NOME">Nome</option>
           </select>
         </div>
@@ -795,8 +793,6 @@
               <th class="num">NAT</th>
               <th class="num">MAT</th>
               <th class="num">REDAÇÃO</th>
-              <th class="num">TOTAL TRI</th>
-              <th class="num">TOTAL + RED.</th>
               <th class="num">LOTE D1</th>
               <th class="num">LOTE D2</th>
               <th class="num">CLS_G</th>
@@ -808,7 +804,7 @@
 
           <tbody id="tbody">
             <tr>
-              <td colspan="15" class="empty">Carregando resultado...</td>
+              <td colspan="13" class="empty">Carregando resultado...</td>
             </tr>
           </tbody>
         </table>
@@ -987,7 +983,7 @@
 
     tbody.innerHTML = `
       <tr>
-        <td colspan="15" class="empty">Carregando resultado...</td>
+        <td colspan="13" class="empty">Carregando resultado...</td>
       </tr>
     `;
 
@@ -1001,7 +997,7 @@
 
     tbody.innerHTML = `
       <tr>
-        <td colspan="15" class="empty">${esc(texto)}</td>
+        <td colspan="13" class="empty">${esc(texto)}</td>
       </tr>
     `;
 
@@ -1038,8 +1034,8 @@
     document.getElementById('uNome').textContent = unidadeNomeAtual || '';
 
     kpiAlunos.textContent = n(resumo.total_alunos);
-    kpiMedia.textContent = decimal(resumo.media_total_com_redacao ?? resumo.media_total);
-    kpiMaior.textContent = decimal(resumo.maior_total_com_redacao ?? resumo.maior_total);
+    kpiMedia.textContent = decimal(resumo.media_total);
+    kpiMaior.textContent = decimal(resumo.maior_total);
     kpiAvulsos.textContent = n(resumo.total_avulsos);
 
     renderTabela();
@@ -1067,8 +1063,7 @@
         r.LOTE,
         r.LOTE_D1,
         r.LOTE_D2,
-        r.ORIGEM,
-        r.ORIGEM_REDACAO
+        r.ORIGEM
       ].join(' '));
 
       return texto.includes(termo);
@@ -1092,19 +1087,9 @@
         return nomeA.localeCompare(nomeB, 'pt-BR');
       }
 
-      if (ord === 'TOTAL_COM_REDACAO') {
-        return Number(b.TOTAL_COM_REDACAO || 0) - Number(a.TOTAL_COM_REDACAO || 0)
-            || Number(a.CLS_U || 999999) - Number(b.CLS_U || 999999);
-      }
-
-      if (ord === 'TOTAL_TRI') {
-        return Number(b.TOTAL_TRI || 0) - Number(a.TOTAL_TRI || 0)
-            || Number(a.CLS_U || 999999) - Number(b.CLS_U || 999999);
-      }
-
       if (ord === 'CLS_G') {
         return Number(a.CLS_G || 999999) - Number(b.CLS_G || 999999)
-            || Number(b.TOTAL_COM_REDACAO || b.TOTAL_TRI || 0) - Number(a.TOTAL_COM_REDACAO || a.TOTAL_TRI || 0);
+            || Number(a.CLS_U || 999999) - Number(b.CLS_U || 999999);
       }
 
       return Number(a.CLS_U || 999999) - Number(b.CLS_U || 999999)
@@ -1121,7 +1106,7 @@
     if (!rows.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="15" class="empty">Nenhum resultado encontrado com os filtros atuais.</td>
+          <td colspan="13" class="empty">Nenhum resultado encontrado com os filtros atuais.</td>
         </tr>
       `;
       return;
@@ -1130,10 +1115,9 @@
     tbody.innerHTML = rows.map(r => {
       const temD1 = !!String(r.ARQUIVO_D1 || '').trim();
       const temD2 = !!String(r.ARQUIVO_D2 || '').trim();
-      const origemRed = origemRedacaoLabel(r.ORIGEM_REDACAO);
       const redacao = r.NOTA_REDACAO === null || r.NOTA_REDACAO === undefined || r.NOTA_REDACAO === ''
         ? '-'
-        : `${nota(r.NOTA_REDACAO)}${origemRed ? `<br><span class="pill ok" title="Origem da redação">${esc(origemRed)}</span>` : ''}`;
+        : nota(r.NOTA_REDACAO);
 
       return `
         <tr>
@@ -1145,8 +1129,6 @@
           <td class="num">${nota(r.NOTA_NATUREZA)}</td>
           <td class="num">${nota(r.NOTA_MATEMATICA)}</td>
           <td class="num">${redacao}</td>
-          <td class="num total">${nota(r.TOTAL_TRI)}</td>
-          <td class="num total-red">${nota(r.TOTAL_COM_REDACAO)}</td>
 
           <td class="num">${esc(r.LOTE_D1 || '-')}</td>
           <td class="num">${esc(r.LOTE_D2 || '-')}</td>
@@ -1291,9 +1273,6 @@
       ['NOTA_NATUREZA', 'Natureza'],
       ['NOTA_MATEMATICA', 'Matemática'],
       ['NOTA_REDACAO', 'Redação'],
-      ['ORIGEM_REDACAO', 'Origem Redação'],
-      ['TOTAL_TRI', 'Total TRI'],
-      ['TOTAL_COM_REDACAO', 'Total com Redação'],
       ['LOTE_D1', 'Lote D1'],
       ['ARQUIVO_D1', 'Arquivo D1'],
       ['COR_D1', 'Cor D1'],
@@ -1367,8 +1346,6 @@
         <td>${nota(r.NOTA_NATUREZA)}</td>
         <td>${nota(r.NOTA_MATEMATICA)}</td>
         <td>${nota(r.NOTA_REDACAO)}</td>
-        <td><strong>${nota(r.TOTAL_TRI)}</strong></td>
-        <td><strong>${nota(r.TOTAL_COM_REDACAO)}</strong></td>
         <td>${esc(r.LOTE_D1 || '-')}</td>
         <td>${esc(r.LOTE_D2 || '-')}</td>
         <td>${esc(r.CLS_G || '-')}</td>
@@ -1412,8 +1389,6 @@
               <th>NAT</th>
               <th>MAT</th>
               <th>RED.</th>
-              <th>TOTAL TRI</th>
-              <th>TOTAL + RED.</th>
               <th>LOTE D1</th>
               <th>LOTE D2</th>
               <th>CLS_G</th>
