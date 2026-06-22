@@ -920,8 +920,10 @@
         const data = await fetchJson(url);
 
         const alternativas = data.alternativas || {};
+        const alternativasPct = data.alternativas_pct || {};
         const labels = ['A','B','C','D','E','BRANCO','NULO'];
         const valores = labels.map(k => Number(alternativas[k] || 0));
+        const percentuais = labels.map(k => Number(alternativasPct[k] || 0));
 
         const gabarito = String(data.gabarito || '').toUpperCase();
         const imagemSrc = normalizarImagemSrc(data.imagem || '');
@@ -970,7 +972,7 @@
                   </div>
                   <div style="margin-top:12px;background:#f6f9fe;border:1px solid #dbe6f3;border-radius:12px;padding:10px;font-size:13px;">
                     ${insight}<br>
-                    <b>Total:</b> ${escapeHtml(data.total_respostas)}
+                    <b>Total:</b> ${escapeHtml(data.total_base || data.total_inscritos || data.total_respostas)}
                     &nbsp; | &nbsp;
                     <span style="color:#16a34a;"><b>Acertos:</b> ${escapeHtml(data.qtd_acertos)}</span>
                     &nbsp; | &nbsp;
@@ -1025,7 +1027,8 @@
                     ctx.fillStyle = '#0b3b78';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'bottom';
-                    ctx.fillText(valor,bar.x,bar.y - 8);
+                    const pct = percentuais[index] || 0;
+                    ctx.fillText(`${formatPct(pct,1)}`, bar.x, bar.y - 8);
                     ctx.restore();
                   });
                 });
