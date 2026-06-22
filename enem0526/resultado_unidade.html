@@ -864,7 +864,7 @@
 <script>
   const API = 'https://apisec.secauxiliar.com.br/enem0526/';
   const ENDPOINT_RESULTADO = API + 'api_resultado_enem_unidade.php';
-  const ENDPOINT_IMAGEM = 'ver_imagem.php';
+  const ENDPOINT_IMAGEM = 'https://apisec.secauxiliar.com.br/enem0526/ver_imagem.php';
   const EVENTO_PADRAO = 'ENEM0526';
 
   const tbody = document.getElementById('tbody');
@@ -964,18 +964,24 @@
   }
 
   function montarKeyImagem(row, dia, ext = 'jpg') {
-    const arquivo = arquivoDoDia(row, dia).replace(/\.(jpg|jpeg|png)$/i, '');
-    return `SIM_ABERTO/${eventoAtual || EVENTO_PADRAO}/imagens/${arquivo}.${ext}`;
+    const arquivo = arquivoDoDia(row, dia).trim();
+
+    if (!arquivo) return '';
+
+    const temExtensao = /\.(jpg|jpeg|png)$/i.test(arquivo);
+    const nome = temExtensao ? arquivo : `${arquivo}.${ext}`;
+
+    return `SIM_ABERTO/${eventoAtual || EVENTO_PADRAO}/imagens/${nome}`;
   }
 
   function urlImagem(row, dia, ext = 'jpg') {
     const qs = new URLSearchParams();
-    qs.set('evento', eventoAtual || EVENTO_PADRAO);
-    qs.set('inscricao', row.INSCRICAO || '');
-    qs.set('key', montarKeyImagem(row, dia, ext));
-    return ENDPOINT_IMAGEM + '?' + qs.toString();
-  }
 
+    qs.set('evento', eventoAtual || EVENTO_PADRAO);
+    qs.set('key', montarKeyImagem(row, dia, ext));
+
+    return ENDPOINT_IMAGEM + '?' + qs.toString();
+  } 
   function setLoading() {
     msg.style.display = 'none';
     msg.className = 'msg';
