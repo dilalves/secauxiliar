@@ -260,6 +260,7 @@
       border-radius:12px;
       padding:12px;
       border:1px solid var(--line);
+      text-align:center;
     }
 
     .ranking-item small {
@@ -275,7 +276,7 @@
 
     .notas {
       display:grid;
-      grid-template-columns:repeat(6, 1fr);
+      grid-template-columns:repeat(7, 1fr);
       gap:12px;
       margin-top:14px;
     }
@@ -285,6 +286,7 @@
       border-radius:14px;
       padding:14px;
       background:#fff;
+      text-align:center;
     }
 
     .nota-card small {
@@ -310,6 +312,10 @@
     .media-geral small,
     .media-geral strong {
       color:white;
+    }
+
+    @media (max-width:1100px) {
+      .notas { grid-template-columns:repeat(3, 1fr); }
     }
 
     @media (max-width:900px) {
@@ -415,7 +421,7 @@ function formatarNota(valor) {
 
 function formatarRanking(valor) {
   if (!valor || valor === '0') return '-';
-  return '#' + valor;
+  return valor;
 }
 
 async function buscarEscolas() {
@@ -578,6 +584,11 @@ function renderResultado(e) {
         <div class="nota-card">
           <small>REDAÇÃO</small>
           <strong>${formatarNota(e.REDACAO)}</strong>
+        </div>
+
+        <div class="nota-card">
+          <small>MÉDIA OBJETIVA</small>
+          <strong>${formatarNota(e.MEDIA_OBJETIVA)}</strong>
         </div>
 
         <div class="nota-card media-geral">
