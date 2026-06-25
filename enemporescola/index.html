@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+  <title>ENEM por escola 2025</title>
+
+  <style>
+    :root {
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --line:#e9edf3;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --soft:#eef5fb;
+    }
+
+    * { box-sizing:border-box; }
+
+    body {
+      margin:0;
+      font-family:system-ui, Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--ink);
+      padding:24px;
+      padding-top:88px;
+    }
+
+    header.topbar {
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:64px;
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      z-index:10;
+      padding:0 24px;
+      box-shadow:0 2px 10px rgba(16,24,40,.12);
+    }
+
+    header.topbar h5 {
+      margin:0;
+      font-weight:600;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-size:16px;
+    }
+
+    header.topbar img {
+      height:28px;
+      margin-right:12px;
+    }
+
+    .page {
+      max-width:1200px;
+      margin:0 auto;
+    }
+
+    .topo {
+      margin-bottom:22px;
+      text-align:center;
+    }
+
+    .topo h1 {
+      margin:0;
+      color:var(--primary);
+      font-size:30px;
+      letter-spacing:-.4px;
+    }
+
+    .topo p {
+      color:var(--muted);
+      margin:8px 0 0;
+      font-size:15px;
+    }
+
+    .card-busca {
+      background:var(--card);
+      border-radius:16px;
+      padding:24px;
+      border:1px solid var(--line);
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
+      margin-bottom:24px;
+    }
+
+    .linha-busca {
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .linha-busca input {
+      flex:1;
+      min-width:260px;
+      padding:13px 14px;
+      border-radius:10px;
+      border:1px solid #d7dce5;
+      font-size:15px;
+      outline:none;
+    }
+
+    .linha-busca input:focus {
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    .linha-busca button {
+      width:160px;
+      padding:13px 16px;
+      border-radius:10px;
+      border:none;
+      background:var(--accent);
+      color:#fff;
+      cursor:pointer;
+      font-weight:700;
+      font-size:15px;
+    }
+
+    .linha-busca button:hover { filter:brightness(1.05); }
+    .linha-busca button:disabled { opacity:.6; cursor:default; }
+
+    .status {
+      margin-top:14px;
+      color:var(--muted);
+      font-size:14px;
+      text-align:center;
+    }
+
+    .resultado {
+      display:grid;
+      gap:18px;
+    }
+
+    .escola-card {
+      background:#fff;
+      border-radius:16px;
+      padding:22px;
+      border:1px solid var(--line);
+      box-shadow:0 10px 30px rgba(0,0,0,.05);
+      border-left:6px solid var(--primary);
+    }
+
+    .escola-header h2 {
+      margin:0;
+      font-size:20px;
+      color:var(--primary);
+      line-height:1.25;
+    }
+
+    .badges {
+      margin-top:10px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .badge {
+      background:#eef5ff;
+      color:var(--primary);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid #dbeafe;
+    }
+
+    .ranking-box {
+      background:#f8fafc;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      margin:16px 0;
+    }
+
+    .ranking-box h3 {
+      margin:0 0 10px 0;
+      font-size:15px;
+      color:var(--primary);
+    }
+
+    .ranking-grid {
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:10px;
+    }
+
+    .ranking-item {
+      background:#fff;
+      border-radius:12px;
+      padding:12px;
+      border:1px solid var(--line);
+    }
+
+    .ranking-item small {
+      display:block;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+
+    .ranking-item strong {
+      font-size:20px;
+      color:var(--primary);
+    }
+
+    .notas {
+      display:grid;
+      grid-template-columns:repeat(6, 1fr);
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .nota-card {
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      background:#fff;
+    }
+
+    .nota-card small {
+      display:block;
+      font-weight:800;
+      color:var(--muted);
+      font-size:11px;
+      margin-bottom:6px;
+      letter-spacing:.2px;
+    }
+
+    .nota-card strong {
+      color:var(--primary);
+      font-size:22px;
+    }
+
+    .media-geral {
+      background:var(--primary);
+      color:white;
+      border-color:var(--primary);
+    }
+
+    .media-geral small,
+    .media-geral strong {
+      color:white;
+    }
+
+    @media (max-width:900px) {
+      .notas { grid-template-columns:repeat(2, 1fr); }
+      .ranking-grid { grid-template-columns:1fr; }
+    }
+
+    @media (max-width:520px) {
+      body {
+        padding:14px;
+        padding-top:84px;
+      }
+
+      header.topbar {
+        padding:0 16px;
+      }
+
+      header.topbar h5 {
+        font-size:14px;
+      }
+
+      .topo h1 {
+        font-size:24px;
+      }
+
+      .card-busca {
+        padding:18px;
+      }
+
+      .linha-busca input,
+      .linha-busca button {
+        width:100%;
+        min-width:100%;
+      }
+
+      .notas {
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <img src="/aprovados/logo-mini.png" alt="Logo">
+    <h5>ENEM por escola 2025</h5>
+  </header>
+
+  <div class="page">
+
+    <div class="topo">
+      <h1>ENEM por escola 2025</h1>
+      <p>Busque por nome da escola, cidade, UF ou código INEP.</p>
+    </div>
+
+    <div class="card-busca">
+      <div class="linha-busca">
+        <input
+          type="text"
+          id="busca"
+          placeholder="Digite o nome da escola, cidade, UF ou código INEP"
+          autocomplete="off"
+        >
+
+        <button id="btnBuscar" onclick="buscarEscolas()">Buscar</button>
+      </div>
+
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="resultado" id="resultado"></div>
+
+  </div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/medias_enem/';
+const ANO_FIXO = '2025';
+
+function escapeHtml(texto) {
+  return String(texto ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function formatarNota(valor) {
+  if (valor === null || valor === undefined || valor === '') return '-';
+  const n = Number(valor);
+  if (Number.isNaN(n)) return '-';
+  return n.toFixed(1).replace('.', ',');
+}
+
+function formatarRanking(valor) {
+  if (!valor || valor === '0') return '-';
+  return '#' + valor;
+}
+
+async function buscarEscolas() {
+  const q = document.getElementById('busca').value.trim();
+  const status = document.getElementById('status');
+  const resultado = document.getElementById('resultado');
+  const btn = document.getElementById('btnBuscar');
+
+  resultado.innerHTML = '';
+
+  if (q.length < 2) {
+    status.innerHTML = 'Digite pelo menos 2 caracteres para buscar.';
+    return;
+  }
+
+  status.innerHTML = 'Buscando escolas...';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch(API + `buscar_escola.php?q=${encodeURIComponent(q)}&ano=${encodeURIComponent(ANO_FIXO)}`, {
+      cache: 'no-store'
+    });
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || !json.ok) {
+      status.innerHTML = escapeHtml(json.error || json.erro || 'Erro ao buscar dados.');
+      return;
+    }
+
+    const dados = json.dados || [];
+
+    if (dados.length === 0) {
+      status.innerHTML = 'Nenhuma escola encontrada.';
+      return;
+    }
+
+    status.innerHTML = `${dados.length} escola(s) encontrada(s).`;
+
+    resultado.innerHTML = dados.map(e => `
+      <div class="escola-card">
+        <div class="escola-header">
+          <h2>${escapeHtml(e.NOME_ESCOLA)}</h2>
+
+          <div class="badges">
+            <span class="badge">INEP: ${escapeHtml(e.CO_ESCOLA)}</span>
+            <span class="badge">${escapeHtml(e.NO_MUNICIPIO_ESC)} - ${escapeHtml(e.SG_UF_ESC)}</span>
+            <span class="badge">${escapeHtml(e.DEPENDENCIA || 'Dependência não informada')}</span>
+            <span class="badge">${escapeHtml(e.N_ALUNOS || 0)} alunos</span>
+            <span class="badge">Ano ${escapeHtml(e.ANO)}</span>
+          </div>
+        </div>
+
+        <div class="ranking-box">
+          <h3>Classificação da escola</h3>
+
+          <div class="ranking-grid">
+            <div class="ranking-item">
+              <small>Brasil</small>
+              <strong>${formatarRanking(e.CLASSIFICACAO_BRASIL)}</strong>
+            </div>
+
+            <div class="ranking-item">
+              <small>Estado (${escapeHtml(e.SG_UF_ESC)})</small>
+              <strong>${formatarRanking(e.CLASSIFICACAO_ESTADO)}</strong>
+            </div>
+
+            <div class="ranking-item">
+              <small>Cidade (${escapeHtml(e.NO_MUNICIPIO_ESC)})</small>
+              <strong>${formatarRanking(e.CLASSIFICACAO_CIDADE)}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="notas">
+          <div class="nota-card">
+            <small>LINGUAGENS</small>
+            <strong>${formatarNota(e.LINGUAGENS)}</strong>
+          </div>
+
+          <div class="nota-card">
+            <small>HUMANAS</small>
+            <strong>${formatarNota(e.HUMANAS)}</strong>
+          </div>
+
+          <div class="nota-card">
+            <small>NATUREZA</small>
+            <strong>${formatarNota(e.NATUREZA)}</strong>
+          </div>
+
+          <div class="nota-card">
+            <small>MATEMÁTICA</small>
+            <strong>${formatarNota(e.MATEMATICA)}</strong>
+          </div>
+
+          <div class="nota-card">
+            <small>REDAÇÃO</small>
+            <strong>${formatarNota(e.REDACAO)}</strong>
+          </div>
+
+          <div class="nota-card media-geral">
+            <small>MÉDIA GERAL</small>
+            <strong>${formatarNota(e.MEDIA_GERAL)}</strong>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+  } catch (e) {
+    console.error(e);
+    status.innerHTML = 'Erro de rede ou servidor indisponível.';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('busca').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') buscarEscolas();
+});
+</script>
+</body>
+</html>
