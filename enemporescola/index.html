@@ -137,6 +137,50 @@
       text-align:center;
     }
 
+    .lista-resultados {
+      display:grid;
+      gap:10px;
+      margin-top:18px;
+    }
+
+    .item-escola {
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:14px 16px;
+      cursor:pointer;
+      transition:.15s ease;
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:center;
+    }
+
+    .item-escola:hover {
+      border-color:var(--accent);
+      box-shadow:0 6px 18px rgba(37,99,235,.10);
+      transform:translateY(-1px);
+    }
+
+    .item-escola strong {
+      color:var(--primary);
+      font-size:15px;
+      display:block;
+      margin-bottom:4px;
+    }
+
+    .item-escola span {
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .item-escola .acao {
+      color:var(--accent);
+      font-weight:800;
+      white-space:nowrap;
+      font-size:13px;
+    }
+
     .resultado {
       display:grid;
       gap:18px;
@@ -149,6 +193,22 @@
       border:1px solid var(--line);
       box-shadow:0 10px 30px rgba(0,0,0,.05);
       border-left:6px solid var(--primary);
+      margin-top:22px;
+    }
+
+    .voltar-lista {
+      border:none;
+      background:#eef5ff;
+      color:var(--primary);
+      font-weight:800;
+      border-radius:10px;
+      padding:10px 14px;
+      cursor:pointer;
+      margin-bottom:16px;
+    }
+
+    .voltar-lista:hover {
+      filter:brightness(.98);
     }
 
     .escola-header h2 {
@@ -285,6 +345,12 @@
         min-width:100%;
       }
 
+      .item-escola {
+        align-items:flex-start;
+        flex-direction:column;
+        gap:8px;
+      }
+
       .notas {
         grid-template-columns:1fr;
       }
@@ -318,6 +384,7 @@
       </div>
 
       <div class="status" id="status"></div>
+      <div class="lista-resultados" id="listaResultados"></div>
     </div>
 
     <div class="resultado" id="resultado"></div>
@@ -327,6 +394,8 @@
 <script>
 const API = 'https://apisec.secauxiliar.com.br/medias_enem/';
 const ANO_FIXO = '2025';
+
+let ultimosDados = [];
 
 function escapeHtml(texto) {
   return String(texto ?? '')
@@ -352,10 +421,13 @@ function formatarRanking(valor) {
 async function buscarEscolas() {
   const q = document.getElementById('busca').value.trim();
   const status = document.getElementById('status');
+  const lista = document.getElementById('listaResultados');
   const resultado = document.getElementById('resultado');
   const btn = document.getElementById('btnBuscar');
 
+  lista.innerHTML = '';
   resultado.innerHTML = '';
+  ultimosDados = [];
 
   if (q.length < 2) {
     status.innerHTML = 'Digite pelo menos 2 caracteres para buscar.';
@@ -378,82 +450,15 @@ async function buscarEscolas() {
     }
 
     const dados = json.dados || [];
+    ultimosDados = dados;
 
     if (dados.length === 0) {
       status.innerHTML = 'Nenhuma escola encontrada.';
       return;
     }
 
-    status.innerHTML = `${dados.length} escola(s) encontrada(s).`;
-
-    resultado.innerHTML = dados.map(e => `
-      <div class="escola-card">
-        <div class="escola-header">
-          <h2>${escapeHtml(e.NOME_ESCOLA)}</h2>
-
-          <div class="badges">
-            <span class="badge">INEP: ${escapeHtml(e.CO_ESCOLA)}</span>
-            <span class="badge">${escapeHtml(e.NO_MUNICIPIO_ESC)} - ${escapeHtml(e.SG_UF_ESC)}</span>
-            <span class="badge">${escapeHtml(e.DEPENDENCIA || 'Dependência não informada')}</span>
-            <span class="badge">${escapeHtml(e.N_ALUNOS || 0)} alunos</span>
-            <span class="badge">Ano ${escapeHtml(e.ANO)}</span>
-          </div>
-        </div>
-
-        <div class="ranking-box">
-          <h3>Classificação da escola</h3>
-
-          <div class="ranking-grid">
-            <div class="ranking-item">
-              <small>Brasil</small>
-              <strong>${formatarRanking(e.CLASSIFICACAO_BRASIL)}</strong>
-            </div>
-
-            <div class="ranking-item">
-              <small>Estado (${escapeHtml(e.SG_UF_ESC)})</small>
-              <strong>${formatarRanking(e.CLASSIFICACAO_ESTADO)}</strong>
-            </div>
-
-            <div class="ranking-item">
-              <small>Cidade (${escapeHtml(e.NO_MUNICIPIO_ESC)})</small>
-              <strong>${formatarRanking(e.CLASSIFICACAO_CIDADE)}</strong>
-            </div>
-          </div>
-        </div>
-
-        <div class="notas">
-          <div class="nota-card">
-            <small>LINGUAGENS</small>
-            <strong>${formatarNota(e.LINGUAGENS)}</strong>
-          </div>
-
-          <div class="nota-card">
-            <small>HUMANAS</small>
-            <strong>${formatarNota(e.HUMANAS)}</strong>
-          </div>
-
-          <div class="nota-card">
-            <small>NATUREZA</small>
-            <strong>${formatarNota(e.NATUREZA)}</strong>
-          </div>
-
-          <div class="nota-card">
-            <small>MATEMÁTICA</small>
-            <strong>${formatarNota(e.MATEMATICA)}</strong>
-          </div>
-
-          <div class="nota-card">
-            <small>REDAÇÃO</small>
-            <strong>${formatarNota(e.REDACAO)}</strong>
-          </div>
-
-          <div class="nota-card media-geral">
-            <small>MÉDIA GERAL</small>
-            <strong>${formatarNota(e.MEDIA_GERAL)}</strong>
-          </div>
-        </div>
-      </div>
-    `).join('');
+    status.innerHTML = `${dados.length} escola(s) encontrada(s). Clique na escola desejada para visualizar o resultado.`;
+    renderLista(dados);
 
   } catch (e) {
     console.error(e);
@@ -461,6 +466,127 @@ async function buscarEscolas() {
   } finally {
     btn.disabled = false;
   }
+}
+
+function renderLista(dados) {
+  const lista = document.getElementById('listaResultados');
+
+  lista.innerHTML = dados.map((e, index) => `
+    <div class="item-escola" onclick="selecionarEscola(${index})">
+      <div>
+        <strong>${escapeHtml(e.NOME_ESCOLA)}</strong>
+        <span>
+          INEP: ${escapeHtml(e.CO_ESCOLA)} ·
+          ${escapeHtml(e.NO_MUNICIPIO_ESC)} - ${escapeHtml(e.SG_UF_ESC)} ·
+          ${escapeHtml(e.DEPENDENCIA || 'Dependência não informada')} ·
+          ${escapeHtml(e.N_ALUNOS || 0)} alunos
+        </span>
+      </div>
+      <div class="acao">Ver resultado →</div>
+    </div>
+  `).join('');
+}
+
+function selecionarEscola(index) {
+  const escola = ultimosDados[index];
+  if (!escola) return;
+
+  const lista = document.getElementById('listaResultados');
+  const status = document.getElementById('status');
+
+  lista.innerHTML = '';
+  status.innerHTML = `Resultado selecionado: ${escapeHtml(escola.NOME_ESCOLA)}`;
+
+  renderResultado(escola);
+
+  document.getElementById('resultado').scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
+function voltarParaLista() {
+  const resultado = document.getElementById('resultado');
+  const status = document.getElementById('status');
+
+  resultado.innerHTML = '';
+  status.innerHTML = `${ultimosDados.length} escola(s) encontrada(s). Clique na escola desejada para visualizar o resultado.`;
+  renderLista(ultimosDados);
+}
+
+function renderResultado(e) {
+  const resultado = document.getElementById('resultado');
+
+  resultado.innerHTML = `
+    <div class="escola-card">
+      <button class="voltar-lista" onclick="voltarParaLista()">← Voltar para a lista</button>
+
+      <div class="escola-header">
+        <h2>${escapeHtml(e.NOME_ESCOLA)}</h2>
+
+        <div class="badges">
+          <span class="badge">INEP: ${escapeHtml(e.CO_ESCOLA)}</span>
+          <span class="badge">${escapeHtml(e.NO_MUNICIPIO_ESC)} - ${escapeHtml(e.SG_UF_ESC)}</span>
+          <span class="badge">${escapeHtml(e.DEPENDENCIA || 'Dependência não informada')}</span>
+          <span class="badge">${escapeHtml(e.N_ALUNOS || 0)} alunos</span>
+          <span class="badge">Ano ${escapeHtml(e.ANO)}</span>
+        </div>
+      </div>
+
+      <div class="ranking-box">
+        <h3>Classificação da escola</h3>
+
+        <div class="ranking-grid">
+          <div class="ranking-item">
+            <small>Brasil</small>
+            <strong>${formatarRanking(e.CLASSIFICACAO_BRASIL)}</strong>
+          </div>
+
+          <div class="ranking-item">
+            <small>Estado (${escapeHtml(e.SG_UF_ESC)})</small>
+            <strong>${formatarRanking(e.CLASSIFICACAO_ESTADO)}</strong>
+          </div>
+
+          <div class="ranking-item">
+            <small>Cidade (${escapeHtml(e.NO_MUNICIPIO_ESC)})</small>
+            <strong>${formatarRanking(e.CLASSIFICACAO_CIDADE)}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="notas">
+        <div class="nota-card">
+          <small>LINGUAGENS</small>
+          <strong>${formatarNota(e.LINGUAGENS)}</strong>
+        </div>
+
+        <div class="nota-card">
+          <small>HUMANAS</small>
+          <strong>${formatarNota(e.HUMANAS)}</strong>
+        </div>
+
+        <div class="nota-card">
+          <small>NATUREZA</small>
+          <strong>${formatarNota(e.NATUREZA)}</strong>
+        </div>
+
+        <div class="nota-card">
+          <small>MATEMÁTICA</small>
+          <strong>${formatarNota(e.MATEMATICA)}</strong>
+        </div>
+
+        <div class="nota-card">
+          <small>REDAÇÃO</small>
+          <strong>${formatarNota(e.REDACAO)}</strong>
+        </div>
+
+        <div class="nota-card media-geral">
+          <small>MÉDIA GERAL</small>
+          <strong>${formatarNota(e.MEDIA_GERAL)}</strong>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 document.getElementById('busca').addEventListener('keydown', function(e) {
