@@ -315,17 +315,17 @@
     }
 
     .btn-mais-info {
-    border:none;
-    background:#eef5ff;
-    color:var(--primary);
-    font-weight:800;
-    border-radius:10px;
-    padding:12px 18px;
-    cursor:pointer;
+      border:none;
+      background:#eef5ff;
+      color:var(--primary);
+      font-weight:800;
+      border-radius:10px;
+      padding:12px 18px;
+      cursor:pointer;
     }
 
     .btn-mais-info:hover {
-    filter:brightness(.97);
+      filter:brightness(.97);
     }
 
     @media (max-width:1100px) {
@@ -458,7 +458,7 @@ async function buscarEscolas() {
   btn.disabled = true;
 
   try {
-    const resp = await fetch(API + `buscar_escola.php?q=${encodeURIComponent(q)}&ano=${encodeURIComponent(ANO_FIXO)}`, {
+    const resp = await fetch(API + `buscar_escolas.php?q=${encodeURIComponent(q)}&ano=${encodeURIComponent(ANO_FIXO)}`, {
       cache: 'no-store'
     });
 
@@ -507,22 +507,53 @@ function renderLista(dados) {
   `).join('');
 }
 
-function selecionarEscola(index) {
-  const escola = ultimosDados[index];
-  if (!escola) return;
+async function selecionarEscola(index) {
+  const escolaResumo = ultimosDados[index];
+  if (!escolaResumo) return;
 
   const lista = document.getElementById('listaResultados');
   const status = document.getElementById('status');
+  const resultado = document.getElementById('resultado');
 
   lista.innerHTML = '';
-  status.innerHTML = `Resultado selecionado: ${escapeHtml(escola.NOME_ESCOLA)}`;
+  resultado.innerHTML = '';
+  status.innerHTML = `Carregando resultado: ${escapeHtml(escolaResumo.NOME_ESCOLA)}`;
 
-  renderResultado(escola);
+  try {
+    const resp = await fetch(API + `buscar_escola_detalhe.php?co_escola=${encodeURIComponent(escolaResumo.CO_ESCOLA)}&ano=${encodeURIComponent(ANO_FIXO)}`, {
+      cache: 'no-store'
+    });
 
-  document.getElementById('resultado').scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  });
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || !json.ok) {
+      status.innerHTML = escapeHtml(json.error || json.erro || 'Erro ao buscar detalhe da escola.');
+      renderLista(ultimosDados);
+      return;
+    }
+
+    const escola = json.dados;
+
+    if (!escola) {
+      status.innerHTML = 'Resultado da escola não encontrado.';
+      renderLista(ultimosDados);
+      return;
+    }
+
+    status.innerHTML = `Resultado selecionado: ${escapeHtml(escola.NOME_ESCOLA)}`;
+
+    renderResultado(escola);
+
+    document.getElementById('resultado').scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+
+  } catch (e) {
+    console.error(e);
+    status.innerHTML = 'Erro de rede ou servidor indisponível.';
+    renderLista(ultimosDados);
+  }
 }
 
 function voltarParaLista() {
@@ -617,7 +648,6 @@ function renderResultado(e) {
       </div>
     </div>
   `;
-
 }
 
 document.getElementById('busca').addEventListener('keydown', function(e) {
@@ -731,7 +761,6 @@ async function abrirMaisInformacoes(coEscola) {
     });
   }
 }
-
 </script>
 </body>
 </html>
