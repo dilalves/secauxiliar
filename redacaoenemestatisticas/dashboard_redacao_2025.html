@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <title>Dashboard Redação ENEM 2025</title>
+
+  <style>
+    :root {
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --line:#e6ebf2;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --good:#0f766e;
+      --warn:#b45309;
+      --danger:#b91c1c;
+      --soft:#eef5ff;
+    }
+
+    * { box-sizing:border-box; }
+
+    body {
+      margin:0;
+      font-family:system-ui, Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--ink);
+      padding-top:72px;
+    }
+
+    header.topbar {
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:64px;
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      z-index:10;
+      padding:0 22px;
+      box-shadow:0 2px 12px rgba(15,23,42,.18);
+    }
+
+    header.topbar img {
+      height:28px;
+      margin-right:12px;
+    }
+
+    header.topbar h1 {
+      font-size:17px;
+      margin:0;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .page {
+      max-width:1320px;
+      margin:0 auto;
+      padding:24px;
+    }
+
+    .hero {
+      text-align:center;
+      margin-bottom:22px;
+    }
+
+    .hero h2 {
+      margin:0;
+      color:var(--primary);
+      font-size:30px;
+    }
+
+    .hero p {
+      margin:8px 0 0;
+      color:var(--muted);
+    }
+
+    .card {
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:0 10px 28px rgba(15,23,42,.06);
+      padding:20px;
+      margin-bottom:18px;
+    }
+
+    .filters {
+      display:grid;
+      grid-template-columns:1fr 1fr 1.4fr 1.8fr auto;
+      gap:12px;
+      align-items:end;
+    }
+
+    label {
+      display:block;
+      font-size:12px;
+      font-weight:800;
+      color:var(--primary);
+      margin-bottom:6px;
+      text-transform:uppercase;
+      letter-spacing:.35px;
+    }
+
+    select, input {
+      width:100%;
+      padding:12px 13px;
+      border:1px solid #d7dce5;
+      border-radius:11px;
+      font-size:14px;
+      background:#fff;
+      outline:none;
+    }
+
+    select:focus, input:focus {
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    button {
+      border:none;
+      border-radius:11px;
+      padding:12px 16px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      background:var(--accent);
+      color:#fff;
+      white-space:nowrap;
+    }
+
+    button.secondary {
+      background:#eaf1ff;
+      color:var(--primary);
+    }
+
+    .status {
+      margin-top:12px;
+      color:var(--muted);
+      font-size:13px;
+      text-align:center;
+    }
+
+    .kpis {
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:14px;
+    }
+
+    .kpi {
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+      min-height:92px;
+    }
+
+    .kpi small {
+      display:block;
+      color:var(--muted);
+      font-weight:800;
+      font-size:11px;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+
+    .kpi strong {
+      color:var(--primary);
+      font-size:28px;
+      line-height:1;
+    }
+
+    .kpi span {
+      color:var(--muted);
+      display:block;
+      margin-top:6px;
+      font-size:13px;
+    }
+
+    .grid2 {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+
+    .section-title {
+      margin:0 0 14px;
+      color:var(--primary);
+      font-size:18px;
+    }
+
+    .bar-row {
+      display:grid;
+      grid-template-columns:130px 1fr 78px;
+      align-items:center;
+      gap:10px;
+      margin:10px 0;
+      font-size:13px;
+    }
+
+    .bar {
+      height:13px;
+      background:#e8eef7;
+      border-radius:999px;
+      overflow:hidden;
+    }
+
+    .bar > div {
+      height:100%;
+      background:var(--accent);
+      border-radius:999px;
+    }
+
+    .alert-box {
+      border:1px solid #fed7aa;
+      background:#fff7ed;
+      color:#9a3412;
+      border-radius:14px;
+      padding:14px;
+      line-height:1.45;
+    }
+
+    .lista-escolas {
+      display:grid;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .item-escola {
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:13px;
+      padding:13px 15px;
+      cursor:pointer;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      transition:.15s ease;
+    }
+
+    .item-escola:hover {
+      border-color:var(--accent);
+      transform:translateY(-1px);
+      box-shadow:0 6px 18px rgba(37,99,235,.10);
+    }
+
+    .item-escola strong {
+      display:block;
+      color:var(--primary);
+      margin-bottom:4px;
+    }
+
+    .item-escola span {
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .table-wrap {
+      overflow-x:auto;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+    }
+
+    th {
+      background:var(--primary);
+      color:#fff;
+      padding:9px;
+      text-align:center;
+    }
+
+    td {
+      border-bottom:1px solid var(--line);
+      padding:9px;
+      text-align:center;
+    }
+
+    td:first-child {
+      text-align:left;
+    }
+
+    .hidden { display:none; }
+
+    @media (max-width:1100px) {
+      .filters { grid-template-columns:1fr 1fr; }
+      .kpis { grid-template-columns:repeat(2, 1fr); }
+      .grid2 { grid-template-columns:1fr; }
+    }
+
+    @media (max-width:640px) {
+      body { padding-top:70px; }
+      .page { padding:14px; }
+      .hero h2 { font-size:24px; }
+      .filters { grid-template-columns:1fr; }
+      .kpis { grid-template-columns:1fr; }
+      .item-escola { flex-direction:column; align-items:flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+<header class="topbar">
+  <img src="/aprovados/logo-mini.png" alt="Logo">
+  <h1>Dashboard Redação ENEM 2025</h1>
+</header>
+
+<div class="page">
+  <div class="hero">
+    <h2>Redação ENEM 2025</h2>
+    <p>Consulta por Brasil, Estado, Município e Escola.</p>
+  </div>
+
+  <div class="card">
+    <div class="filters">
+      <div>
+        <label>Nível</label>
+        <select id="nivel" onchange="aoTrocarNivel()">
+          <option value="BRASIL">Brasil</option>
+          <option value="ESTADO">Estado</option>
+          <option value="MUNICIPIO">Município</option>
+          <option value="ESCOLA">Escola</option>
+        </select>
+      </div>
+
+      <div id="boxUf" class="hidden">
+        <label>Estado</label>
+        <select id="uf" onchange="aoTrocarUf()">
+          <option value="">Selecione</option>
+        </select>
+      </div>
+
+      <div id="boxMunicipio" class="hidden">
+        <label>Município</label>
+        <select id="municipio">
+          <option value="">Selecione</option>
+        </select>
+      </div>
+
+      <div id="boxBuscaEscola" class="hidden">
+        <label>Buscar escola</label>
+        <input id="buscaEscola" type="text" placeholder="Nome, cidade, UF ou código INEP">
+      </div>
+
+      <div>
+        <button onclick="consultar()">Consultar</button>
+      </div>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <div id="listaEscolas" class="card hidden">
+    <h3 class="section-title">Escolas encontradas</h3>
+    <div class="lista-escolas" id="resultadosEscolas"></div>
+  </div>
+
+  <div id="dashboard" class="hidden">
+    <div class="card">
+      <h3 class="section-title" id="tituloVisao">Resultado</h3>
+      <div class="kpis" id="kpis"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3 class="section-title">Média por competência</h3>
+        <div id="competencias"></div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">Ponto de atenção</h3>
+        <div id="diagnostico"></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3 class="section-title">Distribuição por faixa de nota</h3>
+        <div id="faixas"></div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">Motivos de nota zero</h3>
+        <div id="zeros"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">Indicadores estatísticos</h3>
+      <div class="table-wrap" id="estatisticas"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/redacao_estatistica/';
+const ANO = '2025';
+
+function el(id) { return document.getElementById(id); }
+
+function escapeHtml(texto) {
+  return String(texto ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function num(v, casas=2) {
+  if (v === null || v === undefined || v === '') return '-';
+  const n = Number(v);
+  if (Number.isNaN(n)) return '-';
+  return n.toLocaleString('pt-BR', {
+    minimumFractionDigits: casas,
+    maximumFractionDigits: casas
+  });
+}
+
+function inteiro(v) {
+  if (v === null || v === undefined || v === '') return '-';
+  const n = Number(v);
+  if (Number.isNaN(n)) return '-';
+  return n.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+}
+
+function perc(v) {
+  if (v === null || v === undefined || v === '') return '-';
+  const n = Number(v);
+  if (Number.isNaN(n)) return '-';
+  return n.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }) + '%';
+}
+
+async function carregarEstados() {
+  const resp = await fetch(API + `redacao_listas.php?tipo=estados&ano=${ANO}`, { cache:'no-store' });
+  const json = await resp.json();
+
+  if (!json.ok) return;
+
+  el('uf').innerHTML = '<option value="">Selecione</option>' + (json.dados || []).map(e =>
+    `<option value="${escapeHtml(e.SG_UF_ESC)}">${escapeHtml(e.SG_UF_ESC)}</option>`
+  ).join('');
+}
+
+async function carregarMunicipios() {
+  const uf = el('uf').value;
+  el('municipio').innerHTML = '<option value="">Selecione</option>';
+
+  if (!uf) return;
+
+  const resp = await fetch(API + `redacao_listas.php?tipo=municipios&uf=${encodeURIComponent(uf)}&ano=${ANO}`, { cache:'no-store' });
+  const json = await resp.json();
+
+  if (!json.ok) return;
+
+  el('municipio').innerHTML = '<option value="">Selecione</option>' + (json.dados || []).map(e =>
+    `<option value="${escapeHtml(e.CO_MUNICIPIO_ESC)}">${escapeHtml(e.NO_MUNICIPIO_ESC)}</option>`
+  ).join('');
+}
+
+function aoTrocarNivel() {
+  const nivel = el('nivel').value;
+
+  el('boxUf').classList.toggle('hidden', !['ESTADO','MUNICIPIO','ESCOLA'].includes(nivel));
+  el('boxMunicipio').classList.toggle('hidden', !['MUNICIPIO','ESCOLA'].includes(nivel));
+  el('boxBuscaEscola').classList.toggle('hidden', nivel !== 'ESCOLA');
+
+  el('listaEscolas').classList.add('hidden');
+  el('dashboard').classList.add('hidden');
+  el('status').innerHTML = '';
+
+  if (nivel === 'BRASIL') consultar();
+}
+
+async function aoTrocarUf() {
+  const nivel = el('nivel').value;
+
+  if (['MUNICIPIO','ESCOLA'].includes(nivel)) {
+    await carregarMunicipios();
+  }
+}
+
+async function consultar() {
+  const nivel = el('nivel').value;
+  const uf = el('uf').value;
+  const municipio = el('municipio').value;
+  const q = el('buscaEscola').value.trim();
+
+  el('listaEscolas').classList.add('hidden');
+  el('dashboard').classList.add('hidden');
+
+  if (nivel === 'BRASIL') {
+    return carregarResumo('BRASIL');
+  }
+
+  if (nivel === 'ESTADO') {
+    if (!uf) return aviso('Selecione um estado.');
+    return carregarResumo('ESTADO', { uf });
+  }
+
+  if (nivel === 'MUNICIPIO') {
+    if (!uf) return aviso('Selecione um estado.');
+    if (!municipio) return aviso('Selecione um município.');
+    return carregarResumo('MUNICIPIO', { municipio });
+  }
+
+  if (nivel === 'ESCOLA') {
+    if (q.length < 2 && !municipio) {
+      return aviso('Digite pelo menos 2 caracteres ou selecione um município.');
+    }
+    return buscarEscolas(q, uf, municipio);
+  }
+}
+
+function aviso(msg) {
+  el('status').innerHTML = msg;
+}
+
+async function carregarResumo(nivel, params={}) {
+  el('status').innerHTML = 'Carregando dados...';
+
+  const qs = new URLSearchParams({ ano: ANO, nivel, ...params });
+
+  const resp = await fetch(API + `redacao_resumo.php?${qs.toString()}`, { cache:'no-store' });
+  const json = await resp.json().catch(() => ({}));
+
+  if (!resp.ok || !json.ok) {
+    el('status').innerHTML = escapeHtml(json.error || 'Erro ao carregar dados.');
+    return;
+  }
+
+  if (!json.dados) {
+    el('status').innerHTML = 'Nenhum dado encontrado.';
+    return;
+  }
+
+  el('status').innerHTML = '';
+  renderDashboard(json.dados);
+}
+
+async function buscarEscolas(q, uf, municipio) {
+  el('status').innerHTML = 'Buscando escolas...';
+
+  const qs = new URLSearchParams({ ano: ANO, q, uf, municipio });
+
+  const resp = await fetch(API + `redacao_buscar_escolas.php?${qs.toString()}`, { cache:'no-store' });
+  const json = await resp.json().catch(() => ({}));
+
+  if (!resp.ok || !json.ok) {
+    el('status').innerHTML = escapeHtml(json.error || 'Erro ao buscar escolas.');
+    return;
+  }
+
+  const dados = json.dados || [];
+
+  if (dados.length === 0) {
+    el('status').innerHTML = 'Nenhuma escola encontrada.';
+    return;
+  }
+
+  el('status').innerHTML = `${dados.length} escola(s) encontrada(s).`;
+  el('listaEscolas').classList.remove('hidden');
+
+  el('resultadosEscolas').innerHTML = dados.map(e => `
+    <div class="item-escola" onclick="carregarResumo('ESCOLA', {co_escola:'${escapeHtml(e.CO_ESCOLA)}'})">
+      <div>
+        <strong>${escapeHtml(e.NOME_ESCOLA || 'Nome não encontrado')}</strong>
+        <span>
+          INEP: ${escapeHtml(e.CO_ESCOLA)} ·
+          ${escapeHtml(e.NO_MUNICIPIO_ESC)} - ${escapeHtml(e.SG_UF_ESC)} ·
+          ${escapeHtml(e.DEPENDENCIA || '-')} ·
+          Média redação: ${num(e.MEDIA_REDACAO)}
+        </span>
+      </div>
+      <div style="color:#2563eb;font-weight:800;">Ver →</div>
+    </div>
+  `).join('');
+}
+
+function titulo(e) {
+  if (e.NIVEL === 'BRASIL') return 'Brasil';
+  if (e.NIVEL === 'ESTADO') return `Estado: ${e.SG_UF_ESC}`;
+  if (e.NIVEL === 'MUNICIPIO') return `Município: ${e.NO_MUNICIPIO_ESC} - ${e.SG_UF_ESC}`;
+  if (e.NIVEL === 'ESCOLA') return `${e.NOME_ESCOLA} · ${e.NO_MUNICIPIO_ESC} - ${e.SG_UF_ESC}`;
+  return 'Resultado';
+}
+
+function renderDashboard(e) {
+  el('dashboard').classList.remove('hidden');
+  el('tituloVisao').innerHTML = escapeHtml(titulo(e));
+
+  el('kpis').innerHTML = `
+    <div class="kpi"><small>Participantes</small><strong>${inteiro(e.N_ALUNOS)}</strong><span>Base do nível selecionado</span></div>
+    <div class="kpi"><small>Presentes Dia 1</small><strong>${inteiro(e.N_PRESENTES_DIA1)}</strong><span>${perc(e.PERC_PRESENTES_DIA1)}</span></div>
+    <div class="kpi"><small>Média Redação</small><strong>${num(e.MEDIA_REDACAO)}</strong><span>Mediana: ${num(e.MEDIANA_REDACAO)}</span></div>
+    <div class="kpi"><small>Redações Zero</small><strong>${inteiro(e.N_REDACOES_ZERO)}</strong><span>${perc(e.PERC_REDACOES_ZERO)}</span></div>
+  `;
+
+  renderCompetencias(e);
+  renderDiagnostico(e);
+  renderFaixas(e);
+  renderZeros(e);
+  renderEstatisticas(e);
+}
+
+function renderCompetencias(e) {
+  const comps = [
+    ['C1', Number(e.MEDIA_COMP1 || 0)],
+    ['C2', Number(e.MEDIA_COMP2 || 0)],
+    ['C3', Number(e.MEDIA_COMP3 || 0)],
+    ['C4', Number(e.MEDIA_COMP4 || 0)],
+    ['C5', Number(e.MEDIA_COMP5 || 0)]
+  ];
+
+  const max = 200;
+
+  el('competencias').innerHTML = comps.map(([nome, valor]) => `
+    <div class="bar-row">
+      <strong>${nome}</strong>
+      <div class="bar"><div style="width:${Math.min(100, (valor / max) * 100)}%"></div></div>
+      <span>${num(valor)}</span>
+    </div>
+  `).join('');
+}
+
+function renderDiagnostico(e) {
+  const comps = [
+    ['COMP1', Number(e.MEDIA_COMP1 || 0)],
+    ['COMP2', Number(e.MEDIA_COMP2 || 0)],
+    ['COMP3', Number(e.MEDIA_COMP3 || 0)],
+    ['COMP4', Number(e.MEDIA_COMP4 || 0)],
+    ['COMP5', Number(e.MEDIA_COMP5 || 0)]
+  ];
+
+  const ordenadas = comps.slice().sort((a,b) => a[1] - b[1]);
+  const menor = ordenadas[0];
+  const maior = ordenadas[ordenadas.length - 1];
+  const dif = maior[1] - menor[1];
+
+  el('diagnostico').innerHTML = `
+    <div class="alert-box">
+      <b>Maior ponto de atenção:</b> ${escapeHtml(e.MENOR_COMPETENCIA || menor[0])}<br>
+      A competência com menor média aparece como o principal foco pedagógico nesta visão.
+      <br><br>
+      <b>Maior competência:</b> ${escapeHtml(e.MAIOR_COMPETENCIA || maior[0])}<br>
+      <b>Diferença entre maior e menor:</b> ${num(dif)} pontos.
+    </div>
+  `;
+}
+
+function renderFaixas(e) {
+  const faixas = [
+    ['0', e.PERC_FAIXA_0],
+    ['1-199', e.PERC_FAIXA_1_199],
+    ['200-399', e.PERC_FAIXA_200_399],
+    ['400-599', e.PERC_FAIXA_400_599],
+    ['600-799', e.PERC_FAIXA_600_799],
+    ['800-999', e.PERC_FAIXA_800_999],
+    ['1000', e.PERC_FAIXA_1000]
+  ];
+
+  el('faixas').innerHTML = faixas.map(([nome, valor]) => {
+    const n = Number(valor || 0);
+    return `
+      <div class="bar-row">
+        <strong>${nome}</strong>
+        <div class="bar"><div style="width:${Math.min(100, n)}%"></div></div>
+        <span>${perc(valor)}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderZeros(e) {
+  const zeros = [
+    ['Anulada', e.PERC_ZERO_ANULADA],
+    ['Cópia texto', e.PERC_ZERO_COPIA_TEXTO],
+    ['Em branco', e.PERC_ZERO_EM_BRANCO],
+    ['Fuga tema', e.PERC_ZERO_FUGA_TEMA],
+    ['Tipo textual', e.PERC_ZERO_TIPO_TEXTUAL],
+    ['Texto insuf.', e.PERC_ZERO_TEXTO_INSUFICIENTE],
+    ['Parte desc.', e.PERC_ZERO_PARTE_DESCONECTADA]
+  ];
+
+  el('zeros').innerHTML = zeros.map(([nome, valor]) => {
+    const n = Number(valor || 0);
+    return `
+      <div class="bar-row">
+        <strong>${nome}</strong>
+        <div class="bar"><div style="width:${Math.min(100, n)}%; background:#b91c1c"></div></div>
+        <span>${perc(valor)}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderEstatisticas(e) {
+  el('estatisticas').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Média</th>
+          <th>Mediana</th>
+          <th>Moda</th>
+          <th>Desvio</th>
+          <th>P10</th>
+          <th>P25</th>
+          <th>P75</th>
+          <th>P90</th>
+          <th>P95</th>
+          <th>≥800</th>
+          <th>≥900</th>
+          <th>Nota 1000</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>${num(e.MEDIA_REDACAO)}</td>
+          <td>${num(e.MEDIANA_REDACAO)}</td>
+          <td>${num(e.MODA_REDACAO)}</td>
+          <td>${num(e.DESVIO_REDACAO)}</td>
+          <td>${num(e.P10_REDACAO)}</td>
+          <td>${num(e.P25_REDACAO)}</td>
+          <td>${num(e.P75_REDACAO)}</td>
+          <td>${num(e.P90_REDACAO)}</td>
+          <td>${num(e.P95_REDACAO)}</td>
+          <td>${perc(e.PERC_ACIMA_800)}</td>
+          <td>${perc(e.PERC_ACIMA_900)}</td>
+          <td>${inteiro(e.N_REDACOES_1000)}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+}
+
+el('buscaEscola').addEventListener('keydown', e => {
+  if (e.key === 'Enter') consultar();
+});
+
+carregarEstados();
+consultar();
+</script>
+</body>
+</html>
