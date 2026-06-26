@@ -651,12 +651,24 @@ function renderDiagnostico(e) {
   const maior = ordenadas[ordenadas.length - 1];
   const dif = maior[1] - menor[1];
 
+  // Traduz o nome das competências
+  const nomeCompetencia = {
+    COMP1: 'Competência 1',
+    COMP2: 'Competência 2',
+    COMP3: 'Competência 3',
+    COMP4: 'Competência 4',
+    COMP5: 'Competência 5'
+  };
+
+  const menorTexto = nomeCompetencia[e.MENOR_COMPETENCIA] || nomeCompetencia[menor[0]] || menor[0];
+  const maiorTexto = nomeCompetencia[e.MAIOR_COMPETENCIA] || nomeCompetencia[maior[0]] || maior[0];
+
   el('diagnostico').innerHTML = `
     <div class="alert-box">
-      <b>Maior ponto de atenção:</b> ${escapeHtml(e.MENOR_COMPETENCIA || menor[0])}<br>
+      <b>Maior ponto de atenção:</b> ${escapeHtml(menorTexto)}<br>
       A competência com menor média aparece como o principal foco pedagógico nesta visão.
       <br><br>
-      <b>Maior competência:</b> ${escapeHtml(e.MAIOR_COMPETENCIA || maior[0])}<br>
+      <b>Maior competência:</b> ${escapeHtml(maiorTexto)}<br>
       <b>Diferença entre maior e menor:</b> ${num(dif)} pontos.
     </div>
   `;
