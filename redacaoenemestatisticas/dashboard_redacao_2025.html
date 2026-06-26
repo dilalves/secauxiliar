@@ -445,6 +445,16 @@ function perc(v) {
   }) + '%';
 }
 
+function perc4(v) {
+  if (v === null || v === undefined || v === '') return '-';
+  const n = Number(v);
+  if (Number.isNaN(n)) return '-';
+  return n.toLocaleString('pt-BR', {
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 4
+  }) + '%';
+}
+
 async function carregarEstados() {
   const resp = await fetch(API + `redacao_listas.php?tipo=estados&ano=${ANO}`, { cache:'no-store' });
   const json = await resp.json();
@@ -691,7 +701,7 @@ function renderFaixas(e) {
       <div class="bar-row">
         <strong>${nome}</strong>
         <div class="bar"><div style="width:${Math.min(100, n)}%"></div></div>
-        <span>${perc(valor)}</span>
+        <span>${nome === '1000' ? perc4(valor) : perc(valor)}</span>
       </div>
     `;
   }).join('');
