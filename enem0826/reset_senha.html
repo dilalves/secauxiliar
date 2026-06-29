@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-br">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Redefinir senha</title>
+
+<style>
+  body{
+    font-family:Arial;
+    background:#f7f8fb;
+    padding:30px;
+  }
+  .card{
+    max-width:420px;
+    margin:auto;
+    background:#fff;
+    padding:24px;
+    border-radius:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+  }
+  input{
+    width:95%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:8px;
+    border:1px solid #ddd;
+  }
+  button{
+    margin-top:15px;
+    width:100%;
+    padding:12px;
+    border:none;
+    background:#0b3b78;
+    color:#fff;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .msg{
+    margin-top:10px;
+    text-align:center;
+  }
+</style>
+
+<body>
+
+<div class="card">
+  <h2>Nova senha</h2>
+
+  <input type="password" id="senha" placeholder="Nova senha">
+  <input type="password" id="confirmar" placeholder="Confirmar senha">
+
+  <button onclick="salvar()">Alterar senha</button>
+
+  <div id="msg" class="msg"></div>
+</div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/enem0826/';
+
+function getToken(){
+  const p = new URLSearchParams(location.search);
+  return p.get('token');
+}
+
+async function salvar(){
+  const senha = document.getElementById('senha').value;
+  const confirmar = document.getElementById('confirmar').value;
+  const msg = document.getElementById('msg');
+
+  msg.style.color = 'red';
+  msg.textContent = '';
+
+  if(!senha || !confirmar){
+    msg.textContent = 'Preencha os campos.';
+    return;
+  }
+
+  if(senha !== confirmar){
+    msg.textContent = 'As senhas não conferem.';
+    return;
+  }
+
+  const token = getToken();
+  if(!token){
+    msg.textContent = 'Token inválido.';
+    return;
+  }
+
+  try{
+    const r = await fetch(API + 'reset_senha.php',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ token, senha })
+    });
+
+    const data = await r.json().catch(()=>({}));
+
+    if(!r.ok || !data.ok){
+      msg.textContent = data.error || 'Erro ao redefinir senha.';
+      return;
+    }
+
+    msg.style.color = 'green';
+    msg.textContent = 'Senha alterada com sucesso!';
+
+    setTimeout(()=>{
+      location.href = './index.html';
+    },2000);
+
+  }catch(e){
+    msg.textContent = 'Erro de conexão.';
+  }
+}
+</script>
+
+</body>
+</html>

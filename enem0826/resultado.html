@@ -1,0 +1,1548 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Resultado da Unidade — Simulado Aberto ENEM</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+  :root {
+    --azul: #0b3f7f;
+    --azul2: #123f7a;
+    --azul3: #0d4b95;
+    --bg: #eaf2fb;
+    --card: #ffffff;
+    --line: #d7e4f3;
+    --text: #0f2544;
+    --muted: #64748b;
+    --soft: #f3f7fc;
+    --ok-bg: #e8f7ee;
+    --ok-line: #bfe7cc;
+    --ok-text: #206a3a;
+    --warn-bg: #fff7ed;
+    --warn-line: #fed7aa;
+    --warn-text: #92400e;
+    --bad-bg: #fff1f2;
+    --bad-line: #fecdd3;
+    --bad-text: #9f1239;
+    --shadow: 0 12px 30px rgba(11, 63, 127, .10);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  header.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: #0b3b78;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(16, 24, 40, .22);
+  }
+
+  .topbar .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .brand img {
+    height: 28px;
+    width: auto;
+    display: block;
+    flex: 0 0 auto;
+  }
+
+  .brand .title-wrap {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+    min-width: 0;
+  }
+
+  .brand .title {
+    font-weight: 700;
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #fff;
+  }
+
+  .brand .sub {
+    font-size: 12px;
+    opacity: .9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #fff;
+  }
+
+  .top-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+  }
+
+  .chip-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff !important;
+    background: rgba(255, 255, 255, .14);
+    border: 1px solid rgba(255, 255, 255, .22);
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-weight: 700;
+    line-height: 1;
+    transition: .18s ease;
+  }
+
+  .chip-link:hover { background: rgba(255, 255, 255, .22); }
+  .chip-link i { font-size: 18px; color: #fff !important; }
+
+  .user-menu { position: relative; }
+
+  .btn-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+  }
+
+  .chip-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, .14) !important;
+    border: 1px solid rgba(255, 255, 255, .22) !important;
+    border-radius: 999px;
+    padding: 8px 12px;
+    color: #fff !important;
+  }
+
+  .chip-user .mat, .chip-user .caret { color: #fff !important; opacity: .95; }
+
+  .chip-user .txt {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+    min-width: 0;
+  }
+
+  .chip-user .txt b,
+  .chip-user .txt span {
+    color: #fff !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chip-user .txt b { font-size: 12px; font-weight: 700; }
+  .chip-user .txt span { font-size: 12px; opacity: .9; }
+
+  .dropdown {
+    position: absolute;
+    right: 0;
+    top: 54px;
+    min-width: 220px;
+    background: #fff;
+    border: 1px solid #dbe6f3;
+    border-radius: 14px;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, .14);
+    padding: 8px;
+    display: none;
+    z-index: 9999;
+  }
+
+  .dropdown.open { display: block; }
+
+  .dd-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: #0f172a;
+  }
+
+  .dd-item i { color: #2563eb; font-size: 18px; }
+  .dd-item:hover { background: #f0f4ff; }
+
+  .page {
+    width: min(1500px, calc(100% - 28px));
+    margin: 86px auto 34px;
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .panel-head {
+    padding: 22px 22px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    border-bottom: 1px solid #edf3fb;
+    flex-wrap: wrap;
+  }
+
+  h1 {
+    margin: 0;
+    color: var(--azul);
+    font-size: 28px;
+    letter-spacing: -.03em;
+    line-height: 1.05;
+  }
+
+  .subtitle {
+    margin-top: 6px;
+    color: #52637c;
+    font-size: 14px;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  button, .btn-link {
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    text-decoration: none;
+    transition: .12s ease;
+    white-space: nowrap;
+  }
+
+  button.primary {
+    background: var(--azul);
+    color: #fff;
+    border-color: var(--azul);
+    box-shadow: 0 4px 12px rgba(11, 63, 127, .22);
+  }
+
+  button.secondary, .btn-link.secondary {
+    background: #fff;
+    color: var(--azul);
+    border-color: #cfe0f5;
+  }
+
+  button:hover, .btn-link:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+  }
+
+  button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .panel-body { padding: 16px 22px 22px; }
+
+  .msg {
+    margin: 0 0 15px;
+    padding: 11px 13px;
+    border-radius: 10px;
+    font-size: 13px;
+    border: 1px solid var(--line);
+    background: #f8fbff;
+    color: #40546f;
+  }
+
+  .msg.ok { background: var(--ok-bg); border-color: var(--ok-line); color: var(--ok-text); }
+  .msg.err { background: var(--bad-bg); border-color: var(--bad-line); color: var(--bad-text); }
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .kpi {
+    background: linear-gradient(180deg, #f8fbff, #f3f7fc);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    min-height: 78px;
+  }
+
+  .kpi-label {
+    color: #657792;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: .04em;
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    color: var(--azul);
+    font-size: 24px;
+    font-weight: 950;
+    line-height: 1.05;
+  }
+
+  .kpi-note {
+    color: #71829a;
+    font-size: 12px;
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .filters {
+    background: #fbfdff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1fr 170px 190px auto;
+    gap: 10px;
+    align-items: end;
+    margin-bottom: 14px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+
+  label {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+  }
+
+  input, select {
+    width: 100%;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid #d7e4f3;
+    background: #fff;
+    color: var(--text);
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--azul3);
+    box-shadow: 0 0 0 3px rgba(13, 75, 149, .10);
+  }
+
+  .table-wrap {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: auto;
+    background: #fff;
+    max-height: calc(100vh - 355px);
+    min-height: 360px;
+  }
+
+  table {
+    width: 100%;
+    min-width: 1280px;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  th, td {
+    padding: 9px 8px;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 12px;
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #edf4fd;
+    color: #07336c;
+    font-weight: 950;
+    box-shadow: 0 1px 0 #d7e4f3;
+  }
+
+  tbody tr:hover td { background: #f4f8ff; }
+
+  .num {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .nome {
+    min-width: 250px;
+    white-space: normal;
+    font-weight: 800;
+    color: #132c4e;
+  }
+
+  .insc { font-weight: 950; color: var(--azul); }
+
+  .rank {
+    min-width: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #e7f0fb;
+    border: 1px solid #cfe0f5;
+    color: var(--azul);
+    font-weight: 950;
+  }
+
+  .rank-u { background: #e9f8ef; border-color: #bfe7cc; color: #1e6b3a; }
+  .total { font-weight: 950; color: var(--azul); font-size: 13px; }
+  .total-red { font-weight: 950; color: #1e6b3a; font-size: 13px; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #eef4ff;
+    border: 1px solid #d8e6ff;
+    color: #17345d;
+    font-size: 11px;
+    font-weight: 950;
+  }
+
+  .pill.avulsa { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn-text); }
+  .pill.nao { background: var(--bad-bg); border-color: var(--bad-line); color: var(--bad-text); }
+  .pill.ok { background: var(--ok-bg); border-color: var(--ok-line); color: var(--ok-text); }
+
+  .provas {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .btn-mini {
+    height: 28px;
+    min-width: 38px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    background: #fff;
+    color: var(--azul);
+    border: 1px solid #cfe0f5;
+    box-shadow: none;
+  }
+
+  .btn-mini:hover { background: #f0f6ff; }
+  .btn-mini:disabled { opacity: .35; cursor: not-allowed; }
+
+  .empty {
+    padding: 28px;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  .footer-hint {
+    margin-top: 10px;
+    color: #64748b;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .modal-imagem-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 20, 40, .78);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+  }
+
+  .modal-imagem-backdrop.ativo { display: flex; }
+
+  .modal-imagem-box {
+    width: min(96vw, 1180px);
+    height: min(92vh, 880px);
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-imagem-head {
+    min-height: 58px;
+    background: linear-gradient(90deg, var(--azul), var(--azul2));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+  }
+
+  .modal-imagem-title { font-weight: 900; line-height: 1.2; }
+
+  .modal-imagem-title small {
+    display: block;
+    font-weight: 700;
+    opacity: .86;
+    margin-top: 2px;
+    font-size: 12px;
+  }
+
+  .modal-imagem-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .modal-imagem-actions button,
+  .modal-imagem-actions a {
+    height: 34px;
+    background: rgba(255, 255, 255, .14);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, .28);
+    box-shadow: none;
+    padding: 0 10px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 900;
+  }
+
+  .modal-imagem-actions button:hover,
+  .modal-imagem-actions a:hover { background: rgba(255, 255, 255, .22); }
+
+  .modal-imagem-body {
+    flex: 1;
+    overflow: auto;
+    background: #f3f7fc;
+    display: block;
+    cursor: grab;
+    padding: 14px;
+  }
+
+  .modal-imagem-body.arrastando { cursor: grabbing; }
+
+  .modal-imagem-body img {
+    width: 100%;
+    max-width: none;
+    max-height: none;
+    transform: rotate(0deg);
+    transition: transform .18s ease;
+    box-shadow: 0 8px 28px rgba(15, 37, 68, .16);
+    background: #83b3e0;
+  }
+
+  .modal-imagem-loading {
+    color: #64748b;
+    font-weight: 800;
+    text-align: center;
+    padding: 16px;
+  }
+
+  @media (max-width: 1050px) {
+    .kpis { grid-template-columns: repeat(3, 1fr); }
+    .filters { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 720px) {
+    header.topbar { height: auto; min-height: 64px; padding: 10px 0; }
+    .topbar .container { align-items: flex-start; }
+    .brand .title { font-size: 14px; }
+    .brand .sub { display: none; }
+    .page { width: calc(100% - 18px); margin-top: 86px; }
+    .panel-head { padding: 18px 16px; }
+    .panel-body { padding: 14px 16px 18px; }
+    h1 { font-size: 24px; }
+    .actions { width: 100%; justify-content: stretch; }
+    .actions button { flex: 1; }
+    .kpis { grid-template-columns: 1fr; }
+    .filters { grid-template-columns: 1fr; }
+    .table-wrap { max-height: none; }
+    .chip-link span, .chip-user .txt span { display: none; }
+  }
+
+  @media print {
+    .topbar, .actions, .filters, .footer-hint { display: none !important; }
+    body { background: #fff; }
+    .page { width: 100%; margin: 0; }
+    .panel { box-shadow: none; border: none; border-radius: 0; }
+    .table-wrap { max-height: none; overflow: visible; border: none; }
+    table { min-width: 0; }
+    th, td { font-size: 9px; padding: 5px; }
+  }
+  </style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container">
+    <div class="brand">
+      <img src="/fuvestao0526/logo-mini.png" alt="Logo">
+      <div class="title-wrap">
+        <div class="title">Simulado Aberto ENEM — Agosto/2026</div>
+        <div class="sub">Resultado da unidade</div>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <a href="./painel.html" class="chip-link">
+        <i class="material-icons">dashboard</i>
+        <span>Painel</span>
+      </a>
+
+      <div class="user-menu" id="userMenu">
+        <button class="chip-user btn-user" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <i class="material-icons mat">account_circle</i>
+          <div class="txt">
+            <b id="uLogin">Carregando...</b>
+            <span id="uNome"></span>
+          </div>
+          <i class="material-icons caret">arrow_drop_down</i>
+        </button>
+
+        <div class="dropdown" id="userDropdown">
+          <a href="./alterar_senha.html" class="dd-item">
+            <i class="material-icons">lock</i> Alterar senha
+          </a>
+          <a href="#" class="dd-item" onclick="logout(); return false;">
+            <i class="material-icons">logout</i> Sair
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h1>Resultado da Unidade</h1>
+        <div class="subtitle">
+          Classificação, notas TRI, redação, origem da inscrição e acesso às imagens do D1/D2.
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="secondary" id="btnExcel">
+          <span class="material-icons" style="font-size:20px">download</span>
+          Baixar Excel
+        </button>
+
+        <button type="button" class="secondary" id="btnImprimir">
+          <span class="material-icons" style="font-size:20px">print</span>
+          Imprimir
+        </button>
+
+        <button type="button" class="secondary" id="btnEstatisticas">
+          <span class="material-icons" style="font-size:20px">bar_chart</span>
+          Estatísticas
+        </button>
+
+        <button type="button" class="primary" id="btnRecarregar">
+          <span class="material-icons" style="font-size:20px">refresh</span>
+          Recarregar
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <div class="msg" id="msg" style="display:none;"></div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <div class="kpi-label">Evento</div>
+          <div class="kpi-value" id="kpiEvento">—</div>
+          <div class="kpi-note" id="kpiUnidade">—</div>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-label">Alunos no resultado</div>
+          <div class="kpi-value" id="kpiAlunos">0</div>
+          <div class="kpi-note">da unidade logada</div>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-label">Média da unidade</div>
+          <div class="kpi-value" id="kpiMedia">0,0</div>
+          <div class="kpi-note">média TRI</div>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-label">Maior nota</div>
+          <div class="kpi-value" id="kpiMaior">0,0</div>
+          <div class="kpi-note">maior TRI</div>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-label">Avulsos</div>
+          <div class="kpi-value" id="kpiAvulsos">0</div>
+          <div class="kpi-note">inscrições avulsas</div>
+        </div>
+      </div>
+
+      <div class="filters">
+        <div class="field">
+          <label for="busca">Buscar</label>
+          <input type="search" id="busca" placeholder="Nome, inscrição, CPF, lote ou arquivo">
+        </div>
+
+        <div class="field">
+          <label for="origem">Origem</label>
+          <select id="origem">
+            <option value="">Todas</option>
+            <option value="SITE">Site</option>
+            <option value="AVULSA">Avulsa</option>
+            <option value="NAO_LOCALIZADA">Não localizada</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="ordem">Ordenar por</label>
+          <select id="ordem">
+            <option value="CLS_G">Classificação geral</option>
+            <option value="CLS_U">Classificação unidade</option>
+            <option value="NOME">Nome</option>
+          </select>
+        </div>
+
+        <button type="button" class="secondary" id="btnLimpar">
+          <span class="material-icons" style="font-size:19px">filter_alt_off</span>
+          Limpar
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>INSCRIÇÃO</th>
+              <th>NOME</th>
+              <th class="num">LING</th>
+              <th class="num">HUM</th>
+              <th class="num">NAT</th>
+              <th class="num">MAT</th>
+              <th class="num">REDAÇÃO</th>
+              <th class="num">LOTE D1</th>
+              <th class="num">LOTE D2</th>
+              <th class="num">CLS_G</th>
+              <th class="num">CLS_U</th>
+              <th>ORIGEM</th>
+              <th class="num">PROVAS</th>
+            </tr>
+          </thead>
+
+          <tbody id="tbody">
+            <tr>
+              <td colspan="13" class="empty">Carregando resultado...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="footer-hint">
+        <span id="infoBar">Aguardando carregamento...</span>
+        <span>Clique em D1 ou D2 para abrir a imagem da prova.</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="modalImagem" class="modal-imagem-backdrop">
+  <div class="modal-imagem-box">
+    <div class="modal-imagem-head">
+      <div class="modal-imagem-title">
+        <span id="modalTituloImagem">Imagem da prova</span>
+        <small id="modalSubtituloImagem">Carregando...</small>
+      </div>
+
+      <div class="modal-imagem-actions">
+        <a href="#" id="btnAbrirNovaAba" target="_blank" rel="noopener" title="Abrir em nova aba">
+          <span class="material-icons" style="font-size:18px">open_in_new</span>
+          Nova aba
+        </a>
+
+        <button type="button" onclick="girarImagem(-90)" title="Girar para esquerda">
+          <span class="material-icons" style="font-size:18px">rotate_left</span>
+          Esquerda
+        </button>
+
+        <button type="button" onclick="girarImagem(90)" title="Girar para direita">
+          <span class="material-icons" style="font-size:18px">rotate_right</span>
+          Direita
+        </button>
+
+        <button type="button" onclick="resetarRotacaoImagem()" title="Resetar rotação">
+          <span class="material-icons" style="font-size:18px">restart_alt</span>
+          Resetar
+        </button>
+
+        <button type="button" onclick="fecharModalImagem()" title="Fechar">
+          <span class="material-icons" style="font-size:18px">close</span>
+          Fechar
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-imagem-body">
+      <div id="modalImagemLoading" class="modal-imagem-loading">Carregando imagem...</div>
+      <img id="imgProva" src="" alt="Imagem da prova" style="display:none;">
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = 'https://apisec.secauxiliar.com.br/enem0826/';
+  const ENDPOINT_RESULTADO = API + 'api_resultado_enem_unidade.php';
+  const ENDPOINT_IMAGEM = 'https://apisec.secauxiliar.com.br/enem0826/ver_imagem.php';
+  const EVENTO_PADRAO = 'ENEM0826';
+
+  const tbody = document.getElementById('tbody');
+  const msg = document.getElementById('msg');
+  const infoBar = document.getElementById('infoBar');
+
+  const busca = document.getElementById('busca');
+  const origem = document.getElementById('origem');
+  const ordem = document.getElementById('ordem');
+
+  const kpiEvento = document.getElementById('kpiEvento');
+  const kpiUnidade = document.getElementById('kpiUnidade');
+  const kpiAlunos = document.getElementById('kpiAlunos');
+  const kpiMedia = document.getElementById('kpiMedia');
+  const kpiMaior = document.getElementById('kpiMaior');
+  const kpiAvulsos = document.getElementById('kpiAvulsos');
+
+  let rowsCache = [];
+  let eventoAtual = '';
+  let unidadeAtual = '';
+  let unidadeNomeAtual = '';
+
+  let imagemAtual = null;
+  let imagemDiaAtual = '';
+  let rotacaoImagem = 0;
+  let tentativaExtensaoImagem = 0;
+  let zoomImagem = 1;
+
+  let arrastandoImagem = false;
+  let inicioDragX = 0;
+  let inicioDragY = 0;
+  let scrollInicialX = 0;
+  let scrollInicialY = 0;
+
+  const extensoesImagem = ['jpg', 'jpeg', 'png'];
+
+  function esc(v) {
+    return String(v ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;');
+  }
+
+  function n(v) {
+    const num = Number(v || 0);
+    return num.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+  }
+
+  function decimal(v) {
+    const num = Number(v || 0);
+    return num.toLocaleString('pt-BR', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    });
+  }
+
+  function nota(v) {
+    if (v === null || v === undefined || v === '') return '-';
+    return decimal(v);
+  }
+
+  function normalizar(v) {
+    return String(v ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .trim();
+  }
+
+  function origemLabel(v) {
+    const o = String(v || '').toUpperCase();
+    if (o === 'AVULSA') return 'AVULSA';
+    if (o === 'SITE') return 'SITE';
+    return 'NÃO LOCALIZADA';
+  }
+
+  function origemClasse(v) {
+    const o = String(v || '').toUpperCase();
+    if (o === 'AVULSA') return 'pill avulsa';
+    if (o === 'NAO_LOCALIZADA') return 'pill nao';
+    return 'pill';
+  }
+
+  function origemRedacaoLabel(v) {
+    const o = String(v || '').toUpperCase();
+    if (o === 'CORRECAO') return 'Correção';
+    if (o === 'MANUAL') return 'Manual';
+    if (o === 'PROPRIA') return 'Própria';
+    return '';
+  }
+
+  function arquivoDoDia(row, dia) {
+    return dia === 'D2'
+      ? String(row.ARQUIVO_D2 || '').trim()
+      : String(row.ARQUIVO_D1 || '').trim();
+  }
+
+  function montarKeyImagem(row, dia, ext = 'jpg') {
+    const arquivo = arquivoDoDia(row, dia).trim();
+
+    if (!arquivo) return '';
+
+    const temExtensao = /\.(jpg|jpeg|png)$/i.test(arquivo);
+    const nome = temExtensao ? arquivo : `${arquivo}.${ext}`;
+
+    return `SIM_ABERTO/${eventoAtual || EVENTO_PADRAO}/imagens/${nome}`;
+  }
+
+  function urlImagem(row, dia, ext = 'jpg') {
+    const qs = new URLSearchParams();
+
+    qs.set('evento', eventoAtual || EVENTO_PADRAO);
+    qs.set('key', montarKeyImagem(row, dia, ext));
+
+    return ENDPOINT_IMAGEM + '?' + qs.toString();
+  } 
+  function setLoading() {
+    msg.style.display = 'none';
+    msg.className = 'msg';
+    msg.textContent = '';
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="13" class="empty">Carregando resultado...</td>
+      </tr>
+    `;
+
+    infoBar.textContent = 'Aguardando retorno do servidor...';
+  }
+
+  function setError(texto) {
+    msg.style.display = 'block';
+    msg.className = 'msg err';
+    msg.textContent = texto;
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="13" class="empty">${esc(texto)}</td>
+      </tr>
+    `;
+
+    infoBar.textContent = 'Erro ao carregar resultado.';
+  }
+
+  async function carregarResultado() {
+    setLoading();
+
+    const r = await fetch(ENDPOINT_RESULTADO, {
+      credentials: 'include',
+      cache: 'no-store'
+    });
+
+    const data = await r.json();
+
+    if (!r.ok || !data.ok) {
+      throw new Error(data.error || 'Falha ao carregar resultado.');
+    }
+
+    rowsCache = data.rows || [];
+    eventoAtual = data.evento || EVENTO_PADRAO;
+    unidadeAtual = data.unidade_logada || '';
+    unidadeNomeAtual = data.unidade_nome || '';
+
+    const resumo = data.resumo || {};
+
+    kpiEvento.textContent = eventoAtual || '—';
+    kpiUnidade.textContent = unidadeAtual && unidadeNomeAtual
+      ? `Unidade ${unidadeAtual} • ${unidadeNomeAtual}`
+      : 'Unidade logada';
+
+    document.getElementById('uLogin').textContent = unidadeAtual ? `Unidade ${unidadeAtual}` : 'Unidade';
+    document.getElementById('uNome').textContent = unidadeNomeAtual || '';
+
+    kpiAlunos.textContent = n(resumo.total_alunos);
+    kpiMedia.textContent = decimal(resumo.media_total);
+    kpiMaior.textContent = decimal(resumo.maior_total);
+    kpiAvulsos.textContent = n(resumo.total_avulsos);
+
+    renderTabela();
+  }
+
+  function getRowsFiltradas() {
+    const termo = normalizar(busca.value);
+    const filtroOrigem = String(origem.value || '').toUpperCase();
+
+    let rows = rowsCache.filter(r => {
+      if (filtroOrigem && String(r.ORIGEM || '').toUpperCase() !== filtroOrigem) {
+        return false;
+      }
+
+      if (!termo) return true;
+
+      const texto = normalizar([
+        r.INSCRICAO,
+        r.CPF,
+        r.ARQUIVO_D1,
+        r.ARQUIVO_D2,
+        r.NOME,
+        r.UNIDADE,
+        r.CODIGO_UNIDADE,
+        r.LOTE,
+        r.LOTE_D1,
+        r.LOTE_D2,
+        r.ORIGEM
+      ].join(' '));
+
+      return texto.includes(termo);
+    });
+
+    const ord = ordem.value;
+
+    rows = [...rows].sort((a, b) => {
+      if (ord === 'NOME') {
+        const nomeA = normalizar(a.NOME || '');
+        const nomeB = normalizar(b.NOME || '');
+        const origemA = normalizar(a.ORIGEM || '');
+        const origemB = normalizar(b.ORIGEM || '');
+
+        const aNaoLocalizado = !nomeA || nomeA === 'NAO LOCALIZADO' || origemA === 'NAO_LOCALIZADA';
+        const bNaoLocalizado = !nomeB || nomeB === 'NAO LOCALIZADO' || origemB === 'NAO_LOCALIZADA';
+
+        if (aNaoLocalizado && !bNaoLocalizado) return 1;
+        if (!aNaoLocalizado && bNaoLocalizado) return -1;
+
+        return nomeA.localeCompare(nomeB, 'pt-BR');
+      }
+
+      if (ord === 'CLS_G') {
+        return Number(a.CLS_G || 999999) - Number(b.CLS_G || 999999)
+            || Number(a.CLS_U || 999999) - Number(b.CLS_U || 999999);
+      }
+
+      return Number(a.CLS_U || 999999) - Number(b.CLS_U || 999999)
+          || Number(a.CLS_G || 999999) - Number(b.CLS_G || 999999);
+    });
+
+    return rows;
+  }
+
+  function renderTabela() {
+    const rows = getRowsFiltradas();
+    infoBar.textContent = `${n(rows.length)} aluno(s) exibido(s) de ${n(rowsCache.length)} carregado(s).`;
+
+    if (!rows.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="13" class="empty">Nenhum resultado encontrado com os filtros atuais.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(r => {
+      const temD1 = !!String(r.ARQUIVO_D1 || '').trim();
+      const temD2 = !!String(r.ARQUIVO_D2 || '').trim();
+      const redacao = r.NOTA_REDACAO === null || r.NOTA_REDACAO === undefined || r.NOTA_REDACAO === ''
+        ? '-'
+        : nota(r.NOTA_REDACAO);
+
+      return `
+        <tr>
+          <td class="insc">${esc(r.INSCRICAO || '-')}</td>
+          <td class="nome">${esc(r.NOME || 'DADOS INVÁLIDOS')}</td>
+
+          <td class="num">${nota(r.NOTA_LINGUAGENS)}</td>
+          <td class="num">${nota(r.NOTA_HUMANAS)}</td>
+          <td class="num">${nota(r.NOTA_NATUREZA)}</td>
+          <td class="num">${nota(r.NOTA_MATEMATICA)}</td>
+          <td class="num">${redacao}</td>
+
+          <td class="num">${esc(r.LOTE_D1 || '-')}</td>
+          <td class="num">${esc(r.LOTE_D2 || '-')}</td>
+
+          <td class="num"><span class="rank">${esc(r.CLS_G || '-')}</span></td>
+          <td class="num"><span class="rank rank-u">${esc(r.CLS_U || '-')}</span></td>
+
+          <td><span class="${origemClasse(r.ORIGEM)}">${esc(origemLabel(r.ORIGEM))}</span></td>
+
+          <td class="num">
+            <span class="provas">
+              <button type="button" class="btn-mini link-imagem" data-inscricao="${esc(r.INSCRICAO || '')}" data-dia="D1" ${temD1 ? '' : 'disabled'} title="${temD1 ? esc(r.ARQUIVO_D1) : 'Sem arquivo D1'}">D1</button>
+              <button type="button" class="btn-mini link-imagem" data-inscricao="${esc(r.INSCRICAO || '')}" data-dia="D2" ${temD2 ? '' : 'disabled'} title="${temD2 ? esc(r.ARQUIVO_D2) : 'Sem arquivo D2'}">D2</button>
+            </span>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function encontrarLinhaPorInscricao(inscricao) {
+    return rowsCache.find(r => String(r.INSCRICAO || '') === String(inscricao || '')) || null;
+  }
+
+  function abrirModalImagem(inscricao, dia) {
+    const row = encontrarLinhaPorInscricao(inscricao);
+
+    if (!row) {
+      alert('Não foi possível localizar os dados da imagem.');
+      return;
+    }
+
+    const arquivo = arquivoDoDia(row, dia);
+
+    if (!arquivo) {
+      alert(`Não há arquivo ${dia} para esta inscrição.`);
+      return;
+    }
+
+    imagemAtual = row;
+    imagemDiaAtual = dia;
+    rotacaoImagem = 0;
+    zoomImagem = 1;
+    tentativaExtensaoImagem = 0;
+
+    const modal = document.getElementById('modalImagem');
+    const img = document.getElementById('imgProva');
+    const loading = document.getElementById('modalImagemLoading');
+    const btnNovaAba = document.getElementById('btnAbrirNovaAba');
+
+    document.getElementById('modalTituloImagem').textContent = `Imagem ${dia} — ${row.INSCRICAO || ''}`;
+    document.getElementById('modalSubtituloImagem').textContent = arquivo;
+
+    loading.style.display = 'block';
+    loading.textContent = 'Carregando imagem...';
+
+    img.style.display = 'none';
+    aplicarTransformImagem();
+    img.src = '';
+
+    const primeiraUrl = urlImagem(row, dia, extensoesImagem[tentativaExtensaoImagem]);
+    btnNovaAba.href = primeiraUrl;
+
+    img.onload = function () {
+      loading.style.display = 'none';
+      img.style.display = 'block';
+      btnNovaAba.href = img.src;
+    };
+
+    img.onerror = function () {
+      tentativaExtensaoImagem++;
+
+      if (tentativaExtensaoImagem < extensoesImagem.length) {
+        const novaUrl = urlImagem(imagemAtual, imagemDiaAtual, extensoesImagem[tentativaExtensaoImagem]);
+        btnNovaAba.href = novaUrl;
+        img.src = novaUrl;
+        return;
+      }
+
+      img.onerror = null;
+      img.style.display = 'none';
+      loading.style.display = 'block';
+      loading.textContent = 'Imagem não encontrada no Cloudflare para este arquivo.';
+    };
+
+    modal.classList.add('ativo');
+    img.src = primeiraUrl;
+  }
+
+  function fecharModalImagem() {
+    const modal = document.getElementById('modalImagem');
+    const img = document.getElementById('imgProva');
+
+    img.src = '';
+    img.onload = null;
+    img.onerror = null;
+
+    modal.classList.remove('ativo');
+
+    imagemAtual = null;
+    imagemDiaAtual = '';
+    rotacaoImagem = 0;
+    zoomImagem = 1;
+    tentativaExtensaoImagem = 0;
+  }
+
+  function girarImagem(graus) {
+    rotacaoImagem = (rotacaoImagem + graus) % 360;
+    aplicarTransformImagem();
+  }
+
+  function resetarRotacaoImagem() {
+    rotacaoImagem = 0;
+    zoomImagem = 1;
+    aplicarTransformImagem();
+  }
+
+  function aplicarTransformImagem() {
+    const img = document.getElementById('imgProva');
+    img.style.width = `${zoomImagem * 100}%`;
+    img.style.maxWidth = 'none';
+    img.style.maxHeight = 'none';
+    img.style.transform = `rotate(${rotacaoImagem}deg)`;
+    img.style.transformOrigin = 'center center';
+  }
+
+  function exportarExcel() {
+    const rows = getRowsFiltradas();
+
+    if (!rows.length) {
+      alert('Não há dados para exportar.');
+      return;
+    }
+
+    const cols = [
+      ['INSCRICAO', 'Inscrição'],
+      ['CPF', 'CPF'],
+      ['NOME', 'Nome'],
+      ['UNIDADE', 'Unidade'],
+      ['NOTA_LINGUAGENS', 'Linguagens'],
+      ['NOTA_HUMANAS', 'Humanas'],
+      ['NOTA_NATUREZA', 'Natureza'],
+      ['NOTA_MATEMATICA', 'Matemática'],
+      ['NOTA_REDACAO', 'Redação'],
+      ['LOTE_D1', 'Lote D1'],
+      ['ARQUIVO_D1', 'Arquivo D1'],
+      ['COR_D1', 'Cor D1'],
+      ['LOTE_D2', 'Lote D2'],
+      ['ARQUIVO_D2', 'Arquivo D2'],
+      ['COR_D2', 'Cor D2'],
+      ['CLS_G', 'Classificação Geral'],
+      ['CLS_U', 'Classificação Unidade'],
+      ['ORIGEM', 'Origem']
+    ];
+
+    const cabecalho = cols.map(c => `<th>${esc(c[1])}</th>`).join('');
+
+    const linhas = rows.map(r => `
+      <tr>
+        ${cols.map(([key]) => {
+          const valor = esc(r[key] ?? '');
+          if (key === 'INSCRICAO' || key === 'CPF') {
+            return `<td style="mso-number-format:'\\@';">${valor}</td>`;
+          }
+          return `<td>${valor}</td>`;
+        }).join('')}
+      </tr>
+    `).join('');
+
+    const htmlExcel = `
+      <html>
+      <head><meta charset="utf-8"></head>
+      <body>
+        <table border="1">
+          <thead><tr>${cabecalho}</tr></thead>
+          <tbody>${linhas}</tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + htmlExcel], {
+      type: 'application/vnd.ms-excel;charset=utf-8;'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `resultado_unidade_enem_${unidadeAtual || 'unidade'}_${eventoAtual || 'simulado'}.xls`;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+  }
+
+  function imprimirResultado() {
+    const rows = getRowsFiltradas();
+
+    if (!rows.length) {
+      alert('Não há dados para imprimir.');
+      return;
+    }
+
+    const geradoEm = new Date().toLocaleString('pt-BR');
+    const titulo = `Unidade ${unidadeAtual || ''} - ${unidadeNomeAtual || ''} - ${eventoAtual || 'ENEM'}`;
+
+    const linhas = rows.map(r => `
+      <tr>
+        <td>${esc(r.INSCRICAO || '-')}</td>
+        <td>${esc(r.NOME || 'DADOS INVÁLIDOS')}</td>
+        <td>${nota(r.NOTA_LINGUAGENS)}</td>
+        <td>${nota(r.NOTA_HUMANAS)}</td>
+        <td>${nota(r.NOTA_NATUREZA)}</td>
+        <td>${nota(r.NOTA_MATEMATICA)}</td>
+        <td>${nota(r.NOTA_REDACAO)}</td>
+        <td>${esc(r.LOTE_D1 || '-')}</td>
+        <td>${esc(r.LOTE_D2 || '-')}</td>
+        <td>${esc(r.CLS_G || '-')}</td>
+        <td>${esc(r.CLS_U || '-')}</td>
+        <td>${esc(origemLabel(r.ORIGEM))}</td>
+      </tr>
+    `).join('');
+
+    const html = `
+      <!doctype html>
+      <html lang="pt-br">
+      <head>
+        <meta charset="utf-8">
+        <title>${esc(titulo)}</title>
+        <style>
+          body { font-family: Arial, sans-serif; color: #10233f; margin: 22px; }
+          .head { border-bottom: 4px solid #0b3f7f; margin-bottom: 14px; padding-bottom: 10px; }
+          h1 { margin: 0; color: #0b3f7f; font-size: 22px; }
+          .sub { color: #64748b; margin-top: 4px; font-size: 12px; }
+          table { width: 100%; border-collapse: collapse; font-size: 10px; }
+          th { background: #0b3f7f; color: #fff; padding: 6px 4px; border: 1px solid #0b3f7f; }
+          td { border: 1px solid #d7e4f3; padding: 5px 4px; text-align: center; }
+          td:nth-child(2), th:nth-child(2) { text-align: left; }
+          tr:nth-child(even) td { background: #f3f7fc; }
+          @page { size: landscape; margin: 10mm; }
+        </style>
+      </head>
+      <body>
+        <div class="head">
+          <h1>${esc(titulo)}</h1>
+          <div class="sub">Resultado ENEM da unidade • Gerado em ${geradoEm}</div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>INSCRIÇÃO</th>
+              <th>NOME</th>
+              <th>LING</th>
+              <th>HUM</th>
+              <th>NAT</th>
+              <th>MAT</th>
+              <th>RED.</th>
+              <th>LOTE D1</th>
+              <th>LOTE D2</th>
+              <th>CLS_G</th>
+              <th>CLS_U</th>
+              <th>ORIGEM</th>
+            </tr>
+          </thead>
+          <tbody>${linhas}</tbody>
+        </table>
+
+        <script>window.onload = () => window.print();<\/script>
+      </body>
+      </html>
+    `;
+
+    const w = window.open('', '_blank');
+
+    if (!w) {
+      alert('O navegador bloqueou a janela de impressão. Permita pop-ups para esta página.');
+      return;
+    }
+
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  }
+
+  function logout() {
+    window.location.href = './logout.php';
+  }
+
+  document.getElementById('btnRecarregar').addEventListener('click', async () => {
+    try {
+      await carregarResultado();
+    } catch (e) {
+      console.error(e);
+      setError(e.message || 'Erro ao carregar resultado.');
+    }
+  });
+
+  document.getElementById('btnExcel').addEventListener('click', exportarExcel);
+  document.getElementById('btnImprimir').addEventListener('click', imprimirResultado);
+
+  document.getElementById('btnLimpar').addEventListener('click', () => {
+    busca.value = '';
+    origem.value = '';
+    ordem.value = 'CLS_G';
+    renderTabela();
+  });
+
+  busca.addEventListener('input', renderTabela);
+  origem.addEventListener('change', renderTabela);
+  ordem.addEventListener('change', renderTabela);
+
+  tbody.addEventListener('click', event => {
+    const link = event.target.closest('.link-imagem');
+    if (!link || link.disabled) return;
+
+    event.preventDefault();
+    abrirModalImagem(link.dataset.inscricao || '', link.dataset.dia || 'D1');
+  });
+
+  document.getElementById('modalImagem').addEventListener('click', event => {
+    if (event.target && event.target.id === 'modalImagem') {
+      fecharModalImagem();
+    }
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      const modal = document.getElementById('modalImagem');
+      if (modal.classList.contains('ativo')) {
+        fecharModalImagem();
+      }
+    }
+  });
+
+  document.getElementById('modalImagem').addEventListener('wheel', event => {
+    const modal = document.getElementById('modalImagem');
+    if (!modal.classList.contains('ativo')) return;
+
+    event.preventDefault();
+
+    if (event.deltaY < 0) {
+      zoomImagem = Math.min(zoomImagem + 0.1, 4);
+    } else {
+      zoomImagem = Math.max(zoomImagem - 0.1, 0.5);
+    }
+
+    aplicarTransformImagem();
+  }, { passive: false });
+
+  const modalImagemBody = document.querySelector('.modal-imagem-body');
+
+  modalImagemBody.addEventListener('mousedown', event => {
+    if (!document.getElementById('modalImagem').classList.contains('ativo')) return;
+
+    arrastandoImagem = true;
+    inicioDragX = event.clientX;
+    inicioDragY = event.clientY;
+    scrollInicialX = modalImagemBody.scrollLeft;
+    scrollInicialY = modalImagemBody.scrollTop;
+
+    modalImagemBody.classList.add('arrastando');
+    event.preventDefault();
+  });
+
+  document.addEventListener('mousemove', event => {
+    if (!arrastandoImagem) return;
+
+    const dx = event.clientX - inicioDragX;
+    const dy = event.clientY - inicioDragY;
+
+    modalImagemBody.scrollLeft = scrollInicialX - dx;
+    modalImagemBody.scrollTop = scrollInicialY - dy;
+  });
+
+  document.addEventListener('mouseup', () => {
+    arrastandoImagem = false;
+    modalImagemBody.classList.remove('arrastando');
+  });
+
+  document.getElementById('btnEstatisticas').addEventListener('click', () => {
+    window.location.href = './estatisticas_simulado.html';
+  });
+
+  document.getElementById('userBtn').addEventListener('click', () => {
+    const dd = document.getElementById('userDropdown');
+    dd.classList.toggle('open');
+    document.getElementById('userBtn').setAttribute('aria-expanded', dd.classList.contains('open') ? 'true' : 'false');
+  });
+
+  document.addEventListener('click', event => {
+    const menu = document.getElementById('userMenu');
+    if (!menu.contains(event.target)) {
+      document.getElementById('userDropdown').classList.remove('open');
+      document.getElementById('userBtn').setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  (async function init() {
+    try {
+      await carregarResultado();
+    } catch (e) {
+      console.error(e);
+      setError(e.message || 'Erro ao carregar resultado.');
+    }
+  })();
+</script>
+</body>
+</html>
