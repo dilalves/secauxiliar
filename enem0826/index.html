@@ -70,7 +70,17 @@
 
 <script>
 const API = 'https://apisec.secauxiliar.com.br/enem0826/';
-const EVENTO_FIXO = 'ENEM0826'; // ✅ fixo neste site/pasta
+const EVENTO_FIXO = 'ENEM0826';
+
+// ✅ data limite centralizada - ajustar aqui caso necessário, sem precisar alterar o código de login
+
+const DATA_LIMITE_ADESAO = {
+  dia: 16,
+  mes: 6, // julho no JavaScript: janeiro = 0
+  ano: 2026,
+  texto: '16/07/2026'
+};
+
 const params = new URLSearchParams(location.search);
 const saiuAgora = params.get('logout') === '1';
 
@@ -105,15 +115,19 @@ document.getElementById('btn').onclick = async () => {
       return;
     }
 
-    // ✅ novo: status da adesão vem do backend
     const adesaoExists = !!(data.adesao && data.adesao.exists);
     const adesaoStatus = (data.adesao && data.adesao.status) ? String(data.adesao.status).toUpperCase() : '';
 
-    // 1) não existe adesão -> manda para adesão
     if (!adesaoExists) {
-      // (se ainda quiser manter o limite de data, aplica aqui)
-      const hoje = new Date(); hoje.setHours(0,0,0,0);
-      const deadline = new Date(2026, 3, 22); deadline.setHours(0,0,0,0);
+      const hoje = new Date(); 
+      hoje.setHours(0,0,0,0);
+
+      const deadline = new Date(
+        DATA_LIMITE_ADESAO.ano,
+        DATA_LIMITE_ADESAO.mes,
+        DATA_LIMITE_ADESAO.dia
+      );
+      deadline.setHours(0,0,0,0);
 
       if (hoje <= deadline) {
         const rr = await Swal.fire({
@@ -121,7 +135,7 @@ document.getElementById('btn').onclick = async () => {
           html: `
             <div style="text-align:left; line-height:1.5;">
               <p>Você será direcionado para a <b>adesão ao evento</b>.</p>
-              <p>⏳ Adesões abertas até <b>22/04/2026</b>.</p>
+              <p>⏳ Adesões abertas até <b>${DATA_LIMITE_ADESAO.texto}</b>.</p>
               <p>⚠️ Preencha <b>TODOS</b> os campos obrigatórios para concluir.</p>
             </div>
           `,
@@ -141,7 +155,7 @@ document.getElementById('btn').onclick = async () => {
           title: 'Adesão encerrada',
           html: `
             <div style="text-align:left; line-height:1.5;">
-              <p>Não é possível realizar a adesão, pois o prazo máximo foi <b>22/04/2026</b>.</p>
+              <p>Não é possível realizar a adesão, pois o prazo máximo foi <b>${DATA_LIMITE_ADESAO.texto}</b>.</p>
             </div>
           `,
           icon: 'warning',
@@ -154,7 +168,6 @@ document.getElementById('btn').onclick = async () => {
       return;
     }
 
-    // 2) existe adesão: decide pelo status
     if (adesaoStatus === 'ATIVA') {
       location.href = './painel.html';
       return;
@@ -175,13 +188,9 @@ document.getElementById('btn').onclick = async () => {
         confirmButtonText: 'OK',
         confirmButtonColor: '#0b3b78'
       });
-
-      // fica na tela ou redireciona para uma página "status"
-      // location.href = './status.html';
       return;
     }
 
-    // 3) fallback: status desconhecido
     await Swal.fire({
       title: 'Atenção',
       text: `Adesão encontrada, mas status inesperado: ${adesaoStatus || '(vazio)'}`,
@@ -197,7 +206,6 @@ document.getElementById('btn').onclick = async () => {
   }
 };
 
-// ✅ NOVO: Esqueci minha senha
 document.getElementById('forgot').onclick = async (ev) => {
   ev.preventDefault();
 
@@ -228,11 +236,9 @@ document.getElementById('forgot').onclick = async (ev) => {
 
     msg.style.color = '#137333';
 
-    // ✅ aqui é o que você quer:
     if (data.email_mask) {
       msg.textContent = `E-mail enviado para ${data.email_mask}`;
     } else {
-      // fallback (caso o backend não mande a máscara)
       msg.textContent = 'Se o login existir, enviamos a redefinição para o e-mail institucional da unidade.';
     }
 
@@ -280,8 +286,6 @@ document.getElementById('forgot').onclick = async (ev) => {
     console.error(e);
   }
 })();
-
-
 </script>
 </body>
 </html>
