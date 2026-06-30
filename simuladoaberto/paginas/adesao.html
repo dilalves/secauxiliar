@@ -1048,7 +1048,15 @@
           <td>${esc(r.cep)}</td>
           <td>${chipStatus(r.status)}</td>
           <td>${esc(fmtData(r.criado_em))}</td>
-          <td>${renderBotaoObjetivo({ acao: 'excluir', unidade: r.unidade_internet, vagas: r.vagas })}</td>
+          <td>${
+            renderBotaoObjetivo({
+              acao: ['CANCELADA', 'AGUARDANDO'].includes(String(r.status || '').toUpperCase())
+                ? 'inserir'
+                : 'excluir',
+              unidade: r.unidade_internet,
+              vagas: r.vagas
+            })
+          }</td>
         </tr>
       `).join('');
     }
