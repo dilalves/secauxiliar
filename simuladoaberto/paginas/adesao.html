@@ -453,6 +453,7 @@
       <button id="btnBuscar">Buscar</button>
       <button id="btnLimpar" class="btn-sec">Limpar filtro</button>
       <button id="btnGerarLink" class="btn-sec">Gerar link da gráfica</button>
+      <button id="btnIncluirPendentes" class="btn-sec" disabled>Incluir pendentes</button>
     </div>
 
     <div class="resumo">
@@ -623,6 +624,9 @@
     const editValor = document.getElementById('editValor');
     const btnCancelarEdicao = document.getElementById('btnCancelarEdicao');
     const btnSalvarEdicao = document.getElementById('btnSalvarEdicao');
+    const btnIncluirPendentes = document.getElementById('btnIncluirPendentes');
+
+    let objetivoBusy = false;
 
     let editState = {
       evento: '',
@@ -659,6 +663,8 @@
       totalEstados.textContent = '0';
       totalCidades.textContent = '0';
       infoBar.textContent = 'Selecione um evento e clique em Buscar.';
+      btnIncluirPendentes.disabled = true;
+      btnIncluirPendentes.textContent = 'Incluir pendentes';
       tbody.innerHTML = `
         <tr>
           <td colspan="12" class="vazio">
@@ -788,7 +794,7 @@
     }
 
 
-    function renderBotaoObjetivo({ acao, unidade, vagas }){
+    function renderBotaoObjetivo({ acao, unidade, vagas, status }){
       const acaoNorm = String(acao || '').toLowerCase();
       const label = acaoNorm === 'inserir' ? 'Incluir' : 'Excluir';
       const cls = acaoNorm === 'inserir' ? 'btn-obj-incluir' : 'btn-obj-excluir';
@@ -805,6 +811,7 @@
             data-acao="${esc(acaoNorm)}"
             data-unidade="${esc(unidade || '')}"
             data-vagas="${esc(vagas ?? 0)}"
+            data-status="${esc(status || '')}"
             title="${esc(title)}"
           >
             ${label}
@@ -813,9 +820,17 @@
       `;
     }
 
-    async function alterarUnidadeObjetivo(btn){
+    async function alterarUnidadeObjetivo(btn, options = {}){
+      const modoLote = options.modoLote === true;
+      const pedirConfirmacao = options.confirmar !== false;
+      const mostrarSucesso = options.mostrarSucesso !== false;
+
+      if (objetivoBusy && !modoLote) return;
+      if (!modoLote) objetivoBusy = true;
+
       if (!evento.value) {
         alert('Selecione um evento antes de executar esta ação.');
+        if (!modoLote) objetivoBusy = false;
         return;
       }
 
@@ -825,6 +840,7 @@
 
       if (!unidadeNome) {
         alert('Não foi possível identificar o nome da unidade.');
+        if (!modoLote) objetivoBusy = false;
         return;
       }
 
@@ -835,21 +851,29 @@
         ? `A unidade <b>${esc(unidadeNome)}</b> será incluída no concurso <b>${esc(evento.value)}</b>.`
         : `A unidade <b>${esc(unidadeNome)}</b> será removida do concurso <b>${esc(evento.value)}</b> no site Objetivo.`;
 
-      if (typeof Swal !== 'undefined') {
-        const resp = await Swal.fire({
-          title: titulo,
-          html: texto,
-          icon: isInserir ? 'question' : 'warning',
-          showCancelButton: true,
-          confirmButtonText: isInserir ? 'Sim, incluir' : 'Sim, excluir',
-          cancelButtonText: 'Cancelar',
-          confirmButtonColor: isInserir ? '#166534' : '#991b1b'
-        });
+      if (pedirConfirmacao) {
+        if (typeof Swal !== 'undefined') {
+          const resp = await Swal.fire({
+            title: titulo,
+            html: texto,
+            icon: isInserir ? 'question' : 'warning',
+            showCancelButton: true,
+            confirmButtonText: isInserir ? 'Sim, incluir' : 'Sim, excluir',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: isInserir ? '#166534' : '#991b1b'
+          });
 
-        if (!resp.isConfirmed) return;
-      } else {
-        const ok = confirm(`${titulo}\n\n${unidadeNome}\nEvento: ${evento.value}`);
-        if (!ok) return;
+          if (!resp.isConfirmed) {
+            if (!modoLote) objetivoBusy = false;
+            return;
+          }
+        } else {
+          const ok = confirm(`${titulo}\n\n${unidadeNome}\nEvento: ${evento.value}`);
+          if (!ok) {
+            if (!modoLote) objetivoBusy = false;
+            return;
+          }
+        }
       }
 
       const fd = new FormData();
@@ -889,47 +913,63 @@
           const fdSync = new FormData();
           fdSync.append('evento', evento.value);
 
-          await fetch(API + 'api_sync_unidades_objetivo.php', {
+          const syncResp = await fetch(API + 'api_sync_unidades_objetivo.php', {
             method: 'POST',
             body: fdSync,
             credentials: 'include'
           });
+
+          const syncTxt = await syncResp.text();
+          let syncData = {};
+          try {
+            syncData = syncTxt ? JSON.parse(syncTxt) : {};
+          } catch (e) {
+            throw new Error('A API de sincronização não retornou JSON válido.');
+          }
+
+          if (!syncResp.ok || !syncData.ok) {
+            throw new Error(syncData.error || 'Erro ao sincronizar status local.');
+          }
         } catch (syncErr) {
           console.warn('Falha ao sincronizar localmente:', syncErr);
-        }        
-
-      const tr = btn.closest('tr');
-
-      if (tr) {
-        const novoStatus = isInserir ? 'ATIVA' : 'CANCELADA';
-        const novaAcao = isInserir ? 'excluir' : 'inserir';
-
-        const tdStatus = tr.querySelector('[data-col="status"]');
-        const tdAcao = tr.querySelector('[data-col="acao"]');
-
-        if (tdStatus) tdStatus.innerHTML = chipStatus(novoStatus);
-
-        if (tdAcao) {
-          tdAcao.innerHTML = renderBotaoObjetivo({
-            acao: novaAcao,
-            unidade: unidadeNome,
-            vagas: vagas
-          });
-        }
-      }
-
-      //inserir swal.fire aqui - iverte o fluxo
-              if (typeof Swal !== 'undefined') {
-          await Swal.fire({
-            title: 'Pronto!',
-            text: data.message || `Unidade ${isInserir ? 'incluída' : 'excluída'} no Objetivo com sucesso.`,
-            icon: 'success',
-            confirmButtonText: 'OK'
-          });
-        } else {
-          alert(data.message || `Unidade ${isInserir ? 'incluída' : 'excluída'} no Objetivo com sucesso.`);
+          throw syncErr;
         }
 
+        const tr = btn.closest('tr');
+
+        if (tr) {
+          const novoStatus = isInserir ? 'ATIVA' : 'CANCELADA';
+          const novaAcao = isInserir ? 'excluir' : 'inserir';
+
+          const tdStatus = tr.querySelector('[data-col="status"]');
+          const tdAcao = tr.querySelector('[data-col="acao"]');
+
+          if (tdStatus) tdStatus.innerHTML = chipStatus(novoStatus);
+
+          if (tdAcao) {
+            tdAcao.innerHTML = renderBotaoObjetivo({
+              acao: novaAcao,
+              unidade: unidadeNome,
+              vagas: vagas,
+              status: novoStatus
+            });
+          }
+        }
+
+        if (mostrarSucesso) {
+          if (typeof Swal !== 'undefined') {
+            await Swal.fire({
+              title: 'Pronto!',
+              text: data.message || `Unidade ${isInserir ? 'incluída' : 'excluída'} no Objetivo com sucesso.`,
+              icon: 'success',
+              confirmButtonText: 'OK'
+            });
+          } else {
+            alert(data.message || `Unidade ${isInserir ? 'incluída' : 'excluída'} no Objetivo com sucesso.`);
+          }
+        }
+
+        return true;
       } catch(e) {
         console.error(e);
         if (typeof Swal !== 'undefined') {
@@ -942,9 +982,86 @@
         } else {
           alert(e.message || `Erro ao ${verbo} unidade no Objetivo.`);
         }
+        return false;
       } finally {
         btn.disabled = false;
         btn.textContent = oldText;
+        if (!modoLote) objetivoBusy = false;
+      }
+    }
+
+    async function incluirPendentesObjetivo(){
+      if (objetivoBusy) return;
+
+      if (!evento.value) {
+        alert('Selecione um evento antes de incluir pendentes.');
+        return;
+      }
+
+      const botoes = [...tbody.querySelectorAll('[data-action="objetivo-unidade"][data-acao="inserir"]')]
+        .filter(btn => String(btn.dataset.status || '').toUpperCase() === 'AGUARDANDO');
+
+      if (!botoes.length) {
+        alert('Não há unidades com status AGUARDANDO para incluir.');
+        return;
+      }
+
+      if (typeof Swal !== 'undefined') {
+        const resp = await Swal.fire({
+          title: 'Incluir pendentes?',
+          html: `Serão incluídas <b>${botoes.length}</b> unidade(s) com status <b>AGUARDANDO</b>, uma por vez.`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sim, incluir',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#166534'
+        });
+
+        if (!resp.isConfirmed) return;
+      } else {
+        const ok = confirm(`Serão incluídas ${botoes.length} unidade(s) AGUARDANDO, uma por vez. Continuar?`);
+        if (!ok) return;
+      }
+
+      objetivoBusy = true;
+      btnIncluirPendentes.disabled = true;
+      const oldText = btnIncluirPendentes.textContent;
+
+      let okCount = 0;
+      let failCount = 0;
+
+      try {
+        document.querySelectorAll('[data-action="objetivo-unidade"]').forEach(b => b.disabled = true);
+
+        for (let i = 0; i < botoes.length; i++) {
+          const btn = botoes[i];
+          btnIncluirPendentes.textContent = `Incluindo ${i + 1}/${botoes.length}...`;
+
+          const ok = await alterarUnidadeObjetivo(btn, {
+            modoLote: true,
+            confirmar: false,
+            mostrarSucesso: false
+          });
+
+          if (ok) okCount++;
+          else failCount++;
+        }
+
+        if (typeof Swal !== 'undefined') {
+          await Swal.fire({
+            title: 'Processo concluído',
+            html: `Incluídas: <b>${okCount}</b><br>Falhas: <b>${failCount}</b>`,
+            icon: failCount ? 'warning' : 'success',
+            confirmButtonText: 'OK'
+          });
+        } else {
+          alert(`Processo concluído.\nIncluídas: ${okCount}\nFalhas: ${failCount}`);
+        }
+      } finally {
+        btnIncluirPendentes.textContent = oldText;
+        objetivoBusy = false;
+        await carregarAdesoes();
+        await carregarUnidadesSemAdesao();
       }
     }
 
@@ -1055,6 +1172,9 @@
 
       const rows = data.rows || [];
       const resumo = data.resumo || {};
+      const totalAguardando = rows.filter(r => String(r.status || '').toUpperCase() === 'AGUARDANDO').length;
+      btnIncluirPendentes.disabled = totalAguardando === 0;
+      btnIncluirPendentes.textContent = totalAguardando ? `Incluir pendentes (${totalAguardando})` : 'Incluir pendentes';
 
       totalAdesoes.textContent = Number(resumo.total_adesoes || 0).toLocaleString('pt-BR');
       totalVagas.textContent = Number(resumo.total_vagas || 0).toLocaleString('pt-BR');
@@ -1088,7 +1208,8 @@
                 ? 'inserir'
                 : 'excluir',
               unidade: r.unidade_internet,
-              vagas: r.vagas
+              vagas: r.vagas,
+              status: r.status
             })
           }</td>
         </tr>
@@ -1151,7 +1272,7 @@
           <td>${esc(r.uf || '-')}</td>
           <td>${esc(fmtData(r.dt_importacao))}</td>
           <td><span class="chip status-FALTANTE">Sem adesão</span></td>
-          <td>${renderBotaoObjetivo({ acao: 'inserir', unidade: r.unidade_nome, vagas: r.vagas })}</td>
+          <td>${renderBotaoObjetivo({ acao: 'inserir', unidade: r.unidade_nome, vagas: r.vagas, status: 'FALTANTE' })}</td>
         </tr>
       `).join('');
     }
@@ -1171,6 +1292,8 @@
       resetBlocoAdesoes();
       resetBlocoFaltantes();
     });
+
+    btnIncluirPendentes.addEventListener('click', incluirPendentesObjetivo);
 
     document.getElementById('btnGerarLink').addEventListener('click', async () => {
       try {
