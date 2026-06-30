@@ -898,7 +898,28 @@
           console.warn('Falha ao sincronizar localmente:', syncErr);
         }        
 
-        if (typeof Swal !== 'undefined') {
+      const tr = btn.closest('tr');
+
+      if (tr) {
+        const novoStatus = isInserir ? 'ATIVA' : 'CANCELADA';
+        const novaAcao = isInserir ? 'excluir' : 'inserir';
+
+        const tdStatus = tr.querySelector('[data-col="status"]');
+        const tdAcao = tr.querySelector('[data-col="acao"]');
+
+        if (tdStatus) tdStatus.innerHTML = chipStatus(novoStatus);
+
+        if (tdAcao) {
+          tdAcao.innerHTML = renderBotaoObjetivo({
+            acao: novaAcao,
+            unidade: unidadeNome,
+            vagas: vagas
+          });
+        }
+      }
+
+      //inserir swal.fire aqui - iverte o fluxo
+              if (typeof Swal !== 'undefined') {
           await Swal.fire({
             title: 'Pronto!',
             text: data.message || `Unidade ${isInserir ? 'incluída' : 'excluída'} no Objetivo com sucesso.`,
@@ -909,8 +930,6 @@
           alert(data.message || `Unidade ${isInserir ? 'incluída' : 'excluída'} no Objetivo com sucesso.`);
         }
 
-        await carregarAdesoes();
-        await carregarUnidadesSemAdesao();
       } catch(e) {
         console.error(e);
         if (typeof Swal !== 'undefined') {
@@ -1061,9 +1080,9 @@
           <td>${esc(r.cidade)}</td>
           <td>${esc(r.uf)}</td>
           <td>${esc(r.cep)}</td>
-          <td>${chipStatus(r.status)}</td>
+          <td data-col="status">${chipStatus(r.status)}</td>
           <td>${esc(fmtData(r.criado_em))}</td>
-          <td>${
+          <td data-col="acao">${
             renderBotaoObjetivo({
               acao: ['CANCELADA', 'AGUARDANDO'].includes(String(r.status || '').toUpperCase())
                 ? 'inserir'
