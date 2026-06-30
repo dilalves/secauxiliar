@@ -883,6 +883,21 @@
           throw new Error(data.error || `Erro ao ${verbo} unidade no Objetivo.`);
         }
 
+        try {
+          btn.textContent = 'Sincronizando...';
+
+          const fdSync = new FormData();
+          fdSync.append('evento', evento.value);
+
+          await fetch(API + 'api_sync_unidades_objetivo.php', {
+            method: 'POST',
+            body: fdSync,
+            credentials: 'include'
+          });
+        } catch (syncErr) {
+          console.warn('Falha ao sincronizar localmente:', syncErr);
+        }        
+
         if (typeof Swal !== 'undefined') {
           await Swal.fire({
             title: 'Pronto!',
