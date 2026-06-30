@@ -148,7 +148,7 @@
     table{
       width:100%;
       border-collapse:collapse;
-      min-width:1480px;
+      min-width:1360px;
     }
 
     th, td{
@@ -290,50 +290,6 @@
       height:12px;
       fill:currentColor;
       display:block;
-    }
-
-
-
-    .btn-acao-obj{
-      height:30px;
-      min-width:78px;
-      border-radius:999px;
-      padding:0 10px;
-      font-size:12px;
-      font-weight:800;
-      line-height:1;
-      white-space:nowrap;
-      border:1px solid transparent;
-      box-shadow:none;
-    }
-
-    .btn-acao-obj:hover{
-      filter:brightness(1.04);
-    }
-
-    .btn-acao-obj:disabled{
-      opacity:.65;
-      cursor:not-allowed;
-      filter:none;
-    }
-
-    .btn-obj-incluir{
-      background:#dcfce7;
-      color:#166534;
-      border-color:#86efac;
-    }
-
-    .btn-obj-excluir{
-      background:#fee2e2;
-      color:#991b1b;
-      border-color:#fecaca;
-    }
-
-    .acao-wrap{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      flex-wrap:wrap;
     }
 
     .modal-edit-backdrop{
@@ -499,11 +455,10 @@
             <th>CEP</th>
             <th>Status</th>
             <th>Criado em</th>
-            <th>Ação</th>
           </tr>
         </thead>
         <tbody id="tbody">
-          <tr><td colspan="12" class="vazio">Selecione um evento para carregar as adesões.</td></tr>
+          <tr><td colspan="11" class="vazio">Selecione um evento para carregar as adesões.</td></tr>
         </tbody>
       </table>
     </div>
@@ -560,11 +515,10 @@
             <th>UF</th>
             <th>Importado em</th>
             <th>Motivo</th>
-            <th>Ação</th>
           </tr>
         </thead>
         <tbody id="tbodyFaltantes">
-          <tr><td colspan="11" class="vazio">Selecione um evento para conferir unidades sem adesão.</td></tr>
+          <tr><td colspan="10" class="vazio">Selecione um evento para conferir unidades sem adesão.</td></tr>
         </tbody>
       </table>
     </div>
@@ -661,7 +615,7 @@
       infoBar.textContent = 'Selecione um evento e clique em Buscar.';
       tbody.innerHTML = `
         <tr>
-          <td colspan="12" class="vazio">
+          <td colspan="11" class="vazio">
             Selecione um evento para carregar as adesões.
           </td>
         </tr>
@@ -677,7 +631,7 @@
       infoBarFaltantes.textContent = 'Selecione um evento para consultar.';
       tbodyFaltantes.innerHTML = `
         <tr>
-          <td colspan="11" class="vazio">
+          <td colspan="10" class="vazio">
             Selecione um evento para conferir unidades sem adesão.
           </td>
         </tr>
@@ -787,133 +741,6 @@
       return `<span class="vaga-wrap">${html}</span>`;
     }
 
-
-    function renderBotaoObjetivo({ acao, unidade, vagas }){
-      const acaoNorm = String(acao || '').toLowerCase();
-      const label = acaoNorm === 'inserir' ? 'Incluir' : 'Excluir';
-      const cls = acaoNorm === 'inserir' ? 'btn-obj-incluir' : 'btn-obj-excluir';
-      const title = acaoNorm === 'inserir'
-        ? 'Incluir esta unidade no concurso do site Objetivo'
-        : 'Excluir esta unidade do concurso no site Objetivo';
-
-      return `
-        <span class="acao-wrap">
-          <button
-            type="button"
-            class="btn-acao-obj ${cls}"
-            data-action="objetivo-unidade"
-            data-acao="${esc(acaoNorm)}"
-            data-unidade="${esc(unidade || '')}"
-            data-vagas="${esc(vagas ?? 0)}"
-            title="${esc(title)}"
-          >
-            ${label}
-          </button>
-        </span>
-      `;
-    }
-
-    async function alterarUnidadeObjetivo(btn){
-      if (!evento.value) {
-        alert('Selecione um evento antes de executar esta ação.');
-        return;
-      }
-
-      const acao = String(btn.dataset.acao || '').toLowerCase();
-      const unidadeNome = String(btn.dataset.unidade || '').trim();
-      const vagas = String(btn.dataset.vagas || '0').trim();
-
-      if (!unidadeNome) {
-        alert('Não foi possível identificar o nome da unidade.');
-        return;
-      }
-
-      const isInserir = acao === 'inserir';
-      const verbo = isInserir ? 'incluir' : 'excluir';
-      const titulo = isInserir ? 'Incluir unidade no Objetivo?' : 'Excluir unidade do Objetivo?';
-      const texto = isInserir
-        ? `A unidade <b>${esc(unidadeNome)}</b> será incluída no concurso <b>${esc(evento.value)}</b>.`
-        : `A unidade <b>${esc(unidadeNome)}</b> será removida do concurso <b>${esc(evento.value)}</b> no site Objetivo.`;
-
-      if (typeof Swal !== 'undefined') {
-        const resp = await Swal.fire({
-          title: titulo,
-          html: texto,
-          icon: isInserir ? 'question' : 'warning',
-          showCancelButton: true,
-          confirmButtonText: isInserir ? 'Sim, incluir' : 'Sim, excluir',
-          cancelButtonText: 'Cancelar',
-          confirmButtonColor: isInserir ? '#166534' : '#991b1b'
-        });
-
-        if (!resp.isConfirmed) return;
-      } else {
-        const ok = confirm(`${titulo}\n\n${unidadeNome}\nEvento: ${evento.value}`);
-        if (!ok) return;
-      }
-
-      const fd = new FormData();
-      fd.append('evento', evento.value);
-      fd.append('unidade_internet', unidadeNome);
-      fd.append('acao', acao);
-      fd.append('vagas', vagas || '0');
-
-      const oldText = btn.textContent;
-
-      try {
-        btn.disabled = true;
-        btn.textContent = isInserir ? 'Incluindo...' : 'Excluindo...';
-
-        const r = await fetch(API + 'api_objetivo_alterar_unidade.php', {
-          method: 'POST',
-          body: fd,
-          credentials: 'include'
-        });
-
-        const txt = await r.text();
-        let data = {};
-
-        try {
-          data = txt ? JSON.parse(txt) : {};
-        } catch (e) {
-          throw new Error('O endpoint não retornou JSON válido.');
-        }
-
-        if (!r.ok || !data.ok) {
-          throw new Error(data.error || `Erro ao ${verbo} unidade no Objetivo.`);
-        }
-
-        if (typeof Swal !== 'undefined') {
-          await Swal.fire({
-            title: 'Pronto!',
-            text: data.message || `Unidade ${isInserir ? 'incluída' : 'excluída'} no Objetivo com sucesso.`,
-            icon: 'success',
-            confirmButtonText: 'OK'
-          });
-        } else {
-          alert(data.message || `Unidade ${isInserir ? 'incluída' : 'excluída'} no Objetivo com sucesso.`);
-        }
-
-        await carregarAdesoes();
-        await carregarUnidadesSemAdesao();
-      } catch(e) {
-        console.error(e);
-        if (typeof Swal !== 'undefined') {
-          Swal.fire({
-            title: 'Erro',
-            text: e.message || `Erro ao ${verbo} unidade no Objetivo.`,
-            icon: 'error',
-            confirmButtonText: 'OK'
-          });
-        } else {
-          alert(e.message || `Erro ao ${verbo} unidade no Objetivo.`);
-        }
-      } finally {
-        btn.disabled = false;
-        btn.textContent = oldText;
-      }
-    }
-
     async function salvarVagas(){
       const valorLimpo = String(editValor.value ?? '').trim();
 
@@ -998,7 +825,7 @@
         return;
       }
 
-      tbody.innerHTML = `<tr><td colspan="12" class="vazio">Carregando...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="11" class="vazio">Carregando...</td></tr>`;
       infoBar.textContent = 'Carregando...';
       totalAdesoes.textContent = '0';
       totalVagas.textContent = '0';
@@ -1031,7 +858,7 @@
       infoBar.textContent = `${rows.length} adesão(ões) encontrada(s).`;
 
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="12" class="vazio">Nenhuma adesão encontrada para o filtro selecionado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="vazio">Nenhuma adesão encontrada para o filtro selecionado.</td></tr>`;
         return;
       }
 
@@ -1048,7 +875,6 @@
           <td>${esc(r.cep)}</td>
           <td>${chipStatus(r.status)}</td>
           <td>${esc(fmtData(r.criado_em))}</td>
-          <td>${renderBotaoObjetivo({ acao: 'excluir', unidade: r.unidade_internet, vagas: r.vagas })}</td>
         </tr>
       `).join('');
     }
@@ -1059,7 +885,7 @@
         return;
       }
 
-      tbodyFaltantes.innerHTML = `<tr><td colspan="11" class="vazio">Carregando...</td></tr>`;
+      tbodyFaltantes.innerHTML = `<tr><td colspan="10" class="vazio">Carregando...</td></tr>`;
       infoBarFaltantes.textContent = 'Carregando...';
 
       faltantesTotal.textContent = '0';
@@ -1093,7 +919,7 @@
       infoBarFaltantes.textContent = `${rows.length} unidade(s) no site sem adesão encontrada(s).`;
 
       if (!rows.length) {
-        tbodyFaltantes.innerHTML = `<tr><td colspan="11" class="vazio">Nenhuma unidade no site sem adesão para este evento.</td></tr>`;
+        tbodyFaltantes.innerHTML = `<tr><td colspan="10" class="vazio">Nenhuma unidade no site sem adesão para este evento.</td></tr>`;
         return;
       }
 
@@ -1109,7 +935,6 @@
           <td>${esc(r.uf || '-')}</td>
           <td>${esc(fmtData(r.dt_importacao))}</td>
           <td><span class="chip status-FALTANTE">Sem adesão</span></td>
-          <td>${renderBotaoObjetivo({ acao: 'inserir', unidade: r.unidade_nome, vagas: r.vagas })}</td>
         </tr>
       `).join('');
     }
@@ -1211,19 +1036,6 @@
       });
     });
 
-    tbody.addEventListener('click', async (e) => {
-      const btn = e.target.closest('[data-action="objetivo-unidade"]');
-      if (!btn) return;
-      await alterarUnidadeObjetivo(btn);
-    });
-
-    tbodyFaltantes.addEventListener('click', async (e) => {
-      const btn = e.target.closest('[data-action="objetivo-unidade"]');
-      if (!btn) return;
-      await alterarUnidadeObjetivo(btn);
-    });
-
-
     btnCancelarEdicao.addEventListener('click', fecharModalEdicao);
 
     btnSalvarEdicao.addEventListener('click', async () => {
@@ -1259,10 +1071,10 @@
       } catch(e){
         console.error(e);
         infoBar.textContent = 'Erro ao carregar dados.';
-        tbody.innerHTML = `<tr><td colspan="12" class="vazio">Erro ao carregar dados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="vazio">Erro ao carregar dados.</td></tr>`;
 
         infoBarFaltantes.textContent = 'Erro ao carregar dados.';
-        tbodyFaltantes.innerHTML = `<tr><td colspan="11" class="vazio">Erro ao carregar dados.</td></tr>`;
+        tbodyFaltantes.innerHTML = `<tr><td colspan="10" class="vazio">Erro ao carregar dados.</td></tr>`;
       }
     })();
   </script>
