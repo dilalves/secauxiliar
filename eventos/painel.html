@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+  <title>Portal de Prestadores - Painel</title>
+
+  <style>
+    :root{
+      --bg:#eef4fb;
+      --panel:#f6f9fe;
+      --primary:#0b3b78;
+      --accent:#2563eb;
+      --line:#dbe6f3;
+      --text:#0f172a;
+      --muted:#64748b;
+      --menu-h:56px;
+      --top-h:64px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body{
+      margin:0;
+      padding:0;
+      font-family:system-ui,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      height:100%;
+    }
+
+    body{
+      overflow-y:auto;
+    }
+
+    .topbar{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:var(--top-h);
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 24px;
+      box-shadow:0 2px 10px rgba(0,0,0,.12);
+      z-index:1000;
+    }
+
+    .topbar-left{
+      display:flex;
+      align-items:center;
+      min-width:0;
+    }
+
+    .topbar img{
+      height:28px;
+      margin-right:12px;
+      display:block;
+    }
+
+    .topbar h5{
+      margin:0;
+      font-weight:600;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-size:15px;
+    }
+
+    .userbox{
+      font-size:14px;
+      opacity:.95;
+      white-space:nowrap;
+      margin-left:16px;
+    }
+
+    .menu{
+      position:fixed;
+      top:var(--top-h);
+      left:0;
+      right:0;
+      min-height:var(--menu-h);
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(8px);
+      border-bottom:1px solid var(--line);
+      padding:10px 20px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      z-index:999;
+      overflow:visible;
+    }
+
+    .menu button{
+      border:none;
+      background:#e8f0fb;
+      color:#12345b;
+      padding:10px 16px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      transition:.15s ease;
+    }
+
+    .menu button:hover{
+      background:#dbeafe;
+    }
+
+    .menu button.ativo{
+      background:#0b3b78;
+      color:#fff;
+      box-shadow:0 4px 12px rgba(11,59,120,.22);
+    }
+
+    .menu .btn-sair{
+      margin-left:auto;
+      background:#fde8e8;
+      color:#8b2c2c;
+    }
+
+    .menu .btn-sair:hover{
+      background:#fbd5d5;
+    }
+
+    .menu-item{
+      position:relative;
+    }
+
+    .menu-item > button{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .seta{
+      font-size:12px;
+      line-height:1;
+      opacity:.85;
+    }
+
+    .submenu{
+      display:none;
+      position:absolute;
+      top:100%;
+      left:0;
+      min-width:220px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      box-shadow:0 12px 28px rgba(11,59,120,.14);
+      padding:8px;
+      z-index:1200;
+    }
+
+    .menu-item:hover .submenu{
+      display:block;
+    }
+
+    .submenu button{
+      width:100%;
+      text-align:left;
+      background:#fff;
+      color:#12345b;
+      border:none;
+      border-radius:8px;
+      padding:10px 12px;
+      font-weight:600;
+      box-shadow:none;
+    }
+
+    .submenu button:hover{
+      background:#eef4fb;
+    }
+
+    .submenu button.ativo{
+      background:#0b3b78;
+      color:#fff;
+      box-shadow:0 4px 12px rgba(11,59,120,.18);
+    }
+
+    #conteudo{
+      padding:calc(var(--top-h) + var(--menu-h) + 20px) 20px 20px;
+      min-height:100vh;
+      background:var(--bg);
+    }
+
+    .frame-wrap{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      box-shadow:0 8px 24px rgba(11,59,120,.06);
+      min-height:calc(100vh - (var(--top-h) + var(--menu-h) + 40px));
+    }
+
+    iframe{
+      width:100%;
+      height:calc(100vh - (var(--top-h) + var(--menu-h) + 70px));
+      border:none;
+      background:#fff;
+      border-radius:10px;
+      display:block;
+    }
+
+    #loading{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+      color:var(--muted);
+      font-size:16px;
+      background:var(--bg);
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    @media (max-width: 900px){
+      .menu{
+        align-items:flex-start;
+      }
+
+      #conteudo{
+        padding-top:150px;
+      }
+
+      iframe{
+        height:calc(100vh - 190px);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loading">Verificando acesso...</div>
+
+  <div id="app" class="hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <img src="/optativos/logo-mini.png" alt="Logo">
+        <h5>Portal de Prestadores - Painel Administrativo</h5>
+      </div>
+      <div class="userbox" id="userbox"></div>
+    </header>
+
+    <div class="menu">
+      <button
+        type="button"
+        data-page="paginas/dashboard.html"
+        onclick="abrir('paginas/dashboard.html', this)">
+        Dashboard
+      </button>
+
+      <div class="menu-item">
+        <button type="button">
+          Cadastro <span class="seta">▾</span>
+        </button>
+        <div class="submenu">
+          <button
+            type="button"
+            data-page="paginas/eventos.html"
+            onclick="abrir('paginas/eventos.html', this)">
+            Eventos
+          </button>
+          <button
+            type="button"
+            data-page="paginas/prestadores.html"
+            onclick="abrir('paginas/prestadores.html', this)">
+            Prestadores
+          </button>
+          <button
+            type="button"
+            data-page="paginas/unidades.html"
+            onclick="abrir('paginas/unidades.html', this)">
+            Unidades
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        data-page="paginas/pedidos_pagamento.html"
+        onclick="abrir('paginas/pedidos_pagamento.html', this)">
+        Pedidos de Pagamento
+      </button>
+
+      <button
+        type="button"
+        data-page="paginas/relatorios.html"
+        onclick="abrir('paginas/relatorios.html', this)">
+        Relatórios
+      </button>
+
+      <button class="btn-sair" type="button" onclick="logout()">Sair</button>
+    </div>
+
+    <div id="conteudo">
+      <div class="frame-wrap">
+        <iframe id="frame" src="paginas/dashboard.html"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/prestadores_adm/';
+
+    function marcarAtivo(botao){
+      document.querySelectorAll('.menu button, .submenu button').forEach(btn => {
+        btn.classList.remove('ativo');
+      });
+
+      if (botao) {
+        botao.classList.add('ativo');
+      }
+    }
+
+    function fecharSubmenus(){
+    }
+
+ //   function abrir(pagina, botao = null){
+ //     const frame = document.getElementById('frame');
+ //     frame.src = pagina + '?v=' + Date.now();
+ //     marcarAtivo(botao);
+ //     fecharSubmenus();
+ //   }
+
+    function abrir(pagina, botao = null){
+      const frame = document.getElementById('frame');
+      const separador = pagina.includes('?') ? '&' : '?';
+      frame.src = pagina + separador + 'v=' + Date.now();
+      marcarAtivo(botao);
+      fecharSubmenus();
+    }
+
+    async function verificarSessao(){
+      try{
+        const r = await fetch(API + 'auth_me.php', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        const data = await r.json();
+
+        if (!r.ok || !data.ok) {
+          throw new Error(data.msg || data.error || 'Sessão inválida');
+        }
+
+        const user = data.user || {};
+        const nivel = String(user.nivel || '').trim().toLowerCase();
+
+        if (nivel !== 'admin') {
+          throw new Error('Sem permissão');
+        }
+
+        document.getElementById('userbox').textContent =
+          (user.nome || user.login || 'Usuário') + ' • ' + nivel;
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+
+        abrir('paginas/dashboard.html');
+
+      } catch (e) {
+        console.error('Falha ao validar sessão:', e);
+        location.replace('./index.html');
+      }
+    }
+
+    async function logout(){
+      try{
+        await fetch(API + 'auth_logout.php', {
+          method:'POST',
+          credentials:'include',
+          cache:'no-store'
+        });
+      } catch(e){
+        console.warn('Falha ao chamar logout da API');
+      }
+
+      localStorage.removeItem('PRTADM_token');
+      sessionStorage.clear();
+      location.replace('./index.html');
+    }
+   
+    verificarSessao();
+  </script>
+</body>
+</html>
