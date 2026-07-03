@@ -7,6 +7,11 @@
 <style>
 :root{--bg:#f6f9fe;--card:#fff;--line:#dbe6f3;--primary:#0b3b78;--accent:#2563eb;--text:#0f172a;--muted:#64748b;--danger:#b42318;--ok:#067647}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,Arial,sans-serif;color:var(--text);padding:18px}.wrap{max-width:1400px;margin:0 auto}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.top h1{font-size:22px;margin:0;color:#0b3b78}.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px rgba(11,59,120,.06);padding:16px;margin-bottom:14px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.toolbar input,.toolbar select{height:40px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:#fff}.toolbar input{min-width:280px}.btn{border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:#e8f0fb;color:#12345b}.btn.primary{background:#0b3b78;color:#fff}.btn.danger{background:#fde8e8;color:#8b2c2c}.btn.ok{background:#e8f7ef;color:#05603a}.btn:disabled{opacity:.55;cursor:not-allowed}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:12px;color:var(--muted);font-weight:700}.field input,.field select{height:40px;border:1px solid var(--line);border-radius:10px;padding:0 10px;background:#fff;text-transform:none}.field input.upper{text-transform:uppercase}.span2{grid-column:span 2}.span4{grid-column:span 4}.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:14px}.msg{font-size:14px;margin-top:10px}.msg.ok{color:var(--ok)}.msg.err{color:var(--danger)}table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;overflow:hidden}th,td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:middle}th{background:#eef4fb;color:#12345b;font-size:12px;position:sticky;top:0}tr:hover td{background:#f8fbff}.table-wrap{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:12px}.pill{display:inline-flex;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:700;background:#eef4fb;color:#12345b}.pill.off{background:#fde8e8;color:#8b2c2c}.row-actions{display:flex;gap:6px}.mini{padding:7px 9px;border-radius:8px;font-size:12px}.hidden{display:none!important}@media(max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.span4{grid-column:span 2}}@media(max-width:650px){body{padding:10px}.grid{grid-template-columns:1fr}.span2,.span4{grid-column:span 1}.toolbar input{min-width:100%;width:100%}}
+.field input[readonly]{
+  background:#f1f5f9;
+  color:#64748b;
+  cursor:not-allowed;
+}
 </style>
 </head>
 <body>
@@ -46,7 +51,7 @@
         <div class="field"><label>PIS</label><input id="pis" maxlength="30"></div>
         <div class="field"><label>Data nascimento</label><input id="data_nascimento" type="date"></div>
 
-        <div class="field"><label>CTRL antigo</label><input id="ctrl_antigo" maxlength="11"></div>
+        <div class="field"><label>CTRL antigo</label><input id="ctrl_antigo" maxlength="11" readonly class="readonly"></div>
         <div class="field"><label>Empresa</label><input id="empresa" maxlength="4"></div>
         <div class="field"><label>Funcional</label><input id="funcional" maxlength="6"></div>
         <div class="field"><label>Unidade origem</label><input id="cod_unidade" maxlength="20" placeholder="1501, 0702..."></div>
@@ -71,7 +76,6 @@
 
       <div class="actions">
         <button type="button" class="btn" onclick="cancelar()">Cancelar</button>
-        <button type="button" id="btnExcluir" class="btn danger hidden" onclick="excluirAtual()">Inativar</button>
         <button type="submit" id="btnSalvar" class="btn primary">Salvar</button>
       </div>
       <div id="msgForm" class="msg"></div>
@@ -139,7 +143,6 @@ async function editar(id){
     campos.forEach(c => { if(el(c)) el(c).value = p[c] ?? ''; });
     if(el('cpf').value) maskCPF(el('cpf'));
     if(el('cep').value) maskCEP(el('cep'));
-    el('btnExcluir').classList.remove('hidden');
     msg(''); abrirForm();
   }catch(e){ alert(e.message); }
 }
