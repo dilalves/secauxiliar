@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cadastro de Eventos</title>
+<style>
+:root{--bg:#f6f9fe;--card:#fff;--line:#dbe6f3;--primary:#0b3b78;--text:#0f172a;--muted:#64748b;--danger:#b42318;--ok:#067647;--soft:#eef4fb;--warn:#b54708}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,Arial,sans-serif;color:var(--text);padding:18px}.wrap{max-width:1420px;margin:0 auto}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.top h1{font-size:22px;margin:0;color:var(--primary)}.btn{border:none;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;background:#e8f0fb;color:#12345b}.btn.primary{background:var(--primary);color:#fff}.btn.danger{background:#fde8e8;color:#8b2c2c}.btn.ok{background:#e8f7ef;color:#05603a}.btn:disabled{opacity:.55;cursor:not-allowed}.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px rgba(11,59,120,.06);padding:14px;margin-bottom:14px}.grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}.grid .wide{grid-column:span 2}.grid .full{grid-column:1/-1}label{display:block;font-size:12px;color:#475569;font-weight:900;text-transform:uppercase;margin-bottom:4px}input,select{width:100%;border:1px solid #d8e5f3;background:#fff;border-radius:9px;padding:10px;font-size:14px}input[readonly]{background:#edf3fb;color:#475569;font-weight:800}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}.sec-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 10px}.sec-title h2{font-size:16px;color:var(--primary);margin:0}.table-wrap{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff}table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}th{background:#eef4fb;color:#12345b;font-size:12px;position:sticky;top:0;z-index:1}tr:hover td{background:#f8fbff}.right{text-align:right}.center{text-align:center}.muted{color:var(--muted)}.pill{display:inline-flex;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:900;background:#eef4fb;color:#12345b}.pill.off{background:#fde8e8;color:#8b2c2c}.msg{padding:10px 12px;border-radius:10px;margin-bottom:12px;font-weight:800;display:none}.msg.ok{display:block;background:#e8f7ef;color:#05603a;border:1px solid #abefc6}.msg.err{display:block;background:#fff1f0;color:#8a1f17;border:1px solid #fecdca}.split{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}.valores-box{max-height:235px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff}.loading{padding:18px;color:var(--muted)}.small{font-size:12px}.inline-filter{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.inline-filter>div{min-width:180px}.inline-filter .grow{flex:1;min-width:260px}@media(max-width:1000px){.grid,.split{grid-template-columns:1fr}.grid .wide{grid-column:span 1}.inline-filter>div{min-width:100%;}}@media(max-width:700px){body{padding:10px}.top{align-items:flex-start;flex-direction:column}.actions .btn{width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Cadastro de Eventos</h1>
+    <div>
+      <button class="btn" onclick="history.back()">Voltar</button>
+      <button class="btn primary" onclick="novoEvento()">Novo evento</button>
+    </div>
+  </div>
+
+  <div id="msg" class="msg"></div>
+
+  <div class="split">
+    <div class="card">
+      <div class="sec-title"><h2 id="formTitulo">Novo evento</h2><span class="muted small">O código é gerado automaticamente no PHP</span></div>
+      <form id="formEvento" onsubmit="salvarEvento(event)">
+        <input type="hidden" id="id">
+        <div class="grid">
+          <div>
+            <label>Código</label>
+            <input id="codigo" readonly placeholder="automático">
+          </div>
+          <div>
+            <label>Tipo / categoria</label>
+            <select id="tipo"></select>
+          </div>
+          <div>
+            <label>Data</label>
+            <input id="data_evento" type="date" required>
+          </div>
+          <div>
+            <label>Bloqueado</label>
+            <select id="bloqueado"><option value="0">Não</option><option value="1">Sim</option></select>
+          </div>
+          <div class="wide">
+            <label>Nome do evento</label>
+            <input id="nome" maxlength="180" required placeholder="Ex.: SIMULADO CADERNO 3">
+          </div>
+          <div>
+            <label>Entrada</label>
+            <input id="hora_entrada" type="time" value="00:00">
+          </div>
+          <div>
+            <label>Saída</label>
+            <input id="hora_saida" type="time" value="00:00">
+          </div>
+          <div>
+            <label>Cod. unidade</label>
+            <input id="cod_unidade" maxlength="20" placeholder="opcional">
+          </div>
+          <div>
+            <label>Valor máximo</label>
+            <input id="valor_maximo" inputmode="decimal" placeholder="0,00">
+          </div>
+          <div class="wide">
+            <label>Ajuda rápida</label>
+            <input readonly value="Use o tipo para consultar os valores padronizados ao lado.">
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" type="submit" id="btnSalvar">Salvar</button>
+          <button class="btn" type="button" onclick="novoEvento()">Limpar</button>
+          <button class="btn danger" type="button" id="btnExcluir" onclick="excluirAtual()" disabled>Excluir</button>
+          <button class="btn ok" type="button" onclick="usarValorPadrao()">Usar menor valor padrão</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="sec-title"><h2>Valores padronizados</h2><span id="valoresResumo" class="muted small"></span></div>
+      <div id="valoresBox" class="valores-box loading">Carregando valores...</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><h2>Eventos cadastrados</h2><span id="totalEventos" class="muted small"></span></div>
+    <div class="inline-filter" style="margin-bottom:10px">
+      <div class="grow"><label>Pesquisar</label><input id="q" placeholder="código, nome ou tipo" onkeydown="if(event.key==='Enter') carregarEventos()"></div>
+      <div><label>Ano</label><input id="ano" maxlength="4" placeholder="2026" onkeydown="if(event.key==='Enter') carregarEventos()"></div>
+      <div><button class="btn primary" onclick="carregarEventos()">Filtrar</button></div>
+      <div><button class="btn" onclick="limparFiltro()">Limpar filtro</button></div>
+    </div>
+    <div id="eventosBox" class="loading">Carregando eventos...</div>
+  </div>
+</div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/prestadores_adm/';
+const $ = id => document.getElementById(id);
+let eventos = [];
+let valores = [];
+
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+function dataBR(v){ if(!v) return ''; const m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : String(v); }
+function hora(v){ return v ? String(v).slice(0,5) : '00:00'; }
+function moeda(v){ const n=Number(v||0); return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function moedaInput(v){ const n=Number(v||0); return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function numberBR(v){ return String(v ?? '').replace(/\./g,'').replace(',','.'); }
+function msg(txt, tipo='ok'){ const el=$('msg'); el.className='msg '+(tipo==='err'?'err':'ok'); el.textContent=txt; clearTimeout(window._msgT); window._msgT=setTimeout(()=>{el.className='msg'; el.textContent='';},4500); }
+
+async function api(url, opts={}){
+  const r = await fetch(API + url, {credentials:'include', cache:'no-store', ...opts});
+  const data = await r.json().catch(()=>({ok:false,error:'Resposta inválida do servidor'}));
+  if(!r.ok || !data.ok) throw new Error(data.error || data.msg || 'Erro na API');
+  return data;
+}
+
+async function carregarTudo(){
+  try{
+    await Promise.all([carregarValores(), carregarEventos(), proximoCodigo()]);
+  }catch(e){ msg(e.message, 'err'); }
+}
+
+async function proximoCodigo(){
+  if($('id').value) return;
+  const data = await api('eventos_proximo_codigo.php');
+  $('codigo').value = data.codigo || '';
+}
+
+async function carregarValores(){
+  const data = await api('valores_padrao_listar.php?ativo=1');
+  valores = data.valores || [];
+  montarTipos();
+  renderValores();
+}
+
+function montarTipos(){
+  const atual = $('tipo').value;
+  const cats = [...new Set(valores.map(v=>v.categoria).filter(Boolean))].sort();
+  $('tipo').innerHTML = '<option value="">Selecione...</option>' + cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  if(atual) $('tipo').value = atual;
+}
+
+function valoresDoTipo(){
+  const tipo = $('tipo').value;
+  return valores.filter(v => String(v.categoria||'') === tipo);
+}
+
+function renderValores(){
+  const tipo = $('tipo').value;
+  const rows = tipo ? valoresDoTipo() : valores;
+  $('valoresResumo').textContent = tipo ? `${rows.length} valor(es) para ${tipo}` : `${valores.length} valor(es) ativo(s)`;
+  if(!rows.length){ $('valoresBox').innerHTML = '<div class="loading">Nenhum valor padrão para este tipo.</div>'; return; }
+  $('valoresBox').innerHTML = `<table><thead><tr><th>Categoria</th><th>Função</th><th>Valor</th><th>Vigência</th></tr></thead><tbody>${rows.map(v=>`
+    <tr><td>${esc(v.categoria)}</td><td>${esc(v.funcao)}</td><td class="right"><b>${esc(moeda(v.valor))}</b></td><td>${esc(dataBR(v.vigencia_inicio))}</td></tr>
+  `).join('')}</tbody></table>`;
+}
+
+function usarValorPadrao(){
+  const rows = valoresDoTipo().map(v=>Number(v.valor||0)).filter(n=>n>0);
+  if(!rows.length){ msg('Não encontrei valor padrão para esse tipo.', 'err'); return; }
+  $('valor_maximo').value = moedaInput(Math.min(...rows));
+}
+
+async function carregarEventos(){
+  $('eventosBox').className='loading'; $('eventosBox').textContent='Carregando eventos...';
+  const qs = new URLSearchParams();
+  if($('q').value.trim()) qs.set('q', $('q').value.trim());
+  if($('ano').value.trim()) qs.set('ano', $('ano').value.trim());
+  qs.set('limite','500');
+  const data = await api('eventos_listar.php?' + qs.toString());
+  eventos = data.eventos || [];
+  renderEventos();
+}
+
+function renderEventos(){
+  $('totalEventos').textContent = `${eventos.length} evento(s) na lista`;
+  if(!eventos.length){ $('eventosBox').className='loading'; $('eventosBox').textContent='Nenhum evento encontrado.'; return; }
+  $('eventosBox').className='table-wrap';
+  $('eventosBox').innerHTML = `<table><thead><tr><th>Código</th><th>Tipo</th><th>Evento</th><th>Data</th><th>Entrada</th><th>Saída</th><th>Valor máx.</th><th>Bloqueio</th><th></th></tr></thead><tbody>${eventos.map(e=>`
+    <tr>
+      <td><b>${esc(e.codigo)}</b></td><td>${esc(e.tipo||'')}</td><td>${esc(e.nome||'')}</td><td>${esc(dataBR(e.data_evento))}</td>
+      <td>${esc(hora(e.hora_entrada))}</td><td>${esc(hora(e.hora_saida))}</td><td class="right">${esc(moeda(e.valor_maximo))}</td>
+      <td>${Number(e.bloqueado)?'<span class="pill off">Sim</span>':'<span class="pill">Não</span>'}</td>
+      <td class="right"><button class="btn" onclick="editarEvento(${Number(e.id)})">Editar</button></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function limparFiltro(){ $('q').value=''; $('ano').value=''; carregarEventos().catch(e=>msg(e.message,'err')); }
+
+function novoEvento(){
+  $('formTitulo').textContent='Novo evento'; $('id').value=''; $('codigo').value=''; $('tipo').value=''; $('nome').value=''; $('cod_unidade').value='';
+  $('data_evento').value=''; $('hora_entrada').value='00:00'; $('hora_saida').value='00:00'; $('bloqueado').value='0'; $('valor_maximo').value='';
+  $('btnExcluir').disabled = true; renderValores(); proximoCodigo().catch(e=>msg(e.message,'err'));
+}
+
+function editarEvento(id){
+  const e = eventos.find(x => Number(x.id) === Number(id));
+  if(!e) return;
+  $('formTitulo').textContent='Alterar evento'; $('id').value=e.id; $('codigo').value=e.codigo||''; $('tipo').value=e.tipo||''; $('nome').value=e.nome||'';
+  $('cod_unidade').value=e.cod_unidade||''; $('data_evento').value=String(e.data_evento||'').slice(0,10); $('hora_entrada').value=hora(e.hora_entrada); $('hora_saida').value=hora(e.hora_saida);
+  $('bloqueado').value=Number(e.bloqueado)?'1':'0'; $('valor_maximo').value=moedaInput(e.valor_maximo); $('btnExcluir').disabled=false; renderValores(); scrollTo({top:0,behavior:'smooth'});
+}
+
+async function salvarEvento(ev){
+  ev.preventDefault();
+  $('btnSalvar').disabled=true;
+  try{
+    const payload = {
+      id: $('id').value ? Number($('id').value) : 0,
+      tipo: $('tipo').value,
+      nome: $('nome').value.trim(),
+      cod_unidade: $('cod_unidade').value.trim(),
+      data_evento: $('data_evento').value,
+      hora_entrada: $('hora_entrada').value,
+      hora_saida: $('hora_saida').value,
+      bloqueado: Number($('bloqueado').value),
+      valor_maximo: numberBR($('valor_maximo').value)
+    };
+    const data = await api('eventos_salvar.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    msg(data.msg || 'Salvo.');
+    await carregarEventos();
+    if(!payload.id) novoEvento();
+  }catch(e){ msg(e.message,'err'); }
+  finally{ $('btnSalvar').disabled=false; }
+}
+
+async function excluirAtual(){
+  const id = Number($('id').value||0);
+  if(!id) return;
+  if(!confirm('Excluir este evento?')) return;
+  try{
+    const data = await api('eventos_excluir.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id})});
+    msg(data.msg || 'Excluído.'); novoEvento(); await carregarEventos();
+  }catch(e){ msg(e.message,'err'); }
+}
+
+$('tipo').addEventListener('change', renderValores);
+carregarTudo();
+</script>
+</body>
+</html>
