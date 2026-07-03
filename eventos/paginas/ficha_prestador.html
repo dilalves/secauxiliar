@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ficha do Prestador</title>
+<style>
+:root{--bg:#f6f9fe;--card:#fff;--line:#dbe6f3;--primary:#0b3b78;--text:#0f172a;--muted:#64748b;--danger:#b42318;--ok:#067647;--warn:#b54708;--soft:#eef4fb;--yellow:#fff7cc;--red:#d92d20}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,Arial,sans-serif;color:var(--text);padding:18px}.wrap{max-width:1420px;margin:0 auto}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.top h1{font-size:22px;margin:0;color:#0b3b78}.btn{border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:#e8f0fb;color:#12345b}.btn.primary{background:#0b3b78;color:#fff}.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px rgba(11,59,120,.06);padding:14px;margin-bottom:14px}.grid{display:grid;grid-template-columns:1.25fr .95fr;gap:14px}.dados{display:grid;grid-template-columns:130px 1fr 120px 1fr;gap:7px 10px;align-items:center}.lbl{font-size:12px;color:#475569;font-weight:800;text-transform:uppercase}.val{min-height:30px;background:#edf3fb;border:1px solid #d8e5f3;border-radius:8px;padding:6px 9px;font-size:14px}.val.full{grid-column:span 3}.val.redbox{background:#fff1f0;border-color:#fecdca;color:#8a1f17;font-weight:800}.status{display:inline-flex;align-items:center;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:800}.status.on{background:#e8f7ef;color:#05603a}.status.off{background:#fde8e8;color:#8b2c2c}.bank{background:#e11d1d;color:#fff;border-radius:10px;padding:12px;margin-top:12px;display:grid;grid-template-columns:90px 1fr 90px 1fr 70px 1fr 60px 70px;gap:8px;align-items:center}.bank .lbl{color:#fff}.bank .val{background:#fff;color:#0f172a;border:none;text-align:center;font-weight:700}.side{display:grid;grid-template-columns:1fr .62fr;gap:12px}.mini-title{font-weight:900;color:#0b3b78;margin:0 0 8px;font-size:14px}.open-box{background:var(--yellow);border:1px solid #e8d876;border-radius:10px;padding:10px}.open-box h3{margin:0 0 8px;color:#e11d1d;text-align:center;font-size:14px}.money-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;text-align:center}.money-grid div{background:#fffde8;border:1px solid #ede3a5;border-radius:8px;padding:8px}.money-grid b{display:block;color:#0b3b78;margin-top:4px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}.kpi small{color:var(--muted);font-weight:800}.kpi b{display:block;font-size:22px;color:#0b3b78;margin-top:4px}.table-wrap{max-height:380px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff}table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}th{background:#eef4fb;color:#12345b;font-size:12px;position:sticky;top:0;z-index:1}tr:hover td{background:#f8fbff}.right{text-align:right}.center{text-align:center}.muted{color:var(--muted)}.pill{display:inline-flex;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:800;background:#eef4fb;color:#12345b}.pill.ok{background:#e8f7ef;color:#05603a}.pill.off{background:#fde8e8;color:#8b2c2c}.sec-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 10px}.sec-title h2{font-size:16px;color:#0b3b78;margin:0}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.ocorrencia{border-bottom:1px solid var(--line);padding:10px 0}.ocorrencia:last-child{border-bottom:none}.oc-head{display:flex;gap:10px;align-items:center;font-size:12px;color:#475569;font-weight:800;margin-bottom:5px}.oc-text{white-space:pre-wrap;line-height:1.35}.erro{padding:18px;border:1px solid #fecdca;background:#fff1f0;color:#8a1f17;border-radius:12px}.loading{padding:18px;color:var(--muted)}@media(max-width:1100px){.grid,.two,.side,.kpis{grid-template-columns:1fr}.dados{grid-template-columns:115px 1fr}.val.full{grid-column:span 1}.bank{grid-template-columns:90px 1fr}}@media(max-width:700px){body{padding:10px}.top{align-items:flex-start;flex-direction:column}.dados{grid-template-columns:1fr}.bank{grid-template-columns:1fr}.kpi b{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Ficha do Prestador</h1>
+    <div>
+      <button class="btn" onclick="history.back()">Voltar</button>
+      <button class="btn primary" onclick="carregar()">Atualizar</button>
+    </div>
+  </div>
+
+  <div id="app" class="loading">Carregando ficha...</div>
+</div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/prestadores_adm/';
+const params = new URLSearchParams(location.search);
+const id = Number(params.get('id') || 0);
+const app = document.getElementById('app');
+
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+function digits(v){ return String(v||'').replace(/\D+/g,''); }
+function cpf(v){ const d=digits(v); return d.length===11 ? d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4') : (v||''); }
+function dataBR(v){ if(!v) return ''; const s=String(v); const m=s.match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : s; }
+function dataHoraBR(v){ if(!v) return ''; const s=String(v); const m=s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}:\d{2}))?/); return m ? `${m[3]}/${m[2]}/${m[1]}${m[4]?' '+m[4]:''}` : s; }
+function moeda(v){ const n=Number(v||0); return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function simNao(v){ return Number(v) ? 'Sim' : 'Não'; }
+function eventoNome(r){ return [r.evento_codigo || r.codigo_evento_legado || '', r.evento_nome || ''].filter(Boolean).join(' - '); }
+
+async function api(url){
+  const r = await fetch(API + url, {credentials:'include', cache:'no-store'});
+  const data = await r.json().catch(()=>({ok:false,error:'Resposta inválida do servidor'}));
+  if(!r.ok || !data.ok) throw new Error(data.error || data.msg || 'Erro na API');
+  return data;
+}
+
+function renderHistorico(rows){
+  if(!rows?.length) return '<div class="muted">Nenhuma solicitação enviada.</div>';
+  return `<div class="table-wrap"><table><thead><tr><th>Envio</th><th>Bruto</th><th>Líquido</th><th>Recibo</th></tr></thead><tbody>${rows.map(r=>`
+    <tr><td>${esc(dataBR(r.data_envio))}</td><td class="right">${esc(moeda(r.valor_bruto))}</td><td class="right">${esc(moeda(r.valor_liquido))}</td><td>${esc(dataBR(r.data_recibo))}</td></tr>
+  `).join('')}</tbody></table></div>`;
+}
+
+function renderAbertos(rows){
+  if(!rows?.length) return '<div class="muted">Sem lançamentos em aberto.</div>';
+  return `<div class="table-wrap"><table><thead><tr><th>Data</th><th>Evento</th><th>Função</th><th>Bruto</th><th>Líquido</th></tr></thead><tbody>${rows.map(r=>`
+    <tr><td>${esc(dataBR(r.data_evento))}</td><td>${esc(eventoNome(r))}<br><span class="muted">${esc(r.unidade_nome || r.id_unidade || '')}</span></td><td>${esc(r.funcao||'')}</td><td class="right">${esc(moeda(r.valor_bruto))}</td><td class="right">${esc(moeda(r.valor_liquido))}</td></tr>
+  `).join('')}</tbody></table></div>`;
+}
+
+function renderPedidos(rows){
+  if(!rows?.length) return '<div class="muted">Nenhum pedido encontrado.</div>';
+  return `<div class="table-wrap"><table><thead><tr><th>Data</th><th>Evento</th><th>Unidade</th><th>Função</th><th>Sala</th><th>Qnt</th><th>Bruto</th><th>Líquido</th><th>Envio</th><th>Recibo</th><th>Status</th></tr></thead><tbody>${rows.map(r=>`
+    <tr>
+      <td>${esc(dataBR(r.data_evento))}</td>
+      <td>${esc(eventoNome(r))}</td>
+      <td>${esc(r.unidade_nome || r.id_unidade || '')}</td>
+      <td>${esc(r.funcao || '')}</td>
+      <td>${esc(r.sala || '')}</td>
+      <td class="center">${esc(r.qtd_alunos ?? '')}</td>
+      <td class="right">${esc(moeda(r.valor_bruto))}</td>
+      <td class="right">${esc(moeda(r.valor_liquido))}</td>
+      <td>${esc(dataBR(r.data_envio))}</td>
+      <td>${esc(dataBR(r.data_recibo))}</td>
+      <td><span class="pill ${Number(r.enviado)?'ok':''}">${Number(r.enviado)?'Enviado':'Aberto'}</span></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderOcorrencias(rows){
+  if(!rows?.length) return '<div class="muted">Nenhuma ocorrência registrada.</div>';
+  return rows.map(o => `
+    <div class="ocorrencia">
+      <div class="oc-head"><span>${esc(dataHoraBR(o.data_anotacao || o.data_ocorrencia || o.criado_em))}</span><span>•</span><span>${esc(o.responsavel || '')}</span></div>
+      <div class="oc-text">${esc(o.ocorrencia || '')}</div>
+      ${o.resposta ? `<div class="oc-text" style="margin-top:8px"><b>Resposta:</b> ${esc(o.resposta)}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function render(data){
+  const p = data.prestador || {};
+  const r = data.resumo || {};
+  const ativo = Number(p.ativo) === 1;
+  const tipoDoc = String(p.tipo_prestador||'') === 'FUNCIONARIO' ? 'Funcional' : 'CPF';
+  const doc = String(p.tipo_prestador||'') === 'FUNCIONARIO' ? (p.funcional || '') : cpf(p.cpf);
+
+  app.className = '';
+  app.innerHTML = `
+    <div class="kpis">
+      <div class="kpi"><small>Total de pedidos</small><b>${esc(r.total_pedidos || 0)}</b></div>
+      <div class="kpi"><small>Enviados ao DP</small><b>${esc(r.qtd_enviados || 0)}</b></div>
+      <div class="kpi"><small>Em aberto</small><b>${esc(r.qtd_abertos || 0)}</b></div>
+      <div class="kpi"><small>Total líquido</small><b>${esc(moeda(r.total_liquido))}</b></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="dados">
+          <div class="lbl">Nome</div><div class="val full"><b>${esc(p.nome || '')}</b> <span class="status ${ativo?'on':'off'}">${ativo?'Ativo':'Inativo'}</span></div>
+          <div class="lbl">Tipo</div><div class="val">${esc(p.tipo_prestador || '')}</div><div class="lbl">${esc(tipoDoc)}</div><div class="val">${esc(doc)}</div>
+          <div class="lbl">CPF</div><div class="val">${esc(cpf(p.cpf))}</div><div class="lbl">RG</div><div class="val">${esc(p.rg || '')}</div>
+          <div class="lbl">PIS</div><div class="val">${esc(p.pis || '')}</div><div class="lbl">Nascimento</div><div class="val">${esc(dataBR(p.data_nascimento))}</div>
+          <div class="lbl">E-mail</div><div class="val full">${esc(p.email || '')}</div>
+          <div class="lbl">Endereço</div><div class="val full">${esc([p.endereco,p.complemento].filter(Boolean).join(', '))}</div>
+          <div class="lbl">Bairro</div><div class="val">${esc(p.bairro || '')}</div><div class="lbl">Cidade/UF</div><div class="val">${esc([p.cidade,p.uf].filter(Boolean).join(' / '))}</div>
+          <div class="lbl">CEP</div><div class="val">${esc(p.cep || '')}</div><div class="lbl">Contato</div><div class="val">${esc([p.telefone,p.celular].filter(Boolean).join(' / '))}</div>
+          <div class="lbl">Empresa</div><div class="val">${esc([p.empresa,p.empresa_nome].filter(Boolean).join(' - '))}</div><div class="lbl">Unid. origem</div><div class="val">${esc([p.cod_unidade,p.cod_unidade_nome].filter(Boolean).join(' - '))}</div>
+        </div>
+        <div class="bank">
+          <div class="lbl">Banco</div><div class="val">${esc(p.banco || '')}</div>
+          <div class="lbl">Agência</div><div class="val">${esc(p.agencia || '')}</div>
+          <div class="lbl">Conta</div><div class="val">${esc(p.conta || '')}</div>
+          <div class="lbl">T/C</div><div class="val">${esc(p.tipo_conta || '')}</div>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="card">
+          <p class="mini-title">Histórico de solicitações enviadas</p>
+          ${renderHistorico(data.historico_enviado || [])}
+        </div>
+        <div class="open-box">
+          <h3>EM ABERTO</h3>
+          <div class="money-grid">
+            <div>Bruto<b>${esc(moeda(r.aberto_bruto))}</b></div>
+            <div>Líquido<b>${esc(moeda(r.aberto_liquido))}</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two">
+      <div class="card">
+        <div class="sec-title"><h2>Lançamentos em aberto</h2><span class="pill">${esc((data.abertos||[]).length)} itens</span></div>
+        ${renderAbertos(data.abertos || [])}
+      </div>
+      <div class="card">
+        <div class="sec-title"><h2>Ocorrências / Anotações</h2><span class="pill">${esc((data.ocorrencias||[]).length)} itens</span></div>
+        <div style="max-height:380px;overflow:auto">${renderOcorrencias(data.ocorrencias || [])}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title"><h2>Pedidos de pagamento</h2><span class="pill">mais recentes no topo</span></div>
+      ${renderPedidos(data.pedidos || [])}
+    </div>
+  `;
+}
+
+async function carregar(){
+  if(!id){ app.className='erro'; app.textContent='ID do prestador não informado.'; return; }
+  app.className='loading'; app.textContent='Carregando ficha...';
+  try{ render(await api('prestador_ficha.php?id=' + encodeURIComponent(id))); }
+  catch(e){ app.className='erro'; app.textContent=e.message; }
+}
+
+carregar();
+</script>
+</body>
+</html>
