@@ -126,14 +126,19 @@ async function listar(){
         <td>${esc(p.id)}</td><td><b>${esc(p.nome)}</b></td><td>${esc(formatCPF(p.cpf))}</td><td>${esc(p.tipo_prestador)}</td>
         <td>${esc(p.cod_unidade || p.empresa || '')}</td><td>${esc(p.funcional || '')}</td><td>${esc(p.celular || '')}</td><td>${esc(p.email || '')}</td>
         <td><span class="pill ${Number(p.ativo)?'':'off'}">${Number(p.ativo)?'Ativo':'Inativo'}</span></td>
-        <td><div class="row-actions"><button class="btn mini" onclick="editar(${Number(p.id)})">Editar</button></div></td>
+        <td>
+          <div class="row-actions">
+            <button class="btn mini" onclick="editar(${Number(p.id)})">Editar</button>
+            <button class="btn mini primary" onclick="abrirFicha(${Number(p.id)})">Ficha</button>
+          </div>
+        </td>
       </tr>`).join('');
   }catch(e){ tbody.innerHTML = `<tr><td colspan="10">${esc(e.message)}</td></tr>`; }
 }
 
 function formatCPF(v){ const d=digits(v); if(d.length!==11) return v||''; return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4'); }
 function abrirForm(){ el('formCard').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); }
-function novo(){ el('form').reset(); el('id').value=''; el('tipo_prestador').value='CONVIDADO'; el('ativo').value='1'; el('primeiro_acesso').value='1'; el('btnExcluir').classList.add('hidden'); msg(''); abrirForm(); el('nome').focus(); }
+function novo(){ el('form').reset(); el('id').value=''; el('tipo_prestador').value='CONVIDADO'; el('ativo').value='1'; el('primeiro_acesso').value='1'; msg(''); abrirForm(); el('nome').focus(); }
 function cancelar(){ el('formCard').classList.add('hidden'); msg(''); }
 
 async function editar(id){
@@ -191,8 +196,13 @@ async function buscarCEP(){
   }catch(e){ console.warn(e.message); }
 }
 
+function abrirFicha(id){
+  location.href = 'ficha_prestador.html?id=' + encodeURIComponent(id);
+}
+
 el('q').addEventListener('keydown', e => { if(e.key === 'Enter') listar(); });
 listar();
+
 </script>
 </body>
 </html>
