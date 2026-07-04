@@ -6,7 +6,124 @@
 <title>Solicitação de Pagamento</title>
 <style>
 :root{--bg:#f6f9fe;--card:#fff;--line:#d8e5f3;--head:#dceff5;--primary:#0b3b78;--red:#e11d2e;--blue:#1729d6;--text:#0f172a;--muted:#64748b;--ok:#067647;--warn:#b54708;--danger:#b42318}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,Arial,sans-serif;color:var(--text);padding:0}.wrap{width:100%;max-width:none;margin:0}.title{background:white;border-bottom:3px solid #e11d2e;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0}.title h1{font-size:20px;margin:0}.logo{font-weight:900;color:var(--primary);font-size:22px}.card{background:#fff;border:1px solid var(--line);border-radius:0 0 12px 12px;box-shadow:0 8px 24px rgba(11,59,120,.06);padding:14px;margin:0 0 14px 0;min-height:calc(100vh - 56px)}.topgrid{display:grid;grid-template-columns:130px 120px 1.5fr 90px 160px 90px 90px;gap:10px;align-items:end}.topgrid label,.cell label{display:block;font-size:11px;color:#475569;font-weight:900;text-transform:uppercase;margin-bottom:3px}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px;background:white;font-size:14px}input[readonly]{background:#f1f5f9;color:#334155;font-weight:800}.paytable input[readonly]{background:#f8fafc;color:#334155}.paytable input.locked{background:#f8fafc;color:#64748b;cursor:not-allowed}.event-name{color:var(--red);font-weight:900;font-size:17px;padding:8px 0}.blue{color:var(--blue)}.btn{border:none;border-radius:9px;padding:9px 12px;font-weight:900;cursor:pointer;background:#e8f0fb;color:#12345b}.btn.primary{background:var(--primary);color:#fff}.btn.danger{background:#fde8e8;color:#8b2c2c}.btn.ok{background:#e8f7ef;color:#05603a}.btn:disabled{opacity:.55;cursor:not-allowed}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.msg{padding:10px 12px;border-radius:10px;margin:12px 0;font-weight:800;display:none}.msg.ok{display:block;background:#e8f7ef;color:#05603a;border:1px solid #abefc6}.msg.err{display:block;background:#fff1f0;color:#8a1f17;border:1px solid #fecdca}.gridwrap{border:1px solid #111;background:#fff;overflow:auto;min-height:52vh}.paytable{width:100%;border-collapse:collapse;min-width:1250px;font-size:13px}.paytable th{background:var(--head);border:1px solid #8aa7b5;font-size:11px;padding:3px;text-align:center}.paytable td{border:1px solid #cbd5e1;padding:2px;vertical-align:middle}.paytable input,.paytable select{border:0;border-radius:0;padding:3px 5px;color:var(--blue);font-size:12.5px;background:transparent;height:25px}.paytable .btn{padding:5px 9px;border-radius:7px;font-size:12px}.paytable tr{height:28px}.paytable tr.negado td{background:#fff1f1}.paytable tr.negado input,.paytable tr.negado select{background:#fff1f1}.paytable input:focus,.paytable select:focus{outline:2px solid #2563eb;background:#eef6ff}.num{text-align:right}.center{text-align:center}.totalbar{display:flex;align-items:center;gap:12px;border:1px solid #111;border-top:0;padding:8px 16px;background:#fff}.totalbar .total{width:140px;background:#f1f5f9;border:1px solid #cbd5e1;padding:6px;text-align:right;font-weight:900}.obsrow td{background:#f8fbff}.obsbox{display:grid;grid-template-columns:130px 1fr;gap:8px;align-items:start;padding:4px 20px}.obsbox textarea{min-height:54px;color:#1729d6}.hidden{display:none!important}.suggest{position:absolute;background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.18);z-index:50;max-height:240px;overflow:auto;min-width:360px}.suggest div{padding:8px 10px;cursor:pointer;border-bottom:1px solid #eef2f7}.suggest div:hover{background:#eef6ff}.muted{color:var(--muted)}.pill{display:inline-flex;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:900}.pill.ok{background:#e8f7ef;color:#05603a}.pill.no{background:#fde8e8;color:#8b2c2c}.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}.modal.open{display:flex}.modalbox{background:white;border-radius:14px;max-width:1000px;width:100%;max-height:86vh;overflow:auto;padding:14px}.modalhead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.eventtable{width:100%;border-collapse:collapse;font-size:13px}.eventtable th,.eventtable td{border-bottom:1px solid var(--line);padding:8px;text-align:left}.eventtable th{background:#eef4fb;color:#12345b}.eventtable tr{cursor:pointer}.eventtable tr:hover td{background:#f8fbff}.footbtns{position:sticky;bottom:0;background:var(--bg);padding:12px 0;display:flex;gap:10px;justify-content:center;margin-top:12px}@media(max-width:1100px){.topgrid{grid-template-columns:1fr 1fr}.event-title-cell{grid-column:1/-1}.gridwrap{min-height:260px}}@media(max-width:700px){body{padding:8px}.topgrid{grid-template-columns:1fr}.title{align-items:flex-start;flex-direction:column}.btn{width:100%}.actions,.footbtns{flex-direction:column}.suggest{min-width:90vw}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:system-ui,Arial,sans-serif;color:var(--text);padding:0}
+.wrap{width:100%;max-width:none;margin:0}
+
+.title{background:white;border-bottom:3px solid #e11d2e;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0}
+.title h1{font-size:20px;margin:0}
+.logo{font-weight:900;color:var(--primary);font-size:22px}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:0 0 12px 12px;box-shadow:0 8px 24px rgba(11,59,120,.06);padding:14px;margin:0 0 14px 0;min-height:calc(100vh - 56px)}
+
+.topgrid{
+  display:grid;
+  grid-template-columns:130px 120px minmax(320px,1fr) 110px 220px 120px 150px;
+  gap:10px;
+  align-items:end;
+}
+
+.topgrid label,.cell label{
+  display:block;
+  font-size:11px;
+  color:#475569;
+  font-weight:900;
+  text-transform:uppercase;
+  margin-bottom:3px;
+  white-space:nowrap;
+}
+
+#horarioEvento{min-width:150px}
+#dataEvento{min-width:120px}
+#unidadeNome{min-width:220px}
+
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px;background:white;font-size:14px}
+input[readonly]{background:#f1f5f9;color:#334155;font-weight:800}
+
+.paytable input[readonly]{background:#f8fafc;color:#334155}
+.paytable input.locked{background:#f8fafc;color:#64748b;cursor:not-allowed}
+
+.event-name{color:var(--red);font-weight:900;font-size:17px;padding:8px 0}
+.blue{color:var(--blue)}
+
+.btn{border:none;border-radius:9px;padding:9px 12px;font-weight:900;cursor:pointer;background:#e8f0fb;color:#12345b}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.danger{background:#fde8e8;color:#8b2c2c}
+.btn.ok{background:#e8f7ef;color:#05603a}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+.msg{padding:10px 12px;border-radius:10px;margin:12px 0;font-weight:800;display:none}
+.msg.ok{display:block;background:#e8f7ef;color:#05603a;border:1px solid #abefc6}
+.msg.err{display:block;background:#fff1f0;color:#8a1f17;border:1px solid #fecdca}
+
+.gridwrap{border:1px solid #111;background:#fff;overflow:auto;min-height:52vh}
+.paytable{width:100%;border-collapse:collapse;min-width:1250px;font-size:13px}
+.paytable th{background:var(--head);border:1px solid #8aa7b5;font-size:11px;padding:3px;text-align:center}
+.paytable td{border:1px solid #cbd5e1;padding:2px;vertical-align:middle}
+.paytable input,.paytable select{border:0;border-radius:0;padding:3px 5px;color:var(--blue);font-size:12.5px;background:transparent;height:25px}
+.paytable .btn{padding:5px 9px;border-radius:7px;font-size:12px}
+.paytable tr{height:28px}
+.paytable tr.negado td{background:#fff1f1}
+.paytable tr.negado input,.paytable tr.negado select{background:#fff1f1}
+.paytable input:focus,.paytable select:focus{outline:2px solid #2563eb;background:#eef6ff}
+
+.num{text-align:right}
+.center{text-align:center}
+
+.totalbar{display:flex;align-items:center;gap:12px;border:1px solid #111;border-top:0;padding:8px 16px;background:#fff}
+.totalbar .total{width:140px;background:#f1f5f9;border:1px solid #cbd5e1;padding:6px;text-align:right;font-weight:900}
+
+.obsrow td{background:#f8fbff}
+.obsbox{display:grid;grid-template-columns:130px 1fr;gap:8px;align-items:start;padding:4px 20px}
+.obsbox textarea{min-height:54px;color:#1729d6}
+
+.hidden{display:none!important}
+
+.suggest{position:absolute;background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.18);z-index:50;max-height:240px;overflow:auto;min-width:360px}
+.suggest div{padding:8px 10px;cursor:pointer;border-bottom:1px solid #eef2f7}
+.suggest div:hover{background:#eef6ff}
+
+.muted{color:var(--muted)}
+.pill{display:inline-flex;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:900}
+.pill.ok{background:#e8f7ef;color:#05603a}
+.pill.no{background:#fde8e8;color:#8b2c2c}
+
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
+.modal.open{display:flex}
+.modalbox{background:white;border-radius:14px;max-width:1000px;width:100%;max-height:86vh;overflow:auto;padding:14px}
+.modalhead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}
+
+.eventtable{width:100%;border-collapse:collapse;font-size:13px}
+.eventtable th,.eventtable td{border-bottom:1px solid var(--line);padding:8px;text-align:left}
+.eventtable th{background:#eef4fb;color:#12345b}
+.eventtable tr{cursor:pointer}
+.eventtable tr:hover td{background:#f8fbff}
+
+.footbtns{position:sticky;bottom:0;background:var(--bg);padding:12px 0;display:flex;gap:10px;justify-content:center;margin-top:12px}
+
+@media(max-width:1200px){
+  .topgrid{
+    grid-template-columns:130px 120px minmax(250px,1fr) 100px 190px 115px 145px;
+    gap:8px;
+  }
+}
+
+@media(max-width:1100px){
+  .topgrid{grid-template-columns:1fr 1fr}
+  .event-title-cell{grid-column:1/-1}
+  .gridwrap{min-height:260px}
+}
+
+@media(max-width:700px){
+  body{padding:8px}
+  .topgrid{grid-template-columns:1fr}
+  .title{align-items:flex-start;flex-direction:column}
+  .btn{width:100%}
+  .actions,.footbtns{flex-direction:column}
+  .suggest{min-width:90vw}
+}
 </style>
 </head>
 <body>
@@ -52,7 +169,12 @@
         <tbody id="tbody"></tbody>
       </table>
     </div>
-    <div class="totalbar"><strong>TOTAL</strong><div id="total" class="total">R$ 0,00</div><span class="muted">Linhas negadas ficam no histórico, mas não entram como liberadas.</span></div>
+
+    <div class="totalbar">
+      <strong>TOTAL</strong>
+      <div id="total" class="total">R$ 0,00</div>
+      <span class="muted">Linhas negadas ficam no histórico, mas não entram como liberadas.</span>
+    </div>
 
     <div class="footbtns">
       <button class="btn" onclick="abrirPrestadorAtual()">Pesquisar Funcionário</button>
@@ -67,9 +189,20 @@
 
 <div id="modalEventos" class="modal">
   <div class="modalbox">
-    <div class="modalhead"><h2 style="margin:0;color:#0b3b78">Consultar Eventos</h2><button class="btn" onclick="fecharEventos()">Fechar</button></div>
-    <div style="display:flex;gap:8px;margin-bottom:10px"><input id="filtroEventos" placeholder="filtrar por código, nome ou tipo" onkeydown="if(event.key==='Enter') listarEventos()"><button class="btn primary" onclick="listarEventos()">Buscar</button></div>
-    <table class="eventtable"><thead><tr><th>DATA</th><th>CÓDIGO</th><th>EVENTO</th><th>H_E</th><th>H_S</th></tr></thead><tbody id="eventosBody"></tbody></table>
+    <div class="modalhead">
+      <h2 style="margin:0;color:#0b3b78">Consultar Eventos</h2>
+      <button class="btn" onclick="fecharEventos()">Fechar</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input id="filtroEventos" placeholder="filtrar por código, nome ou tipo" onkeydown="if(event.key==='Enter') listarEventos()">
+      <button class="btn primary" onclick="listarEventos()">Buscar</button>
+    </div>
+    <table class="eventtable">
+      <thead>
+        <tr><th>DATA</th><th>CÓDIGO</th><th>EVENTO</th><th>H_E</th><th>H_S</th></tr>
+      </thead>
+      <tbody id="eventosBody"></tbody>
+    </table>
   </div>
 </div>
 
@@ -91,10 +224,19 @@ async function apiGet(path){const r=await fetch(API+path,{credentials:'include'}
 async function apiPost(path,data){const r=await fetch(API+path,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); const j=await r.json(); if(!j.ok) throw new Error(j.msg||'Erro'); return j}
 
 function enterBuscaEvento(ev){ if(ev.key==='Enter'){ev.preventDefault(); buscarEventoCodigo()} }
-async function enterUnidade(ev){ if(ev.key==='Enter'){ev.preventDefault(); await buscarUnidade(); novaLinha()} }
+
+async function enterUnidade(ev){
+  if(ev.key==='Enter'){
+    ev.preventDefault();
+    await buscarUnidade();
+    novaLinha();
+  }
+}
+
 async function buscarUnidade(){
   const idund=$('unidade').value.trim();
   if(!idund){ $('unidadeNome').value=''; return null; }
+
   try{
     const j=await apiGet('pedidos_unidade_obter.php?idund='+encodeURIComponent(idund));
     $('unidadeNome').value=j.unidade?.nome||'';
@@ -108,54 +250,186 @@ async function buscarUnidade(){
 }
 
 async function buscarEventoCodigo(){
-  const codigo=$('codigoEvento').value.trim(); if(!codigo) return abrirEventos();
-  try{const j=await apiGet('pedidos_evento_obter.php?codigo='+encodeURIComponent(codigo)); selecionarEvento(j.evento)}catch(e){showMsg(e.message,false)}
+  const codigo=$('codigoEvento').value.trim();
+  if(!codigo) return abrirEventos();
+
+  try{
+    const j=await apiGet('pedidos_evento_obter.php?codigo='+encodeURIComponent(codigo));
+    selecionarEvento(j.evento);
+  }catch(e){
+    showMsg(e.message,false);
+  }
 }
+
 function selecionarEvento(e){
-  eventoAtual=e; $('codigoEvento').value=e.codigo||''; $('eventoNome').textContent=e.nome||''; $('dataEvento').value=dataBR(e.data_evento); $('horarioEvento').value=`${hora(e.hora_entrada)} / ${hora(e.hora_saida)}`;
-  carregarFuncoes(); carregarPedidos(); fecharEventos();
+  eventoAtual=e;
+  $('codigoEvento').value=e.codigo||'';
+  $('eventoNome').textContent=e.nome||'';
+  $('dataEvento').value=dataBR(e.data_evento);
+  $('horarioEvento').value=`${hora(e.hora_entrada)} / ${hora(e.hora_saida)}`;
+  carregarFuncoes();
+  carregarPedidos();
+  fecharEventos();
 }
-async function abrirEventos(){ $('modalEventos').classList.add('open'); await listarEventos(); }
-function fecharEventos(){ $('modalEventos').classList.remove('open') }
+
+async function abrirEventos(){
+  $('modalEventos').classList.add('open');
+  await listarEventos();
+}
+
+function fecharEventos(){
+  $('modalEventos').classList.remove('open');
+}
+
 async function listarEventos(){
-  const q=$('filtroEventos')?.value||''; const body=$('eventosBody'); body.innerHTML='<tr><td colspan="5">Carregando...</td></tr>';
-  try{const j=await apiGet('pedidos_eventos_listar.php?q='+encodeURIComponent(q));
-    body.innerHTML = (j.eventos||[]).map(e=>`<tr ondblclick='selecionarEvento(${JSON.stringify(e).replace(/'/g,"&#39;")})'><td>${dataBR(e.data_evento)}</td><td>${e.codigo}</td><td>${e.nome}</td><td>${hora(e.hora_entrada)}</td><td>${hora(e.hora_saida)}</td></tr>`).join('') || '<tr><td colspan="5">Nenhum evento.</td></tr>';
-  }catch(e){body.innerHTML=`<tr><td colspan="5">${e.message}</td></tr>`}
+  const q=$('filtroEventos')?.value||'';
+  const body=$('eventosBody');
+  body.innerHTML='<tr><td colspan="5">Carregando...</td></tr>';
+
+  try{
+    const j=await apiGet('pedidos_eventos_listar.php?q='+encodeURIComponent(q));
+    body.innerHTML = (j.eventos||[]).map(e=>`
+      <tr ondblclick='selecionarEvento(${JSON.stringify(e).replace(/'/g,"&#39;")})'>
+        <td>${dataBR(e.data_evento)}</td>
+        <td>${e.codigo}</td>
+        <td>${e.nome}</td>
+        <td>${hora(e.hora_entrada)}</td>
+        <td>${hora(e.hora_saida)}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="5">Nenhum evento.</td></tr>';
+  }catch(e){
+    body.innerHTML=`<tr><td colspan="5">${e.message}</td></tr>`;
+  }
 }
 
 async function carregarFuncoes(){
   if(!eventoAtual) return;
-  try{const j=await apiGet('pedidos_funcoes_listar.php?categoria='+encodeURIComponent(eventoAtual.tipo||'')); funcoes=j.funcoes||[]; renderLinhas();}catch(e){showMsg(e.message,false)}
+
+  try{
+    const j=await apiGet('pedidos_funcoes_listar.php?categoria='+encodeURIComponent(eventoAtual.tipo||''));
+    funcoes=j.funcoes||[];
+    renderLinhas();
+  }catch(e){
+    showMsg(e.message,false);
+  }
 }
+
 async function carregarPedidos(){
   if(!eventoAtual) return;
-  try{const unidade=$('unidade').value.trim(); const j=await apiGet(`pedidos_listar.php?evento_id=${eventoAtual.id}&unidade=${encodeURIComponent(unidade)}`);
+
+  try{
+    const unidade=$('unidade').value.trim();
+    const j=await apiGet(`pedidos_listar.php?evento_id=${eventoAtual.id}&unidade=${encodeURIComponent(unidade)}`);
+
     linhas=(j.pedidos||[]).map(p=>({
-      local:++rowSeq,id:p.id,prestador_id:p.prestador_id,cod:p.prestador_id,nome:p.prestador_nome||'',funcional:p.prestador_funcional||'',cpf:p.prestador_cpf||'',funcao:p.funcao||'',quantidade:p.quantidade||1,valor_unitario:p.valor_unitario||p.valor_bruto||0,valor_bruto:p.valor_bruto||0,sala:p.sala||0,qtd_alunos:p.qtd_alunos||0,liberado:Number(p.liberado||0),observacao:p.observacao||p.info||'',motivo:p.motivo_bloqueio||''
+      local:++rowSeq,
+      id:p.id,
+      prestador_id:p.prestador_id,
+      cod:p.prestador_id,
+      nome:p.prestador_nome||'',
+      funcional:p.prestador_funcional||'',
+      cpf:p.prestador_cpf||'',
+      funcao:p.funcao||'',
+      quantidade:p.quantidade||1,
+      valor_unitario:p.valor_unitario||p.valor_bruto||0,
+      valor_bruto:p.valor_bruto||0,
+      sala:p.sala||0,
+      qtd_alunos:p.qtd_alunos||0,
+      liberado:Number(p.liberado||0),
+      observacao:p.observacao||p.info||'',
+      motivo:p.motivo_bloqueio||''
     }));
-    if(!linhas.length) novaLinha(false); else renderLinhas();
-  }catch(e){showMsg(e.message,false)}
+
+    if(!linhas.length) novaLinha(false);
+    else renderLinhas();
+
+  }catch(e){
+    showMsg(e.message,false);
+  }
 }
-function limparTela(){eventoAtual=null; linhas=[]; $('codigoEvento').value=''; $('eventoNome').textContent='Informe ou consulte um evento'; $('dataEvento').value=''; $('horarioEvento').value=''; renderLinhas(); calcTotal(); buscarUnidade()}
+
+function limparTela(){
+  eventoAtual=null;
+  linhas=[];
+  $('codigoEvento').value='';
+  $('eventoNome').textContent='Informe ou consulte um evento';
+  $('dataEvento').value='';
+  $('horarioEvento').value='';
+  renderLinhas();
+  calcTotal();
+  buscarUnidade();
+}
+
 function novaLinha(focus=true){
-  if(!eventoAtual){showMsg('Selecione primeiro o evento.',false); return}
-  linhas.push({local:++rowSeq,id:null,prestador_id:null,cod:'',nome:'',funcional:'',cpf:'',funcao:'',quantidade:1,valor_unitario:0,valor_bruto:0,sala:0,qtd_alunos:0,liberado:null,observacao:'',motivo:''});
-  renderLinhas(); if(focus) setTimeout(()=>document.querySelector(`#nome_${rowSeq}`)?.focus(),50)
+  if(!eventoAtual){
+    showMsg('Selecione primeiro o evento.',false);
+    return;
+  }
+
+  linhas.push({
+    local:++rowSeq,
+    id:null,
+    prestador_id:null,
+    cod:'',
+    nome:'',
+    funcional:'',
+    cpf:'',
+    funcao:'',
+    quantidade:1,
+    valor_unitario:0,
+    valor_bruto:0,
+    sala:0,
+    qtd_alunos:0,
+    liberado:null,
+    observacao:'',
+    motivo:''
+  });
+
+  renderLinhas();
+
+  if(focus){
+    setTimeout(()=>document.querySelector(`#nome_${rowSeq}`)?.focus(),50);
+  }
 }
-function precisaObs(funcao){return /LIGA|DIARIA|DIA|PLANT/i.test(funcao||'')}
-function qtdEditavel(funcao){return precisaObs(funcao)}
-function vaiDiretoSalvar(funcao){return /CORREDOR|DIVULGADOR/i.test(funcao||'')}
-function focusSala(idx){setTimeout(()=>{const el=document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.children[7]?.querySelector('input'); el?.focus(); el?.select();},80)}
-function focusSalvar(idx){setTimeout(()=>{const el=document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.children[11]?.querySelector('button.btn.ok'); el?.focus();},80)}
+
+function precisaObs(funcao){
+  return /LIGA|DIARIA|DIA|PLANT/i.test(funcao||'');
+}
+
+function qtdEditavel(funcao){
+  return precisaObs(funcao);
+}
+
+function vaiDiretoSalvar(funcao){
+  return /CORREDOR|DIVULGADOR/i.test(funcao||'');
+}
+
+function focusSala(idx){
+  setTimeout(()=>{
+    const el=document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.children[7]?.querySelector('input');
+    el?.focus();
+    el?.select();
+  },80);
+}
+
+function focusSalvar(idx){
+  setTimeout(()=>{
+    const el=document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.children[11]?.querySelector('button.btn.ok');
+    el?.focus();
+  },80);
+}
+
 function renderLinhas(){
   const body=$('tbody');
   body.innerHTML='';
+
   linhas.forEach((l,idx)=>{
     const editQtd = qtdEditavel(l.funcao);
     const opts='<option value=""></option>'+funcoes.map(f=>`<option value="${f.funcao}" ${f.funcao==l.funcao?'selected':''}>${f.funcao} - ${moeda(f.valor)}</option>`).join('');
+
     const tr=document.createElement('tr');
     if(Number(l.liberado)===0) tr.className='negado';
+
     tr.innerHTML=`
       <td><input id="cod_${l.local}" value="${l.cod||l.prestador_id||''}" readonly></td>
       <td style="position:relative"><input id="nome_${l.local}" value="${escapeHtml(l.nome||'')}" oninput="buscarPrestador(this,${idx})" onkeydown="navNome(event,${idx})" autocomplete="off"></td>
@@ -163,94 +437,259 @@ function renderLinhas(){
       <td><input value="${escapeHtml(l.cpf||'')}" readonly></td>
       <td><select onchange="setFuncao(${idx},this.value,true)" onkeydown="enterFuncao(event,${idx},this)">${opts}</select></td>
       <td><input class="num ${editQtd?'':'locked'}" value="${String(l.quantidade||1).replace('.',',')}" ${editQtd?'':'readonly tabindex="-1"'} onfocus="selectZero(this)" onchange="recalcular(${idx})" onkeydown="enterCampo(event,this)"></td>
-      <td><input class="num" value="${moeda(l.valor_bruto).replace('R$ ','').replace('R$ ','')}" readonly></td>
+      <td><input class="num" value="${moeda(l.valor_bruto).replace('R$ ','').replace('R$ ','')}" readonly></td>
       <td><input class="num" value="${l.sala??0}" onfocus="selectZero(this)" onchange="linhas[${idx}].sala=limpaZero(this.value)" onkeydown="enterCampo(event,this)"></td>
       <td><input class="num" value="${l.qtd_alunos??0}" onfocus="selectZero(this)" onchange="linhas[${idx}].qtd_alunos=limpaZero(this.value)" onkeydown="enterCampo(event,this)"></td>
       <td class="center">${l.liberado===null?'<span class="muted">-</span>':(Number(l.liberado)?'<span class="pill ok">OK</span>':'<span class="pill no">NEG</span>')}</td>
       <td class="center">${l.id||'<span class="muted">Novo</span>'}</td>
-      <td><button class="btn ok" onclick="salvarLinha(${idx})">Salvar</button> <button class="btn danger" onclick="excluirLinha(${idx})">X</button></td>`;
+      <td><button class="btn ok" onclick="salvarLinha(${idx})">Salvar</button> <button class="btn danger" onclick="excluirLinha(${idx})">X</button></td>
+    `;
+
     body.appendChild(tr);
-    const obs=document.createElement('tr'); obs.className='obsrow '+(precisaObs(l.funcao)?'':'hidden');
-    obs.innerHTML=`<td colspan="12"><div class="obsbox"><strong>Detalhe/dias</strong><textarea onchange="linhas[${idx}].observacao=this.value" placeholder="Ex.: DIAS 01, 02, 03, 05, 08, 09, 10, 11, 12 E 15 DE JUNHO = 10 DIAS">${escapeHtml(l.observacao||'')}</textarea>${l.motivo?`<small style="grid-column:2;color:#b42318;font-weight:800">${escapeHtml(l.motivo)}</small>`:''}</div></td>`;
+
+    const obs=document.createElement('tr');
+    obs.className='obsrow '+(precisaObs(l.funcao)?'':'hidden');
+
+    obs.innerHTML=`
+      <td colspan="12">
+        <div class="obsbox">
+          <strong>Detalhe/dias</strong>
+          <textarea onchange="linhas[${idx}].observacao=this.value" placeholder="Ex.: DIAS 01, 02, 03, 05, 08, 09, 10, 11, 12 E 15 DE JUNHO = 10 DIAS">${escapeHtml(l.observacao||'')}</textarea>
+          ${l.motivo?`<small style="grid-column:2;color:#b42318;font-weight:800">${escapeHtml(l.motivo)}</small>`:''}
+        </div>
+      </td>
+    `;
+
     body.appendChild(obs);
   });
+
   calcTotal();
 }
-function escapeHtml(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+
+function escapeHtml(s){
+  return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+}
+
 async function setFuncao(idx,v,focarProximo=false){
   linhas[idx].funcao=v;
+
   if(qtdEditavel(v)){
     if(/LIGA/i.test(v) && (!linhas[idx].quantidade || linhas[idx].quantidade==1)) linhas[idx].quantidade=10;
   }else{
     linhas[idx].quantidade=1;
   }
+
   await recalcular(idx);
+
   if(focarProximo){
     if(vaiDiretoSalvar(v)) focusSalvar(idx);
     else if(qtdEditavel(v)) focusQtd(idx);
     else focusSala(idx);
   }
 }
+
 function enterFuncao(ev,idx,el){
   if(ev.key==='Enter'){
     ev.preventDefault();
     setFuncao(idx,el.value,true);
   }
 }
-function focusQtd(idx){setTimeout(()=>document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.children[5]?.querySelector('input')?.focus(),80)}
-function selectZero(el){setTimeout(()=>{ if(String(el.value).trim()==='0' || String(el.value).trim()==='0,00') el.select(); },0)}
-function limpaZero(v){ v=String(v||'').trim(); return v==='' ? 0 : v; }
+
+function focusQtd(idx){
+  setTimeout(()=>document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.children[5]?.querySelector('input')?.focus(),80);
+}
+
+function selectZero(el){
+  setTimeout(()=>{
+    if(String(el.value).trim()==='0' || String(el.value).trim()==='0,00') el.select();
+  },0);
+}
+
+function limpaZero(v){
+  v=String(v||'').trim();
+  return v==='' ? 0 : v;
+}
+
 async function recalcular(idx){
-  const row=document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]; const qtdInput=row?.children[5]?.querySelector('input'); if(qtdInput) linhas[idx].quantidade=num(qtdInput.value)||1;
+  const row=document.querySelectorAll('#tbody tr:not(.obsrow)')[idx];
+  const qtdInput=row?.children[5]?.querySelector('input');
+
+  if(qtdInput) linhas[idx].quantidade=num(qtdInput.value)||1;
+
   if(!eventoAtual || !linhas[idx].funcao) return renderLinhas();
-  try{const j=await apiGet(`pedidos_valor_calcular.php?categoria=${encodeURIComponent(eventoAtual.tipo||'')}&funcao=${encodeURIComponent(linhas[idx].funcao)}&quantidade=${encodeURIComponent(linhas[idx].quantidade)}`);
-    linhas[idx].valor_unitario=j.calculo.valor_unitario; linhas[idx].valor_bruto=j.calculo.valor_total; renderLinhas();
-  }catch(e){showMsg(e.message,false)}
+
+  try{
+    const j=await apiGet(`pedidos_valor_calcular.php?categoria=${encodeURIComponent(eventoAtual.tipo||'')}&funcao=${encodeURIComponent(linhas[idx].funcao)}&quantidade=${encodeURIComponent(linhas[idx].quantidade)}`);
+    linhas[idx].valor_unitario=j.calculo.valor_unitario;
+    linhas[idx].valor_bruto=j.calculo.valor_total;
+    renderLinhas();
+  }catch(e){
+    showMsg(e.message,false);
+  }
 }
-function calcTotal(){const t=linhas.reduce((s,l)=>s+(Number(l.liberado)===0?0:Number(l.valor_bruto||0)),0); $('total').textContent=moeda(t)}
+
+function calcTotal(){
+  const t=linhas.reduce((s,l)=>s+(Number(l.liberado)===0?0:Number(l.valor_bruto||0)),0);
+  $('total').textContent=moeda(t);
+}
+
 async function salvarLinha(idx){
-  if(!eventoAtual){showMsg('Selecione o evento.',false); return}
-  const l=linhas[idx]; if(!l.prestador_id){showMsg('Selecione o funcionário/prestador.',false); return}
-  if(!l.funcao){showMsg('Informe a função.',false); return}
-  if(precisaObs(l.funcao) && !(l.observacao||'').trim()){showMsg('Informe o detalhe/dias trabalhados.',false); return}
-  try{const j=await apiPost('pedidos_salvar.php',{id:l.id,evento_id:eventoAtual.id,prestador_id:l.prestador_id,id_unidade:$('unidade').value.trim()||'1501',funcao:l.funcao,quantidade:l.quantidade,valor_unitario:l.valor_unitario,valor_bruto:l.valor_bruto,sala:l.sala,qtd_alunos:l.qtd_alunos,observacao:l.observacao});
-    l.id=j.id; l.liberado=j.liberado; l.motivo=j.motivo||''; renderLinhas(); if(idx===linhas.length-1) novaLinha(true);
-  }catch(e){showMsg(e.message,false)}
+  if(!eventoAtual){
+    showMsg('Selecione o evento.',false);
+    return;
+  }
+
+  const l=linhas[idx];
+
+  if(!l.prestador_id){
+    showMsg('Selecione o funcionário/prestador.',false);
+    return;
+  }
+
+  if(!l.funcao){
+    showMsg('Informe a função.',false);
+    return;
+  }
+
+  if(precisaObs(l.funcao) && !(l.observacao||'').trim()){
+    showMsg('Informe o detalhe/dias trabalhados.',false);
+    return;
+  }
+
+  try{
+    const j=await apiPost('pedidos_salvar.php',{
+      id:l.id,
+      evento_id:eventoAtual.id,
+      prestador_id:l.prestador_id,
+      id_unidade:$('unidade').value.trim()||'1501',
+      funcao:l.funcao,
+      quantidade:l.quantidade,
+      valor_unitario:l.valor_unitario,
+      valor_bruto:l.valor_bruto,
+      sala:l.sala,
+      qtd_alunos:l.qtd_alunos,
+      observacao:l.observacao
+    });
+
+    l.id=j.id;
+    l.liberado=j.liberado;
+    l.motivo=j.motivo||'';
+    renderLinhas();
+
+    if(idx===linhas.length-1) novaLinha(true);
+
+  }catch(e){
+    showMsg(e.message,false);
+  }
 }
+
 async function excluirLinha(idx){
   const l=linhas[idx];
-  if(l.id){ if(!confirm('Excluir este pedido?')) return; try{await apiPost('pedidos_excluir.php',{id:l.id}); showMsg('Pedido excluído.')}catch(e){showMsg(e.message,false); return} }
-  linhas.splice(idx,1); if(!linhas.length && eventoAtual) novaLinha(false); else renderLinhas();
+
+  if(l.id){
+    if(!confirm('Excluir este pedido?')) return;
+
+    try{
+      await apiPost('pedidos_excluir.php',{id:l.id});
+      showMsg('Pedido excluído.');
+    }catch(e){
+      showMsg(e.message,false);
+      return;
+    }
+  }
+
+  linhas.splice(idx,1);
+
+  if(!linhas.length && eventoAtual) novaLinha(false);
+  else renderLinhas();
 }
 
 let prestadorTimer=null;
-function navNome(ev,idx){if(ev.key==='Enter'){ev.preventDefault(); const s=$('suggest'); const first=s.querySelector('div'); if(first) first.click(); else document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.querySelector('select')?.focus();}}
-function buscarPrestador(input,idx){
-  linhas[idx].nome=input.value; prestadorInputAtual={input,idx}; clearTimeout(prestadorTimer);
-  prestadorTimer=setTimeout(async()=>{
-    const q=input.value.trim(); const s=$('suggest'); if(q.length<2){s.classList.add('hidden');return}
-    try{const j=await apiGet('pedidos_prestador_buscar.php?q='+encodeURIComponent(q));
-      const r=input.getBoundingClientRect(); s.style.left=(r.left+window.scrollX)+'px'; s.style.top=(r.bottom+window.scrollY+4)+'px';
-      s.innerHTML=(j.prestadores||[]).map(p=>`<div onclick='selecionarPrestador(${idx},${JSON.stringify(p).replace(/'/g,"&#39;")})'><strong>${escapeHtml(p.nome)}</strong><br><small>CPF ${escapeHtml(p.cpf||'')} · Funcional ${escapeHtml(p.funcional||'')}</small></div>`).join('') || '<div>Nenhum encontrado</div>';
-      s.classList.remove('hidden');
-    }catch(e){showMsg(e.message,false)}
-  },250)
+
+function navNome(ev,idx){
+  if(ev.key==='Enter'){
+    ev.preventDefault();
+
+    const s=$('suggest');
+    const first=s.querySelector('div');
+
+    if(first) first.click();
+    else document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.querySelector('select')?.focus();
+  }
 }
-function selecionarPrestador(idx,p){linhas[idx].prestador_id=p.id; linhas[idx].cod=p.ctrl_antigo||p.id; linhas[idx].nome=p.nome||''; linhas[idx].cpf=p.cpf||''; linhas[idx].funcional=p.funcional||''; $('suggest').classList.add('hidden'); renderLinhas(); setTimeout(()=>document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.querySelector('select')?.focus(),50)}
-function abrirPrestadorAtual(){const inp=prestadorInputAtual?.input || document.querySelector('#tbody input[id^="nome_"]'); inp?.focus();}
+
+function buscarPrestador(input,idx){
+  linhas[idx].nome=input.value;
+  prestadorInputAtual={input,idx};
+  clearTimeout(prestadorTimer);
+
+  prestadorTimer=setTimeout(async()=>{
+    const q=input.value.trim();
+    const s=$('suggest');
+
+    if(q.length<2){
+      s.classList.add('hidden');
+      return;
+    }
+
+    try{
+      const j=await apiGet('pedidos_prestador_buscar.php?q='+encodeURIComponent(q));
+      const r=input.getBoundingClientRect();
+
+      s.style.left=(r.left+window.scrollX)+'px';
+      s.style.top=(r.bottom+window.scrollY+4)+'px';
+
+      s.innerHTML=(j.prestadores||[]).map(p=>`
+        <div onclick='selecionarPrestador(${idx},${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+          <strong>${escapeHtml(p.nome)}</strong><br>
+          <small>CPF ${escapeHtml(p.cpf||'')} · Funcional ${escapeHtml(p.funcional||'')}</small>
+        </div>
+      `).join('') || '<div>Nenhum encontrado</div>';
+
+      s.classList.remove('hidden');
+
+    }catch(e){
+      showMsg(e.message,false);
+    }
+  },250);
+}
+
+function selecionarPrestador(idx,p){
+  linhas[idx].prestador_id=p.id;
+  linhas[idx].cod=p.ctrl_antigo||p.id;
+  linhas[idx].nome=p.nome||'';
+  linhas[idx].cpf=p.cpf||'';
+  linhas[idx].funcional=p.funcional||'';
+
+  $('suggest').classList.add('hidden');
+  renderLinhas();
+
+  setTimeout(()=>document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.querySelector('select')?.focus(),50);
+}
+
+function abrirPrestadorAtual(){
+  const inp=prestadorInputAtual?.input || document.querySelector('#tbody input[id^="nome_"]');
+  inp?.focus();
+}
+
 function enterCampo(ev,el){
   if(ev.key==='Enter'){
     ev.preventDefault();
+
     const inputs=[...document.querySelectorAll('#tbody tr:not(.obsrow) input, #tbody tr:not(.obsrow) select, #tbody tr:not(.obsrow) button.btn.ok')]
       .filter(x=>!x.disabled && x.tabIndex!==-1 && x.offsetParent!==null && !x.readOnly);
+
     const i=inputs.indexOf(el);
     (inputs[i+1]||inputs[0])?.focus();
   }
 }
-document.addEventListener('click',e=>{if(!e.target.closest('#suggest')) $('suggest').classList.add('hidden')});
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#suggest')) $('suggest').classList.add('hidden');
+});
+
 buscarUnidade();
 renderLinhas();
 </script>
 </body>
 </html>
-
