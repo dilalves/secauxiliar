@@ -127,11 +127,12 @@ async function listar(){
         <td>${esc(p.cod_unidade || p.empresa || '')}</td><td>${esc(p.funcional || '')}</td><td>${esc(p.celular || '')}</td><td>${esc(p.email || '')}</td>
         <td><span class="pill ${Number(p.ativo)?'':'off'}">${Number(p.ativo)?'Ativo':'Inativo'}</span></td>
         <td>
-          <div class="row-actions">
-            <button class="btn mini" onclick="editar(${Number(p.id)})">Editar</button>
-            <button class="btn mini primary" onclick="abrirFicha(${Number(p.id)})">Ficha</button>
-          </div>
-        </td>
+        <div class="row-actions">
+          <button class="btn mini" onclick="editar(${Number(p.id)})">Editar</button>
+          <button class="btn mini primary" onclick="abrirFicha(${Number(p.id)})">Ficha</button>
+          <button class="btn mini ok" onclick="imprimirFichaCadastro(${Number(p.id)})">Imprimir</button>
+        </div>
+      </td>
       </tr>`).join('');
   }catch(e){ tbody.innerHTML = `<tr><td colspan="10">${esc(e.message)}</td></tr>`; }
 }
@@ -198,6 +199,11 @@ async function buscarCEP(){
 
 function abrirFicha(id){
   location.href = 'ficha_prestador.html?id=' + encodeURIComponent(id);
+}
+
+function imprimirFichaCadastro(id){
+  if(!id) return;
+  window.open(API + 'rel_ficha_cadastral_prestador.php?id=' + encodeURIComponent(id), '_blank');
 }
 
 el('q').addEventListener('keydown', e => { if(e.key === 'Enter') listar(); });
