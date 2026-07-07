@@ -130,6 +130,8 @@ input[readonly]{background:#f1f5f9;color:#334155;font-weight:800}
 .pill{display:inline-flex;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:900}
 .pill.ok{background:#e8f7ef;color:#05603a}
 .pill.no{background:#fde8e8;color:#8b2c2c}
+.pill.dp{background:#fff7e6;color:#b54708}
+.pill.pg{background:#e8f0fb;color:#0b3b78}
 
 .modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
 .modal.open{display:flex}
@@ -204,6 +206,19 @@ input[readonly]{background:#f1f5f9;color:#334155;font-weight:800}
 
 .hist-table tr:hover td{
   background:#f8fbff;
+}
+
+.hist-table tr.hist-current td{
+  background:#eaf3ff;
+  font-weight:800;
+}
+
+.hist-table tr.hist-current:hover td{
+  background:#dfeeff;
+}
+
+.hist-table tbody tr{
+  cursor:pointer;
 }
 
 .hist-table .evento-col{
@@ -818,6 +833,40 @@ function enterCampo(ev,el){
   }
 }
 
+
+function attrJS(s){
+  return String(s??'')
+    .replace(/\\/g,'\\\\')
+    .replace(/'/g,"\\'")
+    .replace(/\r?\n/g,' ')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+function statusPedido(p){
+  if(p.data_recibo) return '<span class="pill pg">PG</span>';
+  if(p.data_envio) return '<span class="pill dp">DP</span>';
+  return Number(p.liberado) ? '<span class="pill ok">OK</span>' : '<span class="pill no">NEG</span>';
+}
+
+async function abrirEventoHistorico(codigo){
+  codigo = String(codigo || '').trim();
+
+  if(!codigo){
+    showMsg('Este lançamento não tem código de evento para abrir.', false);
+    return;
+  }
+
+  try{
+    const j = await apiGet('pedidos_evento_obter.php?codigo=' + encodeURIComponent(codigo));
+    fecharHistoricoPrestador();
+    selecionarEvento(j.evento);
+    showMsg('Evento carregado pelo histórico.');
+  }catch(e){
+    showMsg('Não consegui abrir esse evento: ' + e.message, false);
+  }
+}
+
 async function abrirHistoricoPrestador(idx){
   const l = linhas[idx];
 
@@ -848,7 +897,7 @@ async function abrirHistoricoPrestador(idx){
     const pedidos = j.pedidos || [];
 
     $('histResumo').textContent = pedidos.length
-      ? `${pedidos.length} lançamento(s) encontrado(s), em ordem decrescente de data.`
+      ? `${pedidos.length} lançamento(s) encontrado(s), em ordem decrescente de data. Duplo clique em uma linha para abrir o evento.`
       : 'Nenhum lançamento encontrado para este prestador.';
 
     if(!pedidos.length){
@@ -869,14 +918,16 @@ async function abrirHistoricoPrestador(idx){
               <th class="center">QTD</th>
               <th class="center">SALA</th>
               <th class="center">ALUNOS</th>
-              <th class="center">LIB</th>
+              <th class="center">STATUS</th>
               <th class="right">VALOR</th>
               <th class="center">SEQ.</th>
             </tr>
           </thead>
           <tbody>
-            ${pedidos.map(p=>`
-              <tr>
+            ${pedidos.map(p=>{
+              const atual = eventoAtual && (Number(p.evento_id) === Number(eventoAtual.id) || String(p.codigo_evento||'') === String(eventoAtual.codigo||''));
+              return `
+              <tr class="${atual ? 'hist-current' : ''}" ondblclick="abrirEventoHistorico('${attrJS(p.codigo_evento||'')}')" title="Duplo clique para abrir este evento">
                 <td>${escapeHtml(dataBR(p.data_evento))}</td>
                 <td>${escapeHtml(p.codigo_evento||'')}</td>
                 <td class="evento-col">${escapeHtml(p.evento_nome||'')}</td>
@@ -885,11 +936,11 @@ async function abrirHistoricoPrestador(idx){
                 <td class="center">${escapeHtml(p.quantidade||'')}</td>
                 <td class="center">${escapeHtml(p.sala||'')}</td>
                 <td class="center">${escapeHtml(p.qtd_alunos||'')}</td>
-                <td class="center">${Number(p.liberado) ? '<span class="pill ok">OK</span>' : '<span class="pill no">NEG</span>'}</td>
+                <td class="center">${statusPedido(p)}</td>
                 <td class="right"><b>${escapeHtml(moeda(p.valor_bruto))}</b></td>
                 <td class="center">${escapeHtml(p.id||'')}</td>
               </tr>
-            `).join('')}
+            `}).join('')}
           </tbody>
         </table>
       </div>
