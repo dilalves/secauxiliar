@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fichas Cadastrais em Lote</title>
+
+<style>
+:root{
+  --bg:#f6f9fe;
+  --card:#fff;
+  --line:#dbe6f3;
+  --primary:#0b3b78;
+  --text:#0f172a;
+  --muted:#64748b;
+  --danger:#b42318;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  font-family:system-ui,Arial,sans-serif;
+  color:var(--text);
+  padding:18px;
+}
+.wrap{
+  max-width:900px;
+  margin:0 auto;
+}
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+h1{
+  margin:0;
+  color:var(--primary);
+  font-size:22px;
+}
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 8px 24px rgba(11,59,120,.06);
+  padding:18px;
+}
+.desc{
+  margin:0 0 18px;
+  color:var(--muted);
+  font-size:14px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.field label{
+  font-size:12px;
+  font-weight:800;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.4px;
+}
+.field input,
+.field select{
+  height:42px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:0 12px;
+  background:#fff;
+  font-weight:600;
+}
+.actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:18px;
+}
+.btn{
+  border:0;
+  border-radius:10px;
+  padding:11px 16px;
+  font-weight:800;
+  cursor:pointer;
+  background:#e8f0fb;
+  color:#12345b;
+}
+.btn.primary{
+  background:var(--primary);
+  color:#fff;
+}
+.msg{
+  margin-top:12px;
+  font-size:14px;
+  color:var(--danger);
+  font-weight:700;
+}
+.hint{
+  margin-top:14px;
+  padding:12px;
+  background:#eef6ff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  color:#12345b;
+  font-size:13px;
+}
+@media(max-width:650px){
+  body{padding:10px}
+  .grid{grid-template-columns:1fr}
+  .actions{justify-content:stretch;flex-direction:column}
+  .btn{width:100%}
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <h1>Fichas Cadastrais em Lote</h1>
+    <button class="btn" onclick="history.back()">Voltar</button>
+  </div>
+
+  <div class="card">
+    <p class="desc">
+      Informe o período de cadastro para gerar as fichas cadastrais em PDF/impressão.
+    </p>
+
+    <div class="grid">
+      <div class="field">
+        <label>Tipo</label>
+        <select id="tipo">
+          <option value="CONVIDADO" selected>Convidado</option>
+          <option value="FUNCIONARIO">Funcionário</option>
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Unidade</label>
+        <select id="cod_unidade">
+          <option value="">Todas</option>
+          <option value="1501">1501 - Curso Paulista</option>
+          <option value="1506">1506 - Curso Santo Amaro</option>
+          <option value="1509">1509 - Curso Santo André</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Cadastrados de *</label>
+        <input id="de" type="date" required>
+      </div>
+
+      <div class="field">
+        <label>Cadastrados até *</label>
+        <input id="ate" type="date" required>
+      </div>
+    </div>
+
+    <div class="hint">
+      Dica: para época de vestibular, selecione o intervalo em que os convidados foram cadastrados.
+      O sistema gerará uma ficha por página.
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="limpar()">Limpar</button>
+      <button class="btn primary" onclick="gerar()">Gerar fichas</button>
+    </div>
+
+    <div id="msg" class="msg"></div>
+  </div>
+</div>
+
+<script>
+const API = 'https://apisec.secauxiliar.com.br/prestadores_adm/';
+
+function el(id){
+  return document.getElementById(id);
+}
+
+function hojeISO(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dia = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dia}`;
+}
+
+function primeiroDiaMesISO(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}-01`;
+}
+
+function limpar(){
+  el('tipo').value = 'CONVIDADO';
+  el('cod_unidade').value = '';
+  el('de').value = primeiroDiaMesISO();
+  el('ate').value = hojeISO();
+  el('msg').textContent = '';
+}
+
+function gerar(){
+  const tipo = el('tipo').value.trim();
+  const codUnidade = el('cod_unidade').value.trim();
+  const de = el('de').value;
+  const ate = el('ate').value;
+
+  el('msg').textContent = '';
+
+  if(!de || !ate){
+    el('msg').textContent = 'Informe a data inicial e final.';
+    return;
+  }
+
+  if(de > ate){
+    el('msg').textContent = 'A data inicial não pode ser maior que a data final.';
+    return;
+  }
+
+  const params = new URLSearchParams();
+
+  if(tipo) params.set('tipo', tipo);
+  if(codUnidade) params.set('cod_unidade', codUnidade);
+
+  params.set('de', de);
+  params.set('ate', ate);
+
+  const url = API + 'rel_fichas_cadastrais_lote.php?' + params.toString();
+
+  window.open(url, '_blank');
+}
+
+el('de').value = primeiroDiaMesISO();
+el('ate').value = hojeISO();
+</script>
+
+</body>
+</html>
