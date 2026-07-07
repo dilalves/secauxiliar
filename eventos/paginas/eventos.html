@@ -216,7 +216,7 @@ async function salvarEvento(ev){
       hora_entrada: $('hora_entrada').value,
       hora_saida: $('hora_saida').value,
       bloqueado: Number($('bloqueado').value),
-      valor_maximo: numberBR($('valor_maximo').value)
+      valor_maximo: Number(numberBR($('valor_maximo').value) || 0)
     };
     const data = await api('eventos_salvar.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
     msg(data.msg || 'Salvo.');
