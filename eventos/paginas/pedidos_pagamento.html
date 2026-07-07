@@ -256,6 +256,20 @@ input[readonly]{background:#f1f5f9;color:#334155;font-weight:800}
   </div>
 </div>
 
+<div id="modalHistorico" class="modal">
+  <div class="modalbox">
+    <div class="modalhead">
+      <div>
+        <h2 id="histNome" style="margin:0;color:#0b3b78">Histórico do prestador</h2>
+        <div id="histDados" class="muted" style="margin-top:4px"></div>
+      </div>
+      <button class="btn" onclick="fecharHistoricoPrestador()">Fechar</button>
+    </div>
+    <div id="histResumo" class="muted" style="margin-bottom:10px"></div>
+    <div id="histBody">Carregando...</div>
+  </div>
+</div>
+
 <script>
 const API = 'https://apisec.secauxiliar.com.br/prestadores_adm/';
 let eventoAtual = null;
@@ -482,7 +496,7 @@ function renderLinhas(){
 
     tr.innerHTML=`
       <td><input id="cod_${l.local}" value="${l.cod||l.prestador_id||''}" readonly></td>
-      <td style="position:relative"><input id="nome_${l.local}" value="${escapeHtml(l.nome||'')}" oninput="buscarPrestador(this,${idx})" onkeydown="navNome(event,${idx})" autocomplete="off"></td>
+      <td style="position:relative"><input id="nome_${l.local}" value="${escapeHtml(l.nome||'')}" oninput="buscarPrestador(this,${idx})" onkeydown="navNome(event,${idx})" ondblclick="abrirHistoricoPrestador(${idx})" title="Duplo clique para consultar os últimos lançamentos" autocomplete="off"></td>
       <td><input value="${escapeHtml(l.funcional||'')}" readonly></td>
       <td><input value="${escapeHtml(l.cpf||'')}" readonly></td>
       <td><select onchange="setFuncao(${idx},this.value,true)" onkeydown="enterFuncao(event,${idx},this)">${opts}</select></td>
@@ -732,6 +746,90 @@ function enterCampo(ev,el){
     const i=inputs.indexOf(el);
     (inputs[i+1]||inputs[0])?.focus();
   }
+}
+
+async function abrirHistoricoPrestador(idx){
+  const l = linhas[idx];
+
+  if(!l || (!l.prestador_id && !l.cpf && !l.funcional)){
+    showMsg('Selecione primeiro o funcionário/prestador.', false);
+    return;
+  }
+
+  $('modalHistorico').classList.add('open');
+  $('histNome').textContent = l.nome || 'Histórico do prestador';
+
+  const dados = [];
+  if(l.funcional) dados.push('Funcional: ' + l.funcional);
+  if(l.cpf) dados.push('CPF: ' + l.cpf);
+  if(l.cod) dados.push('Cód.: ' + l.cod);
+
+  $('histDados').textContent = dados.join('  •  ');
+  $('histResumo').textContent = '';
+  $('histBody').innerHTML = 'Carregando histórico...';
+
+  try{
+    const qs = new URLSearchParams();
+    if(l.prestador_id) qs.set('prestador_id', l.prestador_id);
+    if(l.cpf) qs.set('cpf', l.cpf);
+    if(l.funcional) qs.set('funcional', l.funcional);
+
+    const j = await apiGet('pedidos_prestador_historico.php?' + qs.toString());
+    const pedidos = j.pedidos || [];
+
+    $('histResumo').textContent = pedidos.length
+      ? `${pedidos.length} lançamento(s) encontrado(s), em ordem decrescente de data.`
+      : 'Nenhum lançamento encontrado para este prestador.';
+
+    if(!pedidos.length){
+      $('histBody').innerHTML = '<div class="muted">Sem histórico para exibir.</div>';
+      return;
+    }
+
+    $('histBody').innerHTML = `
+      <table class="eventtable">
+        <thead>
+          <tr>
+            <th>DATA</th>
+            <th>CÓD. EVENTO</th>
+            <th>EVENTO</th>
+            <th>UNID.</th>
+            <th>FUNÇÃO</th>
+            <th class="center">QTD</th>
+            <th class="center">SALA</th>
+            <th class="center">ALUNOS</th>
+            <th class="center">LIB</th>
+            <th class="right">VALOR</th>
+            <th class="center">SEQ.</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pedidos.map(p=>`
+            <tr>
+              <td>${escapeHtml(dataBR(p.data_evento))}</td>
+              <td>${escapeHtml(p.codigo_evento||'')}</td>
+              <td>${escapeHtml(p.evento_nome||'')}</td>
+              <td>${escapeHtml(p.id_unidade||'')}</td>
+              <td>${escapeHtml(p.funcao||'')}</td>
+              <td class="center">${escapeHtml(p.quantidade||'')}</td>
+              <td class="center">${escapeHtml(p.sala||'')}</td>
+              <td class="center">${escapeHtml(p.qtd_alunos||'')}</td>
+              <td class="center">${Number(p.liberado) ? '<span class="pill ok">OK</span>' : '<span class="pill no">NEG</span>'}</td>
+              <td class="right"><b>${escapeHtml(moeda(p.valor_bruto))}</b></td>
+              <td class="center">${escapeHtml(p.id||'')}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+
+  }catch(e){
+    $('histBody').innerHTML = `<div class="msg err" style="display:block">${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function fecharHistoricoPrestador(){
+  $('modalHistorico').classList.remove('open');
 }
 
 document.addEventListener('click',e=>{
