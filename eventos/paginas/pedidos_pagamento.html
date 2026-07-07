@@ -142,6 +142,76 @@ input[readonly]{background:#f1f5f9;color:#334155;font-weight:800}
 .eventtable tr{cursor:pointer}
 .eventtable tr:hover td{background:#f8fbff}
 
+/* Histórico do prestador */
+#modalHistorico{
+  align-items:flex-start;
+  padding-top:18px;
+}
+
+#modalHistorico .modalbox{
+  max-width:1400px;
+  width:96vw;
+  max-height:92vh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+#modalHistorico .modalhead{
+  flex-shrink:0;
+}
+
+#histResumo{
+  flex-shrink:0;
+}
+
+#histBody{
+  min-height:0;
+  flex:1;
+  overflow:hidden;
+}
+
+.hist-table-wrap{
+  overflow:auto;
+  max-height:68vh;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#fff;
+}
+
+.hist-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+  min-width:1250px;
+}
+
+.hist-table th,
+.hist-table td{
+  border-bottom:1px solid var(--line);
+  padding:8px;
+  text-align:left;
+  white-space:nowrap;
+}
+
+.hist-table th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#eef4fb;
+  color:#12345b;
+}
+
+.hist-table tr:hover td{
+  background:#f8fbff;
+}
+
+.hist-table .evento-col{
+  white-space:normal;
+  min-width:340px;
+  max-width:520px;
+}
+
 
 .footbtns{
   background:var(--bg);
@@ -787,40 +857,42 @@ async function abrirHistoricoPrestador(idx){
     }
 
     $('histBody').innerHTML = `
-      <table class="eventtable">
-        <thead>
-          <tr>
-            <th>DATA</th>
-            <th>CÓD. EVENTO</th>
-            <th>EVENTO</th>
-            <th>UNID.</th>
-            <th>FUNÇÃO</th>
-            <th class="center">QTD</th>
-            <th class="center">SALA</th>
-            <th class="center">ALUNOS</th>
-            <th class="center">LIB</th>
-            <th class="right">VALOR</th>
-            <th class="center">SEQ.</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${pedidos.map(p=>`
+      <div class="hist-table-wrap">
+        <table class="hist-table">
+          <thead>
             <tr>
-              <td>${escapeHtml(dataBR(p.data_evento))}</td>
-              <td>${escapeHtml(p.codigo_evento||'')}</td>
-              <td>${escapeHtml(p.evento_nome||'')}</td>
-              <td>${escapeHtml(p.id_unidade||'')}</td>
-              <td>${escapeHtml(p.funcao||'')}</td>
-              <td class="center">${escapeHtml(p.quantidade||'')}</td>
-              <td class="center">${escapeHtml(p.sala||'')}</td>
-              <td class="center">${escapeHtml(p.qtd_alunos||'')}</td>
-              <td class="center">${Number(p.liberado) ? '<span class="pill ok">OK</span>' : '<span class="pill no">NEG</span>'}</td>
-              <td class="right"><b>${escapeHtml(moeda(p.valor_bruto))}</b></td>
-              <td class="center">${escapeHtml(p.id||'')}</td>
+              <th>DATA</th>
+              <th>CÓD. EVENTO</th>
+              <th class="evento-col">EVENTO</th>
+              <th>UNID.</th>
+              <th>FUNÇÃO</th>
+              <th class="center">QTD</th>
+              <th class="center">SALA</th>
+              <th class="center">ALUNOS</th>
+              <th class="center">LIB</th>
+              <th class="right">VALOR</th>
+              <th class="center">SEQ.</th>
             </tr>
-          `).join('')}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            ${pedidos.map(p=>`
+              <tr>
+                <td>${escapeHtml(dataBR(p.data_evento))}</td>
+                <td>${escapeHtml(p.codigo_evento||'')}</td>
+                <td class="evento-col">${escapeHtml(p.evento_nome||'')}</td>
+                <td>${escapeHtml(p.id_unidade||'')}</td>
+                <td>${escapeHtml(p.funcao||'')}</td>
+                <td class="center">${escapeHtml(p.quantidade||'')}</td>
+                <td class="center">${escapeHtml(p.sala||'')}</td>
+                <td class="center">${escapeHtml(p.qtd_alunos||'')}</td>
+                <td class="center">${Number(p.liberado) ? '<span class="pill ok">OK</span>' : '<span class="pill no">NEG</span>'}</td>
+                <td class="right"><b>${escapeHtml(moeda(p.valor_bruto))}</b></td>
+                <td class="center">${escapeHtml(p.id||'')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
     `;
 
   }catch(e){
