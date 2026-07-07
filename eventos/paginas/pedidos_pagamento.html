@@ -849,8 +849,9 @@ function statusPedido(p){
   return Number(p.liberado) ? '<span class="pill ok">OK</span>' : '<span class="pill no">NEG</span>';
 }
 
-async function abrirEventoHistorico(codigo){
+async function abrirEventoHistorico(codigo, unidade){
   codigo = String(codigo || '').trim();
+  unidade = String(unidade || '').trim();
 
   if(!codigo){
     showMsg('Este lançamento não tem código de evento para abrir.', false);
@@ -858,10 +859,23 @@ async function abrirEventoHistorico(codigo){
   }
 
   try{
+    // Primeiro troca a unidade para a unidade do lançamento histórico.
+    // Assim, quando o evento carregar, os pedidos vêm da unidade correta.
+    if(unidade){
+      $('unidade').value = unidade;
+      $('unidadeNome').value = 'Carregando...';
+    }
+
     const j = await apiGet('pedidos_evento_obter.php?codigo=' + encodeURIComponent(codigo));
     fecharHistoricoPrestador();
     selecionarEvento(j.evento);
-    showMsg('Evento carregado pelo histórico.');
+
+    if(unidade){
+      buscarUnidade();
+      showMsg('Evento e unidade carregados pelo histórico.');
+    }else{
+      showMsg('Evento carregado pelo histórico.');
+    }
   }catch(e){
     showMsg('Não consegui abrir esse evento: ' + e.message, false);
   }
@@ -927,7 +941,7 @@ async function abrirHistoricoPrestador(idx){
             ${pedidos.map(p=>{
               const atual = eventoAtual && (Number(p.evento_id) === Number(eventoAtual.id) || String(p.codigo_evento||'') === String(eventoAtual.codigo||''));
               return `
-              <tr class="${atual ? 'hist-current' : ''}" ondblclick="abrirEventoHistorico('${attrJS(p.codigo_evento||'')}')" title="Duplo clique para abrir este evento">
+              <tr class="${atual ? 'hist-current' : ''}" ondblclick="abrirEventoHistorico('${attrJS(p.codigo_evento||'')}','${attrJS(p.id_unidade||'')}')" title="Duplo clique para abrir este evento">
                 <td>${escapeHtml(dataBR(p.data_evento))}</td>
                 <td>${escapeHtml(p.codigo_evento||'')}</td>
                 <td class="evento-col">${escapeHtml(p.evento_nome||'')}</td>
