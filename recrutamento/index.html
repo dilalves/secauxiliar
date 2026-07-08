@@ -126,16 +126,16 @@ async function login(){
   el('btnLogin').disabled = true;
 
   try{
-    const body = new URLSearchParams();
-    body.append('usuario', usuario);
-    body.append('senha', senha);
-
     const r = await fetch(`${API}/recrutamento_acesso.php`, {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
       },
-      body: body.toString()
+      body: JSON.stringify({
+        usuario: usuario,
+        senha: senha
+      })
     });
 
     const txt = await r.text();
