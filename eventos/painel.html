@@ -25,7 +25,7 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:
 .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99;display:flex;align-items:center;justify-content:center;padding:18px}.modalBox{width:100%;max-width:760px;background:#fff;border-radius:16px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.25);max-height:92vh;overflow:auto}.modalTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.modalTop h2{margin:0;color:var(--primary)}.close{border:0;border-radius:10px;background:#e8f0fb;color:#12345b;font-weight:900;padding:9px 12px;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.grid .wide{grid-column:span 2}.grid .full{grid-column:1/-1}.modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.quickActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.quickActions .smallBtn{padding:10px 12px}
 @media(max-width:900px){body{height:auto;overflow:auto}.page{height:auto;overflow:visible}.wrap{height:auto}.mainHead{flex-direction:column;align-items:flex-start}.calendar{grid-template-rows:repeat(6,minmax(118px,auto));overflow:visible}.calendarCard{min-height:760px}.grid{grid-template-columns:1fr}.grid .wide{grid-column:span 1}.modalActions{flex-direction:column}.calHead{flex-direction:column;align-items:flex-start}.weekDays div{font-size:10px;padding:7px 4px}.day{padding:6px}}
 </style>
-<link rel="stylesheet" href="recrutamento-ui.css?v=20260710b">
+<link rel="stylesheet" href="recrutamento-ui.css?v=20260710c">
 </head>
 <body data-page="agenda">
 <header class="topbar">
@@ -221,11 +221,11 @@ function renderCalendario(){
     ].filter(Boolean).join(' ');
 
     /*
-     * Mantém o calendário limpo:
+     * Mantém o calendário limpo e garante espaço para "Mais X":
      * - até 2 eventos: mostra todos;
-     * - acima disso: mostra 2 e o botão "Mais X".
+     * - acima disso: mostra 1 evento e reserva a última linha para "Mais X".
      */
-    const limiteVisivel=2;
+    const limiteVisivel=evs.length>2 ? 1 : 2;
     const visiveis=evs.slice(0,limiteVisivel);
     const ocultos=Math.max(0,evs.length-limiteVisivel);
 
@@ -240,7 +240,7 @@ function renderCalendario(){
         >+</button>
       </div>
 
-      <div class="events">
+      <div class="events ${ocultos>0?'hasMore':''}">
         ${visiveis.map(e=>`<div
           class="eventChip ${String(e.status||'').toLowerCase()}"
           onclick='abrirEventoPorId(${Number(e.id)});event.stopPropagation();'
@@ -460,6 +460,6 @@ init();
 </script>
 
 </main></div>
-<script src="recrutamento-ui.js?v=20260710b"></script>
+<script src="recrutamento-ui.js?v=20260710c"></script>
 </body>
 </html>
