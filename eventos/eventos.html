@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico">
+<title>Eventos - Recrutamento</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--line:#dbe6f3;--ink:#0f172a;--muted:#64748b;--primary:#0b3b78;--accent:#2563eb;--soft:#eef4fb;--danger:#b91c1c;--ok:#067647;--warn:#9a3412;--today:#fff7ed;--event:#e8f7ef}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink);height:100vh;overflow:hidden}
+.topbar{height:64px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 22px;box-shadow:0 2px 10px rgba(16,24,40,.16)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:850}.brand img{height:32px}.userBox{display:flex;align-items:center;gap:12px;font-size:13px}.btnSair{border:0;border-radius:10px;background:#fee2e2;color:#991b1b;font-weight:850;padding:9px 12px;cursor:pointer}
+.page{height:calc(100vh - 64px);padding:18px;overflow:hidden}.wrap{height:100%;max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 24px rgba(11,59,120,.05)}
+.mainHead{padding:18px;display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.mainHead h1{margin:0;color:var(--primary)}.mainHead p{color:var(--muted);margin:6px 0 0}
+.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;font-weight:900;color:#12345b;text-transform:uppercase}.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:10px;padding:0 12px;font-weight:700;color:#0f172a;background:#fff}.field input,.field select{height:42px}.field textarea{padding:10px 12px;min-height:88px;resize:vertical}
+.btn{border:0;border-radius:10px;background:var(--primary);color:#fff;font-weight:900;padding:11px 14px;cursor:pointer}.btnLight{background:#e8f0fb;color:#12345b}.btnOk{background:#dcfce7;color:#166534}.btnWarn{background:#fff7ed;color:#9a3412}.btnDanger{background:#fee2e2;color:#991b1b}.smallBtn{border:0;border-radius:9px;padding:8px 10px;font-weight:900;cursor:pointer}.hidden{display:none!important}
+.topBtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;background:var(--soft);color:#12345b;font-size:12px;font-weight:900}.msg{padding:12px;border-radius:10px;font-weight:800;margin-top:12px}.msg.erro{background:#fee2e2;color:var(--danger)}.msg.ok{background:#dcfce7;color:var(--ok)}
+.filters{padding:14px;display:grid;grid-template-columns:170px 1fr 130px;gap:10px;align-items:end;flex-shrink:0}
+.calendarCard{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}.calHead{padding:14px;display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid var(--line);flex-shrink:0}.calTitle{font-size:22px;font-weight:950;color:var(--primary)}.calNav{display:flex;gap:8px;align-items:center}.calNav button{border:0;border-radius:10px;background:#e8f0fb;color:#12345b;font-weight:950;padding:9px 12px;cursor:pointer}
+.weekDays{display:grid;grid-template-columns:repeat(7,1fr);background:var(--soft);border-bottom:1px solid var(--line);flex-shrink:0}.weekDays div{padding:9px 10px;font-size:12px;font-weight:950;color:#12345b;text-align:center;text-transform:uppercase}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(104px,1fr);gap:0;overflow:auto;min-height:0}.day{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;background:#fff;cursor:pointer;min-height:104px;display:flex;flex-direction:column;gap:6px}.day:hover{background:#f8fbff}.day:nth-child(7n){border-right:0}.day.other{background:#f8fafc;color:#94a3b8}.day.today{background:var(--today)}.dayTop{display:flex;justify-content:space-between;align-items:center}.dayNum{font-size:13px;font-weight:950}.addMini{border:0;border-radius:999px;background:#e8f0fb;color:#12345b;font-weight:950;width:24px;height:24px;cursor:pointer}.events{display:flex;flex-direction:column;gap:4px;overflow:hidden}.eventChip{border:1px solid #bbf7d0;background:var(--event);color:#064e3b;border-radius:8px;padding:5px 7px;font-size:12px;font-weight:900;line-height:1.15;cursor:pointer;white-space:normal}.eventChip:hover{filter:brightness(.98)}.eventChip.cancelado{background:#fee2e2;border-color:#fecaca;color:#991b1b}.eventChip.fechado{background:#e8f0fb;border-color:#dbe6f3;color:#12345b}.eventTime{font-size:11px;font-weight:800;opacity:.8}.moreEvents{font-size:11px;color:#64748b;font-weight:900;padding-left:3px}
+.tableCard{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}.tableWrap{overflow:auto;min-height:0}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;white-space:nowrap}th{background:var(--soft);color:#12345b;font-size:12px;position:sticky;top:0;z-index:1}td.nome{font-weight:900;color:#0b3b78;white-space:normal;min-width:260px}.muted{color:var(--muted)}.acoes{display:flex;gap:6px;flex-wrap:wrap}.empty{padding:28px;text-align:center;color:var(--muted);font-weight:800}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99;display:flex;align-items:center;justify-content:center;padding:18px}.modalBox{width:100%;max-width:760px;background:#fff;border-radius:16px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.25);max-height:92vh;overflow:auto}.modalTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.modalTop h2{margin:0;color:var(--primary)}.close{border:0;border-radius:10px;background:#e8f0fb;color:#12345b;font-weight:900;padding:9px 12px;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.grid .wide{grid-column:span 2}.grid .full{grid-column:1/-1}.modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.quickActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.quickActions .smallBtn{padding:10px 12px}
+@media(max-width:900px){body{height:auto;overflow:auto}.page{height:auto;overflow:visible}.wrap{height:auto}.filters{grid-template-columns:1fr}.mainHead{flex-direction:column}.calendar{grid-auto-rows:minmax(118px,auto);overflow:visible}.calendarCard{min-height:520px}.grid{grid-template-columns:1fr}.grid .wide{grid-column:span 1}.modalActions{flex-direction:column}.calHead{flex-direction:column;align-items:flex-start}.weekDays div{font-size:10px;padding:7px 4px}.day{padding:6px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><img src="logo-mini.png" alt=""><span>Eventos - Recrutamento</span></div>
+  <div class="userBox"><button class="btnLight smallBtn" onclick="location.href='painel.html'">Menu</button><span id="userInfo"></span><button class="btnSair" onclick="logout()">Sair</button></div>
+</header>
+
+<div class="page">
+  <div class="wrap">
+    <section class="card mainHead">
+      <div>
+        <h1>Eventos</h1>
+        <p>Clique em uma data para criar evento. Clique no evento para montar a equipe.</p>
+      </div>
+      <div class="topBtns">
+        <span class="pill" id="unidadePill">Unidade</span>
+        <span class="pill" id="totalPill">0 evento(s)</span>
+        <button class="btnLight smallBtn" id="btnModo" onclick="alternarModo()">Ver em lista</button>
+        <button class="btn" onclick="novoEvento()">Novo evento</button>
+      </div>
+    </section>
+
+    <section class="card filters">
+      <div class="field"><label>Unidade</label><select id="fUnidade"></select></div>
+      <div class="field"><label>Buscar</label><input id="fBusca" placeholder="evento, cobertura, simulado, descrição..."></div>
+      <button class="btn" onclick="listarEventos()">Pesquisar</button>
+    </section>
+
+    <section id="calendarView" class="card calendarCard">
+      <div class="calHead">
+        <div class="calTitle" id="calTitle">Mês</div>
+        <div class="calNav">
+          <button onclick="mesAnterior()">‹</button>
+          <button onclick="irHoje()">Hoje</button>
+          <button onclick="proximoMes()">›</button>
+        </div>
+      </div>
+      <div class="weekDays"><div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div></div>
+      <div id="calendar" class="calendar"></div>
+    </section>
+
+    <section id="listView" class="card tableCard hidden">
+      <div class="tableWrap">
+        <table>
+          <thead><tr><th>Data</th><th>Evento</th><th>Horário</th><th>Unidade</th><th>Equipe</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="modalEvento" class="modal hidden">
+  <div class="modalBox">
+    <div class="modalTop">
+      <div>
+        <h2 id="modalTitle">Evento</h2>
+        <div class="muted" id="modalSub">Informe os dados básicos do evento.</div>
+      </div>
+      <button class="close" onclick="fecharEvento()">Fechar</button>
+    </div>
+    <div class="grid" style="margin-top:14px">
+      <input type="hidden" id="ev_id">
+      <div class="field"><label>Unidade</label><input id="ev_unidade"></div>
+      <div class="field wide"><label>Evento</label><input id="ev_titulo" maxlength="160" placeholder="Ex.: SIMULADO ABERTO ENEM 1º DIA"></div>
+      <div class="field"><label>Data</label><input id="ev_data" type="date"></div>
+      <div class="field"><label>Horário inicial</label><input id="ev_ini" type="time"></div>
+      <div class="field"><label>Horário final</label><input id="ev_fim" type="time"></div>
+      <div class="field"><label>Status</label><select id="ev_status"><option value="ABERTO">Aberto</option><option value="FECHADO">Fechado</option><option value="CANCELADO">Cancelado</option></select></div>
+      <div class="field full"><label>Descrição/observações</label><textarea id="ev_desc" placeholder="Local, ponto de encontro, orientação da cobertura..."></textarea></div>
+    </div>
+    <div id="msgEvento" class="msg hidden"></div>
+    <div id="quickActions" class="quickActions hidden">
+      <button class="smallBtn btnOk" onclick="abrirEquipeAtual()">Montar equipe</button>
+      <button class="smallBtn btnWarn" onclick="imprimirAtual()">Imprimir lista</button>
+    </div>
+    <div class="modalActions">
+      <button class="btnLight smallBtn" onclick="fecharEvento()">Cancelar</button>
+      <button class="btn smallBtn" onclick="salvarEvento()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API='https://apisec.secauxiliar.com.br/prestadores',el=id=>document.getElementById(id);
+let token=localStorage.getItem('recrutamento_token')||'';
+let usuario=JSON.parse(localStorage.getItem('recrutamento_usuario')||'{}');
+let eventos=[];
+let modo='calendario';
+let cursor=new Date();
+cursor.setDate(1);
+
+if(!token) location.href='index.html';
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fmtData(d){if(!d)return'-';const p=String(d).split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d}
+function isoLocal(dt){const y=dt.getFullYear();const m=String(dt.getMonth()+1).padStart(2,'0');const d=String(dt.getDate()).padStart(2,'0');return `${y}-${m}-${d}`}
+function hora(h){return (h||'').slice(0,5)}
+function mesNome(dt){return dt.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase())}
+
+async function api(ep,p={}){
+  const r=await fetch(`${API}/${ep}`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(p)});
+  const d=await r.json().catch(()=>({ok:false,error:'Resposta inválida'}));
+  if(r.status===401) logout();
+  return d;
+}
+function logout(){localStorage.clear();location.href='index.html'}
+
+function init(){
+  el('userInfo').textContent=`${usuario.nome||''} · ${usuario.cod_unidade==='TODAS'?'Todas as unidades':usuario.cod_unidade||''}`;
+  if(usuario.cod_unidade==='TODAS'){
+    el('fUnidade').innerHTML='<option value="">Todas</option>';
+  }else{
+    el('fUnidade').innerHTML=`<option value="${esc(usuario.cod_unidade)}">${esc(usuario.cod_unidade)}</option>`;
+    el('fUnidade').disabled=true;
+  }
+  el('unidadePill').textContent = usuario.cod_unidade==='TODAS' ? 'Todas as unidades' : `Unidade ${usuario.cod_unidade||''}`;
+  listarEventos();
+}
+
+async function listarEventos(){
+  renderLoading();
+  const d=await api('recrutamento_eventos.php',{acao:'listar',unidade:el('fUnidade').value,busca:el('fBusca').value.trim()});
+  if(!d.ok){
+    eventos=[];
+    renderErro(d.error||'Erro ao carregar eventos.');
+    return;
+  }
+  eventos=d.eventos||[];
+  el('totalPill').textContent=`${eventos.length} evento(s)`;
+  renderCalendario();
+  renderLista();
+}
+
+function renderLoading(){
+  el('calendar').innerHTML='<div class="empty" style="grid-column:1/-1">Carregando eventos...</div>';
+  el('tbody').innerHTML='<tr><td colspan="7" class="muted">Carregando...</td></tr>';
+}
+function renderErro(msg){
+  el('calendar').innerHTML=`<div class="empty" style="grid-column:1/-1;color:#b91c1c;font-weight:900">${esc(msg)}</div>`;
+  el('tbody').innerHTML=`<tr><td colspan="7" style="color:#b91c1c;font-weight:900">${esc(msg)}</td></tr>`;
+}
+
+function renderCalendario(){
+  el('calTitle').textContent=mesNome(cursor);
+  const cal=el('calendar');
+  const year=cursor.getFullYear(), month=cursor.getMonth();
+  const first=new Date(year,month,1);
+  const start=new Date(first);
+  start.setDate(first.getDate()-first.getDay());
+  const todayIso=isoLocal(new Date());
+  let html='';
+  for(let i=0;i<42;i++){
+    const dt=new Date(start);
+    dt.setDate(start.getDate()+i);
+    const iso=isoLocal(dt);
+    const evs=eventos.filter(e=>e.data_evento===iso);
+    const cls=[dt.getMonth()!==month?'other':'',iso===todayIso?'today':''].filter(Boolean).join(' ');
+    html+=`<div class="day ${cls}" onclick="clicarDia('${iso}',event)">
+      <div class="dayTop"><span class="dayNum">${dt.getDate()}</span><button class="addMini" type="button" onclick="novoEvento('${iso}');event.stopPropagation();">+</button></div>
+      <div class="events">
+        ${evs.slice(0,3).map(e=>`<div class="eventChip ${String(e.status||'').toLowerCase()}" onclick='abrirEvento(${JSON.stringify(e)});event.stopPropagation();'>
+          <div>${esc(e.titulo)}</div><div class="eventTime">${hora(e.hora_inicio)}${e.hora_fim?' às '+hora(e.hora_fim):''} · ${e.qtd_equipe||0} equipe</div>
+        </div>`).join('')}
+        ${evs.length>3?`<div class="moreEvents">+ ${evs.length-3} evento(s)</div>`:''}
+      </div>
+    </div>`;
+  }
+  cal.innerHTML=html;
+}
+
+function renderLista(){
+  const rows=[...eventos].sort((a,b)=>String(a.data_evento||'').localeCompare(String(b.data_evento||'')) || String(a.hora_inicio||'').localeCompare(String(b.hora_inicio||'')));
+  el('tbody').innerHTML=rows.length?rows.map(e=>`<tr>
+    <td>${fmtData(e.data_evento)}</td>
+    <td class="nome">${esc(e.titulo)}</td>
+    <td>${esc(hora(e.hora_inicio))} às ${esc(hora(e.hora_fim))}</td>
+    <td>${esc(e.cod_unidade)}</td>
+    <td>${e.qtd_equipe||0}</td>
+    <td>${esc(e.status)}</td>
+    <td><div class="acoes">
+      <button class="smallBtn btnLight" onclick='abrirEvento(${JSON.stringify(e)})'>Editar</button>
+      <button class="smallBtn btnOk" onclick="location.href='convocacao.html?evento_id=${e.id}'">Equipe</button>
+      <button class="smallBtn btnWarn" onclick="location.href='imprimir_evento.html?evento_id=${e.id}'">Imprimir</button>
+    </div></td>
+  </tr>`).join(''):'<tr><td colspan="7" class="empty">Nenhum evento.</td></tr>';
+}
+
+function mesAnterior(){cursor.setMonth(cursor.getMonth()-1);renderCalendario()}
+function proximoMes(){cursor.setMonth(cursor.getMonth()+1);renderCalendario()}
+function irHoje(){cursor=new Date();cursor.setDate(1);renderCalendario()}
+function clicarDia(iso){novoEvento(iso)}
+function alternarModo(){
+  modo = modo==='calendario' ? 'lista' : 'calendario';
+  el('calendarView').classList.toggle('hidden', modo!=='calendario');
+  el('listView').classList.toggle('hidden', modo!=='lista');
+  el('btnModo').textContent = modo==='calendario' ? 'Ver em lista' : 'Ver calendário';
+}
+
+function limparMsg(){el('msgEvento').className='msg hidden';el('msgEvento').textContent=''}
+function novoEvento(data=''){
+  limparMsg();
+  el('modalTitle').textContent='Novo evento';
+  el('modalSub').textContent=data ? `Evento em ${fmtData(data)}.` : 'Informe os dados básicos do evento.';
+  ['ev_id','ev_titulo','ev_ini','ev_fim','ev_desc'].forEach(id=>el(id).value='');
+  el('ev_status').value='ABERTO';
+  el('ev_data').value=data || isoLocal(new Date());
+  el('ev_unidade').value=usuario.cod_unidade==='TODAS'?(el('fUnidade').value||''):usuario.cod_unidade;
+  el('quickActions').classList.add('hidden');
+  el('modalEvento').classList.remove('hidden');
+  setTimeout(()=>el('ev_titulo').focus(),50);
+}
+function abrirEvento(e){
+  limparMsg();
+  el('modalTitle').textContent='Editar evento';
+  el('modalSub').textContent='Após salvar, você pode montar a equipe ou imprimir a lista.';
+  el('ev_id').value=e.id;
+  el('ev_unidade').value=e.cod_unidade||'';
+  el('ev_titulo').value=e.titulo||'';
+  el('ev_data').value=e.data_evento||'';
+  el('ev_ini').value=hora(e.hora_inicio);
+  el('ev_fim').value=hora(e.hora_fim);
+  el('ev_desc').value=e.descricao||'';
+  el('ev_status').value=e.status||'ABERTO';
+  el('quickActions').classList.remove('hidden');
+  el('modalEvento').classList.remove('hidden');
+}
+function fecharEvento(){el('modalEvento').classList.add('hidden')}
+async function salvarEvento(){
+  const p={acao:'salvar',id:el('ev_id').value,cod_unidade:el('ev_unidade').value.trim(),titulo:el('ev_titulo').value.trim(),data_evento:el('ev_data').value,hora_inicio:el('ev_ini').value,hora_fim:el('ev_fim').value,descricao:el('ev_desc').value.trim(),status:el('ev_status').value};
+  const d=await api('recrutamento_eventos.php',p);
+  if(!d.ok){
+    el('msgEvento').className='msg erro';
+    el('msgEvento').textContent=d.error||'Erro ao salvar';
+    el('msgEvento').classList.remove('hidden');
+    return;
+  }
+  el('msgEvento').className='msg ok';
+  el('msgEvento').textContent='Evento salvo.';
+  el('msgEvento').classList.remove('hidden');
+  if(d.id || p.id){ el('ev_id').value = d.id || p.id; el('quickActions').classList.remove('hidden'); }
+  await listarEventos();
+}
+function abrirEquipeAtual(){const id=el('ev_id').value;if(id)location.href=`convocacao.html?evento_id=${id}`}
+function imprimirAtual(){const id=el('ev_id').value;if(id)location.href=`imprimir_evento.html?evento_id=${id}`}
+
+el('fBusca').addEventListener('keydown',e=>{if(e.key==='Enter')listarEventos()});
+init();
+</script>
+</body>
+</html>
