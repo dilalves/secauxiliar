@@ -25,7 +25,7 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:
 .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99;display:flex;align-items:center;justify-content:center;padding:18px}.modalBox{width:100%;max-width:760px;background:#fff;border-radius:16px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.25);max-height:92vh;overflow:auto}.modalTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.modalTop h2{margin:0;color:var(--primary)}.close{border:0;border-radius:10px;background:#e8f0fb;color:#12345b;font-weight:900;padding:9px 12px;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.grid .wide{grid-column:span 2}.grid .full{grid-column:1/-1}.modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.quickActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.quickActions .smallBtn{padding:10px 12px}
 @media(max-width:900px){body{height:auto;overflow:auto}.page{height:auto;overflow:visible}.wrap{height:auto}.mainHead{flex-direction:column;align-items:flex-start}.calendar{grid-template-rows:repeat(6,minmax(118px,auto));overflow:visible}.calendarCard{min-height:760px}.grid{grid-template-columns:1fr}.grid .wide{grid-column:span 1}.modalActions{flex-direction:column}.calHead{flex-direction:column;align-items:flex-start}.weekDays div{font-size:10px;padding:7px 4px}.day{padding:6px}}
 </style>
-<link rel="stylesheet" href="recrutamento-ui.css?v=20260710">
+<link rel="stylesheet" href="recrutamento-ui.css?v=20260710b">
 </head>
 <body data-page="agenda">
 <header class="topbar">
@@ -82,6 +82,19 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:
       </div>
     </section>
   </div>
+</div>
+
+
+<div id="dayPopover" class="dayPopover hidden" role="dialog" aria-modal="false" aria-labelledby="dayPopoverTitle">
+  <div class="dayPopoverTop">
+    <div>
+      <div id="dayPopoverWeek" class="dayPopoverWeek">Dia</div>
+      <div id="dayPopoverTitle" class="dayPopoverDate">00</div>
+    </div>
+    <button class="dayPopoverClose" type="button" onclick="fecharDayPopover()" aria-label="Fechar">×</button>
+  </div>
+  <div id="dayPopoverEvents" class="dayPopoverEvents"></div>
+  <button id="dayPopoverAdd" class="dayPopoverAdd" type="button">+ Novo evento neste dia</button>
 </div>
 
 <div id="modalEvento" class="modal hidden">
@@ -175,32 +188,195 @@ function renderErro(msg){
 }
 
 function renderCalendario(){
+  fecharDayPopover();
   el('calTitle').textContent=mesNome(cursor);
+
   const cal=el('calendar');
-  const year=cursor.getFullYear(), month=cursor.getMonth();
+  const year=cursor.getFullYear();
+  const month=cursor.getMonth();
   const first=new Date(year,month,1);
   const start=new Date(first);
+
   start.setDate(first.getDate()-first.getDay());
+
   const todayIso=isoLocal(new Date());
   let html='';
+
   for(let i=0;i<42;i++){
     const dt=new Date(start);
     dt.setDate(start.getDate()+i);
+
     const iso=isoLocal(dt);
-    const evs=eventos.filter(e=>e.data_evento===iso);
-    const cls=[dt.getMonth()!==month?'other':'',iso===todayIso?'today':''].filter(Boolean).join(' ');
+
+    const evs=eventos
+      .filter(e=>e.data_evento===iso)
+      .sort((a,b)=>
+        String(a.hora_inicio||'').localeCompare(String(b.hora_inicio||''))
+        || String(a.titulo||'').localeCompare(String(b.titulo||''))
+      );
+
+    const cls=[
+      dt.getMonth()!==month?'other':'',
+      iso===todayIso?'today':''
+    ].filter(Boolean).join(' ');
+
+    /*
+     * Mantém o calendário limpo:
+     * - até 2 eventos: mostra todos;
+     * - acima disso: mostra 2 e o botão "Mais X".
+     */
+    const limiteVisivel=2;
+    const visiveis=evs.slice(0,limiteVisivel);
+    const ocultos=Math.max(0,evs.length-limiteVisivel);
+
     html+=`<div class="day ${cls}" onclick="clicarDia('${iso}',event)">
-      <div class="dayTop"><span class="dayNum">${dt.getDate()}</span><button class="addMini" type="button" onclick="novoEvento('${iso}');event.stopPropagation();">+</button></div>
+      <div class="dayTop">
+        <span class="dayNum">${dt.getDate()}</span>
+        <button
+          class="addMini"
+          type="button"
+          title="Novo evento"
+          onclick="novoEvento('${iso}');event.stopPropagation();"
+        >+</button>
+      </div>
+
       <div class="events">
-        ${evs.slice(0,3).map(e=>`<div class="eventChip ${String(e.status||'').toLowerCase()}" onclick='abrirEvento(${JSON.stringify(e)});event.stopPropagation();'>
-          <div>${esc(e.titulo)}</div><div class="eventTime">${hora(e.hora_inicio)}${e.hora_fim?' às '+hora(e.hora_fim):''} · ${e.qtd_equipe||0} equipe</div>
+        ${visiveis.map(e=>`<div
+          class="eventChip ${String(e.status||'').toLowerCase()}"
+          onclick='abrirEventoPorId(${Number(e.id)});event.stopPropagation();'
+        >
+          <div>${esc(e.titulo)}</div>
+          <div class="eventTime">
+            ${hora(e.hora_inicio)}
+            ${e.hora_fim?' às '+hora(e.hora_fim):''}
+            · ${e.qtd_equipe||0} equipe
+          </div>
         </div>`).join('')}
-        ${evs.length>3?`<div class="moreEvents">+ ${evs.length-3} evento(s)</div>`:''}
+
+        ${ocultos>0?`<button
+          class="moreEvents"
+          type="button"
+          onclick="abrirDayPopover('${iso}',this,event)"
+        >Mais ${ocultos}</button>`:''}
       </div>
     </div>`;
   }
+
   cal.innerHTML=html;
 }
+
+function eventoPorId(id){
+  return eventos.find(e=>Number(e.id)===Number(id))||null;
+}
+
+function abrirEventoPorId(id){
+  fecharDayPopover();
+  const evento=eventoPorId(id);
+  if(evento) abrirEvento(evento);
+}
+
+function abrirDayPopover(iso,botao,evt){
+  if(evt){
+    evt.preventDefault();
+    evt.stopPropagation();
+  }
+
+  const lista=eventos
+    .filter(e=>e.data_evento===iso)
+    .sort((a,b)=>
+      String(a.hora_inicio||'').localeCompare(String(b.hora_inicio||''))
+      || String(a.titulo||'').localeCompare(String(b.titulo||''))
+    );
+
+  if(!lista.length) return;
+
+  const pop=el('dayPopover');
+  const dt=new Date(`${iso}T12:00:00`);
+
+  el('dayPopoverWeek').textContent=dt
+    .toLocaleDateString('pt-BR',{weekday:'short'})
+    .replace('.','')
+    .toUpperCase();
+
+  el('dayPopoverTitle').textContent=String(dt.getDate()).padStart(2,'0');
+
+  el('dayPopoverEvents').innerHTML=lista.map(e=>`
+    <button
+      class="dayPopoverEvent ${String(e.status||'').toLowerCase()}"
+      type="button"
+      onclick="abrirEventoPorId(${Number(e.id)})"
+    >
+      <span class="dayPopoverDot"></span>
+      <span class="dayPopoverEventTime">${esc(hora(e.hora_inicio)||'--:--')}</span>
+      <span class="dayPopoverEventBody">
+        <strong>${esc(e.titulo)}</strong>
+        <small>
+          ${e.hora_fim?'até '+esc(hora(e.hora_fim))+' · ':''}
+          ${Number(e.qtd_equipe||0)} equipe
+        </small>
+      </span>
+    </button>
+  `).join('');
+
+  el('dayPopoverAdd').onclick=()=>{
+    fecharDayPopover();
+    novoEvento(iso);
+  };
+
+  pop.classList.remove('hidden');
+
+  /*
+   * Posicionamento semelhante ao Google Agenda:
+   * tenta abrir ao lado da célula e corrige quando estiver perto
+   * das bordas da tela.
+   */
+  const rect=botao.getBoundingClientRect();
+  const largura=330;
+  const margem=12;
+
+  let left=rect.left+(rect.width/2)-(largura/2);
+  left=Math.max(margem,Math.min(left,window.innerWidth-largura-margem));
+
+  pop.style.left=`${left}px`;
+  pop.style.top='0px';
+
+  const altura=pop.offsetHeight;
+  let top=rect.bottom+8;
+
+  if(top+altura>window.innerHeight-margem){
+    top=rect.top-altura-8;
+  }
+
+  top=Math.max(margem,Math.min(top,window.innerHeight-altura-margem));
+  pop.style.top=`${top}px`;
+}
+
+function fecharDayPopover(){
+  const pop=el('dayPopover');
+  if(pop) pop.classList.add('hidden');
+}
+
+document.addEventListener('click',evento=>{
+  const pop=el('dayPopover');
+
+  if(
+    pop
+    && !pop.classList.contains('hidden')
+    && !evento.target.closest('#dayPopover')
+    && !evento.target.closest('.moreEvents')
+  ){
+    fecharDayPopover();
+  }
+});
+
+document.addEventListener('keydown',evento=>{
+  if(evento.key==='Escape'){
+    fecharDayPopover();
+  }
+});
+
+window.addEventListener('resize',fecharDayPopover);
+window.addEventListener('scroll',fecharDayPopover,true);
 
 function renderLista(){
   const rows=[...eventos].sort((a,b)=>String(a.data_evento||'').localeCompare(String(b.data_evento||'')) || String(a.hora_inicio||'').localeCompare(String(b.hora_inicio||'')));
@@ -219,11 +395,12 @@ function renderLista(){
   </tr>`).join(''):'<tr><td colspan="7" class="empty">Nenhum evento.</td></tr>';
 }
 
-function mesAnterior(){cursor.setMonth(cursor.getMonth()-1);renderCalendario()}
-function proximoMes(){cursor.setMonth(cursor.getMonth()+1);renderCalendario()}
-function irHoje(){cursor=new Date();cursor.setDate(1);renderCalendario()}
+function mesAnterior(){fecharDayPopover();cursor.setMonth(cursor.getMonth()-1);renderCalendario()}
+function proximoMes(){fecharDayPopover();cursor.setMonth(cursor.getMonth()+1);renderCalendario()}
+function irHoje(){fecharDayPopover();cursor=new Date();cursor.setDate(1);renderCalendario()}
 function clicarDia(iso){novoEvento(iso)}
 function alternarModo(){
+  fecharDayPopover();
   modo = modo==='calendario' ? 'lista' : 'calendario';
   el('calendarView').classList.toggle('hidden', modo!=='calendario');
   el('listView').classList.toggle('hidden', modo!=='lista');
@@ -232,6 +409,7 @@ function alternarModo(){
 
 function limparMsg(){el('msgEvento').className='msg hidden';el('msgEvento').textContent=''}
 function novoEvento(data=''){
+  fecharDayPopover();
   limparMsg();
   el('modalTitle').textContent='Novo evento';
   el('modalSub').textContent=data ? `Evento em ${fmtData(data)}.` : 'Informe os dados básicos do evento.';
@@ -244,6 +422,7 @@ function novoEvento(data=''){
   setTimeout(()=>el('ev_titulo').focus(),50);
 }
 function abrirEvento(e){
+  fecharDayPopover();
   limparMsg();
   el('modalTitle').textContent='Editar evento';
   el('modalSub').textContent='Após salvar, você pode montar a equipe ou imprimir a lista.';
@@ -281,6 +460,6 @@ init();
 </script>
 
 </main></div>
-<script src="recrutamento-ui.js?v=20260710"></script>
+<script src="recrutamento-ui.js?v=20260710b"></script>
 </body>
 </html>
