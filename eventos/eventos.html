@@ -25,12 +25,25 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:
 .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99;display:flex;align-items:center;justify-content:center;padding:18px}.modalBox{width:100%;max-width:760px;background:#fff;border-radius:16px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.25);max-height:92vh;overflow:auto}.modalTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.modalTop h2{margin:0;color:var(--primary)}.close{border:0;border-radius:10px;background:#e8f0fb;color:#12345b;font-weight:900;padding:9px 12px;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.grid .wide{grid-column:span 2}.grid .full{grid-column:1/-1}.modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.quickActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.quickActions .smallBtn{padding:10px 12px}
 @media(max-width:900px){body{height:auto;overflow:auto}.page{height:auto;overflow:visible}.wrap{height:auto}.filters{grid-template-columns:1fr}.mainHead{flex-direction:column}.calendar{grid-auto-rows:minmax(118px,auto);overflow:visible}.calendarCard{min-height:520px}.grid{grid-template-columns:1fr}.grid .wide{grid-column:span 1}.modalActions{flex-direction:column}.calHead{flex-direction:column;align-items:flex-start}.weekDays div{font-size:10px;padding:7px 4px}.day{padding:6px}}
 </style>
+<link rel="stylesheet" href="recrutamento-ui.css?v=20260710">
 </head>
-<body>
+<body data-page="agenda">
 <header class="topbar">
-  <div class="brand"><img src="logo-mini.png" alt=""><span>Eventos - Recrutamento</span></div>
-  <div class="userBox"><button class="btnLight smallBtn" onclick="location.href='painel.html'">Menu</button><span id="userInfo"></span><button class="btnSair" onclick="logout()">Sair</button></div>
+  <div class="brand"><button id="mobileMenuBtn" class="mobileMenuBtn" type="button">☰</button><img src="logo-mini.png" alt=""><span>RECRUTAMENTO</span></div>
+  <div class="userBox"><span id="userInfo"></span><button class="btnSair" onclick="logout()">Sair</button></div>
 </header>
+<div class="appShell">
+<aside class="sidebar">
+  <div class="sidebarTitle">Navegação</div>
+  <nav class="sideNav">
+    <a class="sideLink" data-page="agenda" href="painel.html"><span class="sideIcon">▦</span><span>Agenda</span></a>
+    <a class="sideLink" data-page="prestadores" href="banco_prestadores.html"><span class="sideIcon">♙</span><span>Prestadores</span></a>
+    <a class="sideLink" data-page="equipes" href="convocacao.html"><span class="sideIcon">♟</span><span>Montar equipe</span></a>
+    <a class="sideLink" data-page="impressao" href="imprimir_evento.html"><span class="sideIcon">▤</span><span>Imprimir lista</span></a>
+  </nav>
+  <div class="sideFoot"><strong>Curso Objetivo</strong><br>Eventos e Coberturas</div>
+</aside>
+<main class="mainArea">
 
 <div class="page">
   <div class="wrap">
@@ -274,5 +287,8 @@ function imprimirAtual(){const id=el('ev_id').value;if(id)location.href=`imprimi
 el('fBusca').addEventListener('keydown',e=>{if(e.key==='Enter')listarEventos()});
 init();
 </script>
+
+</main></div>
+<script src="recrutamento-ui.js?v=20260710"></script>
 </body>
 </html>
