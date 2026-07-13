@@ -9,6 +9,12 @@
       href="https://www.curso-objetivo.br/assets/img/favicon.ico"
     />
     <title>Montar equipe</title>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      crossorigin=""
+    />
     <style>
       :root {
         --bg: #f7f8fb;
@@ -329,9 +335,17 @@
       }
       .mapInfoGrid {
         display: grid;
-        grid-template-columns: 1.4fr 1.2fr .8fr .8fr;
+        grid-template-columns: 1.35fr 1.2fr 1fr;
         gap: 10px;
-        margin: 14px 0;
+        margin: 14px 0 10px;
+        flex-shrink: 0;
+      }
+
+      .mapPresenceGrid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 10px;
         flex-shrink: 0;
       }
       .mapInfoCard {
@@ -356,11 +370,66 @@
         border-radius: 14px;
         background: #eef2f7;
       }
-      .mapFrameWrap iframe {
+      #presenceMap {
         width: 100%;
         height: 100%;
-        border: 0;
-        display: block;
+        min-height: 300px;
+        background: #dfeaf7;
+      }
+
+      .presencePin {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 900;
+        border: 3px solid #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .28);
+        font-size: 13px;
+      }
+
+      .presencePin.entrada {
+        background: #15803d;
+      }
+
+      .presencePin.saida {
+        background: #b42318;
+      }
+
+      .presenceLegend {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .presenceLegendItem {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .presenceLegendDot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 1px rgba(15, 23, 42, .12);
+      }
+
+      .presenceLegendDot.entrada {
+        background: #15803d;
+      }
+
+      .presenceLegendDot.saida {
+        background: #b42318;
       }
       .mapModalFooter {
         display: flex;
@@ -655,7 +724,8 @@
           padding: 12px;
           border-radius: 14px;
         }
-        .mapInfoGrid {
+        .mapInfoGrid,
+        .mapPresenceGrid {
           grid-template-columns: 1fr 1fr;
         }
         .mapModalFooter {
@@ -668,8 +738,12 @@
       }
 
       @media (max-width: 560px) {
-        .mapInfoGrid {
+        .mapInfoGrid,
+        .mapPresenceGrid {
           grid-template-columns: 1fr;
+        }
+
+        .mapInfoGrid {
           max-height: 210px;
           overflow: auto;
         }
@@ -925,8 +999,10 @@
           <div class="modalBox mapModalBox">
             <div class="mapModalHeader">
               <div>
-                <h2 id="mapModalTitle">Local do registro</h2>
-                <p id="mapModalSubtitle">Detalhes da marcação de presença</p>
+                <h2 id="mapModalTitle">Registro da cobertura</h2>
+                <p id="mapModalSubtitle">
+                  Entrada, saída, localização e evidências em uma única visão.
+                </p>
               </div>
               <button class="close" type="button" onclick="fecharMapaPresenca()">Fechar</button>
             </div>
@@ -936,43 +1012,54 @@
                 <span class="lbl">Evento</span>
                 <div id="mapEvento" class="val">-</div>
               </div>
+
               <div class="mapInfoCard">
                 <span class="lbl">Prestador</span>
                 <div id="mapPrestador" class="val">-</div>
               </div>
-              <div class="mapInfoCard">
-                <span class="lbl">Data do registro</span>
-                <div id="mapData" class="val">-</div>
-              </div>
-              <div class="mapInfoCard">
-                <span class="lbl">Hora do registro</span>
-                <div id="mapHora" class="val">-</div>
-              </div>
-              <div class="mapInfoCard">
-                <span class="lbl">Tipo</span>
-                <div id="mapTipo" class="val">-</div>
-              </div>
+
               <div class="mapInfoCard">
                 <span class="lbl">Posto</span>
                 <div id="mapPosto" class="val">-</div>
               </div>
+            </div>
+
+            <div class="mapPresenceGrid">
               <div class="mapInfoCard">
-                <span class="lbl">Unidade</span>
-                <div id="mapUnidade" class="val">-</div>
+                <span class="lbl">Entrada</span>
+                <div id="mapEntradaHora" class="val">Não registrada</div>
               </div>
+
               <div class="mapInfoCard">
-                <span class="lbl">Precisão do GPS</span>
-                <div id="mapPrecisao" class="val">-</div>
+                <span class="lbl">Precisão GPS da entrada</span>
+                <div id="mapEntradaPrecisao" class="val">-</div>
+              </div>
+
+              <div class="mapInfoCard">
+                <span class="lbl">Saída</span>
+                <div id="mapSaidaHora" class="val">Não registrada</div>
+              </div>
+
+              <div class="mapInfoCard">
+                <span class="lbl">Precisão GPS da saída</span>
+                <div id="mapSaidaPrecisao" class="val">-</div>
               </div>
             </div>
 
             <div class="mapFrameWrap">
-              <iframe
-                id="mapFrame"
-                title="Mapa da localização registrada"
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-              ></iframe>
+              <div id="presenceMap" aria-label="Mapa dos registros de entrada e saída"></div>
+            </div>
+
+            <div class="presenceLegend">
+              <span class="presenceLegendItem">
+                <span class="presenceLegendDot entrada"></span>
+                Entrada
+              </span>
+
+              <span class="presenceLegendItem">
+                <span class="presenceLegendDot saida"></span>
+                Saída
+              </span>
             </div>
 
             <div class="mapEvidenceBar">
@@ -986,7 +1073,9 @@
             </div>
 
             <div class="mapModalFooter">
-              <div id="mapCoords" class="mapCoords"></div>
+              <div id="mapCoords" class="mapCoords">
+                Coordenadas de entrada e saída carregadas no mapa.
+              </div>
               <a
                 id="mapExternalLink"
                 class="btn btnLight mapOpenExternal"
@@ -994,7 +1083,7 @@
                 target="_blank"
                 rel="noopener"
               >
-                Abrir no Google Maps
+                Abrir localização no Google Maps
               </a>
             </div>
           </div>
@@ -1024,6 +1113,11 @@
           </div>
         </div>
 
+        <script
+          src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          crossorigin=""
+        ></script>
+
         <script>
           const API = "https://apisec.secauxiliar.com.br/prestadores",
             el = (id) => document.getElementById(id);
@@ -1035,7 +1129,9 @@
             equipe = [],
             eventoAtual = null,
             fotosEvidencia = [],
-            fotoAtualIndex = 0;
+            fotoAtualIndex = 0,
+            presenceMap = null,
+            presenceMarkers = null;
           if (!token) location.href = "index.html";
           function esc(s) {
             return String(s ?? "").replace(
@@ -1254,14 +1350,14 @@
                               type="button"
                               class="mapLink"
                               ${entradaMapa ? "" : "disabled"}
-                              onclick="abrirMapaPresenca(${x.prestador_id}, 'ENTRADA')"
+                              onclick="abrirMapaPresenca(${x.prestador_id})"
                             >📍 Entrada</button>
 
                             <button
                               type="button"
                               class="mapLink"
                               ${saidaMapa ? "" : "disabled"}
-                              onclick="abrirMapaPresenca(${x.prestador_id}, 'SAIDA')"
+                              onclick="abrirMapaPresenca(${x.prestador_id})"
                             >📍 Saída</button>
                           </div>
                         </div>
@@ -1312,7 +1408,95 @@
             };
           }
 
-          function abrirMapaPresenca(prestadorId, tipo) {
+          function criarIconePresenca(tipo) {
+            return L.divIcon({
+              className: "",
+              html: `<div class="presencePin ${tipo.toLowerCase()}">${tipo === "ENTRADA" ? "E" : "S"}</div>`,
+              iconSize: [36, 36],
+              iconAnchor: [18, 18],
+              popupAnchor: [0, -18]
+            });
+          }
+
+          function montarMapaPresenca(pessoa) {
+            const pontos = [];
+
+            if (!presenceMap) {
+              presenceMap = L.map("presenceMap", {
+                zoomControl: true,
+                scrollWheelZoom: true
+              });
+
+              L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+                  attribution: "&copy; OpenStreetMap"
+                }
+              ).addTo(presenceMap);
+
+              presenceMarkers = L.layerGroup().addTo(presenceMap);
+            }
+
+            presenceMarkers.clearLayers();
+
+            const entradaLat = parseFloat(pessoa.entrada_lat);
+            const entradaLng = parseFloat(pessoa.entrada_lng);
+            const saidaLat = parseFloat(pessoa.saida_lat);
+            const saidaLng = parseFloat(pessoa.saida_lng);
+
+            if (
+              Number.isFinite(entradaLat)
+              && Number.isFinite(entradaLng)
+            ) {
+              const markerEntrada = L.marker(
+                [entradaLat, entradaLng],
+                { icon: criarIconePresenca("ENTRADA") }
+              ).addTo(presenceMarkers);
+
+              markerEntrada.bindPopup(`
+                <b>Entrada</b><br>
+                ${esc(fmtDataHora(pessoa.entrada_em))}<br>
+                Precisão: ${esc(pessoa.entrada_precisao || "-")} m
+              `);
+
+              pontos.push([entradaLat, entradaLng]);
+            }
+
+            if (
+              Number.isFinite(saidaLat)
+              && Number.isFinite(saidaLng)
+            ) {
+              const markerSaida = L.marker(
+                [saidaLat, saidaLng],
+                { icon: criarIconePresenca("SAÍDA") }
+              ).addTo(presenceMarkers);
+
+              markerSaida.bindPopup(`
+                <b>Saída</b><br>
+                ${esc(fmtDataHora(pessoa.saida_em))}<br>
+                Precisão: ${esc(pessoa.saida_precisao || "-")} m
+              `);
+
+              pontos.push([saidaLat, saidaLng]);
+            }
+
+            if (pontos.length > 1) {
+              presenceMap.fitBounds(pontos, {
+                padding: [55, 55],
+                maxZoom: 17
+              });
+            } else if (pontos.length === 1) {
+              presenceMap.setView(pontos[0], 17);
+            } else {
+              presenceMap.setView([-14.2350, -51.9253], 4);
+            }
+
+            setTimeout(() => {
+              presenceMap.invalidateSize();
+            }, 120);
+          }
+
+          function abrirMapaPresenca(prestadorId) {
             const pessoa = equipe.find(
               (x) => Number(x.prestador_id) === Number(prestadorId)
             );
@@ -1322,55 +1506,70 @@
               return;
             }
 
-            const entrada = tipo === "ENTRADA";
-            const latitude = entrada ? pessoa.entrada_lat : pessoa.saida_lat;
-            const longitude = entrada ? pessoa.entrada_lng : pessoa.saida_lng;
-            const registroEm = entrada ? pessoa.entrada_em : pessoa.saida_em;
-            const precisao = entrada
-              ? pessoa.entrada_precisao
-              : pessoa.saida_precisao;
-
-            if (!latitude || !longitude || !registroEm) {
-              alert(`O registro de ${entrada ? "entrada" : "saída"} ainda não possui localização.`);
+            if (
+              !pessoa.entrada_lat
+              && !pessoa.entrada_lng
+              && !pessoa.saida_lat
+              && !pessoa.saida_lng
+            ) {
+              alert("Este prestador ainda não possui registros com localização.");
               return;
             }
 
-            const momento = separarDataHora(registroEm);
-            const tipoTexto = entrada ? "Entrada" : "Saída";
             const eventoTexto = eventoAtual
               ? `${eventoAtual.titulo} · ${fmtData(eventoAtual.data_evento)} · ${(eventoAtual.hora_inicio || "").slice(0, 5)} às ${(eventoAtual.hora_fim || "").slice(0, 5)}`
               : el("eventoInfo").textContent || "-";
 
-            const unidade =
-              eventoAtual?.cod_unidade
-              || pessoa.cod_unidade
-              || "-";
-
-            const mapaEmbed =
-              `https://www.google.com/maps?q=${encodeURIComponent(latitude)},${encodeURIComponent(longitude)}&z=17&output=embed`;
-
-            const mapaExterno = mapUrl(latitude, longitude);
-
-            el("mapModalTitle").textContent = `Local do registro de ${tipoTexto.toLowerCase()}`;
+            el("mapModalTitle").textContent = "Registro da cobertura";
             el("mapModalSubtitle").textContent =
-              "Localização informada pelo aparelho no momento da marcação.";
+              "Entrada, saída, localização e evidências em uma única visão.";
 
             el("mapEvento").textContent = eventoTexto;
             el("mapPrestador").textContent =
               `${pessoa.nome || "-"} · ${pessoa.tipo_prestador || "-"}`;
-            el("mapData").textContent = momento.data;
-            el("mapHora").textContent = momento.hora;
-            el("mapTipo").textContent = tipoTexto;
             el("mapPosto").textContent = pessoa.posto || "-";
-            el("mapUnidade").textContent = unidade;
-            el("mapPrecisao").textContent =
-              precisao ? `${precisao} metros` : "Não informada";
-            el("mapCoords").textContent =
-              `Latitude: ${latitude} · Longitude: ${longitude}`;
 
-            el("mapFrame").src = mapaEmbed;
-            el("mapExternalLink").href = mapaExterno;
+            el("mapEntradaHora").textContent =
+              fmtDataHora(pessoa.entrada_em);
+            el("mapEntradaPrecisao").textContent =
+              pessoa.entrada_precisao
+                ? `${pessoa.entrada_precisao} metros`
+                : "Não informada";
+
+            el("mapSaidaHora").textContent =
+              fmtDataHora(pessoa.saida_em);
+            el("mapSaidaPrecisao").textContent =
+              pessoa.saida_precisao
+                ? `${pessoa.saida_precisao} metros`
+                : "Não informada";
+
+            const latExterno =
+              pessoa.saida_lat || pessoa.entrada_lat;
+            const lngExterno =
+              pessoa.saida_lng || pessoa.entrada_lng;
+
+            el("mapExternalLink").href =
+              mapUrl(latExterno, lngExterno) || "#";
+
+            const coords = [];
+
+            if (pessoa.entrada_lat && pessoa.entrada_lng) {
+              coords.push(
+                `Entrada: ${pessoa.entrada_lat}, ${pessoa.entrada_lng}`
+              );
+            }
+
+            if (pessoa.saida_lat && pessoa.saida_lng) {
+              coords.push(
+                `Saída: ${pessoa.saida_lat}, ${pessoa.saida_lng}`
+              );
+            }
+
+            el("mapCoords").textContent =
+              coords.join(" · ") || "Coordenadas não disponíveis.";
+
             el("mapModal").classList.remove("hidden");
+            montarMapaPresenca(pessoa);
             carregarEvidenciasRecrutador(prestadorId);
 
             document.body.style.overflow = "hidden";
@@ -1463,7 +1662,11 @@
 
           function fecharMapaPresenca() {
             el("mapModal").classList.add("hidden");
-            el("mapFrame").src = "";
+
+            if (presenceMarkers) {
+              presenceMarkers.clearLayers();
+            }
+
             document.body.style.overflow = "";
           }
 
