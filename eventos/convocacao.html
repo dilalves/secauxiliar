@@ -674,6 +674,79 @@
           overflow: auto;
         }
       }
+
+      .mapEvidenceBar {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--line);
+      }
+      .mapEvidenceTitle {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 8px;
+        color: var(--primary);
+        font-weight: 900;
+      }
+      .mapEvidenceThumbs {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .mapEvidenceThumb {
+        width: 72px;
+        height: 58px;
+        flex: 0 0 auto;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        overflow: hidden;
+        padding: 0;
+        cursor: pointer;
+        background: #fff;
+      }
+      .mapEvidenceThumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .photoModalBox {
+        width: min(94vw, 1300px);
+        height: min(92vh, 900px);
+        max-width: none;
+        display: flex;
+        flex-direction: column;
+      }
+      .photoViewer {
+        flex: 1;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f172a;
+        border-radius: 14px;
+        overflow: hidden;
+        margin-top: 12px;
+      }
+      .photoViewer img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .photoMeta {
+        margin-top: 10px;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .photoNav {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
     </style>
     <link rel="stylesheet" href="recrutamento-ui.css?v=20260710d" />
 
@@ -867,6 +940,16 @@
               ></iframe>
             </div>
 
+            <div class="mapEvidenceBar">
+              <div class="mapEvidenceTitle">
+                <span>📷 Evidências da cobertura</span>
+                <span id="mapEvidenceCount">0 foto(s)</span>
+              </div>
+              <div id="mapEvidenceThumbs" class="mapEvidenceThumbs">
+                <span class="muted">Nenhuma evidência carregada.</span>
+              </div>
+            </div>
+
             <div class="mapModalFooter">
               <div id="mapCoords" class="mapCoords"></div>
               <a
@@ -882,6 +965,30 @@
           </div>
         </div>
 
+
+        <div id="photoModal" class="modal hidden" role="dialog" aria-modal="true">
+          <div class="modalBox photoModalBox">
+            <div class="modalTop">
+              <div>
+                <h2 id="photoTitle">Evidência da cobertura</h2>
+                <p id="photoSubtitle" class="muted"></p>
+              </div>
+              <button class="close" type="button" onclick="fecharFoto()">Fechar</button>
+            </div>
+
+            <div class="photoViewer">
+              <img id="photoImage" alt="Evidência enviada pelo prestador">
+            </div>
+
+            <div id="photoMeta" class="photoMeta"></div>
+
+            <div class="photoNav">
+              <button class="btn btnLight" type="button" onclick="fotoAnterior()">← Anterior</button>
+              <button class="btn btnLight" type="button" onclick="proximaFoto()">Próxima →</button>
+            </div>
+          </div>
+        </div>
+
         <script>
           const API = "https://apisec.secauxiliar.com.br/prestadores",
             el = (id) => document.getElementById(id);
@@ -891,7 +998,9 @@
             ),
             prestadores = [],
             equipe = [],
-            eventoAtual = null;
+            eventoAtual = null,
+            fotosEvidencia = [],
+            fotoAtualIndex = 0;
           if (!token) location.href = "index.html";
           function esc(s) {
             return String(s ?? "").replace(
@@ -1227,8 +1336,94 @@
             el("mapFrame").src = mapaEmbed;
             el("mapExternalLink").href = mapaExterno;
             el("mapModal").classList.remove("hidden");
+            carregarEvidenciasRecrutador(prestadorId);
 
             document.body.style.overflow = "hidden";
+          }
+
+
+          async function carregarEvidenciasRecrutador(prestadorId) {
+            const eventoId = Number(el("eventoSel").value || 0);
+            const thumbs = el("mapEvidenceThumbs");
+            const count = el("mapEvidenceCount");
+
+            thumbs.innerHTML = '<span class="muted">Carregando evidências...</span>';
+
+            try {
+              const d = await api("listar_evidencias_recrutador.php", {
+                evento_id: eventoId,
+                prestador_id: Number(prestadorId)
+              });
+
+              if (!d.ok) {
+                throw new Error(d.error || "Erro ao carregar evidências.");
+              }
+
+              fotosEvidencia = d.fotos || [];
+              count.textContent = `${fotosEvidencia.length} foto(s)`;
+
+              thumbs.innerHTML = fotosEvidencia.length
+                ? fotosEvidencia.map((foto, indice) => `
+                    <button
+                      type="button"
+                      class="mapEvidenceThumb"
+                      onclick="abrirFoto(${indice})"
+                      title="${esc(foto.legenda || "Abrir evidência")}"
+                    >
+                      <img src="${esc(foto.url)}" alt="${esc(foto.legenda || "Evidência")}">
+                    </button>
+                  `).join("")
+                : '<span class="muted">Nenhuma evidência enviada.</span>';
+            } catch (e) {
+              fotosEvidencia = [];
+              count.textContent = "0 foto(s)";
+              thumbs.innerHTML = `<span class="muted">${esc(e.message)}</span>`;
+            }
+          }
+
+          function abrirFoto(indice) {
+            if (!fotosEvidencia.length) return;
+
+            fotoAtualIndex = Math.max(
+              0,
+              Math.min(Number(indice), fotosEvidencia.length - 1)
+            );
+
+            renderFotoAtual();
+            el("photoModal").classList.remove("hidden");
+          }
+
+          function renderFotoAtual() {
+            const foto = fotosEvidencia[fotoAtualIndex];
+            if (!foto) return;
+
+            el("photoImage").src = foto.url;
+            el("photoTitle").textContent =
+              `Evidência ${fotoAtualIndex + 1} de ${fotosEvidencia.length}`;
+            el("photoSubtitle").textContent =
+              foto.legenda || "Sem legenda";
+            el("photoMeta").textContent =
+              `Enviada em ${fmtDataHora(foto.enviado_em)}`
+              + (foto.precisao ? ` · Precisão GPS: ${foto.precisao} m` : "");
+          }
+
+          function fotoAnterior() {
+            if (!fotosEvidencia.length) return;
+            fotoAtualIndex =
+              (fotoAtualIndex - 1 + fotosEvidencia.length) % fotosEvidencia.length;
+            renderFotoAtual();
+          }
+
+          function proximaFoto() {
+            if (!fotosEvidencia.length) return;
+            fotoAtualIndex =
+              (fotoAtualIndex + 1) % fotosEvidencia.length;
+            renderFotoAtual();
+          }
+
+          function fecharFoto() {
+            el("photoModal").classList.add("hidden");
+            el("photoImage").src = "";
           }
 
           function fecharMapaPresenca() {
