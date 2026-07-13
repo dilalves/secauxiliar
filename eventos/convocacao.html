@@ -775,12 +775,47 @@
         transform: none !important;
       }
 
+      /* Modal da fotografia centralizado e amplo */
+      #photoModal.modal {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 18px !important;
+      }
+
+      #photoModal.modal.hidden {
+        display: none !important;
+      }
+
+      #photoModal .photoModalBox {
+        position: relative !important;
+        inset: auto !important;
+        margin: 0 auto !important;
+        width: min(92vw, 1250px) !important;
+        height: min(90vh, 880px) !important;
+        max-width: none !important;
+        max-height: none !important;
+        border-radius: 18px !important;
+        transform: none !important;
+        overflow: hidden !important;
+      }
+
       @media (max-width: 900px) {
         #mapModal.modal {
           padding: 8px !important;
         }
 
         #mapModal .mapModalBox {
+          width: 98vw !important;
+          height: 96vh !important;
+          border-radius: 14px !important;
+        }
+
+        #photoModal.modal {
+          padding: 8px !important;
+        }
+
+        #photoModal .photoModalBox {
           width: 98vw !important;
           height: 96vh !important;
           border-radius: 14px !important;
@@ -942,11 +977,11 @@
 
             <div class="mapEvidenceBar">
               <div class="mapEvidenceTitle">
-                <span>📷 Imagens da cobertura</span>
+                <span>📷 Evidências da cobertura</span>
                 <span id="mapEvidenceCount">0 foto(s)</span>
               </div>
               <div id="mapEvidenceThumbs" class="mapEvidenceThumbs">
-                <span class="muted">Nenhuma imagem carregada.</span>
+                <span class="muted">Nenhuma evidência carregada.</span>
               </div>
             </div>
 
@@ -1438,14 +1473,23 @@
             }
           });
 
+          /*
+           * O Escape fica desativado enquanto os modais estiverem abertos.
+           * O fechamento deve ser feito pelos botões "Fechar", evitando que
+           * a foto permaneça aberta sem o contexto do prestador.
+           */
           document.addEventListener("keydown", (event) => {
-            if (
-              event.key === "Escape"
-              && !el("mapModal").classList.contains("hidden")
-            ) {
-              fecharMapaPresenca();
+            const mapaAberto =
+              !el("mapModal").classList.contains("hidden");
+
+            const fotoAberta =
+              !el("photoModal").classList.contains("hidden");
+
+            if (event.key === "Escape" && (mapaAberto || fotoAberta)) {
+              event.preventDefault();
+              event.stopImmediatePropagation();
             }
-          });
+          }, true);
 
           function imprimir() {
             const id = el("eventoSel").value;
