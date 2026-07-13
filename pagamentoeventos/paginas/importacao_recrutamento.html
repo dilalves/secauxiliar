@@ -41,7 +41,7 @@
 </section>
 </main>
 <script>
-const API='https://apisec.secauxiliar.com.br/prestadores',el=id=>document.getElementById(id);let eventosRecrutamento=[],eventosFinanceiros=[],ultimaPrevia=null,tabAtual='aptos';
+const API='https://apisec.secauxiliar.com.br/prestadores_adm',el=id=>document.getElementById(id);let eventosRecrutamento=[],eventosFinanceiros=[],ultimaPrevia=null,tabAtual='aptos';
 function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}function dataBR(v){if(!v)return'-';const[a,m,d]=String(v).split('-');return`${d}/${m}/${a}`}function hora(v){return v?String(v).slice(0,5):'-'}function moeda(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v||0))}
 function headers(){const h={'Content-Type':'application/json'},t=localStorage.getItem('recrutamento_token')||localStorage.getItem('token')||'';if(t)h.Authorization=`Bearer ${t}`;return h}
 async function post(a,p){const r=await fetch(`${API}/${a}`,{method:'POST',credentials:'include',cache:'no-store',headers:headers(),body:JSON.stringify(p)}),d=await r.json().catch(()=>({ok:false,error:'Resposta inválida do servidor.'}));if(!r.ok||!d.ok)throw new Error(d.error||'Não foi possível concluir a operação.');return d}
