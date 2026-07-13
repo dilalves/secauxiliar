@@ -1408,13 +1408,16 @@
             };
           }
 
-          function criarIconePresenca(tipo) {
+          function criarIconePresenca(tipo, deslocamento = 0) {
             return L.divIcon({
               className: "",
               html: `<div class="presencePin ${tipo.toLowerCase()}">${tipo === "ENTRADA" ? "E" : "S"}</div>`,
-              iconSize: [36, 36],
-              iconAnchor: [18, 18],
-              popupAnchor: [0, -18]
+              iconSize: [36,36],
+
+              // desloca somente o desenho do pin
+              iconAnchor: [18 - deslocamento,18],
+
+              popupAnchor: [deslocamento,-18]
             });
           }
 
@@ -1444,13 +1447,30 @@
             const saidaLat = parseFloat(pessoa.saida_lat);
             const saidaLng = parseFloat(pessoa.saida_lng);
 
+            let deslocar = false;
+
+            if (
+                Number.isFinite(entradaLat) &&
+                Number.isFinite(saidaLat)
+            ){
+                const distancia = presenceMap.distance(
+                    [entradaLat, entradaLng],
+                    [saidaLat, saidaLng]
+                );
+
+                deslocar = distancia < 20; // metros
+            }
+
             if (
               Number.isFinite(entradaLat)
               && Number.isFinite(entradaLng)
             ) {
               const markerEntrada = L.marker(
                 [entradaLat, entradaLng],
-                { icon: criarIconePresenca("ENTRADA") }
+                { icon: criarIconePresenca(
+                    "ENTRADA",
+                    deslocar ? -12 : 0
+                ) }
               ).addTo(presenceMarkers);
 
               markerEntrada.bindPopup(`
@@ -1468,7 +1488,10 @@
             ) {
               const markerSaida = L.marker(
                 [saidaLat, saidaLng],
-                { icon: criarIconePresenca("SAÍDA") }
+                { icon: criarIconePresenca(
+                    "SAÍDA",
+                    deslocar ? 12 : 0
+                )}
               ).addTo(presenceMarkers);
 
               markerSaida.bindPopup(`
