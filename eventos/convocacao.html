@@ -1501,6 +1501,30 @@
               `);
 
               pontos.push([saidaLat, saidaLng]);
+
+              /*
+              * Liga visualmente entrada e saída.
+              * A linha também ajuda a indicar que existem dois registros.
+              */
+              if (
+                Number.isFinite(entradaLat)
+                && Number.isFinite(entradaLng)
+                && Number.isFinite(saidaLat)
+                && Number.isFinite(saidaLng)
+              ) {
+                L.polyline(
+                  [
+                    [entradaLat, entradaLng],
+                    [saidaLat, saidaLng]
+                  ],
+                  {
+                    color: "#64748b",
+                    weight: 3,
+                    opacity: 0.9,
+                    dashArray: "6, 7"
+                  }
+                ).addTo(presenceMarkers);
+              }
             }
 
             if (pontos.length > 1) {
