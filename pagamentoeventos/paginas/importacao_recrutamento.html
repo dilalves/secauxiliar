@@ -28,7 +28,7 @@
 <section class="card formCard">
 <div class="field"><label>Data do evento</label><input id="dataEvento" type="date"></div>
 <div class="field"><label>Código para pagamento</label><select id="eventoFinanceiro"><option value="">Selecione a data primeiro</option></select></div>
-<div class="field"><label>Função</label><input id="funcao" value="APLICADOR"></div>
+<div class="field"><label>Função</label><input id="funcao" value="DIVULGADOR"></div>
 <div class="field"><label>Quantidade</label><input id="quantidade" type="number" min="0.01" step="0.01" value="1"></div>
 <div class="field"><label>Valor unitário</label><input id="valorUnitario" type="number" min="0.01" step="0.01"></div>
 <button id="btnCarregar" class="btn btnLight">Carregar</button>
@@ -47,7 +47,39 @@ function headers(){const h={'Content-Type':'application/json'},t=localStorage.ge
 async function post(a,p){const r=await fetch(`${API}/${a}`,{method:'POST',credentials:'include',cache:'no-store',headers:headers(),body:JSON.stringify(p)}),d=await r.json().catch(()=>({ok:false,error:'Resposta inválida do servidor.'}));if(!r.ok||!d.ok)throw new Error(d.error||'Não foi possível concluir a operação.');return d}
 function mostrar(t,tipo='ok'){el('mensagem').innerHTML=`<div class="msg ${tipo==='erro'?'msgErro':'msgOk'}">${esc(t)}</div>`}function limparMensagem(){el('mensagem').innerHTML=''}
 async function carregarOpcoes(){limparMensagem();ultimaPrevia=null;const data=el('dataEvento').value;if(!data)return mostrar('Selecione a data do evento.','erro');el('btnCarregar').disabled=true;try{const d=await post('listar_opcoes_importacao.php',{data_evento:data});eventosRecrutamento=d.eventos_recrutamento||[];eventosFinanceiros=d.eventos_financeiros||[];renderFinanceiros();renderEventos();if(!d.importacao_liberada)mostrar('A importação ficará disponível somente no dia seguinte ao evento.','erro')}catch(e){mostrar(e.message,'erro')}finally{el('btnCarregar').disabled=false}}
-function renderFinanceiros(){const s=el('eventoFinanceiro');if(!eventosFinanceiros.length){s.innerHTML='<option value="">Nenhum código financeiro nesta data</option>';return}s.innerHTML='<option value="">Selecione o código para pagamento</option>'+eventosFinanceiros.map(e=>`<option value="${e.id}" data-valor="${e.valor_maximo??''}" ${e.bloqueado?'disabled':''}>${esc(e.codigo||'-')} — ${esc(e.nome||'-')} — Unidade ${esc(e.cod_unidade||'-')}${e.bloqueado?' [BLOQUEADO]':''}</option>`).join('')}
+function renderFinanceiros(){
+    const s=el('eventoFinanceiro');
+
+    if(!eventosFinanceiros.length){
+        s.innerHTML='<option value="">Nenhum código financeiro nesta data</option>';
+        el('valorUnitario').value='';
+        return;
+    }
+
+    s.innerHTML=
+        '<option value="">Selecione o código para pagamento</option>'+
+        eventosFinanceiros.map(e=>`
+            <option
+                value="${e.id}"
+                data-valor="${e.valor_maximo??''}"
+                ${e.bloqueado?'disabled':''}
+            >
+                ${esc(e.codigo||'-')} — ${esc(e.nome||'-')} — Unidade ${esc(e.cod_unidade||'-')}
+                ${e.bloqueado?' [BLOQUEADO]':''}
+            </option>
+        `).join('');
+
+    const disponiveis=eventosFinanceiros.filter(e=>!e.bloqueado);
+
+    if(disponiveis.length===1){
+        s.value=String(disponiveis[0].id);
+        const valor=disponiveis[0].valor_maximo;
+
+        if(valor!==null && valor!==''){
+            el('valorUnitario').value=Number(valor).toFixed(2);
+        }
+    }
+}
 function renderEventos(){el('eventosInfo').textContent=`${eventosRecrutamento.length} evento(s) encontrado(s).`;el('eventosLista').innerHTML=eventosRecrutamento.length?eventosRecrutamento.map(e=>`<label class="eventItem" data-id="${e.id}"><input type="checkbox" class="eventoCheck" value="${e.id}" onchange="atualizarSelecaoVisual()" ${String(e.status).toUpperCase()==='CANCELADO'?'disabled':''}><div><div class="eventTitle">ID ${e.id} — Unidade ${esc(e.cod_unidade||'-')} — ${esc(e.titulo||'-')}</div><div class="eventMeta">${dataBR(e.data_evento)} · ${hora(e.hora_inicio)} às ${hora(e.hora_fim)} · Status ${esc(e.status||'-')}</div><div class="chips"><span class="chip chipSoft">${e.total_convocados} convocado(s)</span><span class="chip chipOk">${e.total_presenca_completa} presença(s) completa(s)</span><span class="chip chipWarn">${e.total_pendentes} pendente(s)</span></div></div></label>`).join(''):'<div class="empty">Nenhum evento de recrutamento nesta data.</div>';atualizarSelecaoVisual()}
 function atualizarSelecaoVisual(){document.querySelectorAll('.eventItem').forEach(i=>i.classList.toggle('selected',Boolean(i.querySelector('input')?.checked)))}function idsSelecionados(){return[...document.querySelectorAll('.eventoCheck:checked')].map(i=>Number(i.value))}
 function alternarTodos(){const c=[...document.querySelectorAll('.eventoCheck:not(:disabled)')],todos=c.length&&c.every(x=>x.checked);c.forEach(x=>x.checked=!todos);el('btnTodos').textContent=todos?'Marcar todos':'Desmarcar todos';atualizarSelecaoVisual()}
@@ -56,7 +88,12 @@ async function prever(){limparMensagem();try{ultimaPrevia=await post('importar_r
 function renderPreview(){const d=ultimaPrevia,r=d.resumo||{},p=d.parametros_pagamento||{};el('preview').innerHTML=`<div class="summary"><div class="summaryCard"><span>Eventos</span><strong>${r.eventos_selecionados||0}</strong></div><div class="summaryCard"><span>Convocados</span><strong>${r.convocados||0}</strong></div><div class="summaryCard"><span>Aptos</span><strong>${r.aptos||0}</strong></div><div class="summaryCard"><span>Pendentes</span><strong>${r.pendentes||0}</strong></div><div class="summaryCard"><span>Já importados</span><strong>${r.ja_importados||0}</strong></div></div><div class="group"><div class="groupHead"><span>Código: ${esc(d.evento_financeiro?.codigo||'-')} — ${esc(d.evento_financeiro?.nome||'-')}</span><span>${esc(p.funcao||'-')} · ${moeda(p.valor_bruto_por_pessoa)} por pessoa · Total ${moeda(p.valor_total_previsto)}</span></div></div>${(d.resumo_por_evento||[]).map(e=>`<div class="group"><div class="groupHead"><span>Unidade ${esc(e.cod_unidade)} — ID ${e.recrutamento_evento_id} — ${esc(e.titulo)}</span><span>${e.aptos} apto(s) · ${e.pendentes} pendente(s) · ${e.ja_importados} já importado(s)</span></div></div>`).join('')}<div class="tabs"><button class="tab ${tabAtual==='aptos'?'active':''}" onclick="mudarTab('aptos')">Aptos (${r.aptos||0})</button><button class="tab ${tabAtual==='pendentes'?'active':''}" onclick="mudarTab('pendentes')">Pendentes (${r.pendentes||0})</button><button class="tab ${tabAtual==='ja_importados'?'active':''}" onclick="mudarTab('ja_importados')">Já importados (${r.ja_importados||0})</button></div><div id="listaPreview"></div><div class="actions"><button class="btn btnLight" onclick="prever()">Atualizar prévia</button><button class="btn btnAccent" onclick="confirmarImportacao()" ${(r.aptos||0)<1?'disabled':''}>Confirmar importação de ${r.aptos||0} pedido(s)</button></div>`;renderTabelaPreview()}
 function mudarTab(t){tabAtual=t;renderPreview()}function renderTabelaPreview(){const dados=ultimaPrevia?.[tabAtual]||[],a=el('listaPreview');if(!dados.length){a.innerHTML='<div class="empty">Nenhum registro nesta categoria.</div>';return}a.innerHTML=`<div class="tableWrap"><table><thead><tr><th>Unidade</th><th>Evento ID</th><th>Prestador</th><th>Posto</th><th>Entrada</th><th>Saída</th>${tabAtual==='pendentes'?'<th>Motivo</th>':''}</tr></thead><tbody>${dados.map(i=>`<tr><td>${esc(i.cod_unidade||'-')}</td><td>${esc(i.recrutamento_evento_id||'-')}</td><td>${esc(i.nome||'-')}</td><td>${esc(i.posto||'-')}</td><td>${esc(i.entrada_em||'-')}</td><td>${esc(i.saida_em||'-')}</td>${tabAtual==='pendentes'?`<td>${esc((i.motivos||[]).join(', '))}</td>`:''}</tr>`).join('')}</tbody></table></div>`}
 async function confirmarImportacao(){const n=Number(ultimaPrevia?.resumo?.aptos||0);if(!n)return mostrar('Não há pedidos aptos para importar.','erro');if(!confirm(`Confirmar a importação de ${n} pedido(s)?`))return;try{const d=await post('importar_recrutamento_pagamentos.php',parametros('importar'));mostrar(d.message||'Importação concluída.');await prever()}catch(e){mostrar(e.message,'erro')}}
-el('btnCarregar').onclick=carregarOpcoes;el('btnPrever').onclick=prever;el('btnTodos').onclick=alternarTodos;el('eventoFinanceiro').onchange=()=>{const o=el('eventoFinanceiro').selectedOptions[0],v=o?.dataset?.valor||'';if(v!=='')el('valorUnitario').value=Number(v).toFixed(2)};const ontem=new Date();ontem.setDate(ontem.getDate()-1);el('dataEvento').value=ontem.toISOString().slice(0,10);
+el('btnCarregar').onclick=carregarOpcoes;el('btnPrever').onclick=prever;el('btnTodos').onclick=alternarTodos;el('eventoFinanceiro').onchange=()=>{const o=el('eventoFinanceiro').selectedOptions[0],v=o?.dataset?.valor||'';if(v!=='')el('valorUnitario').value=Number(v).toFixed(2)};const ontem=new Date();
+ontem.setDate(ontem.getDate()-1);
+const ano=ontem.getFullYear();
+const mes=String(ontem.getMonth()+1).padStart(2,'0');
+const dia=String(ontem.getDate()).padStart(2,'0');
+el('dataEvento').value=`${ano}-${mes}-${dia}`;
 </script>
 </body>
 </html>
