@@ -82,7 +82,27 @@ async function pesquisar(){el('tbody').innerHTML='<tr><td colspan="7" class="mut
 function render(){const tb=el('tbody');if(!dados.length){tb.innerHTML='';el('empty').classList.remove('hidden');return}el('empty').classList.add('hidden');tb.innerHTML=dados.map((p,i)=>`<tr><td class="nome">${esc(p.nome)}${Number(p.cadastro_recente||0)===1?'<span class="novoBadge">NOVO</span>':''}</td><td>${fmtData(p.data_nascimento)}</td><td><b>${esc(p.celular||'-')}</b></td><td>${esc(p.telefone||'-')}</td><td>${esc(p.tipo_prestador||'-')}</td><td>${fmtData(p.ultimo_evento)}</td><td><div class="acoes"><button class="smallBtn btnLight" onclick="detalhe(${i})">Ver</button><button class="smallBtn btnWhats" onclick="window.open('${telLink(p.celular)}','_blank')">Whats</button></div></td></tr>`).join('')}
 function novosCadastrados(){return dados.filter(p=>Number(p.cadastro_recente||0)===1)}function atualizarBotaoNovos(){const qtd=novosCadastrados().length;el('btnNovos').textContent=qtd?`Novos cadastrados (${qtd})`:'Novos cadastrados';el('btnNovos').disabled=qtd===0}
 function abrirNovos(){const novos=novosCadastrados();el('listaNovos').innerHTML=novos.length?novos.map(p=>`<div class="personItem"><div><b>${esc(p.nome)}</b><div class="muted">Cadastro em ${fmtDataHora(p.criado_em)} · ${esc(p.tipo_prestador||'-')}</div></div><div><b>${esc(p.celular||'-')}</b></div><div class="acoes"><button class="smallBtn btnWhats" onclick="window.open('${telLink(p.celular)}','_blank')">Whats</button></div></div>`).join(''):'<div class="empty">Nenhum cadastro recente.</div>';el('modalNovos').classList.remove('hidden')}function fecharNovos(){el('modalNovos').classList.add('hidden')}
-function detalhe(i){atual=dados[i];el('mNome').textContent=atual.nome||'';el('mSub').textContent=`${atual.tipo_prestador||''} · Unidade ${atual.cod_unidade||''}`;const rows=[['Nascimento',fmtData(atual.data_nascimento)],['Celular',atual.celular||'-'],['Telefone',atual.telefone||'-'],['E-mail',atual.email||'-'],['Cidade',`${atual.cidade||'-'} / ${atual.uf||''}`],['Cadastro em',fmtDataHora(atual.criado_em)],['Último evento',fmtData(atual.ultimo_evento)],['Última função',atual.ultima_funcao||'-'],['Unidade',atual.cod_unidade||'-']];el('mGrid').innerHTML=rows.map(r=>`<div class="info"><div class="lbl">${esc(r[0])}</div><div class="val">${esc(r[1])}</div></div>`).join('');el('copyMsg').classList.add('hidden');el('modal').classList.remove('hidden')}function fecharModal(){el('modal').classList.add('hidden')}function copiarContato(){if(!atual)return;const txt=`${atual.nome}
+function detalhe(i){
+  atual=dados[i];
+  el('mNome').textContent=atual.nome||'';
+  el('mSub').textContent=atual.tipo_prestador||'';
+
+  const rows=[
+    ['Nascimento',fmtData(atual.data_nascimento)],
+    ['Celular',atual.celular||'-'],
+    ['Telefone',atual.telefone||'-'],
+    ['E-mail',atual.email||'-'],
+    ['Cidade',`${atual.cidade||'-'} / ${atual.uf||''}`],
+    ['Cadastro em',fmtDataHora(atual.criado_em)]
+  ];
+
+  el('mGrid').innerHTML=rows
+    .map(r=>`<div class="info"><div class="lbl">${esc(r[0])}</div><div class="val">${esc(r[1])}</div></div>`)
+    .join('');
+
+  el('copyMsg').classList.add('hidden');
+  el('modal').classList.remove('hidden');
+}function fecharModal(){el('modal').classList.add('hidden')}function copiarContato(){if(!atual)return;const txt=`${atual.nome}
 Nascimento: ${fmtData(atual.data_nascimento)}
 Celular: ${atual.celular||'-'}
 Telefone: ${atual.telefone||'-'}`;navigator.clipboard.writeText(txt);el('copyMsg').classList.remove('hidden')}function abrirWhatsApp(){if(!atual)return;const d=onlyDigits(atual.celular);if(d)window.open(`https://wa.me/55${d}`,'_blank')}function exportar(){const params=new URLSearchParams({unidade:el('fUnidade').value,tipo:el('fTipo').value,busca:el('fBusca').value.trim(),token});window.open(`${API}/recrutamento_exportar.php?${params.toString()}`,'_blank')}
