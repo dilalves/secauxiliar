@@ -299,6 +299,88 @@
         max-height: 92vh;
         overflow: auto;
       }
+
+      /* Modal de localização da presença */
+      .mapModalBox {
+        width: min(96vw, 1500px);
+        height: min(92vh, 920px);
+        max-width: none;
+        max-height: none;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 16px;
+      }
+      .mapModalHeader {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        flex-shrink: 0;
+      }
+      .mapModalHeader h2 {
+        margin: 0;
+        color: var(--primary);
+      }
+      .mapModalHeader p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .mapInfoGrid {
+        display: grid;
+        grid-template-columns: 1.4fr 1.2fr .8fr .8fr;
+        gap: 10px;
+        margin: 14px 0;
+        flex-shrink: 0;
+      }
+      .mapInfoCard {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #f8fbff;
+        padding: 10px 12px;
+        min-width: 0;
+      }
+      .mapInfoCard .lbl {
+        display: block;
+        margin-bottom: 3px;
+      }
+      .mapInfoCard .val {
+        white-space: normal;
+      }
+      .mapFrameWrap {
+        flex: 1;
+        min-height: 300px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #eef2f7;
+      }
+      .mapFrameWrap iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        display: block;
+      }
+      .mapModalFooter {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-top: 12px;
+        flex-shrink: 0;
+      }
+      .mapCoords {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 750;
+      }
+      .mapOpenExternal {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+      }
       .modalTop {
         display: flex;
         justify-content: space-between;
@@ -497,6 +579,7 @@
         display: inline-flex;
         align-items: center;
         gap: 4px;
+        border: 0;
         border-radius: 8px;
         padding: 7px 8px;
         text-decoration: none;
@@ -505,8 +588,15 @@
         font-weight: 900;
         white-space: nowrap;
         font-size: 11px;
+        cursor: pointer;
+        font-family: inherit;
       }
-      .mapLink.disabled { pointer-events: none; opacity: .42; }
+      .mapLink.disabled,
+      .mapLink:disabled {
+        pointer-events: none;
+        opacity: .42;
+        cursor: not-allowed;
+      }
       .presenceSummary { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
       .summaryChip { border-radius: 999px; padding: 3px 7px; font-size: 10px; font-weight: 900; }
       .summaryChip.waiting { background: #eef2f7; color: #475569; }
@@ -558,6 +648,30 @@
         .mapLinks {
           justify-content: flex-start;
           flex-wrap: wrap;
+        }
+        .mapModalBox {
+          width: 100%;
+          height: 96vh;
+          padding: 12px;
+          border-radius: 14px;
+        }
+        .mapInfoGrid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .mapModalFooter {
+          align-items: stretch;
+          flex-direction: column;
+        }
+        .mapOpenExternal {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .mapInfoGrid {
+          grid-template-columns: 1fr;
+          max-height: 210px;
+          overflow: auto;
         }
       }
     </style>
@@ -660,6 +774,76 @@
             </div>
           </div>
         </div>
+        <!-- Modal de localização da entrada/saída -->
+        <div id="mapModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="mapModalTitle">
+          <div class="modalBox mapModalBox">
+            <div class="mapModalHeader">
+              <div>
+                <h2 id="mapModalTitle">Local do registro</h2>
+                <p id="mapModalSubtitle">Detalhes da marcação de presença</p>
+              </div>
+              <button class="close" type="button" onclick="fecharMapaPresenca()">Fechar</button>
+            </div>
+
+            <div class="mapInfoGrid">
+              <div class="mapInfoCard">
+                <span class="lbl">Evento</span>
+                <div id="mapEvento" class="val">-</div>
+              </div>
+              <div class="mapInfoCard">
+                <span class="lbl">Prestador</span>
+                <div id="mapPrestador" class="val">-</div>
+              </div>
+              <div class="mapInfoCard">
+                <span class="lbl">Data do registro</span>
+                <div id="mapData" class="val">-</div>
+              </div>
+              <div class="mapInfoCard">
+                <span class="lbl">Hora do registro</span>
+                <div id="mapHora" class="val">-</div>
+              </div>
+              <div class="mapInfoCard">
+                <span class="lbl">Tipo</span>
+                <div id="mapTipo" class="val">-</div>
+              </div>
+              <div class="mapInfoCard">
+                <span class="lbl">Posto</span>
+                <div id="mapPosto" class="val">-</div>
+              </div>
+              <div class="mapInfoCard">
+                <span class="lbl">Unidade</span>
+                <div id="mapUnidade" class="val">-</div>
+              </div>
+              <div class="mapInfoCard">
+                <span class="lbl">Precisão do GPS</span>
+                <div id="mapPrecisao" class="val">-</div>
+              </div>
+            </div>
+
+            <div class="mapFrameWrap">
+              <iframe
+                id="mapFrame"
+                title="Mapa da localização registrada"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+
+            <div class="mapModalFooter">
+              <div id="mapCoords" class="mapCoords"></div>
+              <a
+                id="mapExternalLink"
+                class="btn btnLight mapOpenExternal"
+                href="#"
+                target="_blank"
+                rel="noopener"
+              >
+                Abrir no Google Maps
+              </a>
+            </div>
+          </div>
+        </div>
+
         <script>
           const API = "https://apisec.secauxiliar.com.br/prestadores",
             el = (id) => document.getElementById(id);
@@ -668,7 +852,8 @@
               localStorage.getItem("recrutamento_usuario") || "{}",
             ),
             prestadores = [],
-            equipe = [];
+            equipe = [],
+            eventoAtual = null;
           if (!token) location.href = "index.html";
           function esc(s) {
             return String(s ?? "").replace(
@@ -780,9 +965,12 @@
               evento_id: id,
             });
             equipe = d.equipe || [];
-            if (d.evento)
+            eventoAtual = d.evento || null;
+
+            if (eventoAtual)
               el("eventoInfo").textContent =
-                `${d.evento.titulo} · ${fmtData(d.evento.data_evento)} · ${(d.evento.hora_inicio || "").slice(0, 5)} às ${(d.evento.hora_fim || "").slice(0, 5)}`;
+                `${eventoAtual.titulo} · ${fmtData(eventoAtual.data_evento)} · ${(eventoAtual.hora_inicio || "").slice(0, 5)} às ${(eventoAtual.hora_fim || "").slice(0, 5)}`;
+
             renderEquipe();
           }
           function naEquipe(id) {
@@ -880,19 +1068,19 @@
                           </div>
 
                           <div class="mapLinks">
-                            <a
-                              class="mapLink ${entradaMapa ? "" : "disabled"}"
-                              href="${entradaMapa || "#"}"
-                              target="_blank"
-                              rel="noopener"
-                            >📍 Entrada</a>
+                            <button
+                              type="button"
+                              class="mapLink"
+                              ${entradaMapa ? "" : "disabled"}
+                              onclick="abrirMapaPresenca(${x.prestador_id}, 'ENTRADA')"
+                            >📍 Entrada</button>
 
-                            <a
-                              class="mapLink ${saidaMapa ? "" : "disabled"}"
-                              href="${saidaMapa || "#"}"
-                              target="_blank"
-                              rel="noopener"
-                            >📍 Saída</a>
+                            <button
+                              type="button"
+                              class="mapLink"
+                              ${saidaMapa ? "" : "disabled"}
+                              onclick="abrirMapaPresenca(${x.prestador_id}, 'SAIDA')"
+                            >📍 Saída</button>
                           </div>
                         </div>
                       </div>
@@ -931,6 +1119,101 @@
               valor,
             });
           }
+          function separarDataHora(valor) {
+            if (!valor) return { data: "-", hora: "-" };
+
+            const [data, horario = ""] = String(valor).split(" ");
+
+            return {
+              data: fmtData(data),
+              hora: horario.slice(0, 5) || "-"
+            };
+          }
+
+          function abrirMapaPresenca(prestadorId, tipo) {
+            const pessoa = equipe.find(
+              (x) => Number(x.prestador_id) === Number(prestadorId)
+            );
+
+            if (!pessoa) {
+              alert("Não foi possível localizar os dados do prestador.");
+              return;
+            }
+
+            const entrada = tipo === "ENTRADA";
+            const latitude = entrada ? pessoa.entrada_lat : pessoa.saida_lat;
+            const longitude = entrada ? pessoa.entrada_lng : pessoa.saida_lng;
+            const registroEm = entrada ? pessoa.entrada_em : pessoa.saida_em;
+            const precisao = entrada
+              ? pessoa.entrada_precisao
+              : pessoa.saida_precisao;
+
+            if (!latitude || !longitude || !registroEm) {
+              alert(`O registro de ${entrada ? "entrada" : "saída"} ainda não possui localização.`);
+              return;
+            }
+
+            const momento = separarDataHora(registroEm);
+            const tipoTexto = entrada ? "Entrada" : "Saída";
+            const eventoTexto = eventoAtual
+              ? `${eventoAtual.titulo} · ${fmtData(eventoAtual.data_evento)} · ${(eventoAtual.hora_inicio || "").slice(0, 5)} às ${(eventoAtual.hora_fim || "").slice(0, 5)}`
+              : el("eventoInfo").textContent || "-";
+
+            const unidade =
+              eventoAtual?.cod_unidade
+              || pessoa.cod_unidade
+              || "-";
+
+            const mapaEmbed =
+              `https://www.google.com/maps?q=${encodeURIComponent(latitude)},${encodeURIComponent(longitude)}&z=17&output=embed`;
+
+            const mapaExterno = mapUrl(latitude, longitude);
+
+            el("mapModalTitle").textContent = `Local do registro de ${tipoTexto.toLowerCase()}`;
+            el("mapModalSubtitle").textContent =
+              "Localização informada pelo aparelho no momento da marcação.";
+
+            el("mapEvento").textContent = eventoTexto;
+            el("mapPrestador").textContent =
+              `${pessoa.nome || "-"} · ${pessoa.tipo_prestador || "-"}`;
+            el("mapData").textContent = momento.data;
+            el("mapHora").textContent = momento.hora;
+            el("mapTipo").textContent = tipoTexto;
+            el("mapPosto").textContent = pessoa.posto || "-";
+            el("mapUnidade").textContent = unidade;
+            el("mapPrecisao").textContent =
+              precisao ? `${precisao} metros` : "Não informada";
+            el("mapCoords").textContent =
+              `Latitude: ${latitude} · Longitude: ${longitude}`;
+
+            el("mapFrame").src = mapaEmbed;
+            el("mapExternalLink").href = mapaExterno;
+            el("mapModal").classList.remove("hidden");
+
+            document.body.style.overflow = "hidden";
+          }
+
+          function fecharMapaPresenca() {
+            el("mapModal").classList.add("hidden");
+            el("mapFrame").src = "";
+            document.body.style.overflow = "";
+          }
+
+          el("mapModal").addEventListener("click", (event) => {
+            if (event.target === el("mapModal")) {
+              fecharMapaPresenca();
+            }
+          });
+
+          document.addEventListener("keydown", (event) => {
+            if (
+              event.key === "Escape"
+              && !el("mapModal").classList.contains("hidden")
+            ) {
+              fecharMapaPresenca();
+            }
+          });
+
           function imprimir() {
             const id = el("eventoSel").value;
             if (id) location.href = `imprimir_evento.html?evento_id=${id}`;
