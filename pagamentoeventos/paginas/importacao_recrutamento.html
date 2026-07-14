@@ -43,7 +43,7 @@ body {
   padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   overflow: hidden;
 }
 
@@ -54,21 +54,6 @@ body {
   box-shadow: 0 6px 20px rgba(11, 59, 120, .05);
 }
 
-.head {
-  flex: 0 0 auto;
-  padding: 14px 16px;
-}
-
-.head h1 {
-  margin: 0;
-  color: var(--primary);
-  font-size: 24px;
-}
-
-.head p {
-  margin: 4px 0 0;
-  color: var(--muted);
-}
 
 .formCard {
   flex: 0 0 auto;
@@ -301,6 +286,40 @@ body {
   font-size: 19px;
 }
 
+.previewEvents {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.previewEvent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--soft);
+}
+
+.previewEventTitle {
+  min-width: 0;
+  overflow: hidden;
+  color: #12345b;
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.previewEventCounts {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .group {
   margin-bottom: 8px;
   overflow: hidden;
@@ -452,7 +471,6 @@ th {
 </head>
 <body>
 <main class="page">
-<section class="card head"><h1>Gerar pedidos de pagamento</h1><p>Escolha a data, o código financeiro e um ou mais eventos do recrutamento.</p></section>
 <section class="card formCard">
 <div class="field"><label>Data do evento</label><input id="dataEvento" type="date"></div>
 <div class="field"><label>Código para pagamento</label><select id="eventoFinanceiro"><option value="">Selecione a data primeiro</option></select></div>
@@ -513,7 +531,77 @@ function atualizarSelecaoVisual(){document.querySelectorAll('.eventItem').forEac
 function alternarTodos(){const c=[...document.querySelectorAll('.eventoCheck:not(:disabled)')],todos=c.length&&c.every(x=>x.checked);c.forEach(x=>x.checked=!todos);el('btnTodos').textContent=todos?'Marcar todos':'Desmarcar todos';atualizarSelecaoVisual()}
 function parametros(acao){const financeiro=Number(el('eventoFinanceiro').value||0),ids=idsSelecionados(),funcao=el('funcao').value.trim(),q=Number(el('quantidade').value||0),v=Number(el('valorUnitario').value||0);if(!financeiro)throw new Error('Selecione o código para pagamento.');if(!ids.length)throw new Error('Selecione pelo menos um evento do recrutamento.');if(!funcao)throw new Error('Informe a função para o pagamento.');if(!(q>0))throw new Error('Informe uma quantidade válida.');if(!(v>0))throw new Error('Informe um valor unitário válido.');return{acao,evento_destino_id:financeiro,recrutamento_evento_ids:ids,funcao,quantidade:q,valor_unitario:v}}
 async function prever(){limparMensagem();try{ultimaPrevia=await post('importar_recrutamento_pagamentos.php',parametros('prever'));tabAtual='aptos';renderPreview()}catch(e){mostrar(e.message,'erro')}}
-function renderPreview(){const d=ultimaPrevia,r=d.resumo||{},p=d.parametros_pagamento||{};el('preview').innerHTML=`<div class="summary"><div class="summaryCard"><span>Eventos</span><strong>${r.eventos_selecionados||0}</strong></div><div class="summaryCard"><span>Convocados</span><strong>${r.convocados||0}</strong></div><div class="summaryCard"><span>Aptos</span><strong>${r.aptos||0}</strong></div><div class="summaryCard"><span>Pendentes</span><strong>${r.pendentes||0}</strong></div><div class="summaryCard"><span>Já importados</span><strong>${r.ja_importados||0}</strong></div></div><div class="group"><div class="groupHead"><span>Código: ${esc(d.evento_financeiro?.codigo||'-')} — ${esc(d.evento_financeiro?.nome||'-')}</span><span>${esc(p.funcao||'-')} · ${moeda(p.valor_bruto_por_pessoa)} por pessoa · Total ${moeda(p.valor_total_previsto)}</span></div></div>${(d.resumo_por_evento||[]).map(e=>`<div class="group"><div class="groupHead"><span>Unidade ${esc(e.cod_unidade)} — ID ${e.recrutamento_evento_id} — ${esc(e.titulo)}</span><span>${e.aptos} apto(s) · ${e.pendentes} pendente(s) · ${e.ja_importados} já importado(s)</span></div></div>`).join('')}<div class="tabs"><button class="tab ${tabAtual==='aptos'?'active':''}" onclick="mudarTab('aptos')">Aptos (${r.aptos||0})</button><button class="tab ${tabAtual==='pendentes'?'active':''}" onclick="mudarTab('pendentes')">Pendentes (${r.pendentes||0})</button><button class="tab ${tabAtual==='ja_importados'?'active':''}" onclick="mudarTab('ja_importados')">Já importados (${r.ja_importados||0})</button></div><div id="listaPreview"></div><div class="actions"><button class="btn btnLight" onclick="prever()">Atualizar prévia</button><button class="btn btnAccent" onclick="confirmarImportacao()" ${(r.aptos||0)<1?'disabled':''}>Confirmar importação de ${r.aptos||0} pedido(s)</button></div>`;renderTabelaPreview()}
+function renderPreview(){
+    const d=ultimaPrevia;
+    const r=d.resumo||{};
+
+    el('preview').innerHTML=`
+        <div class="summary">
+            <div class="summaryCard">
+                <span>Eventos</span>
+                <strong>${r.eventos_selecionados||0}</strong>
+            </div>
+            <div class="summaryCard">
+                <span>Convocados</span>
+                <strong>${r.convocados||0}</strong>
+            </div>
+            <div class="summaryCard">
+                <span>Aptos</span>
+                <strong>${r.aptos||0}</strong>
+            </div>
+            <div class="summaryCard">
+                <span>Pendentes</span>
+                <strong>${r.pendentes||0}</strong>
+            </div>
+            <div class="summaryCard">
+                <span>Já importados</span>
+                <strong>${r.ja_importados||0}</strong>
+            </div>
+        </div>
+
+        <div class="previewEvents">
+            ${(d.resumo_por_evento||[]).map(e=>`
+                <div class="previewEvent">
+                    <div class="previewEventTitle">
+                        ${esc(e.titulo||'-')} · Unidade ${esc(e.cod_unidade||'-')} · ID ${esc(e.recrutamento_evento_id||'-')}
+                    </div>
+                    <div class="previewEventCounts">
+                        ${e.aptos||0} apto(s) ·
+                        ${e.pendentes||0} pendente(s) ·
+                        ${e.ja_importados||0} importado(s)
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+
+        <div class="tabs">
+            <button class="tab ${tabAtual==='aptos'?'active':''}" onclick="mudarTab('aptos')">
+                Aptos (${r.aptos||0})
+            </button>
+            <button class="tab ${tabAtual==='pendentes'?'active':''}" onclick="mudarTab('pendentes')">
+                Pendentes (${r.pendentes||0})
+            </button>
+            <button class="tab ${tabAtual==='ja_importados'?'active':''}" onclick="mudarTab('ja_importados')">
+                Já importados (${r.ja_importados||0})
+            </button>
+        </div>
+
+        <div id="listaPreview"></div>
+
+        <div class="actions">
+            <button class="btn btnLight" onclick="prever()">Atualizar prévia</button>
+            <button
+                class="btn btnAccent"
+                onclick="confirmarImportacao()"
+                ${(r.aptos||0)<1?'disabled':''}
+            >
+                Confirmar importação de ${r.aptos||0} pedido(s)
+            </button>
+        </div>
+    `;
+
+    renderTabelaPreview();
+}
 function mudarTab(t){tabAtual=t;renderPreview()}function renderTabelaPreview(){const dados=ultimaPrevia?.[tabAtual]||[],a=el('listaPreview');if(!dados.length){a.innerHTML='<div class="empty">Nenhum registro nesta categoria.</div>';return}a.innerHTML=`<div class="tableWrap"><table><thead><tr><th>Unidade</th><th>Evento ID</th><th>Prestador</th><th>Posto</th><th>Entrada</th><th>Saída</th>${tabAtual==='pendentes'?'<th>Motivo</th>':''}</tr></thead><tbody>${dados.map(i=>`<tr><td>${esc(i.cod_unidade||'-')}</td><td>${esc(i.recrutamento_evento_id||'-')}</td><td>${esc(i.nome||'-')}</td><td>${esc(i.posto||'-')}</td><td>${esc(i.entrada_em||'-')}</td><td>${esc(i.saida_em||'-')}</td>${tabAtual==='pendentes'?`<td>${esc((i.motivos||[]).join(', '))}</td>`:''}</tr>`).join('')}</tbody></table></div>`}
 async function confirmarImportacao(){const n=Number(ultimaPrevia?.resumo?.aptos||0);if(!n)return mostrar('Não há pedidos aptos para importar.','erro');if(!confirm(`Confirmar a importação de ${n} pedido(s)?`))return;try{const d=await post('importar_recrutamento_pagamentos.php',parametros('importar'));mostrar(d.message||'Importação concluída.');await prever()}catch(e){mostrar(e.message,'erro')}}
 el('btnCarregar').onclick=carregarOpcoes;el('btnPrever').onclick=prever;el('btnTodos').onclick=alternarTodos;el('eventoFinanceiro').onchange=()=>{const o=el('eventoFinanceiro').selectedOptions[0],v=o?.dataset?.valor||'';if(v!=='')el('valorUnitario').value=Number(v).toFixed(2)};const ontem=new Date();
