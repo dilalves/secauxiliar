@@ -181,10 +181,10 @@ body {
 .eventItem {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 10px;
+  gap: 9px;
   align-items: flex-start;
-  padding: 10px;
-  margin-bottom: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
   border: 1px solid var(--line);
   border-radius: 11px;
   background: #fff;
@@ -212,24 +212,25 @@ body {
 }
 
 .eventMeta {
-  margin-top: 4px;
+  margin-top: 3px;
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 11px;
+  line-height: 1.3;
 }
 
 .chips {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
-  margin-top: 7px;
+  margin-top: 5px;
 }
 
 .chip {
   display: inline-flex;
-  padding: 4px 8px;
+  align-items: center;
+  padding: 3px 7px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
 }
 
@@ -259,31 +260,38 @@ body {
 
 .summary {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  margin-bottom: 10px;
+  grid-template-columns: repeat(5, minmax(90px, 1fr));
+  gap: 0;
+  margin-bottom: 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f5f9ff;
 }
 
 .summaryCard {
-  padding: 9px;
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  background: #f8fbff;
+  min-width: 0;
+  padding: 7px 10px;
+  border-right: 1px solid var(--line);
+}
+
+.summaryCard:last-child {
+  border-right: 0;
 }
 
 .summaryCard span {
-  display: block;
+  display: inline;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 9px;
   text-transform: uppercase;
   font-weight: 900;
 }
 
 .summaryCard strong {
-  display: block;
-  margin-top: 3px;
+  display: inline;
+  margin-left: 7px;
   color: var(--primary);
-  font-size: 19px;
+  font-size: 17px;
 }
 
 .previewEvents {
@@ -446,7 +454,7 @@ th {
   }
 
   .summary {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(5, minmax(90px, 1fr));
   }
 }
 
@@ -456,7 +464,20 @@ th {
   }
 
   .summary {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .summaryCard {
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .summaryCard:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .summaryCard:last-child {
+    border-bottom: 0;
   }
 
   .actions {
@@ -483,7 +504,7 @@ th {
 <div id="mensagem"></div>
 <section class="layout">
 <div class="card"><div class="sectionHead"><div><h2>Eventos do recrutamento</h2><small id="eventosInfo">Selecione uma data.</small></div><button id="btnTodos" class="btn btnLight" type="button">Marcar todos</button></div><div id="eventosLista" class="eventList"><div class="empty">Nenhuma data carregada.</div></div></div>
-<div class="card"><div class="sectionHead"><div><h2>Prévia da importação</h2><small>Revise antes de confirmar.</small></div></div><div id="preview" class="previewBody"><div class="empty">Selecione os eventos e clique em “Pré-visualizar”.</div></div></div>
+<div class="card"><div class="sectionHead"><div><h2>Prévia da importação</h2></div></div><div id="preview" class="previewBody"><div class="empty">Selecione os eventos e clique em “Pré-visualizar”.</div></div></div>
 </section>
 </main>
 <script>
@@ -526,7 +547,46 @@ function renderFinanceiros(){
         }
     }
 }
-function renderEventos(){el('eventosInfo').textContent=`${eventosRecrutamento.length} evento(s) encontrado(s).`;el('eventosLista').innerHTML=eventosRecrutamento.length?eventosRecrutamento.map(e=>`<label class="eventItem" data-id="${e.id}"><input type="checkbox" class="eventoCheck" value="${e.id}" onchange="atualizarSelecaoVisual()" ${String(e.status).toUpperCase()==='CANCELADO'?'disabled':''}><div><div class="eventTitle">ID ${e.id} — Unidade ${esc(e.cod_unidade||'-')} — ${esc(e.titulo||'-')}</div><div class="eventMeta">${dataBR(e.data_evento)} · ${hora(e.hora_inicio)} às ${hora(e.hora_fim)} · Status ${esc(e.status||'-')}</div><div class="chips"><span class="chip chipSoft">${e.total_convocados} convocado(s)</span><span class="chip chipOk">${e.total_presenca_completa} presença(s) completa(s)</span><span class="chip chipWarn">${e.total_pendentes} pendente(s)</span></div></div></label>`).join(''):'<div class="empty">Nenhum evento de recrutamento nesta data.</div>';atualizarSelecaoVisual()}
+function renderEventos(){
+    el('eventosInfo').textContent=`${eventosRecrutamento.length} evento(s) encontrado(s).`;
+
+    el('eventosLista').innerHTML=eventosRecrutamento.length
+        ? eventosRecrutamento.map(e=>`
+            <label class="eventItem" data-id="${e.id}">
+                <input
+                    type="checkbox"
+                    class="eventoCheck"
+                    value="${e.id}"
+                    onchange="atualizarSelecaoVisual()"
+                    ${String(e.status).toUpperCase()==='CANCELADO'?'disabled':''}
+                >
+                <div>
+                    <div class="eventTitle">
+                        ID ${e.id} — Unidade ${esc(e.cod_unidade||'-')} — ${esc(e.titulo||'-')}
+                    </div>
+                    <div class="eventMeta">
+                        ${dataBR(e.data_evento)} ·
+                        ${hora(e.hora_inicio)} às ${hora(e.hora_fim)} ·
+                        Status ${esc(e.status||'-')}
+                    </div>
+                    <div class="chips">
+                        <span class="chip chipSoft" title="${e.total_convocados} convocado(s)">
+                            👥 ${e.total_convocados}
+                        </span>
+                        <span class="chip chipOk" title="${e.total_presenca_completa} presença(s) completa(s)">
+                            ✓ ${e.total_presenca_completa}
+                        </span>
+                        <span class="chip chipWarn" title="${e.total_pendentes} pendente(s)">
+                            ⚠ ${e.total_pendentes}
+                        </span>
+                    </div>
+                </div>
+            </label>
+        `).join('')
+        : '<div class="empty">Nenhum evento de recrutamento nesta data.</div>';
+
+    atualizarSelecaoVisual();
+}
 function atualizarSelecaoVisual(){document.querySelectorAll('.eventItem').forEach(i=>i.classList.toggle('selected',Boolean(i.querySelector('input')?.checked)))}function idsSelecionados(){return[...document.querySelectorAll('.eventoCheck:checked')].map(i=>Number(i.value))}
 function alternarTodos(){const c=[...document.querySelectorAll('.eventoCheck:not(:disabled)')],todos=c.length&&c.every(x=>x.checked);c.forEach(x=>x.checked=!todos);el('btnTodos').textContent=todos?'Marcar todos':'Desmarcar todos';atualizarSelecaoVisual()}
 function parametros(acao){const financeiro=Number(el('eventoFinanceiro').value||0),ids=idsSelecionados(),funcao=el('funcao').value.trim(),q=Number(el('quantidade').value||0),v=Number(el('valorUnitario').value||0);if(!financeiro)throw new Error('Selecione o código para pagamento.');if(!ids.length)throw new Error('Selecione pelo menos um evento do recrutamento.');if(!funcao)throw new Error('Informe a função para o pagamento.');if(!(q>0))throw new Error('Informe uma quantidade válida.');if(!(v>0))throw new Error('Informe um valor unitário válido.');return{acao,evento_destino_id:financeiro,recrutamento_evento_ids:ids,funcao,quantidade:q,valor_unitario:v}}
