@@ -5,24 +5,452 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Importar recrutamento para pagamentos</title>
 <style>
-:root{--bg:#f7f8fb;--card:#fff;--line:#dbe6f3;--ink:#0f172a;--muted:#64748b;--primary:#0b3b78;--accent:#2563eb;--soft:#eef4fb;--ok:#067647;--warn:#9a3412;--danger:#b91c1c}
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink)}
-.topbar{height:64px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 22px;box-shadow:0 2px 10px rgba(16,24,40,.16)}
-.page{max-width:1450px;margin:0 auto;padding:18px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 24px rgba(11,59,120,.05)}
-.head{padding:18px;margin-bottom:12px}.head h1{margin:0;color:var(--primary);font-size:25px}.head p{margin:6px 0 0;color:var(--muted)}
-.formCard{padding:14px;display:grid;grid-template-columns:180px minmax(320px,1.5fr) minmax(180px,.7fr) 130px 150px auto auto;gap:10px;align-items:end}
-.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field label{font-size:11px;font-weight:900;text-transform:uppercase;color:#12345b}.field input,.field select{height:42px;width:100%;border:1px solid var(--line);border-radius:10px;padding:0 11px;background:#fff;color:var(--ink);font-weight:750}
-.btn{min-height:42px;border:0;border-radius:10px;padding:0 15px;font-weight:900;cursor:pointer;white-space:nowrap}.btnPrimary{background:var(--primary);color:#fff}.btnAccent{background:var(--accent);color:#fff}.btnLight{background:#e8f0fb;color:#12345b}.btn:disabled{opacity:.5;cursor:not-allowed}
-.layout{display:grid;grid-template-columns:minmax(360px,.9fr) minmax(520px,1.4fr);gap:12px;margin-top:12px}.sectionHead{padding:14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:center}.sectionHead h2{margin:0;color:var(--primary);font-size:18px}.sectionHead small{color:var(--muted);font-weight:700}
-.eventList{padding:10px;max-height:550px;overflow:auto}.eventItem{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:8px;cursor:pointer;background:#fff}.eventItem:hover{background:#f8fbff}.eventItem.selected{border-color:#93b7e3;background:#eef5ff}.eventItem input{margin-top:4px;width:17px;height:17px}.eventTitle{color:#0b3b78;font-weight:900}.eventMeta{margin-top:4px;color:var(--muted);font-size:12px;line-height:1.45}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.chip{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:900}.chipOk{background:#dcfce7;color:#166534}.chipWarn{background:#fff7ed;color:#9a3412}.chipSoft{background:#eef2f7;color:#475569}
-.previewBody{padding:12px;min-height:350px}.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}.summaryCard{border:1px solid var(--line);border-radius:12px;padding:10px;background:#f8fbff}.summaryCard span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:900}.summaryCard strong{display:block;margin-top:4px;color:var(--primary);font-size:20px}.group{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}.groupHead{padding:10px 12px;background:var(--soft);color:#12345b;font-weight:900;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 8px}.tab{border:0;border-radius:999px;padding:7px 10px;background:#e8f0fb;color:#12345b;font-weight:900;cursor:pointer}.tab.active{background:var(--accent);color:#fff}.tableWrap{max-height:330px;overflow:auto;border:1px solid var(--line);border-radius:12px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}th{position:sticky;top:0;background:var(--soft);color:#12345b;z-index:1}
-.msg{padding:12px;border-radius:10px;font-weight:800;margin-top:12px}.msgOk{background:#dcfce7;color:#166534}.msgErro{background:#fee2e2;color:#991b1b}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.empty{padding:30px;text-align:center;color:var(--muted);font-weight:800}
-@media(max-width:1050px){.formCard{grid-template-columns:1fr 1fr}.layout{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.formCard{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}.actions{flex-direction:column}.actions .btn{width:100%}}
+:root {
+  --bg: #f7f8fb;
+  --card: #fff;
+  --line: #dbe6f3;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --primary: #0b3b78;
+  --accent: #2563eb;
+  --soft: #eef4fb;
+  --ok: #067647;
+  --warn: #9a3412;
+  --danger: #b91c1c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.page {
+  width: 100%;
+  height: 100vh;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(11, 59, 120, .05);
+}
+
+.head {
+  flex: 0 0 auto;
+  padding: 14px 16px;
+}
+
+.head h1 {
+  margin: 0;
+  color: var(--primary);
+  font-size: 24px;
+}
+
+.head p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.formCard {
+  flex: 0 0 auto;
+  padding: 12px;
+  display: grid;
+  grid-template-columns:
+    160px
+    minmax(340px, 1.65fr)
+    minmax(170px, .7fr)
+    120px
+    140px
+    auto
+    auto;
+  gap: 9px;
+  align-items: end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.field label {
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #12345b;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 750;
+}
+
+.btn {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btnPrimary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btnAccent {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btnLight {
+  background: #e8f0fb;
+  color: #12345b;
+}
+
+.btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+#mensagem {
+  flex: 0 0 auto;
+}
+
+.layout {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(390px, .85fr) minmax(650px, 1.55fr);
+  gap: 10px;
+  overflow: hidden;
+}
+
+.layout > .card {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sectionHead {
+  flex: 0 0 auto;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.sectionHead h2 {
+  margin: 0;
+  color: var(--primary);
+  font-size: 17px;
+}
+
+.sectionHead small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.eventList {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+.eventItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.eventItem:hover {
+  background: #f8fbff;
+}
+
+.eventItem.selected {
+  border-color: #93b7e3;
+  background: #eef5ff;
+}
+
+.eventItem input {
+  width: 17px;
+  height: 17px;
+  margin-top: 4px;
+}
+
+.eventTitle {
+  color: #0b3b78;
+  font-weight: 900;
+}
+
+.eventMeta {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 7px;
+}
+
+.chip {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.chipOk {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.chipWarn {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.chipSoft {
+  background: #eef2f7;
+  color: #475569;
+}
+
+.previewBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.summaryCard {
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #f8fbff;
+}
+
+.summaryCard span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 900;
+}
+
+.summaryCard strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--primary);
+  font-size: 19px;
+}
+
+.group {
+  margin-bottom: 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+}
+
+.groupHead {
+  padding: 9px 11px;
+  background: var(--soft);
+  color: #12345b;
+  font-weight: 900;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 10px 0 8px;
+}
+
+.tab {
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: #e8f0fb;
+  color: #12345b;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.tableWrap {
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+th,
+td {
+  padding: 8px 9px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--soft);
+  color: #12345b;
+}
+
+.msg {
+  padding: 10px 12px;
+  border-radius: 9px;
+  font-weight: 800;
+}
+
+.msgOk {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.msgErro {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.empty {
+  padding: 26px;
+  text-align: center;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+@media (max-width: 1150px) {
+  html,
+  body {
+    overflow: auto;
+  }
+
+  .page {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .formCard {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .layout {
+    min-height: 700px;
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .layout > .card {
+    min-height: 420px;
+  }
+
+  .summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .formCard {
+    grid-template-columns: 1fr;
+  }
+
+  .summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions .btn {
+    width: 100%;
+  }
+}
 </style>
 </head>
 <body>
-<header class="topbar"><strong>Importação do Recrutamento</strong><span>Administrador</span></header>
 <main class="page">
 <section class="card head"><h1>Gerar pedidos de pagamento</h1><p>Escolha a data, o código financeiro e um ou mais eventos do recrutamento.</p></section>
 <section class="card formCard">
