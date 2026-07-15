@@ -1153,6 +1153,22 @@
             const [data, hora = ""] = String(v).split(" ");
             return `${fmtData(data)} ${hora.slice(0, 5)}`.trim();
           }
+
+          function eventoHojeOuPassado(dataEvento) {
+          if (!dataEvento) {
+            return false;
+          }
+
+          const hoje = new Date();
+          hoje.setHours(0, 0, 0, 0);
+
+          const data = new Date(
+            String(dataEvento).substring(0, 10) + "T00:00:00"
+          );
+
+          return data <= hoje;
+        }
+
           function mapUrl(lat, lng) {
             if (!lat || !lng) return "";
             return `https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lng)}`;
@@ -1289,6 +1305,7 @@
                   .join("")
               : '<div class="empty">Nenhum prestador.</div>';
           }
+
           function renderEquipe() {
             el("qtdEquipe").textContent = `${equipe.length} pessoa(s)`;
 
@@ -1297,7 +1314,8 @@
                   const status = statusPresenca(x);
                   const entradaMapa = mapUrl(x.entrada_lat, x.entrada_lng);
                   const saidaMapa = mapUrl(x.saida_lat, x.saida_lng);
-                  const removerBloqueado = Boolean(x.entrada_em);
+                  const removerBloqueado =
+                    eventoHojeOuPassado(eventoAtual?.data_evento);
 
                   return `
                     <div class="teamItem">
@@ -1315,7 +1333,24 @@
                             <button
                               class="smallBtn btnDanger"
                               ${removerBloqueado ? "disabled" : ""}
-                              title="${removerBloqueado ? "Não é possível remover após o registro da entrada." : "Remover da equipe"}"
+                              <div class="teamActions">
+                                <button
+                                  class="smallBtn btnDanger"
+                                  ${removerBloqueado ? "disabled" : ""}
+                                  title="${
+                                    removerBloqueado
+                                      ? "Não é possível remover integrantes no dia do evento ou após sua realização."
+                                      : "Remover da equipe"
+                                  }"
+                                  onclick="${
+                                    removerBloqueado
+                                      ? "return false"
+                                      : `rem(${x.prestador_id})`
+                                  }"
+                                >
+                                  Remover
+                                </button>
+                              </div>
                               onclick="${removerBloqueado ? "return false" : `rem(${x.prestador_id})`}"
                             >
                               Remover
