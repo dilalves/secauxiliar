@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Links de Coberturas</title>
+<style>
+:root{--azul:#0f427f;--azul2:#eaf2fc;--borda:#d8e2ef;--texto:#132238;--muted:#64748b;--verde:#15803d;--vermelho:#b42318}
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:var(--texto);font-family:Arial,Helvetica,sans-serif}.wrap{padding:18px}.topo{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}.topo h1{margin:0;color:var(--azul);font-size:27px}.topo p{margin:5px 0 0;color:var(--muted)}.card{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:16px;box-shadow:0 7px 24px rgba(15,66,127,.06)}.form{display:grid;grid-template-columns:minmax(180px,240px) minmax(150px,210px) 150px auto;gap:12px;align-items:end}.campo label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#334155}.campo input{width:100%;height:42px;border:1px solid var(--borda);border-radius:9px;padding:0 11px;font-size:14px}.btn{height:42px;border:0;border-radius:9px;padding:0 18px;font-weight:700;cursor:pointer}.btn-primary{background:var(--azul);color:#fff}.btn-soft{background:var(--azul2);color:var(--azul)}.btn-danger{background:#feeceb;color:var(--vermelho)}.resultado{display:none;margin-top:14px;padding:13px;background:#eefbf2;border:1px solid #b7e4c4;border-radius:10px}.resultado input{width:calc(100% - 130px);height:40px;border:1px solid #b7e4c4;border-radius:8px;padding:0 10px}.tabela-card{margin-top:16px}.tabela-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:860px}th,td{padding:11px 10px;border-bottom:1px solid #e8eef5;text-align:left;font-size:13px}th{background:#f7f9fc;color:#42526a}.pill{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700}.ativo{background:#dcfce7;color:#166534}.inativo{background:#fee2e2;color:#991b1b}.vazio{text-align:center;color:var(--muted);padding:30px}.toast{position:fixed;right:20px;bottom:20px;background:#132238;color:#fff;padding:12px 16px;border-radius:9px;display:none;z-index:10}@media(max-width:850px){.form{grid-template-columns:1fr 1fr}.topo{display:block}}@media(max-width:560px){.form{grid-template-columns:1fr}.resultado input{width:100%;margin-bottom:8px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topo"><div><h1>Coberturas de Eventos</h1><p>Gere um link seguro para a coordenação consultar os eventos de uma data.</p></div></div>
+  <section class="card">
+    <div class="form">
+      <div class="campo"><label>Data dos eventos</label><input type="date" id="data_evento"></div>
+      <div class="campo"><label>Unidade (opcional)</label><input type="text" id="cod_unidade" placeholder="Ex.: 1501"></div>
+      <div class="campo"><label>Validade em dias</label><input type="number" id="dias_validade" min="1" max="365" value="30"></div>
+      <button class="btn btn-primary" id="gerar">Gerar link</button>
+    </div>
+    <div class="resultado" id="resultado">
+      <input id="url_gerada" readonly>
+      <button class="btn btn-soft" id="copiar">Copiar link</button>
+    </div>
+  </section>
+
+  <section class="card tabela-card">
+    <div class="tabela-wrap">
+      <table>
+        <thead><tr><th>Data</th><th>Unidade</th><th>Criado por</th><th>Criado em</th><th>Validade</th><th>Acessos</th><th>Status</th><th>Ação</th></tr></thead>
+        <tbody id="tbody"><tr><td colspan="8" class="vazio">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const api='https://apisec.secauxiliar.com.br/prestadores_adm/rel_coberturas_links.php';
+const $=s=>document.querySelector(s);
+function toast(t){const el=$('#toast');el.textContent=t;el.style.display='block';setTimeout(()=>el.style.display='none',2500)}
+function brData(d){if(!d)return '-';const [a,m,di]=d.substring(0,10).split('-');return `${di}/${m}/${a}`}
+function brDataHora(d){if(!d)return '-';return new Date(d.replace(' ','T')).toLocaleString('pt-BR')}
+async function post(payload){const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(payload)});const j=await r.json().catch(()=>({ok:false,error:'Resposta inválida do servidor.'}));if(!r.ok||!j.ok)throw new Error(j.error||'Erro na operação.');return j}
+async function listar(){try{const j=await post({acao:'listar'});const tb=$('#tbody');if(!j.links.length){tb.innerHTML='<tr><td colspan="8" class="vazio">Nenhum link gerado.</td></tr>';return}tb.innerHTML=j.links.map(x=>`<tr><td>${brData(x.data_evento)}</td><td>${x.cod_unidade||'Todas'}</td><td>${x.criado_por_nome||'-'}</td><td>${brDataHora(x.criado_em)}</td><td>${brDataHora(x.expira_em)}</td><td>${x.total_acessos||0}</td><td><span class="pill ${+x.ativo?'ativo':'inativo'}">${+x.ativo?'Ativo':'Inativo'}</span></td><td><button class="btn ${+x.ativo?'btn-danger':'btn-soft'}" onclick="alterar(${x.id},'${+x.ativo?'desativar':'reativar'}')">${+x.ativo?'Desativar':'Reativar'}</button></td></tr>`).join('')}catch(e){toast(e.message)}}
+async function alterar(id,acao){try{await post({acao,id});toast('Link atualizado.');listar()}catch(e){toast(e.message)}}
+$('#gerar').onclick=async()=>{const data=$('#data_evento').value;if(!data){toast('Selecione a data.');return}try{$('#gerar').disabled=true;const j=await post({acao:'gerar',data_evento:data,cod_unidade:$('#cod_unidade').value.trim(),dias_validade:+$('#dias_validade').value||30});$('#url_gerada').value=j.url;$('#resultado').style.display='block';toast('Link gerado.');listar()}catch(e){toast(e.message)}finally{$('#gerar').disabled=false}};
+$('#copiar').onclick=async()=>{const v=$('#url_gerada').value;try{await navigator.clipboard.writeText(v);toast('Link copiado.')}catch{ $('#url_gerada').select();document.execCommand('copy');toast('Link copiado.')}};
+window.alterar=alterar;listar();
+</script>
+</body>
+</html>

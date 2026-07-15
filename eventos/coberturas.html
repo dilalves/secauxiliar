@@ -1,0 +1,1520 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>Coberturas de Eventos</title>
+
+    <style>
+        :root {
+            --azul: #123f78;
+            --azul-escuro: #0b315f;
+            --azul-claro: #eef5ff;
+            --fundo: #f3f6fa;
+            --borda: #dce5f0;
+            --texto: #172033;
+            --muted: #64748b;
+            --verde: #16875d;
+            --vermelho: #b42318;
+            --branco: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background: var(--fundo);
+            color: var(--texto);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body.modal-aberta {
+            overflow: hidden;
+        }
+
+        /* =================================================
+           CABEÇALHO FIXO
+           ================================================= */
+
+        .topo {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: var(--azul);
+            color: var(--branco);
+            box-shadow: 0 3px 14px rgba(0, 0, 0, .18);
+        }
+
+        .topo-conteudo {
+            width: 100%;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .topo-titulo {
+            min-width: 0;
+        }
+
+        .topo h1 {
+            margin: 0;
+            font-size: 25px;
+            line-height: 1.15;
+        }
+
+        .topo p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            opacity: .88;
+        }
+
+        .topo-data {
+            flex: 0 0 auto;
+            padding: 9px 14px;
+            background: rgba(255, 255, 255, .12);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        /* =================================================
+           ÁREA PRINCIPAL
+           ================================================= */
+
+        .conteudo {
+            width: 100%;
+            padding: 18px;
+        }
+
+        .estado {
+            min-height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .estado.erro {
+            color: var(--vermelho);
+        }
+
+        /* =================================================
+           EVENTO
+           ================================================= */
+
+        .evento {
+            width: 100%;
+            margin-bottom: 20px;
+            overflow: hidden;
+            background: var(--branco);
+            border: 1px solid var(--borda);
+            border-radius: 15px;
+            box-shadow: 0 7px 22px rgba(18, 63, 120, .06);
+        }
+
+        .evento-cabecalho {
+            padding: 15px 18px;
+            background: var(--azul-claro);
+            border-bottom: 1px solid var(--borda);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .evento-identificacao {
+            min-width: 0;
+        }
+
+        .evento-titulo {
+            margin: 0;
+            color: var(--azul);
+            font-size: 21px;
+            line-height: 1.2;
+        }
+
+        .evento-meta {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .evento-quantidade {
+            flex: 0 0 auto;
+            color: var(--azul);
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        /* =================================================
+           PESSOA / POSTO
+           ================================================= */
+
+        .pessoa {
+            border-top: 1px solid #edf1f6;
+        }
+
+        .pessoa:first-child {
+            border-top: 0;
+        }
+
+        .pessoa-linha {
+            display: grid;
+            grid-template-columns:
+                minmax(230px, 1.15fr)
+                minmax(260px, 1.8fr)
+                minmax(185px, .9fr)
+                minmax(185px, .9fr);
+
+            gap: 12px;
+            align-items: center;
+            padding: 13px 18px 10px;
+        }
+
+        .posto-bloco,
+        .prestador-bloco,
+        .registro-bloco {
+            min-width: 0;
+        }
+
+        .rotulo {
+            margin-bottom: 4px;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .posto {
+            color: var(--azul);
+            font-size: 19px;
+            font-weight: 900;
+            line-height: 1.15;
+            word-break: break-word;
+        }
+
+        .prestador {
+            color: #4b5563;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        .tipo {
+            display: inline-flex;
+            margin-top: 5px;
+            padding: 3px 7px;
+            background: #edf4ff;
+            color: var(--azul);
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .registro-valor {
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        .registro-secundario {
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .mapas {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            margin-top: 7px;
+        }
+
+        .mapa-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 8px;
+            background: #eaf2fc;
+            color: var(--azul);
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .mapa-link:hover {
+            background: #dceafe;
+        }
+
+        /* =================================================
+           GALERIA
+           ================================================= */
+
+        .galeria-area {
+            padding: 0 18px 15px;
+        }
+
+        .galeria-cabecalho {
+            padding-top: 9px;
+            border-top: 1px solid #e9eef5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .galeria-titulo {
+            color: var(--azul);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .galeria-quantidade {
+            color: var(--azul);
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .galeria {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-top: 9px;
+        }
+
+        .foto-botao {
+            width: 130px;
+            height: 96px;
+            padding: 0;
+            overflow: hidden;
+            background: #eef2f6;
+            border: 1px solid var(--borda);
+            border-radius: 9px;
+            cursor: pointer;
+            transition:
+                transform .15s ease,
+                box-shadow .15s ease;
+        }
+
+        .foto-botao:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 15px rgba(18, 63, 120, .15);
+        }
+
+        .foto-botao img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .sem-fotos {
+            margin-top: 9px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        /* =================================================
+           MODAL
+           ================================================= */
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: none;
+            background: rgba(4, 12, 27, .91);
+            padding: 18px;
+        }
+
+        .modal.aberta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-caixa {
+            position: relative;
+            width: min(1280px, 96vw);
+            height: min(880px, 94vh);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: var(--branco);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .38);
+        }
+
+        .modal-topo {
+            flex: 0 0 auto;
+            min-height: 74px;
+            padding: 14px 64px 12px 18px;
+            border-bottom: 1px solid var(--borda);
+            background: var(--branco);
+        }
+
+        .modal-titulo {
+            margin: 0;
+            color: var(--azul);
+            font-size: 20px;
+            line-height: 1.2;
+        }
+
+        .modal-subtitulo {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .modal-fechar {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: 0;
+            border-radius: 9px;
+            background: #eaf2fc;
+            color: var(--azul);
+            font-size: 27px;
+            font-weight: 400;
+            line-height: 40px;
+            cursor: pointer;
+        }
+
+        .modal-imagem-area {
+            position: relative;
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0d172c;
+        }
+
+        .modal-imagem {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            width: 48px;
+            height: 62px;
+            padding: 0;
+            border: 0;
+            border-radius: 10px;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, .89);
+            color: var(--azul);
+            font-size: 36px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
+        }
+
+        .modal-nav:hover {
+            background: var(--branco);
+        }
+
+        .modal-anterior {
+            left: 14px;
+        }
+
+        .modal-proxima {
+            right: 14px;
+        }
+
+        .modal-nav:disabled {
+            opacity: .25;
+            cursor: default;
+        }
+
+        .modal-rodape {
+            flex: 0 0 auto;
+            min-height: 58px;
+            padding: 11px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            border-top: 1px solid var(--borda);
+            background: var(--branco);
+        }
+
+        .modal-detalhe {
+            min-width: 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .modal-contador {
+            flex: 0 0 auto;
+            color: var(--azul);
+            font-size: 13px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        /* =================================================
+           RESPONSIVO
+           ================================================= */
+
+        @media (max-width: 900px) {
+            .topo-conteudo {
+                align-items: flex-start;
+            }
+
+            .pessoa-linha {
+                grid-template-columns:
+                    minmax(180px, 1fr)
+                    minmax(230px, 1.5fr);
+            }
+
+            .registro-bloco {
+                padding-top: 4px;
+            }
+        }
+
+        @media (max-width: 620px) {
+            .topo-conteudo {
+                padding: 14px 15px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .topo h1 {
+                font-size: 21px;
+            }
+
+            .topo-data {
+                width: 100%;
+                text-align: center;
+            }
+
+            .conteudo {
+                padding: 10px;
+            }
+
+            .evento-cabecalho {
+                padding: 13px;
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 7px;
+            }
+
+            .evento-titulo {
+                font-size: 18px;
+            }
+
+            .pessoa-linha {
+                grid-template-columns: 1fr;
+                gap: 9px;
+                padding: 13px;
+            }
+
+            .posto {
+                font-size: 18px;
+            }
+
+            .galeria-area {
+                padding: 0 13px 13px;
+            }
+
+            .foto-botao {
+                width: calc(33.333% - 6px);
+                height: 82px;
+            }
+
+            .modal {
+                padding: 0;
+            }
+
+            .modal-caixa {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .modal-topo {
+                min-height: 72px;
+                padding-left: 14px;
+            }
+
+            .modal-titulo {
+                font-size: 17px;
+            }
+
+            .modal-nav {
+                width: 42px;
+                height: 58px;
+                font-size: 31px;
+            }
+
+            .modal-anterior {
+                left: 6px;
+            }
+
+            .modal-proxima {
+                right: 6px;
+            }
+
+            .modal-rodape {
+                padding: 10px 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topo">
+        <div class="topo-conteudo">
+            <div class="topo-titulo">
+                <h1>Coberturas de Eventos</h1>
+
+                <p id="subtitulo">
+                    Carregando informações...
+                </p>
+            </div>
+
+            <div
+                class="topo-data"
+                id="topoData"
+            >
+                --/--/----
+            </div>
+        </div>
+    </header>
+
+    <main
+        class="conteudo"
+        id="conteudo"
+    >
+        <div class="estado">
+            Carregando coberturas...
+        </div>
+    </main>
+
+    <div
+        class="modal"
+        id="modal"
+        aria-hidden="true"
+    >
+        <div
+            class="modal-caixa"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modalTitulo"
+        >
+            <div class="modal-topo">
+                <h2
+                    class="modal-titulo"
+                    id="modalTitulo"
+                >
+                    Cobertura
+                </h2>
+
+                <div
+                    class="modal-subtitulo"
+                    id="modalSubtitulo"
+                ></div>
+
+                <button
+                    type="button"
+                    class="modal-fechar"
+                    id="modalFechar"
+                    aria-label="Fechar"
+                >
+                    ×
+                </button>
+            </div>
+
+            <div class="modal-imagem-area">
+                <button
+                    type="button"
+                    class="modal-nav modal-anterior"
+                    id="modalAnterior"
+                    aria-label="Imagem anterior"
+                >
+                    ‹
+                </button>
+
+                <img
+                    class="modal-imagem"
+                    id="modalImagem"
+                    alt="Imagem da cobertura"
+                >
+
+                <button
+                    type="button"
+                    class="modal-nav modal-proxima"
+                    id="modalProxima"
+                    aria-label="Próxima imagem"
+                >
+                    ›
+                </button>
+            </div>
+
+            <div class="modal-rodape">
+                <div
+                    class="modal-detalhe"
+                    id="modalDetalhe"
+                ></div>
+
+                <div
+                    class="modal-contador"
+                    id="modalContador"
+                >
+                    0 de 0
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE =
+            'https://apisec.secauxiliar.com.br/prestadores_adm/';
+
+        const parametros = new URLSearchParams(
+            window.location.search
+        );
+
+        const token = parametros.get('k') || '';
+
+        const conteudo =
+            document.getElementById('conteudo');
+
+        const subtitulo =
+            document.getElementById('subtitulo');
+
+        const topoData =
+            document.getElementById('topoData');
+
+        const modal =
+            document.getElementById('modal');
+
+        const modalImagem =
+            document.getElementById('modalImagem');
+
+        const modalTitulo =
+            document.getElementById('modalTitulo');
+
+        const modalSubtitulo =
+            document.getElementById('modalSubtitulo');
+
+        const modalDetalhe =
+            document.getElementById('modalDetalhe');
+
+        const modalContador =
+            document.getElementById('modalContador');
+
+        const modalAnterior =
+            document.getElementById('modalAnterior');
+
+        const modalProxima =
+            document.getElementById('modalProxima');
+
+        const modalFechar =
+            document.getElementById('modalFechar');
+
+        let galeriaModal = [];
+        let indiceModal = 0;
+
+
+        function esc(valor) {
+            return String(valor ?? '').replace(
+                /[&<>'"]/g,
+                caractere => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                })[caractere]
+            );
+        }
+
+
+        function dataBR(data) {
+            if (!data) {
+                return '-';
+            }
+
+            const texto =
+                String(data).substring(0, 10);
+
+            const partes = texto.split('-');
+
+            if (partes.length !== 3) {
+                return texto;
+            }
+
+            return (
+                partes[2]
+                + '/'
+                + partes[1]
+                + '/'
+                + partes[0]
+            );
+        }
+
+
+        function horaBR(valor) {
+            if (!valor) {
+                return '';
+            }
+
+            return String(valor).substring(0, 5);
+        }
+
+
+        function dataHoraCompacta(valor) {
+            if (!valor) {
+                return 'Não registrada';
+            }
+
+            const texto = String(valor);
+
+            const partes = texto.split(' ');
+
+            if (partes.length < 2) {
+                return texto;
+            }
+
+            return (
+                dataBR(partes[0])
+                + ' '
+                + String(partes[1]).substring(0, 5)
+            );
+        }
+
+
+        function mapaLink(
+            latitude,
+            longitude,
+            texto
+        ) {
+            if (!latitude || !longitude) {
+                return '';
+            }
+
+            const coordenadas =
+                latitude + ',' + longitude;
+
+            return `
+                <a
+                    class="mapa-link"
+                    href="https://www.google.com/maps?q=${encodeURIComponent(coordenadas)}"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    ${esc(texto)}
+                </a>
+            `;
+        }
+
+
+        function criarUrlFoto(id) {
+            return (
+                API_BASE
+                + 'ver_evidencia_publica.php?k='
+                + encodeURIComponent(token)
+                + '&id='
+                + encodeURIComponent(id)
+            );
+        }
+
+
+        function abrirModal(
+            fotos,
+            indice
+        ) {
+            if (
+                !Array.isArray(fotos)
+                || fotos.length === 0
+            ) {
+                return;
+            }
+
+            galeriaModal = fotos;
+            indiceModal = indice;
+
+            atualizarModal();
+
+            modal.classList.add('aberta');
+            modal.setAttribute(
+                'aria-hidden',
+                'false'
+            );
+
+            document.body.classList.add(
+                'modal-aberta'
+            );
+        }
+
+
+        function atualizarModal() {
+            const foto =
+                galeriaModal[indiceModal];
+
+            if (!foto) {
+                return;
+            }
+
+            modalImagem.src = foto.src;
+
+            modalTitulo.textContent =
+                foto.evento
+                + ' — '
+                + foto.posto;
+
+            modalSubtitulo.textContent =
+                foto.prestador || '';
+
+            modalDetalhe.textContent =
+                foto.detalhe || '';
+
+            modalContador.textContent =
+                (indiceModal + 1)
+                + ' de '
+                + galeriaModal.length;
+
+            modalAnterior.disabled =
+                galeriaModal.length <= 1;
+
+            modalProxima.disabled =
+                galeriaModal.length <= 1;
+        }
+
+
+        function fotoAnterior() {
+            if (galeriaModal.length <= 1) {
+                return;
+            }
+
+            indiceModal--;
+
+            if (indiceModal < 0) {
+                indiceModal =
+                    galeriaModal.length - 1;
+            }
+
+            atualizarModal();
+        }
+
+
+        function proximaFoto() {
+            if (galeriaModal.length <= 1) {
+                return;
+            }
+
+            indiceModal++;
+
+            if (
+                indiceModal
+                >= galeriaModal.length
+            ) {
+                indiceModal = 0;
+            }
+
+            atualizarModal();
+        }
+
+
+        function fecharModal() {
+            modal.classList.remove('aberta');
+
+            modal.setAttribute(
+                'aria-hidden',
+                'true'
+            );
+
+            document.body.classList.remove(
+                'modal-aberta'
+            );
+
+            modalImagem.src = '';
+
+            galeriaModal = [];
+            indiceModal = 0;
+        }
+
+
+        modalAnterior.addEventListener(
+            'click',
+            fotoAnterior
+        );
+
+        modalProxima.addEventListener(
+            'click',
+            proximaFoto
+        );
+
+        modalFechar.addEventListener(
+            'click',
+            fecharModal
+        );
+
+        modal.addEventListener(
+            'click',
+            evento => {
+                if (evento.target === modal) {
+                    fecharModal();
+                }
+            }
+        );
+
+        document.addEventListener(
+            'keydown',
+            evento => {
+                if (
+                    !modal.classList.contains(
+                        'aberta'
+                    )
+                ) {
+                    return;
+                }
+
+                if (evento.key === 'Escape') {
+                    fecharModal();
+                }
+
+                if (evento.key === 'ArrowLeft') {
+                    fotoAnterior();
+                }
+
+                if (evento.key === 'ArrowRight') {
+                    proximaFoto();
+                }
+            }
+        );
+
+
+        async function carregar() {
+            try {
+                if (!token) {
+                    throw new Error(
+                        'Link não informado.'
+                    );
+                }
+
+                const url =
+                    API_BASE
+                    + 'coberturas_publico.php?k='
+                    + encodeURIComponent(token);
+
+                const resposta = await fetch(
+                    url,
+                    {
+                        method: 'GET',
+                        cache: 'no-store'
+                    }
+                );
+
+                const json = await resposta
+                    .json()
+                    .catch(() => ({
+                        ok: false,
+                        error:
+                            'Resposta inválida da API.'
+                    }));
+
+                if (
+                    !resposta.ok
+                    || !json.ok
+                ) {
+                    throw new Error(
+                        json.error
+                        || 'Não foi possível abrir o link.'
+                    );
+                }
+
+                const dataEvento =
+                    dataBR(json.data_evento);
+
+                topoData.textContent =
+                    dataEvento;
+
+                subtitulo.textContent =
+                    json.cod_unidade
+                        ? 'Unidade '
+                            + json.cod_unidade
+                        : 'Todas as unidades';
+
+                const eventosRecebidos =
+                    Array.isArray(json.eventos)
+                        ? json.eventos
+                        : [];
+
+                /*
+                 * Mantém somente pessoas com POSTO.
+                 * Eventos sem nenhuma pessoa com POSTO não aparecem.
+                 */
+                const eventos = eventosRecebidos
+                    .map(evento => {
+                        const equipeOriginal =
+                            Array.isArray(evento.equipe)
+                                ? evento.equipe
+                                : [];
+
+                        const equipe = equipeOriginal
+                            .filter(pessoa => {
+                                return String(
+                                    pessoa.posto ?? ''
+                                ).trim() !== '';
+                            });
+
+                        return {
+                            ...evento,
+                            equipe
+                        };
+                    })
+                    .filter(evento => {
+                        return evento.equipe.length > 0;
+                    });
+
+                if (eventos.length === 0) {
+                    conteudo.innerHTML = `
+                        <div class="estado">
+                            Nenhuma cobertura com posto foi encontrada nessa data.
+                        </div>
+                    `;
+
+                    return;
+                }
+
+                conteudo.innerHTML = eventos
+                    .map(evento => {
+                        const horaInicio =
+                            horaBR(evento.hora_inicio);
+
+                        const horaFim =
+                            horaBR(evento.hora_fim);
+
+                        let horario = '';
+
+                        if (horaInicio && horaFim) {
+                            horario =
+                                horaInicio
+                                + ' às '
+                                + horaFim;
+                        } else if (horaInicio) {
+                            horario = horaInicio;
+                        }
+
+                        const fotosDoEvento = [];
+
+                        evento.equipe.forEach(
+                            pessoa => {
+                                const evidencias =
+                                    Array.isArray(
+                                        pessoa.evidencias
+                                    )
+                                        ? pessoa.evidencias
+                                        : [];
+
+                                evidencias.forEach(
+                                    evidencia => {
+                                        fotosDoEvento.push({
+                                            src: criarUrlFoto(
+                                                evidencia.id
+                                            ),
+
+                                            evento:
+                                                evento.titulo
+                                                || 'Cobertura',
+
+                                            posto:
+                                                pessoa.posto
+                                                || 'Posto',
+
+                                            prestador:
+                                                pessoa.nome
+                                                || '',
+
+                                            detalhe:
+                                                evidencia.criado_em
+                                                    ? 'Enviada em '
+                                                        + dataHoraCompacta(
+                                                            evidencia.criado_em
+                                                        )
+                                                    : ''
+                                        });
+                                    }
+                                );
+                            }
+                        );
+
+                        const pessoasHtml =
+                            evento.equipe
+                                .map(pessoa => {
+                                    const evidencias =
+                                        Array.isArray(
+                                            pessoa.evidencias
+                                        )
+                                            ? pessoa.evidencias
+                                            : [];
+
+                                    const fotosPessoa =
+                                        evidencias.map(
+                                            evidencia => ({
+                                                src:
+                                                    criarUrlFoto(
+                                                        evidencia.id
+                                                    ),
+
+                                                evento:
+                                                    evento.titulo
+                                                    || 'Cobertura',
+
+                                                posto:
+                                                    pessoa.posto
+                                                    || 'Posto',
+
+                                                prestador:
+                                                    pessoa.nome
+                                                    || '',
+
+                                                detalhe:
+                                                    evidencia.criado_em
+                                                        ? 'Enviada em '
+                                                            + dataHoraCompacta(
+                                                                evidencia.criado_em
+                                                            )
+                                                        : ''
+                                            })
+                                        );
+
+                                    const indiceInicial =
+                                        fotosDoEvento.findIndex(
+                                            foto => {
+                                                return (
+                                                    foto.src
+                                                    === (
+                                                        fotosPessoa[0]
+                                                        ? fotosPessoa[0].src
+                                                        : ''
+                                                    )
+                                                );
+                                            }
+                                        );
+
+                                    const fotosHtml =
+                                        evidencias
+                                            .map(
+                                                (
+                                                    evidencia,
+                                                    indice
+                                                ) => {
+                                                    const src =
+                                                        criarUrlFoto(
+                                                            evidencia.id
+                                                        );
+
+                                                    const indiceEvento =
+                                                        fotosDoEvento
+                                                            .findIndex(
+                                                                foto => {
+                                                                    return (
+                                                                        foto.src
+                                                                        === src
+                                                                    );
+                                                                }
+                                                            );
+
+                                                    return `
+                                                        <button
+                                                            type="button"
+                                                            class="foto-botao"
+                                                            onclick="abrirGaleriaEvento(
+                                                                ${esc(
+                                                                    evento.id
+                                                                    || 0
+                                                                )},
+                                                                ${indiceEvento}
+                                                            )"
+                                                            aria-label="Abrir imagem da cobertura"
+                                                        >
+                                                            <img
+                                                                src="${src}"
+                                                                loading="lazy"
+                                                                alt="Imagem da cobertura"
+                                                            >
+                                                        </button>
+                                                    `;
+                                                }
+                                            )
+                                            .join('');
+
+                                    return `
+                                        <article class="pessoa">
+                                            <div class="pessoa-linha">
+                                                <div class="posto-bloco">
+                                                    <div class="rotulo">
+                                                        Posto
+                                                    </div>
+
+                                                    <div class="posto">
+                                                        ${esc(
+                                                            pessoa.posto
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div class="prestador-bloco">
+                                                    <div class="rotulo">
+                                                        Prestador
+                                                    </div>
+
+                                                    <div class="prestador">
+                                                        ${esc(
+                                                            pessoa.nome
+                                                            || '-'
+                                                        )}
+                                                    </div>
+
+                                                    <span class="tipo">
+                                                        ${esc(
+                                                            pessoa.tipo_prestador
+                                                            || 'Prestador'
+                                                        )}
+                                                    </span>
+                                                </div>
+
+                                                <div class="registro-bloco">
+                                                    <div class="rotulo">
+                                                        Entrada
+                                                    </div>
+
+                                                    <div class="registro-valor">
+                                                        ${esc(
+                                                            dataHoraCompacta(
+                                                                pessoa.entrada_em
+                                                            )
+                                                        )}
+                                                    </div>
+
+                                                    ${
+                                                        pessoa.entrada_precisao
+                                                            ? `
+                                                                <div class="registro-secundario">
+                                                                    Precisão:
+                                                                    ${esc(
+                                                                        pessoa.entrada_precisao
+                                                                    )}
+                                                                    m
+                                                                </div>
+                                                            `
+                                                            : ''
+                                                    }
+
+                                                    <div class="mapas">
+                                                        ${mapaLink(
+                                                            pessoa.entrada_lat,
+                                                            pessoa.entrada_lng,
+                                                            'Ver mapa'
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div class="registro-bloco">
+                                                    <div class="rotulo">
+                                                        Saída
+                                                    </div>
+
+                                                    <div class="registro-valor">
+                                                        ${esc(
+                                                            dataHoraCompacta(
+                                                                pessoa.saida_em
+                                                            )
+                                                        )}
+                                                    </div>
+
+                                                    ${
+                                                        pessoa.saida_precisao
+                                                            ? `
+                                                                <div class="registro-secundario">
+                                                                    Precisão:
+                                                                    ${esc(
+                                                                        pessoa.saida_precisao
+                                                                    )}
+                                                                    m
+                                                                </div>
+                                                            `
+                                                            : ''
+                                                    }
+
+                                                    <div class="mapas">
+                                                        ${mapaLink(
+                                                            pessoa.saida_lat,
+                                                            pessoa.saida_lng,
+                                                            'Ver mapa'
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="galeria-area">
+                                                <div class="galeria-cabecalho">
+                                                    <div class="galeria-titulo">
+                                                        Imagens da cobertura
+                                                    </div>
+
+                                                    <div class="galeria-quantidade">
+                                                        ${
+                                                            evidencias.length
+                                                        }
+                                                        ${
+                                                            evidencias.length
+                                                            === 1
+                                                                ? 'foto'
+                                                                : 'fotos'
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                ${
+                                                    fotosHtml
+                                                        ? `
+                                                            <div class="galeria">
+                                                                ${fotosHtml}
+                                                            </div>
+                                                        `
+                                                        : `
+                                                            <div class="sem-fotos">
+                                                                Nenhuma imagem enviada.
+                                                            </div>
+                                                        `
+                                                }
+                                            </div>
+                                        </article>
+                                    `;
+                                })
+                                .join('');
+
+                        /*
+                         * Guarda a galeria completa do evento.
+                         */
+                        galeriasEventos[
+                            String(evento.id || '')
+                        ] = fotosDoEvento;
+
+                        return `
+                            <section class="evento">
+                                <div class="evento-cabecalho">
+                                    <div class="evento-identificacao">
+                                        <h2 class="evento-titulo">
+                                            ${esc(
+                                                evento.titulo
+                                                || 'Cobertura'
+                                            )}
+                                        </h2>
+
+                                        <div class="evento-meta">
+                                            ${dataBR(
+                                                evento.data_evento
+                                            )}
+
+                                            ${
+                                                horario
+                                                    ? ' • '
+                                                        + esc(horario)
+                                                    : ''
+                                            }
+
+                                            ${
+                                                evento.cod_unidade
+                                                    ? ' • Unidade '
+                                                        + esc(
+                                                            evento.cod_unidade
+                                                        )
+                                                    : ''
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="evento-quantidade">
+                                        ${evento.equipe.length}
+                                        ${
+                                            evento.equipe.length
+                                            === 1
+                                                ? 'posto'
+                                                : 'postos'
+                                        }
+                                    </div>
+                                </div>
+
+                                ${pessoasHtml}
+                            </section>
+                        `;
+                    })
+                    .join('');
+
+            } catch (erro) {
+                topoData.textContent = '--/--/----';
+
+                subtitulo.textContent =
+                    'Não foi possível carregar';
+
+                conteudo.innerHTML = `
+                    <div class="estado erro">
+                        ${esc(erro.message)}
+                    </div>
+                `;
+            }
+        }
+
+
+        const galeriasEventos = {};
+
+
+        function abrirGaleriaEvento(
+            eventoId,
+            indice
+        ) {
+            const fotos =
+                galeriasEventos[String(eventoId)]
+                || [];
+
+            abrirModal(
+                fotos,
+                indice >= 0 ? indice : 0
+            );
+        }
+
+
+        window.abrirGaleriaEvento =
+            abrirGaleriaEvento;
+
+
+        carregar();
+    </script>
+</body>
+</html>
