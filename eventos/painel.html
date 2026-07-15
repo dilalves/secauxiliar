@@ -23,6 +23,36 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(6,minmax(0,1fr));gap:0;overflow:hidden;min-height:0;flex:1}.day{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;background:#fff;cursor:pointer;min-height:0;display:flex;flex-direction:column;gap:6px;overflow:hidden}.day:hover{background:#f8fbff}.day:nth-child(7n){border-right:0}.day.other{background:#f8fafc;color:#94a3b8}.day.today{background:var(--today)}.dayTop{display:flex;justify-content:space-between;align-items:center}.dayNum{font-size:13px;font-weight:950}.addMini{border:0;border-radius:999px;background:#e8f0fb;color:#12345b;font-weight:950;width:24px;height:24px;cursor:pointer}.events{display:flex;flex-direction:column;gap:4px;overflow:hidden}.eventChip{border:1px solid #bbf7d0;background:var(--event);color:#064e3b;border-radius:8px;padding:5px 7px;font-size:12px;font-weight:900;line-height:1.15;cursor:pointer;white-space:normal}.eventChip:hover{filter:brightness(.98)}.eventChip.cancelado{background:#fee2e2;border-color:#fecaca;color:#991b1b}.eventChip.fechado{background:#e8f0fb;border-color:#dbe6f3;color:#12345b}.eventTime{font-size:11px;font-weight:800;opacity:.8}.moreEvents{font-size:11px;color:#64748b;font-weight:900;padding-left:3px}
 .tableCard{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}.tableWrap{overflow:auto;min-height:0}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;white-space:nowrap}th{background:var(--soft);color:#12345b;font-size:12px;position:sticky;top:0;z-index:1}td.nome{font-weight:900;color:#0b3b78;white-space:normal;min-width:260px}.muted{color:var(--muted)}.acoes{display:flex;gap:6px;flex-wrap:wrap}.empty{padding:28px;text-align:center;color:var(--muted);font-weight:800}
 .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99;display:flex;align-items:center;justify-content:center;padding:18px}.modalBox{width:100%;max-width:760px;background:#fff;border-radius:16px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.25);max-height:92vh;overflow:auto}.modalTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.modalTop h2{margin:0;color:var(--primary)}.close{border:0;border-radius:10px;background:#e8f0fb;color:#12345b;font-weight:900;padding:9px 12px;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.grid .wide{grid-column:span 2}.grid .full{grid-column:1/-1}.modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.quickActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.quickActions .smallBtn{padding:10px 12px}
+
+.embeddedView{
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.embeddedHead{
+  flex-shrink:0;
+  padding:12px 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  border-bottom:1px solid var(--line);
+}
+.embeddedHead h2{
+  margin:0;
+  color:var(--primary);
+  font-size:20px;
+}
+.embeddedFrame{
+  width:100%;
+  height:100%;
+  flex:1;
+  min-height:0;
+  border:0;
+  background:#f4f7fb;
+}
 @media(max-width:900px){body{height:auto;overflow:auto}.page{height:auto;overflow:visible}.wrap{height:auto}.mainHead{flex-direction:column;align-items:flex-start}.calendar{grid-template-rows:repeat(6,minmax(118px,auto));overflow:visible}.calendarCard{min-height:760px}.grid{grid-template-columns:1fr}.grid .wide{grid-column:span 1}.modalActions{flex-direction:column}.calHead{flex-direction:column;align-items:flex-start}.weekDays div{font-size:10px;padding:7px 4px}.day{padding:6px}}
 </style>
 <link rel="stylesheet" href="recrutamento-ui.css?v=20260710c">
@@ -37,10 +67,10 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:
   <div class="sidebarTitle">Navegação</div>
   <nav class="sideNav">
     <a class="sideLink" data-page="agenda" href="painel.html"><span class="sideIcon">▦</span><span>Agenda</span></a>
-    <a class="sideLink" data-page="prestadores" href="banco_prestadores.html"><span class="sideIcon">♙</span><span>Prestadores</span></a>
-    <a class="sideLink" data-page="equipes" href="convocacao.html"><span class="sideIcon">♟</span><span>Montar equipe</span></a>
+    <a class="sideLink" data-page="prestadores" href="banco_prestadores.html"><span class="sideIcon">♟</span><span>Prestadores</span></a>
+    <a class="sideLink" data-page="equipes" href="convocacao.html"><span class="sideIcon">♜</span><span>Montar equipe</span></a>
     <a class="sideLink" data-page="impressao" href="imprimir_evento.html"><span class="sideIcon">▤</span><span>Imprimir lista</span></a>
-    <a class="sideLink" data-page="link" href="rel_coberturas_links.html"><span class="sideIcon">▤</span><span>Acompanhamento</span></a>
+    <a class="sideLink" data-page="acompanhamento" href="rel_coberturas_links.html" onclick="abrirAcompanhamento(event)"><span class="sideIcon">🔗</span><span>Acompanhamento</span></a>
   </nav>
   <div class="sideFoot"><strong>Curso Objetivo</strong><br>Eventos e Coberturas</div>
 </aside>
@@ -84,6 +114,19 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:
     </section>
   </div>
 </div>
+
+<section id="embeddedView" class="card embeddedView hidden">
+  <div class="embeddedHead">
+    <h2>Acompanhamento de Coberturas</h2>
+    <button class="btnLight smallBtn" type="button" onclick="fecharAcompanhamento()">Voltar para a agenda</button>
+  </div>
+  <iframe
+    id="embeddedFrame"
+    class="embeddedFrame"
+    title="Acompanhamento de Coberturas"
+    loading="lazy"
+  ></iframe>
+</section>
 
 
 <div id="dayPopover" class="dayPopover hidden" role="dialog" aria-modal="false" aria-labelledby="dayPopoverTitle">
@@ -456,6 +499,37 @@ async function salvarEvento(){
 }
 function abrirEquipeAtual(){const id=el('ev_id').value;if(id)location.href=`convocacao.html?evento_id=${id}`}
 function imprimirAtual(){const id=el('ev_id').value;if(id)location.href=`imprimir_evento.html?evento_id=${id}`}
+
+
+function marcarMenuAtivo(pagina){
+  document.querySelectorAll('.sideLink').forEach(link=>{
+    link.classList.toggle(
+      'active',
+      link.dataset.page===pagina
+    );
+  });
+}
+
+function abrirAcompanhamento(evento){
+  if(evento) evento.preventDefault();
+
+  fecharDayPopover();
+  fecharEvento();
+
+  el('embeddedFrame').src='rel_coberturas_links.html';
+  el('embeddedView').classList.remove('hidden');
+  document.querySelector('.page').classList.add('hidden');
+
+  marcarMenuAtivo('acompanhamento');
+}
+
+function fecharAcompanhamento(){
+  el('embeddedView').classList.add('hidden');
+  el('embeddedFrame').src='about:blank';
+  document.querySelector('.page').classList.remove('hidden');
+
+  marcarMenuAtivo('agenda');
+}
 
 init();
 </script>
