@@ -66,9 +66,8 @@
         .form {
             display: grid;
             grid-template-columns:
-                minmax(180px, 240px)
-                minmax(150px, 220px)
-                minmax(220px, 1fr);
+                minmax(200px, 260px)
+                minmax(240px, 1fr);
 
             gap: 12px;
             align-items: end;
@@ -125,6 +124,16 @@
             color: #be123c;
         }
 
+        .btn-copy {
+            background: #eaf2fc;
+            color: var(--azul);
+        }
+
+        .btn-open {
+            background: #eefbf2;
+            color: var(--verde);
+        }
+
         .resultado {
             display: none;
             margin-top: 14px;
@@ -136,7 +145,11 @@
 
         .resultado-linha {
             display: grid;
-            grid-template-columns: minmax(200px, 1fr) auto auto;
+            grid-template-columns:
+                minmax(200px, 1fr)
+                auto
+                auto;
+
             gap: 8px;
         }
 
@@ -158,7 +171,7 @@
 
         table {
             width: 100%;
-            min-width: 900px;
+            min-width: 1050px;
             border-collapse: collapse;
         }
 
@@ -226,11 +239,7 @@
 
         @media (max-width: 850px) {
             .form {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .form .btn-primary {
-                grid-column: 1 / -1;
+                grid-template-columns: 1fr;
             }
 
             .topo {
@@ -239,14 +248,6 @@
         }
 
         @media (max-width: 560px) {
-            .form {
-                grid-template-columns: 1fr;
-            }
-
-            .form .btn-primary {
-                grid-column: auto;
-            }
-
             .resultado-linha {
                 grid-template-columns: 1fr;
             }
@@ -261,8 +262,8 @@
                 <h1>Coberturas de Eventos</h1>
 
                 <p>
-                    Gere um link seguro para a coordenação consultar
-                    os eventos de uma data.
+                    Gere um único link para a coordenação consultar
+                    todas as coberturas de uma data.
                 </p>
             </div>
         </div>
@@ -280,24 +281,12 @@
                     >
                 </div>
 
-                <div class="campo">
-                    <label for="cod_unidade">
-                        Unidade (opcional)
-                    </label>
-
-                    <input
-                        type="text"
-                        id="cod_unidade"
-                        placeholder="Ex.: 1501"
-                    >
-                </div>
-
                 <button
                     type="button"
                     class="btn btn-primary"
                     id="gerar"
                 >
-                    Gerar link
+                    Gerar ou recuperar link
                 </button>
             </div>
 
@@ -321,7 +310,7 @@
 
                     <button
                         type="button"
-                        class="btn btn-soft"
+                        class="btn btn-open"
                         id="abrir"
                     >
                         Abrir
@@ -336,7 +325,6 @@
                     <thead>
                         <tr>
                             <th>Data</th>
-                            <th>Unidade</th>
                             <th>Criado por</th>
                             <th>Criado em</th>
                             <th>Acessos</th>
@@ -349,7 +337,7 @@
                     <tbody id="tbody">
                         <tr>
                             <td
-                                colspan="8"
+                                colspan="7"
                                 class="vazio"
                             >
                                 Carregando...
@@ -496,6 +484,45 @@
         }
 
 
+        async function copiarTexto(texto) {
+            if (!texto) {
+                throw new Error(
+                    'O link não foi localizado.'
+                );
+            }
+
+            try {
+                await navigator.clipboard
+                    .writeText(texto);
+
+            } catch {
+                const temporario =
+                    document.createElement(
+                        'textarea'
+                    );
+
+                temporario.value = texto;
+                temporario.style.position =
+                    'fixed';
+
+                temporario.style.opacity =
+                    '0';
+
+                document.body.appendChild(
+                    temporario
+                );
+
+                temporario.select();
+
+                document.execCommand(
+                    'copy'
+                );
+
+                temporario.remove();
+            }
+        }
+
+
         async function listar() {
             const tbody = $('#tbody');
 
@@ -513,7 +540,7 @@
                     tbody.innerHTML = `
                         <tr>
                             <td
-                                colspan="8"
+                                colspan="7"
                                 class="vazio"
                             >
                                 Nenhum link gerado.
@@ -528,6 +555,12 @@
                     .map(link => {
                         const ativo =
                             Number(link.ativo) === 1;
+
+                        const podeCopiar =
+                            Number(
+                                link.pode_copiar
+                                || 0
+                            ) === 1;
 
                         const botaoStatus = ativo
                             ? `
@@ -562,13 +595,6 @@
                                         brData(
                                             link.data_evento
                                         )
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapar(
-                                        link.cod_unidade
-                                        || 'Todas'
                                     )}
                                 </td>
 
@@ -620,6 +646,31 @@
 
                                 <td>
                                     <div class="acoes">
+                                        <button
+                                            type="button"
+                                            class="btn btn-copy"
+                                            onclick="copiarLinkAnterior(
+                                                ${Number(link.id)}
+                                            )"
+                                            ${
+                                                podeCopiar
+                                                    ? ''
+                                                    : 'title="Clique em Gerar ou recuperar link para atualizar este registro antigo"'
+                                            }
+                                        >
+                                            Copiar link
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-open"
+                                            onclick="abrirLinkAnterior(
+                                                ${Number(link.id)}
+                                            )"
+                                        >
+                                            Abrir
+                                        </button>
+
                                         ${botaoStatus}
 
                                         <button
@@ -642,13 +693,72 @@
                 tbody.innerHTML = `
                     <tr>
                         <td
-                            colspan="8"
+                            colspan="7"
                             class="vazio"
                         >
                             ${escapar(erro.message)}
                         </td>
                     </tr>
                 `;
+
+                toast(erro.message);
+            }
+        }
+
+
+        async function recuperarUrl(id) {
+            const json = await post({
+                acao: 'url',
+                id
+            });
+
+            return json.url || '';
+        }
+
+
+        async function copiarLinkAnterior(id) {
+            try {
+                const url =
+                    await recuperarUrl(id);
+
+                await copiarTexto(url);
+
+                toast(
+                    'Link copiado.'
+                );
+
+            } catch (erro) {
+                toast(erro.message);
+            }
+        }
+
+
+        async function abrirLinkAnterior(id) {
+            /*
+             * Abre uma aba imediatamente para evitar
+             * bloqueio de popup após o await.
+             */
+            const novaAba = window.open(
+                '',
+                '_blank'
+            );
+
+            try {
+                const url =
+                    await recuperarUrl(id);
+
+                if (!novaAba) {
+                    throw new Error(
+                        'O navegador bloqueou a nova aba.'
+                    );
+                }
+
+                novaAba.location.href = url;
+
+            } catch (erro) {
+                if (novaAba) {
+                    novaAba.close();
+                }
 
                 toast(erro.message);
             }
@@ -714,11 +824,6 @@
                 const data =
                     $('#data_evento').value;
 
-                const unidade =
-                    $('#cod_unidade')
-                        .value
-                        .trim();
-
                 if (!data) {
                     toast(
                         'Selecione a data.'
@@ -732,12 +837,11 @@
                 try {
                     botao.disabled = true;
                     botao.textContent =
-                        'Gerando...';
+                        'Carregando link...';
 
                     const json = await post({
                         acao: 'gerar',
-                        data_evento: data,
-                        cod_unidade: unidade
+                        data_evento: data
                     });
 
                     $('#url_gerada').value =
@@ -746,9 +850,21 @@
                     $('#resultado').style.display =
                         'block';
 
-                    toast(
-                        'Link gerado com sucesso.'
-                    );
+                    if (json.atualizado) {
+                        toast(
+                            'Registro antigo atualizado e link recuperado.'
+                        );
+
+                    } else if (json.existente) {
+                        toast(
+                            'O link existente foi recuperado.'
+                        );
+
+                    } else {
+                        toast(
+                            'Link gerado com sucesso.'
+                        );
+                    }
 
                     await listar();
 
@@ -758,7 +874,7 @@
                 } finally {
                     botao.disabled = false;
                     botao.textContent =
-                        'Gerar link';
+                        'Gerar ou recuperar link';
                 }
             }
         );
@@ -772,30 +888,21 @@
 
                 if (!valor) {
                     toast(
-                        'Nenhum link foi gerado.'
+                        'Nenhum link foi carregado.'
                     );
 
                     return;
                 }
 
                 try {
-                    await navigator.clipboard
-                        .writeText(valor);
+                    await copiarTexto(valor);
 
                     toast(
                         'Link copiado.'
                     );
 
-                } catch {
-                    $('#url_gerada').select();
-
-                    document.execCommand(
-                        'copy'
-                    );
-
-                    toast(
-                        'Link copiado.'
-                    );
+                } catch (erro) {
+                    toast(erro.message);
                 }
             }
         );
@@ -809,7 +916,7 @@
 
                 if (!valor) {
                     toast(
-                        'Nenhum link foi gerado.'
+                        'Nenhum link foi carregado.'
                     );
 
                     return;
@@ -826,6 +933,11 @@
 
         window.alterar = alterar;
         window.excluirLink = excluirLink;
+        window.copiarLinkAnterior =
+            copiarLinkAnterior;
+
+        window.abrirLinkAnterior =
+            abrirLinkAnterior;
 
         listar();
     </script>
