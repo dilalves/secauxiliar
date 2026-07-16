@@ -23,51 +23,6 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(6,minmax(0,1fr));gap:0;overflow:hidden;min-height:0;flex:1}.day{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;background:#fff;cursor:pointer;min-height:0;display:flex;flex-direction:column;gap:6px;overflow:hidden}.day:hover{background:#f8fbff}.day:nth-child(7n){border-right:0}.day.other{background:#f8fafc;color:#94a3b8}.day.today{background:var(--today)}.dayTop{display:flex;justify-content:space-between;align-items:center}.dayNum{font-size:13px;font-weight:950}.addMini{border:0;border-radius:999px;background:#e8f0fb;color:#12345b;font-weight:950;width:24px;height:24px;cursor:pointer}.events{display:flex;flex-direction:column;gap:4px;overflow:hidden}.eventChip{border:1px solid #bbf7d0;background:var(--event);color:#064e3b;border-radius:8px;padding:5px 7px;font-size:12px;font-weight:900;line-height:1.15;cursor:pointer;white-space:normal}.eventChip:hover{filter:brightness(.98)}.eventChip.cancelado{background:#fee2e2;border-color:#fecaca;color:#991b1b}.eventChip.fechado{background:#e8f0fb;border-color:#dbe6f3;color:#12345b}.eventTime{font-size:11px;font-weight:800;opacity:.8}.moreEvents{font-size:11px;color:#64748b;font-weight:900;padding-left:3px}
 .tableCard{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}.tableWrap{overflow:auto;min-height:0}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;white-space:nowrap}th{background:var(--soft);color:#12345b;font-size:12px;position:sticky;top:0;z-index:1}td.nome{font-weight:900;color:#0b3b78;white-space:normal;min-width:260px}.muted{color:var(--muted)}.acoes{display:flex;gap:6px;flex-wrap:wrap}.empty{padding:28px;text-align:center;color:var(--muted);font-weight:800}
 .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99;display:flex;align-items:center;justify-content:center;padding:18px}.modalBox{width:100%;max-width:760px;background:#fff;border-radius:16px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.25);max-height:92vh;overflow:auto}.modalTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.modalTop h2{margin:0;color:var(--primary)}.close{border:0;border-radius:10px;background:#e8f0fb;color:#12345b;font-weight:900;padding:9px 12px;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.grid .wide{grid-column:span 2}.grid .full{grid-column:1/-1}.modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.quickActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.quickActions .smallBtn{padding:10px 12px}
-
-.mainArea{
-  position:relative;
-  min-width:0;
-  min-height:0;
-  overflow:hidden;
-}
-.embeddedView{
-  position:absolute;
-  inset:0;
-  z-index:20;
-  display:flex;
-  flex-direction:column;
-  min-width:0;
-  min-height:0;
-  margin:0;
-  overflow:hidden;
-  background:#f4f7fb;
-  border:0;
-  border-radius:0;
-  box-shadow:none;
-}
-.embeddedHead{
-  flex:0 0 auto;
-  padding:10px 14px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  border-bottom:1px solid var(--line);
-  background:#fff;
-}
-.embeddedHead h2{
-  margin:0;
-  color:var(--primary);
-  font-size:19px;
-}
-.embeddedFrame{
-  display:block;
-  width:100%;
-  flex:1 1 auto;
-  min-height:0;
-  border:0;
-  background:#f4f7fb;
-}
 @media(max-width:900px){body{height:auto;overflow:auto}.page{height:auto;overflow:visible}.wrap{height:auto}.mainHead{flex-direction:column;align-items:flex-start}.calendar{grid-template-rows:repeat(6,minmax(118px,auto));overflow:visible}.calendarCard{min-height:760px}.grid{grid-template-columns:1fr}.grid .wide{grid-column:span 1}.modalActions{flex-direction:column}.calHead{flex-direction:column;align-items:flex-start}.weekDays div{font-size:10px;padding:7px 4px}.day{padding:6px}}
 </style>
 <link rel="stylesheet" href="recrutamento-ui.css?v=20260710c">
@@ -82,10 +37,9 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:
   <div class="sidebarTitle">Navegação</div>
   <nav class="sideNav">
     <a class="sideLink" data-page="agenda" href="painel.html"><span class="sideIcon">▦</span><span>Agenda</span></a>
-    <a class="sideLink" data-page="prestadores" href="banco_prestadores.html"><span class="sideIcon">♟</span><span>Prestadores</span></a>
-    <a class="sideLink" data-page="equipes" href="convocacao.html"><span class="sideIcon">♜</span><span>Montar equipe</span></a>
+    <a class="sideLink" data-page="prestadores" href="banco_prestadores.html"><span class="sideIcon">♙</span><span>Prestadores</span></a>
+    <a class="sideLink" data-page="equipes" href="convocacao.html"><span class="sideIcon">♟</span><span>Montar equipe</span></a>
     <a class="sideLink" data-page="impressao" href="imprimir_evento.html"><span class="sideIcon">▤</span><span>Imprimir lista</span></a>
-    <a class="sideLink" data-page="acompanhamento" href="rel_coberturas_links.html" onclick="abrirAcompanhamento(event)"><span class="sideIcon">🔗</span><span>Acompanhamento</span></a>
   </nav>
   <div class="sideFoot"><strong>Curso Objetivo</strong><br>Eventos e Coberturas</div>
 </aside>
@@ -130,19 +84,6 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:
   </div>
 </div>
 
-<section id="embeddedView" class="card embeddedView hidden">
-  <div class="embeddedHead">
-    <h2>Links de Coberturas</h2>
-    <button class="btnLight smallBtn" type="button" onclick="fecharAcompanhamento()">Voltar para a agenda</button>
-  </div>
-  <iframe
-    id="embeddedFrame"
-    class="embeddedFrame"
-    title="Acompanhamento de Coberturas"
-    loading="lazy"
-  ></iframe>
-</section>
-
 
 <div id="dayPopover" class="dayPopover hidden" role="dialog" aria-modal="false" aria-labelledby="dayPopoverTitle">
   <div class="dayPopoverTop">
@@ -179,10 +120,56 @@ body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:
     <div id="quickActions" class="quickActions hidden">
       <button class="smallBtn btnOk" onclick="abrirEquipeAtual()">Montar equipe</button>
       <button class="smallBtn btnWarn" onclick="imprimirAtual()">Imprimir lista</button>
+      <button id="btnDuplicarEvento" class="smallBtn btnLight hidden" onclick="abrirDuplicacao()">Duplicar evento</button>
     </div>
     <div class="modalActions">
       <button class="btnLight smallBtn" onclick="fecharEvento()">Cancelar</button>
       <button class="btn smallBtn" onclick="salvarEvento()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalDuplicar" class="modal hidden">
+  <div class="modalBox" style="max-width:680px">
+    <div class="modalTop">
+      <div>
+        <h2>Duplicar evento</h2>
+        <div class="muted" id="dupSub">Crie o segundo dia mantendo a mesma equipe.</div>
+      </div>
+      <button class="close" onclick="fecharDuplicacao()">Fechar</button>
+    </div>
+
+    <div class="grid" style="margin-top:14px">
+      <div class="field full">
+        <label>Novo nome do evento</label>
+        <input id="dup_titulo" maxlength="160">
+      </div>
+
+      <div class="field wide">
+        <label>Nova data</label>
+        <input id="dup_data" type="date">
+      </div>
+
+      <div class="field">
+        <label>Horário inicial</label>
+        <input id="dup_ini" type="time">
+      </div>
+
+      <div class="field">
+        <label>Horário final</label>
+        <input id="dup_fim" type="time">
+      </div>
+
+      <div class="field full">
+        <div class="msg ok" id="dupEquipeInfo" style="margin-top:0"></div>
+      </div>
+    </div>
+
+    <div id="msgDuplicar" class="msg hidden"></div>
+
+    <div class="modalActions">
+      <button class="btnLight smallBtn" onclick="fecharDuplicacao()">Cancelar</button>
+      <button class="btn smallBtn" id="btnConfirmarDuplicacao" onclick="duplicarEvento()">Criar e copiar equipe</button>
     </div>
   </div>
 </div>
@@ -192,6 +179,7 @@ const API='https://apisec.secauxiliar.com.br/prestadores',el=id=>document.getEle
 let token=localStorage.getItem('recrutamento_token')||'';
 let usuario=JSON.parse(localStorage.getItem('recrutamento_usuario')||'{}');
 let eventos=[];
+let eventoAtual=null;
 let modo='calendario';
 let cursor=new Date();
 cursor.setDate(1);
@@ -470,6 +458,7 @@ function limparMsg(){el('msgEvento').className='msg hidden';el('msgEvento').text
 function novoEvento(data=''){
   fecharDayPopover();
   limparMsg();
+  eventoAtual=null;
   el('modalTitle').textContent='Novo evento';
   el('modalSub').textContent=data ? `Evento em ${fmtData(data)}.` : 'Informe os dados básicos do evento.';
   ['ev_id','ev_titulo','ev_ini','ev_fim','ev_desc'].forEach(id=>el(id).value='');
@@ -483,8 +472,9 @@ function novoEvento(data=''){
 function abrirEvento(e){
   fecharDayPopover();
   limparMsg();
+  eventoAtual=e;
   el('modalTitle').textContent='Editar evento';
-  el('modalSub').textContent='Após salvar, você pode montar a equipe ou imprimir a lista.';
+  el('modalSub').textContent='Após salvar, você pode montar a equipe, imprimir ou duplicar o evento.';
   el('ev_id').value=e.id;
   el('ev_unidade').value=e.cod_unidade||'';
   el('ev_titulo').value=e.titulo||'';
@@ -494,6 +484,9 @@ function abrirEvento(e){
   el('ev_desc').value=e.descricao||'';
   el('ev_status').value=e.status||'ABERTO';
   el('quickActions').classList.remove('hidden');
+
+  const podeDuplicar=Number(e.qtd_equipe||0)>0;
+  el('btnDuplicarEvento').classList.toggle('hidden',!podeDuplicar);
   el('modalEvento').classList.remove('hidden');
 }
 function fecharEvento(){el('modalEvento').classList.add('hidden')}
@@ -509,41 +502,126 @@ async function salvarEvento(){
   el('msgEvento').className='msg ok';
   el('msgEvento').textContent='Evento salvo.';
   el('msgEvento').classList.remove('hidden');
-  if(d.id || p.id){ el('ev_id').value = d.id || p.id; el('quickActions').classList.remove('hidden'); }
+  if(d.id || p.id){
+    el('ev_id').value=d.id||p.id;
+    el('quickActions').classList.remove('hidden');
+    el('btnDuplicarEvento').classList.add('hidden');
+  }
   await listarEventos();
+
+  const salvo=eventoPorId(d.id||p.id);
+  if(salvo) eventoAtual=salvo;
 }
 function abrirEquipeAtual(){const id=el('ev_id').value;if(id)location.href=`convocacao.html?evento_id=${id}`}
 function imprimirAtual(){const id=el('ev_id').value;if(id)location.href=`imprimir_evento.html?evento_id=${id}`}
 
 
-function marcarMenuAtivo(pagina){
-  document.querySelectorAll('.sideLink').forEach(link=>{
-    link.classList.toggle(
-      'active',
-      link.dataset.page===pagina
-    );
-  });
+function sugerirTituloDuplicado(titulo){
+  let t=String(titulo||'').trim();
+
+  const trocas=[
+    [/\bDIA\s*1\b/gi,'DIA 2'],
+    [/\b1[º°]?\s*DIA\b/gi,'2º DIA'],
+    [/\bPRIMEIRO\s+DIA\b/gi,'SEGUNDO DIA']
+  ];
+
+  for(const [padrao,novo] of trocas){
+    if(padrao.test(t)){
+      return t.replace(padrao,novo);
+    }
+  }
+
+  return t ? `${t} - DIA 2` : 'DIA 2';
 }
 
-function abrirAcompanhamento(evento){
-  if(evento) evento.preventDefault();
-
-  fecharDayPopover();
-  fecharEvento();
-
-  el('embeddedFrame').src='rel_coberturas_links.html';
-  el('embeddedView').classList.remove('hidden');
-  document.querySelector('.page').classList.add('hidden');
-
-  marcarMenuAtivo('acompanhamento');
+function dataSeguinte(iso){
+  if(!iso) return '';
+  const dt=new Date(`${iso}T12:00:00`);
+  dt.setDate(dt.getDate()+1);
+  return isoLocal(dt);
 }
 
-function fecharAcompanhamento(){
-  el('embeddedView').classList.add('hidden');
-  el('embeddedFrame').src='about:blank';
-  document.querySelector('.page').classList.remove('hidden');
+function limparMsgDuplicar(){
+  el('msgDuplicar').className='msg hidden';
+  el('msgDuplicar').textContent='';
+}
 
-  marcarMenuAtivo('agenda');
+function abrirDuplicacao(){
+  const id=Number(el('ev_id').value||0);
+  const qtd=Number(eventoAtual?.qtd_equipe||0);
+
+  if(!id || qtd<1){
+    el('msgEvento').className='msg erro';
+    el('msgEvento').textContent='Cadastre a equipe antes de duplicar o evento.';
+    el('msgEvento').classList.remove('hidden');
+    return;
+  }
+
+  limparMsgDuplicar();
+  el('dup_titulo').value=sugerirTituloDuplicado(el('ev_titulo').value);
+  el('dup_data').value=dataSeguinte(el('ev_data').value);
+  el('dup_ini').value=el('ev_ini').value;
+  el('dup_fim').value=el('ev_fim').value;
+  el('dupEquipeInfo').textContent=`${qtd} prestador(es) serão copiados para o novo evento.`;
+  el('modalDuplicar').classList.remove('hidden');
+  setTimeout(()=>el('dup_data').focus(),50);
+}
+
+function fecharDuplicacao(){
+  el('modalDuplicar').classList.add('hidden');
+}
+
+async function duplicarEvento(){
+  const eventoId=Number(el('ev_id').value||0);
+  const titulo=el('dup_titulo').value.trim();
+  const data=el('dup_data').value;
+  const horaInicio=el('dup_ini').value;
+  const horaFim=el('dup_fim').value;
+
+  limparMsgDuplicar();
+
+  if(!eventoId || !titulo || !data){
+    el('msgDuplicar').className='msg erro';
+    el('msgDuplicar').textContent='Informe o nome e a nova data do evento.';
+    el('msgDuplicar').classList.remove('hidden');
+    return;
+  }
+
+  const botao=el('btnConfirmarDuplicacao');
+  botao.disabled=true;
+  botao.textContent='Duplicando...';
+
+  try{
+    const d=await api('recrutamento_eventos.php',{
+      acao:'duplicar',
+      evento_id:eventoId,
+      titulo,
+      data_evento:data,
+      hora_inicio:horaInicio,
+      hora_fim:horaFim
+    });
+
+    if(!d.ok){
+      el('msgDuplicar').className='msg erro';
+      el('msgDuplicar').textContent=d.error||'Erro ao duplicar o evento.';
+      el('msgDuplicar').classList.remove('hidden');
+      return;
+    }
+
+    fecharDuplicacao();
+    await listarEventos();
+
+    const novo=eventoPorId(d.id);
+    if(novo){
+      abrirEvento(novo);
+      el('msgEvento').className='msg ok';
+      el('msgEvento').textContent=`Evento duplicado com ${Number(d.equipe_copiada||0)} prestador(es).`;
+      el('msgEvento').classList.remove('hidden');
+    }
+  }finally{
+    botao.disabled=false;
+    botao.textContent='Criar e copiar equipe';
+  }
 }
 
 init();
