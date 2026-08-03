@@ -3,608 +3,1675 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico">
+
+  <link
+    rel="icon"
+    href="https://www.curso-objetivo.br/assets/img/favicon.ico"
+  >
+
   <title>SEC-AUXILIAR — Painel</title>
+
   <style>
-    :root{
-      --primary:#0b3b78;
-      --primary-2:#154f92;
-      --primary-soft:#e8f1fc;
-      --bg:#eaf1f8;
-      --surface:#ffffff;
-      --surface-2:#f7f9fc;
-      --line:#ccd8e7;
-      --line-strong:#afc0d4;
-      --ink:#142033;
-      --muted:#66758a;
-      --danger:#9f2f2f;
-      --top-h:56px;
-      --tabs-h:42px;
-      --ribbon-h:116px;
-      --status-h:28px;
+    :root {
+      --primary: #0b3b78;
+      --primary-2: #154f92;
+      --primary-soft: #e8f1fc;
+
+      --bg: #eaf1f8;
+      --surface: #ffffff;
+      --surface-2: #f7f9fc;
+
+      --line: #ccd8e7;
+      --line-strong: #afc0d4;
+
+      --ink: #142033;
+      --muted: #66758a;
+      --danger: #9f2f2f;
+
+      --top-h: 56px;
+      --tabs-h: 42px;
+      --status-h: 28px;
     }
 
-    *{box-sizing:border-box}
-    html,body{margin:0;height:100%;font-family:"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-    button{font:inherit}
-    .hidden{display:none!important}
-
-    .loading{
-      height:100vh;display:grid;place-items:center;background:var(--bg);
-      color:var(--muted);font-size:15px
+    * {
+      box-sizing: border-box;
     }
 
-    .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
 
-    .titlebar{
-      height:var(--top-h);flex:0 0 var(--top-h);
-      display:flex;align-items:center;justify-content:space-between;
-      padding:0 14px 0 18px;color:#fff;
-      background:linear-gradient(90deg,var(--primary),var(--primary-2));
-      border-bottom:1px solid rgba(255,255,255,.18);
-      box-shadow:0 2px 8px rgba(15,35,60,.18);z-index:5
-    }
-    .brand{display:flex;align-items:center;gap:11px;min-width:0}
-    .brand img{height:29px;display:block}
-    .brand-name{font-size:16px;font-weight:700;letter-spacing:.01em;white-space:nowrap}
-    .brand-version{font-size:11px;opacity:.72;margin-left:3px}
-    .title-actions{display:flex;align-items:center;gap:8px}
-    .user-info{text-align:right;line-height:1.15;margin-right:4px}
-    .user-name{font-size:13px;font-weight:600}
-    .user-detail{font-size:11px;opacity:.78;margin-top:3px}
-    .avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.24);font-size:13px;font-weight:700}
-    .window-btn{width:34px;height:30px;border:0;border-radius:5px;background:transparent;color:#fff;cursor:pointer;font-size:17px}
-    .window-btn:hover{background:rgba(255,255,255,.14)}
-
-    .tabs-row{
-      height:var(--tabs-h);flex:0 0 var(--tabs-h);display:flex;align-items:stretch;
-      background:#f5f7fa;border-bottom:1px solid var(--line);position:relative;z-index:4
-    }
-    .module-tabs{
-      min-width:0;flex:1;display:flex;align-items:end;gap:2px;
-      padding:5px 6px 0 10px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin
-    }
-    .ribbon-toggle-wrap{
-      flex:0 0 auto;display:flex;align-items:center;padding:4px 9px 3px 6px;
-      border-left:1px solid #dde5ef;background:#f5f7fa
-    }
-    .ribbon-toggle{
-      height:30px;min-width:38px;padding:0 9px;border:1px solid transparent;border-radius:5px;
-      background:transparent;color:#35506f;cursor:pointer;font-size:15px;line-height:1;
-      display:flex;align-items:center;justify-content:center;gap:6px
-    }
-    .ribbon-toggle:hover{background:#e8eef6;border-color:#cad6e5}
-    .ribbon-toggle:focus-visible{outline:2px solid #7aa7dc;outline-offset:1px}
-    .ribbon-toggle-text{font-size:11px;font-weight:600;white-space:nowrap}
-    .module-tab{
-      height:36px;padding:0 14px;border:1px solid transparent;border-bottom:0;
-      border-radius:6px 6px 0 0;background:transparent;color:#30435d;
-      font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap
-    }
-    .module-tab:hover{background:#eaf0f7}
-    .module-tab.active{
-      background:#fff;color:var(--primary);border-color:var(--line);
-      box-shadow:0 -2px 5px rgba(20,50,85,.04)
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
     }
 
-    .ribbon{
-      height:var(--ribbon-h);flex:0 0 var(--ribbon-h);display:flex;align-items:stretch;
-      gap:0;padding:7px 10px 6px;background:#fff;border-bottom:1px solid var(--line);
-      box-shadow:0 2px 5px rgba(30,55,80,.05);overflow-x:auto;overflow-y:hidden;
-      opacity:1;transition:height .18s ease,flex-basis .18s ease,padding .18s ease,opacity .12s ease,border-color .18s ease
+    button {
+      font: inherit;
     }
-    .ribbon.collapsed{
-      height:0;flex-basis:0;padding-top:0;padding-bottom:0;opacity:0;
-      border-bottom-color:transparent;box-shadow:none;pointer-events:none
-    }
-    .ribbon-group{display:flex;align-items:flex-start;gap:5px;padding:2px 10px 18px;position:relative;border-right:1px solid #dbe3ed;min-width:max-content}
-    .ribbon-group:last-child{border-right:0}
-    .group-title{position:absolute;left:10px;right:10px;bottom:1px;text-align:center;color:#7a8799;font-size:10px;white-space:nowrap}
-    .action-btn{
-      width:92px;height:76px;border:1px solid transparent;border-radius:6px;background:transparent;
-      color:#253a55;display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:6px;padding:5px;cursor:pointer;text-align:center;font-size:11px;line-height:1.15
-    }
-    .action-btn:hover{background:#edf4fc;border-color:#c9daee}
-    .action-btn:active{background:#dfeafa}
-    .action-icon{font-size:26px;line-height:1;color:var(--primary)}
-    .action-btn.small{width:128px;height:35px;flex-direction:row;justify-content:flex-start;padding:0 9px;gap:8px;font-size:11.5px}
-    .action-btn.small .action-icon{font-size:16px;width:19px}
-    .stack{display:flex;flex-direction:column;gap:4px}
 
-
-    .module-dropdown{
-      position:fixed;z-index:2000;min-width:250px;max-width:min(420px,calc(100vw - 20px));
-      max-height:min(520px,calc(100vh - 120px));overflow:auto;padding:7px;
-      background:#fff;border:1px solid var(--line-strong);border-radius:0 0 7px 7px;
-      box-shadow:0 12px 28px rgba(20,45,75,.20);display:none
+    .hidden {
+      display: none !important;
     }
-    .module-dropdown.open{display:block}
-    .dropdown-title{padding:6px 9px 7px;color:var(--primary);font-size:12px;font-weight:700;border-bottom:1px solid #e3e9f1;margin-bottom:4px}
-    .dropdown-group{padding:4px 0 5px}
-    .dropdown-group+.dropdown-group{border-top:1px solid #e7ecf3}
-    .dropdown-group-title{padding:5px 9px 3px;color:#78879a;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-    .dropdown-action{
-      width:100%;min-height:34px;border:0;border-radius:5px;background:transparent;color:#253a55;
-      display:flex;align-items:center;gap:9px;padding:7px 9px;text-align:left;cursor:pointer;font-size:12px
-    }
-    .dropdown-action:hover,.dropdown-action:focus-visible{background:#edf4fc;outline:none}
-    .dropdown-action-icon{width:22px;flex:0 0 22px;text-align:center;color:var(--primary);font-size:17px}
 
-    .workspace-shell{flex:1;min-height:0;padding:10px 10px 8px;background:var(--bg)}
-    .workspace{
-      width:100%;height:100%;background:#f8fbff;border:1px solid var(--line);
-      border-radius:7px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.75),0 4px 16px rgba(18,45,75,.05);
-      padding:9px
-    }
-    iframe{width:100%;height:100%;border:0;border-radius:4px;background:#fff;display:block}
+    /* =========================================================
+       CARREGAMENTO
+       ========================================================= */
 
-    .statusbar{
-      height:var(--status-h);flex:0 0 var(--status-h);display:flex;align-items:center;
-      justify-content:space-between;padding:0 10px;background:#f7f8fa;border-top:1px solid var(--line);
-      color:#536277;font-size:11px
-    }
-    .status-left,.status-right{display:flex;align-items:center;gap:14px;white-space:nowrap}
-    .status-dot{width:7px;height:7px;border-radius:50%;background:#26945c;display:inline-block;margin-right:5px}
-    .sep{width:1px;height:14px;background:#d7dfe9}
-    .logout-link{border:0;background:transparent;color:var(--danger);cursor:pointer;font-weight:600;padding:4px 6px;border-radius:4px}
-    .logout-link:hover{background:#fdeaea}
+    .loading {
+      width: 100%;
+      height: 100vh;
 
-    @media(max-width:850px){
-      :root{--ribbon-h:105px}
-      .brand-version,.user-detail{display:none}
-      .user-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      .action-btn{width:78px;font-size:10px}
-      .module-tab{padding:0 10px}
-      .ribbon-toggle-text{display:none}
-      .ribbon-toggle{min-width:32px;padding:0 7px}
-      .status-right .hide-mobile{display:none}
+      display: grid;
+      place-items: center;
+
+      color: var(--muted);
+      background: var(--bg);
+      font-size: 15px;
+    }
+
+    /* =========================================================
+       APLICAÇÃO
+       ========================================================= */
+
+    .app {
+      width: 100%;
+      height: 100vh;
+
+      display: flex;
+      flex-direction: column;
+
+      overflow: hidden;
+    }
+
+    /* =========================================================
+       BARRA SUPERIOR
+       ========================================================= */
+
+    .titlebar {
+      height: var(--top-h);
+      flex: 0 0 var(--top-h);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 0 14px 0 18px;
+
+      color: #ffffff;
+      background:
+        linear-gradient(
+          90deg,
+          var(--primary),
+          var(--primary-2)
+        );
+
+      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+
+      box-shadow:
+        0 2px 8px rgba(15, 35, 60, 0.18);
+
+      position: relative;
+      z-index: 30;
+    }
+
+    .brand {
+      min-width: 0;
+
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .brand img {
+      height: 29px;
+      display: block;
+    }
+
+    .brand-name {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+
+    .brand-version {
+      margin-left: 3px;
+
+      font-size: 11px;
+      opacity: 0.72;
+      white-space: nowrap;
+    }
+
+    .title-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-info {
+      margin-right: 4px;
+
+      text-align: right;
+      line-height: 1.15;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .user-detail {
+      margin-top: 3px;
+
+      font-size: 11px;
+      opacity: 0.78;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+
+      display: grid;
+      place-items: center;
+
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 50%;
+
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.17);
+
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .window-btn {
+      width: 34px;
+      height: 30px;
+
+      border: 0;
+      border-radius: 5px;
+
+      color: #ffffff;
+      background: transparent;
+
+      cursor: pointer;
+      font-size: 17px;
+    }
+
+    .window-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .window-btn:focus-visible {
+      outline: 2px solid rgba(255, 255, 255, 0.75);
+      outline-offset: 1px;
+    }
+
+    /* =========================================================
+       MENU SUPERIOR
+       ========================================================= */
+
+    .tabs-row {
+      height: var(--tabs-h);
+      flex: 0 0 var(--tabs-h);
+
+      display: flex;
+      align-items: stretch;
+
+      background: #f5f7fa;
+      border-bottom: 1px solid var(--line);
+
+      position: relative;
+      z-index: 25;
+    }
+
+    .module-tabs {
+      min-width: 0;
+      flex: 1;
+
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+
+      padding: 5px 10px 0;
+
+      overflow-x: auto;
+      overflow-y: hidden;
+
+      scrollbar-width: thin;
+    }
+
+    .module-tab {
+      height: 36px;
+
+      padding: 0 14px;
+
+      border: 1px solid transparent;
+      border-bottom: 0;
+      border-radius: 6px 6px 0 0;
+
+      color: #30435d;
+      background: transparent;
+
+      font-size: 12.5px;
+      font-weight: 600;
+
+      cursor: pointer;
+      white-space: nowrap;
+
+      transition:
+        background 0.12s ease,
+        color 0.12s ease,
+        border-color 0.12s ease;
+    }
+
+    .module-tab:hover {
+      background: #eaf0f7;
+    }
+
+    .module-tab.active {
+      color: var(--primary);
+      background: #ffffff;
+
+      border-color: var(--line);
+
+      box-shadow:
+        0 -2px 5px rgba(20, 50, 85, 0.04);
+    }
+
+    .module-tab:focus-visible {
+      outline: 2px solid #7aa7dc;
+      outline-offset: -2px;
+    }
+
+    /* =========================================================
+       MENU SUSPENSO DOS MÓDULOS
+       ========================================================= */
+
+    .module-dropdown {
+      position: fixed;
+      z-index: 2000;
+
+      display: none;
+
+      min-width: 250px;
+      max-width: min(420px, calc(100vw - 20px));
+      max-height: min(560px, calc(100vh - 120px));
+
+      overflow: auto;
+
+      padding: 7px;
+
+      background: #ffffff;
+
+      border: 1px solid var(--line-strong);
+      border-radius: 0 0 7px 7px;
+
+      box-shadow:
+        0 12px 28px rgba(20, 45, 75, 0.20);
+    }
+
+    .module-dropdown.open {
+      display: block;
+    }
+
+    .dropdown-title {
+      margin-bottom: 4px;
+      padding: 6px 9px 7px;
+
+      color: var(--primary);
+
+      border-bottom: 1px solid #e3e9f1;
+
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .dropdown-group {
+      padding: 4px 0 5px;
+    }
+
+    .dropdown-group + .dropdown-group {
+      border-top: 1px solid #e7ecf3;
+    }
+
+    .dropdown-group-title {
+      padding: 5px 9px 3px;
+
+      color: #78879a;
+
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .dropdown-action {
+      width: 100%;
+      min-height: 35px;
+
+      display: flex;
+      align-items: center;
+      gap: 9px;
+
+      padding: 7px 9px;
+
+      border: 0;
+      border-radius: 5px;
+
+      color: #253a55;
+      background: transparent;
+
+      text-align: left;
+      font-size: 12px;
+
+      cursor: pointer;
+    }
+
+    .dropdown-action:hover,
+    .dropdown-action:focus-visible {
+      background: #edf4fc;
+      outline: none;
+    }
+
+    .dropdown-action:active {
+      background: #dfeafa;
+    }
+
+    .dropdown-action-icon {
+      width: 22px;
+      flex: 0 0 22px;
+
+      color: var(--primary);
+
+      text-align: center;
+      font-size: 17px;
+    }
+
+    /* =========================================================
+       ÁREA DE TRABALHO
+       ========================================================= */
+
+    .workspace-shell {
+      flex: 1;
+      min-height: 0;
+
+      padding: 10px 10px 8px;
+
+      background: var(--bg);
+    }
+
+    .workspace {
+      width: 100%;
+      height: 100%;
+
+      padding: 9px;
+
+      background: #f8fbff;
+
+      border: 1px solid var(--line);
+      border-radius: 7px;
+
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.75),
+        0 4px 16px rgba(18, 45, 75, 0.05);
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+
+      display: block;
+
+      border: 0;
+      border-radius: 4px;
+
+      background: #ffffff;
+    }
+
+    /* =========================================================
+       BARRA DE STATUS
+       ========================================================= */
+
+    .statusbar {
+      height: var(--status-h);
+      flex: 0 0 var(--status-h);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 0 10px;
+
+      color: #536277;
+      background: #f7f8fa;
+
+      border-top: 1px solid var(--line);
+
+      font-size: 11px;
+    }
+
+    .status-left,
+    .status-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+
+      display: inline-block;
+
+      margin-right: 5px;
+
+      border-radius: 50%;
+
+      background: #26945c;
+    }
+
+    .sep {
+      width: 1px;
+      height: 14px;
+
+      background: #d7dfe9;
+    }
+
+    .logout-link {
+      padding: 4px 6px;
+
+      border: 0;
+      border-radius: 4px;
+
+      color: var(--danger);
+      background: transparent;
+
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .logout-link:hover {
+      background: #fdeaea;
+    }
+
+    /* =========================================================
+       RESPONSIVO
+       ========================================================= */
+
+    @media (max-width: 850px) {
+      .brand-version,
+      .user-detail {
+        display: none;
+      }
+
+      .user-name {
+        max-width: 120px;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .module-tab {
+        padding: 0 10px;
+      }
+
+      .status-right .hide-mobile {
+        display: none;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .titlebar {
+        padding-left: 10px;
+      }
+
+      .brand-name {
+        font-size: 14px;
+      }
+
+      .brand img {
+        height: 25px;
+      }
+
+      .user-info {
+        display: none;
+      }
+
+      .workspace-shell {
+        padding: 6px;
+      }
+
+      .workspace {
+        padding: 5px;
+      }
+
+      .status-left {
+        gap: 7px;
+      }
+
+      .status-left .sep {
+        display: none;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div id="loading" class="loading">Verificando acesso...</div>
+  <div id="loading" class="loading">
+    Verificando acesso...
+  </div>
 
   <div id="app" class="app hidden">
+
+    <!-- BARRA SUPERIOR -->
     <header class="titlebar">
       <div class="brand">
-        <img src="/optativos/logo-mini.png" alt="Objetivo">
-        <span class="brand-name">SEC-AUXILIAR</span>
-        <span class="brand-version">v8.0 web</span>
+        <img
+          src="/optativos/logo-mini.png"
+          alt="Objetivo"
+        >
+
+        <span class="brand-name">
+          SEC-AUXILIAR
+        </span>
+
+        <span class="brand-version">
+          v8.0 web
+        </span>
       </div>
 
       <div class="title-actions">
         <div class="user-info">
-          <div class="user-name" id="userName">Usuário</div>
-          <div class="user-detail" id="userDetail">Painel administrativo</div>
+          <div class="user-name" id="userName">
+            Usuário
+          </div>
+
+          <div class="user-detail" id="userDetail">
+            Painel administrativo
+          </div>
         </div>
-        <div class="avatar" id="avatar">U</div>
-        <button class="window-btn" id="btnHome" type="button" title="Tela inicial">⌂</button>
+
+        <div class="avatar" id="avatar">
+          U
+        </div>
+
+        <button
+          class="window-btn"
+          id="btnHome"
+          type="button"
+          title="Tela inicial"
+          aria-label="Abrir tela inicial"
+        >
+          ⌂
+        </button>
       </div>
     </header>
 
+    <!-- MENU SUPERIOR -->
     <div class="tabs-row">
-      <nav class="module-tabs" id="moduleTabs" aria-label="Módulos do sistema"></nav>
-      <div class="ribbon-toggle-wrap">
-        <button class="ribbon-toggle" id="ribbonToggle" type="button"
-          aria-controls="ribbon" aria-expanded="true" title="Recolher faixa de opções">
-          <span id="ribbonToggleIcon">⌃</span>
-          <span class="ribbon-toggle-text" id="ribbonToggleText">Recolher faixa</span>
-        </button>
-      </div>
+      <nav
+        class="module-tabs"
+        id="moduleTabs"
+        aria-label="Módulos do sistema"
+      ></nav>
     </div>
-    <section class="ribbon" id="ribbon" aria-label="Comandos do módulo"></section>
-    <div class="module-dropdown" id="moduleDropdown" role="menu" aria-label="Opções do módulo"></div>
 
+    <!-- MENU SUSPENSO -->
+    <div
+      class="module-dropdown"
+      id="moduleDropdown"
+      role="menu"
+      aria-label="Opções do módulo"
+    ></div>
+
+    <!-- ÁREA CENTRAL -->
     <main class="workspace-shell">
       <div class="workspace">
-        <iframe id="frame" src="paginas/dashboard.html" title="Área de trabalho"></iframe>
+        <iframe
+          id="frame"
+          src="paginas/dashboard.html"
+          title="Área de trabalho"
+        ></iframe>
       </div>
     </main>
 
+    <!-- BARRA INFERIOR -->
     <footer class="statusbar">
       <div class="status-left">
-        <span><span class="status-dot"></span>Sistema on-line</span>
+        <span>
+          <span class="status-dot"></span>
+          Sistema on-line
+        </span>
+
         <span class="sep"></span>
-        <span id="statusModule">Visão geral</span>
+
+        <span id="statusModule">
+          Visão geral
+        </span>
       </div>
+
       <div class="status-right">
-        <span class="hide-mobile" id="statusUser">Usuário conectado</span>
+        <span
+          class="hide-mobile"
+          id="statusUser"
+        >
+          Usuário conectado
+        </span>
+
         <span class="sep hide-mobile"></span>
-        <span class="hide-mobile" id="clock"></span>
-        <button class="logout-link" id="logout" type="button">Sair</button>
+
+        <span
+          class="hide-mobile"
+          id="clock"
+        ></span>
+
+        <button
+          class="logout-link"
+          id="logout"
+          type="button"
+        >
+          Sair
+        </button>
       </div>
     </footer>
   </div>
 
-<script>
-const API = 'https://apisec.secauxiliar.com.br/sec/';
+  <script>
+    'use strict';
 
-const modules = [
-  {
-    id:'inicio', label:'Início',
-    groups:[
-      {title:'Principal', actions:[
-        {label:'Visão geral', icon:'⌂', page:'paginas/dashboard.html'},
-        {label:'Últimas telas', icon:'◷', module:'Últimas telas'},
-        {label:'Favoritos', icon:'★', module:'Favoritos'}
-      ]},
-      {title:'Sistema', actions:[
-        {label:'Atualizar painel', icon:'↻', action:'reload'},
-        {label:'Minha conta', icon:'☺', module:'Minha conta'}
-      ]}
-    ]
-  },
-  {
-    id:'atendimento', label:'Atendimento',
-    groups:[
-      {title:'Consultas', actions:[
-        {label:'Pesquisa por CPF', icon:'⌕', module:'Pesquisa por CPF'},
-        {label:'Pesquisa por nome', icon:'♙', module:'Pesquisa por nome'}
-      ]},
-      {title:'Interessados', actions:[
-        {label:'Cadastrar interessado', icon:'＋', module:'Cadastrar interessado'},
-        {label:'Transferir interessado', icon:'⇄', module:'Transferir interessado'}
-      ]},
-      {title:'Tabelas', actions:[
-        {label:'Tabela de preços', icon:'▤', module:'Tabela de preços'},
-        {label:'Preços fora de uso', icon:'▧', module:'Tabela de preços fora de uso'}
-      ]}
-    ]
-  },
-  {
-    id:'concurso', label:'Concurso de Bolsa',
-    groups:[{title:'Concurso',actions:[
-      {label:'Consultar',icon:'⌕',module:'Consultar concurso de bolsa'}
-    ]}]
-  },
-  {
-    id:'telemarketing', label:'Telemarketing',
-    groups:[
-      {title:'Concursos',actions:[{label:'Listar concursos',icon:'☷',module:'Listar concursos'}]},
-      {title:'Bolsa desempenho',actions:[
-        {label:'Novos',icon:'✦',module:'Bolsa Desempenho — Novos'},
-        {label:'Em andamento',icon:'◴',module:'Bolsa Desempenho — Em andamento'},
-        {label:'Concluídos',icon:'✓',module:'Bolsa Desempenho — Concluídos'}
-      ]}
-    ]
-  },
-  {
-    id:'matricula', label:'Matrícula',
-    groups:[
-      {title:'Agenda',actions:[
-        {label:'Agenda geral',icon:'▣',module:'Agenda geral'},
-        {label:'Agenda de hoje',icon:'◫',module:'Agenda de hoje'},
-        {label:'Pendentes',icon:'!',module:'Pendentes'}
-      ]},
-      {title:'Contagem',actions:[
-        {label:'Registrar',icon:'＋',module:'Contagem — Registrar'},
-        {label:'Listar',icon:'☷',module:'Contagem — Listar'},
-        {label:'Contagem do dia',icon:'▥',module:'Contagem do dia'}
-      ]}
-    ]
-  },
-  {
-    id:'cancelamento', label:'Cancelamento',
-    groups:[
-      {title:'Operações',actions:[
-        {label:'Listar',icon:'☷',module:'Cancelamento — Listar'},
-        {label:'Conferir',icon:'✓',module:'Cancelamento — Conferir'}
-      ]},
-      {title:'Documentos',actions:[
-        {label:'Relatório',icon:'▤',module:'Cancelamento — Relatório'},
-        {label:'Reimprimir',icon:'▣',module:'Cancelamento — Reimprimir'}
-      ]}
-    ]
-  },
-  {
-    id:'bolsa', label:'Bolsa',
-    groups:[{title:'Bolsa',actions:[
-      {label:'Cadastrar',icon:'＋',module:'Bolsa — Cadastrar'},
-      {label:'Consultar',icon:'⌕',module:'Bolsa — Consultar'},
-      {label:'Listar',icon:'☷',module:'Bolsa — Listar'}
-    ]}]
-  },
-  {
-    id:'ftp', label:'FTP',
-    groups:[{title:'Arquivos',actions:[
-      {label:'Transferências',icon:'⇅',module:'FTP — Transferências'},
-      {label:'Histórico',icon:'◷',module:'FTP — Histórico'}
-    ]}]
-  },
-  {
-    id:'aluno', label:'Aluno',
-    groups:[
-      {title:'Consultas',actions:[
-        {label:'Consultar aluno',icon:'♙',module:'Consultar aluno'},
-        {label:'Melhores alunos',icon:'★',module:'Melhores alunos'},
-        {label:'Melhores alunos — Discursivos',icon:'✎',module:'Melhores alunos — Discursivos'},
-        {label:'CLS — Testes',icon:'✓',module:'CLS — Testes — Geral'}
-      ]},
-      {title:'Notas e redações',actions:[
-        {label:'Últimas notas dissertativas',icon:'▤',module:'Últimas notas dissertativas'},
-        {label:'Últimas redações',icon:'✎',module:'Últimas redações'},
-        {label:'Simulados abertos',icon:'◫',module:'Simulados Abertos — Geral'}
-      ]},
-      {title:'Aulas especiais',actions:[
-        {label:'Aulas especiais',icon:'▣',module:'Aulas especiais'},
-        {label:'Cadastrar/alterar aulas',icon:'＋',module:'Cadastrar/alterar aulas'},
-        {label:'Liberar on-line',icon:'▶',module:'Liberar on-line'},
-        {label:'Histórico de liberações',icon:'◷',module:'Histórico de liberações'}
-      ]},
-      {title:'Reembolso',actions:[
-        {label:'Reembolso',icon:'$',module:'Reembolso'},
-        {label:'Consulta reembolso',icon:'⌕',module:'Consulta reembolso'},
-        {label:'Controle',icon:'✓',module:'Reembolso — Controle'}
-      ]},
-      {title:'Livros',actions:[
-        {label:'Entrega',icon:'▦',module:'Livros — Entrega'},
-        {label:'Liberados',icon:'✓',module:'Livros — Liberados'},
-        {label:'Compartilhamento',icon:'⇄',module:'Livros — Compartilhamento'}
-      ]}
-    ]
-  },
-  {
-    id:'professor', label:'Professor',
-    groups:[{title:'Frequência',actions:[
-      {label:'Faltas de hoje',icon:'!',module:'Professores — Faltas de hoje'}
-    ]}]
-  },
-  {
-    id:'pagamentos', label:'Pagamentos',
-    groups:[
-      {title:'Solicitações',actions:[{label:'Solicitações — 90 dias',icon:'▤',module:'Solicitações de pagamento — 90 dias'}]},
-      {title:'Consultas',actions:[
-        {label:'Consulta por CPF',icon:'⌕',module:'Pagamentos — Consulta por CPF'},
-        {label:'Consulta por matrícula',icon:'♙',module:'Pagamentos — Consulta por matrícula'},
-        {label:'Filtrar recibos',icon:'⌗',module:'Pagamentos — Filtrar recibos'}
-      ]}
-    ]
-  },
-  {
-    id:'unidade', label:'Unidade',
-    groups:[
-      {title:'Indicadores',actions:[{label:'Valores médios',icon:'▥',module:'Unidade — Valores médios'}]},
-      {title:'Professores',actions:[{label:'Professores — Faltas',icon:'!',module:'Unidade — Professores — Faltas'}]}
-    ]
-  }
-];
+    const API = 'https://apisec.secauxiliar.com.br/sec/';
 
-const loading = document.getElementById('loading');
-const app = document.getElementById('app');
-const tabsEl = document.getElementById('moduleTabs');
-const ribbonEl = document.getElementById('ribbon');
-const ribbonToggle = document.getElementById('ribbonToggle');
-const ribbonToggleIcon = document.getElementById('ribbonToggleIcon');
-const ribbonToggleText = document.getElementById('ribbonToggleText');
-const frame = document.getElementById('frame');
-const statusModule = document.getElementById('statusModule');
-const moduleDropdown = document.getElementById('moduleDropdown');
-let activeModule = 'inicio';
-let dropdownAnchor = null;
+    /* =========================================================
+       MÓDULOS E OPÇÕES DO SISTEMA
+       ========================================================= */
 
-const RIBBON_STORAGE_KEY = 'sec_auxiliar_ribbon_recolhida';
+    const modules = [
+      {
+        id: 'inicio',
+        label: 'Início',
+        groups: [
+          {
+            title: 'Principal',
+            actions: [
+              {
+                label: 'Visão geral',
+                icon: '⌂',
+                page: 'paginas/dashboard.html'
+              },
+              {
+                label: 'Últimas telas',
+                icon: '◷',
+                module: 'Últimas telas'
+              },
+              {
+                label: 'Favoritos',
+                icon: '★',
+                module: 'Favoritos'
+              }
+            ]
+          },
+          {
+            title: 'Sistema',
+            actions: [
+              {
+                label: 'Atualizar painel',
+                icon: '↻',
+                action: 'reload'
+              },
+              {
+                label: 'Minha conta',
+                icon: '☺',
+                module: 'Minha conta'
+              }
+            ]
+          }
+        ]
+      },
 
-function applyRibbonState(collapsed){
-  ribbonEl.classList.toggle('collapsed', collapsed);
-  if (!collapsed) closeModuleDropdown();
-  ribbonToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-  ribbonToggleIcon.textContent = collapsed ? '⌄' : '⌃';
-  ribbonToggleText.textContent = collapsed ? 'Mostrar faixa' : 'Recolher faixa';
-  ribbonToggle.title = collapsed ? 'Mostrar faixa de opções' : 'Recolher faixa de opções';
-}
+      {
+        id: 'atendimento',
+        label: 'Atendimento',
+        groups: [
+          {
+            title: 'Consultas',
+            actions: [
+              {
+                label: 'Pesquisa por CPF',
+                icon: '⌕',
+                module: 'Pesquisa por CPF'
+              },
+              {
+                label: 'Pesquisa por nome',
+                icon: '♙',
+                module: 'Pesquisa por nome'
+              }
+            ]
+          },
+          {
+            title: 'Interessados',
+            actions: [
+              {
+                label: 'Cadastrar interessado',
+                icon: '＋',
+                module: 'Cadastrar interessado'
+              },
+              {
+                label: 'Transferir interessado',
+                icon: '⇄',
+                module: 'Transferir interessado'
+              }
+            ]
+          },
+          {
+            title: 'Tabelas',
+            actions: [
+              {
+                label: 'Tabela de preços',
+                icon: '▤',
+                module: 'Tabela de preços'
+              },
+              {
+                label: 'Preços fora de uso',
+                icon: '▧',
+                module: 'Tabela de preços fora de uso'
+              }
+            ]
+          }
+        ]
+      },
 
-function loadRibbonPreference(){
-  applyRibbonState(localStorage.getItem(RIBBON_STORAGE_KEY) === '1');
-}
+      {
+        id: 'concurso',
+        label: 'Concurso de Bolsa',
+        groups: [
+          {
+            title: 'Concurso',
+            actions: [
+              {
+                label: 'Consultar',
+                icon: '⌕',
+                module: 'Consultar concurso de bolsa'
+              }
+            ]
+          }
+        ]
+      },
 
-function toggleRibbon(){
-  const collapsed = !ribbonEl.classList.contains('collapsed');
-  localStorage.setItem(RIBBON_STORAGE_KEY, collapsed ? '1' : '0');
-  applyRibbonState(collapsed);
-}
+      {
+        id: 'telemarketing',
+        label: 'Telemarketing',
+        groups: [
+          {
+            title: 'Concursos',
+            actions: [
+              {
+                label: 'Listar concursos',
+                icon: '☷',
+                module: 'Listar concursos'
+              }
+            ]
+          },
+          {
+            title: 'Bolsa desempenho',
+            actions: [
+              {
+                label: 'Novos',
+                icon: '✦',
+                module: 'Bolsa Desempenho — Novos'
+              },
+              {
+                label: 'Em andamento',
+                icon: '◴',
+                module: 'Bolsa Desempenho — Em andamento'
+              },
+              {
+                label: 'Concluídos',
+                icon: '✓',
+                module: 'Bolsa Desempenho — Concluídos'
+              }
+            ]
+          }
+        ]
+      },
 
-function openPage(page, label=''){
-  const sep = page.includes('?') ? '&' : '?';
-  frame.src = page + sep + 'v=' + Date.now();
-  statusModule.textContent = label || 'Área de trabalho';
-}
+      {
+        id: 'matricula',
+        label: 'Matrícula',
+        groups: [
+          {
+            title: 'Agenda',
+            actions: [
+              {
+                label: 'Agenda geral',
+                icon: '▣',
+                module: 'Agenda geral'
+              },
+              {
+                label: 'Agenda de hoje',
+                icon: '◫',
+                module: 'Agenda de hoje'
+              },
+              {
+                label: 'Pendentes',
+                icon: '!',
+                module: 'Pendentes'
+              }
+            ]
+          },
+          {
+            title: 'Contagem',
+            actions: [
+              {
+                label: 'Registrar',
+                icon: '＋',
+                module: 'Contagem — Registrar'
+              },
+              {
+                label: 'Listar',
+                icon: '☷',
+                module: 'Contagem — Listar'
+              },
+              {
+                label: 'Contagem do dia',
+                icon: '▥',
+                module: 'Contagem do dia'
+              }
+            ]
+          }
+        ]
+      },
 
-function openPlaceholder(label){
-  openPage('paginas/em_construcao.html?modulo=' + encodeURIComponent(label), label);
-}
+      {
+        id: 'cancelamento',
+        label: 'Cancelamento',
+        groups: [
+          {
+            title: 'Operações',
+            actions: [
+              {
+                label: 'Listar',
+                icon: '☷',
+                module: 'Cancelamento — Listar'
+              },
+              {
+                label: 'Conferir',
+                icon: '✓',
+                module: 'Cancelamento — Conferir'
+              }
+            ]
+          },
+          {
+            title: 'Documentos',
+            actions: [
+              {
+                label: 'Relatório',
+                icon: '▤',
+                module: 'Cancelamento — Relatório'
+              },
+              {
+                label: 'Reimprimir',
+                icon: '▣',
+                module: 'Cancelamento — Reimprimir'
+              }
+            ]
+          }
+        ]
+      },
 
-function renderTabs(){
-  tabsEl.innerHTML = modules.map(m => `
-    <button class="module-tab ${m.id === activeModule ? 'active' : ''}" type="button" data-module="${m.id}" aria-haspopup="menu" aria-expanded="false">${m.label}</button>
-  `).join('');
+      {
+        id: 'bolsa',
+        label: 'Bolsa',
+        groups: [
+          {
+            title: 'Bolsa',
+            actions: [
+              {
+                label: 'Cadastrar',
+                icon: '＋',
+                module: 'Bolsa — Cadastrar'
+              },
+              {
+                label: 'Consultar',
+                icon: '⌕',
+                module: 'Bolsa — Consultar'
+              },
+              {
+                label: 'Listar',
+                icon: '☷',
+                module: 'Bolsa — Listar'
+              }
+            ]
+          }
+        ]
+      },
 
-  tabsEl.querySelectorAll('[data-module]').forEach(btn => {
-    btn.addEventListener('click', (event) => {
-      event.stopPropagation();
-      const clickedModule = btn.dataset.module;
-      const ribbonCollapsed = ribbonEl.classList.contains('collapsed');
-      const wasSameOpen = moduleDropdown.classList.contains('open') && dropdownAnchor?.dataset.module === clickedModule;
+      {
+        id: 'ftp',
+        label: 'FTP',
+        groups: [
+          {
+            title: 'Arquivos',
+            actions: [
+              {
+                label: 'Transferências',
+                icon: '⇅',
+                module: 'FTP — Transferências'
+              },
+              {
+                label: 'Histórico',
+                icon: '◷',
+                module: 'FTP — Histórico'
+              }
+            ]
+          }
+        ]
+      },
 
-      activeModule = clickedModule;
-      renderTabs();
-      renderRibbon();
-      statusModule.textContent = modules.find(m => m.id === activeModule)?.label || 'Módulo';
+      {
+        id: 'aluno',
+        label: 'Aluno',
+        groups: [
+          {
+            title: 'Consultas',
+            actions: [
+              {
+                label: 'Consultar aluno',
+                icon: '♙',
+                module: 'Consultar aluno'
+              },
+              {
+                label: 'Melhores alunos',
+                icon: '★',
+                module: 'Melhores alunos'
+              },
+              {
+                label: 'Melhores alunos — Discursivos',
+                icon: '✎',
+                module: 'Melhores alunos — Discursivos'
+              },
+              {
+                label: 'CLS — Testes',
+                icon: '✓',
+                module: 'CLS — Testes — Geral'
+              }
+            ]
+          },
+          {
+            title: 'Notas e redações',
+            actions: [
+              {
+                label: 'Últimas notas dissertativas',
+                icon: '▤',
+                module: 'Últimas notas dissertativas'
+              },
+              {
+                label: 'Últimas redações',
+                icon: '✎',
+                module: 'Últimas redações'
+              },
+              {
+                label: 'Simulados abertos',
+                icon: '◫',
+                module: 'Simulados Abertos — Geral'
+              }
+            ]
+          },
+          {
+            title: 'Aulas especiais',
+            actions: [
+              {
+                label: 'Aulas especiais',
+                icon: '▣',
+                module: 'Aulas especiais'
+              },
+              {
+                label: 'Cadastrar/alterar aulas',
+                icon: '＋',
+                module: 'Cadastrar/alterar aulas'
+              },
+              {
+                label: 'Liberar on-line',
+                icon: '▶',
+                module: 'Liberar on-line'
+              },
+              {
+                label: 'Histórico de liberações',
+                icon: '◷',
+                module: 'Histórico de liberações'
+              }
+            ]
+          },
+          {
+            title: 'Reembolso',
+            actions: [
+              {
+                label: 'Reembolso',
+                icon: '$',
+                module: 'Reembolso'
+              },
+              {
+                label: 'Consulta reembolso',
+                icon: '⌕',
+                module: 'Consulta reembolso'
+              },
+              {
+                label: 'Controle',
+                icon: '✓',
+                module: 'Reembolso — Controle'
+              }
+            ]
+          },
+          {
+            title: 'Livros',
+            actions: [
+              {
+                label: 'Entrega',
+                icon: '▦',
+                module: 'Livros — Entrega'
+              },
+              {
+                label: 'Liberados',
+                icon: '✓',
+                module: 'Livros — Liberados'
+              },
+              {
+                label: 'Compartilhamento',
+                icon: '⇄',
+                module: 'Livros — Compartilhamento'
+              }
+            ]
+          }
+        ]
+      },
 
-      if (ribbonCollapsed && !wasSameOpen) {
-        const freshButton = tabsEl.querySelector(`[data-module="${CSS.escape(clickedModule)}"]`);
-        openModuleDropdown(freshButton);
-      } else {
-        closeModuleDropdown();
+      {
+        id: 'professor',
+        label: 'Professor',
+        groups: [
+          {
+            title: 'Frequência',
+            actions: [
+              {
+                label: 'Faltas de hoje',
+                icon: '!',
+                module: 'Professores — Faltas de hoje'
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        id: 'pagamentos',
+        label: 'Pagamentos',
+        groups: [
+          {
+            title: 'Solicitações',
+            actions: [
+              {
+                label: 'Solicitações — 90 dias',
+                icon: '▤',
+                module: 'Solicitações de pagamento — 90 dias'
+              }
+            ]
+          },
+          {
+            title: 'Consultas',
+            actions: [
+              {
+                label: 'Consulta por CPF',
+                icon: '⌕',
+                module: 'Pagamentos — Consulta por CPF'
+              },
+              {
+                label: 'Consulta por matrícula',
+                icon: '♙',
+                module: 'Pagamentos — Consulta por matrícula'
+              },
+              {
+                label: 'Filtrar recibos',
+                icon: '⌗',
+                module: 'Pagamentos — Filtrar recibos'
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        id: 'unidade',
+        label: 'Unidade',
+        groups: [
+          {
+            title: 'Indicadores',
+            actions: [
+              {
+                label: 'Valores médios',
+                icon: '▥',
+                module: 'Unidade — Valores médios'
+              }
+            ]
+          },
+          {
+            title: 'Professores',
+            actions: [
+              {
+                label: 'Professores — Faltas',
+                icon: '!',
+                module: 'Unidade — Professores — Faltas'
+              }
+            ]
+          }
+        ]
       }
-    });
-  });
-}
+    ];
 
-function closeModuleDropdown(){
-  moduleDropdown.classList.remove('open');
-  moduleDropdown.innerHTML = '';
-  if (dropdownAnchor) dropdownAnchor.setAttribute('aria-expanded','false');
-  dropdownAnchor = null;
-}
+    /* =========================================================
+       ELEMENTOS DA TELA
+       ========================================================= */
 
-function positionModuleDropdown(anchor){
-  if (!anchor) return;
-  const rect = anchor.getBoundingClientRect();
-  const menuWidth = moduleDropdown.offsetWidth || 280;
-  const maxLeft = Math.max(10, window.innerWidth - menuWidth - 10);
-  moduleDropdown.style.left = Math.min(Math.max(10, rect.left), maxLeft) + 'px';
-  moduleDropdown.style.top = rect.bottom + 'px';
-}
+    const loading = document.getElementById('loading');
+    const app = document.getElementById('app');
 
-function executeAction(action){
-  if (action.action === 'reload') {
-    const current = frame.src;
-    frame.src = current.split('#')[0] + (current.includes('?') ? '&' : '?') + 'r=' + Date.now();
-    return;
-  }
-  if (action.page) openPage(action.page, action.label);
-  else openPlaceholder(action.module || action.label);
-}
+    const tabsEl = document.getElementById('moduleTabs');
+    const moduleDropdown = document.getElementById('moduleDropdown');
 
-function openModuleDropdown(anchor){
-  const mod = modules.find(m => m.id === activeModule) || modules[0];
-  closeModuleDropdown();
-  dropdownAnchor = anchor;
-  if (dropdownAnchor) dropdownAnchor.setAttribute('aria-expanded','true');
+    const frame = document.getElementById('frame');
+    const statusModule = document.getElementById('statusModule');
 
-  moduleDropdown.innerHTML = `
-    <div class="dropdown-title">${escapeHtml(mod.label)}</div>
-    ${mod.groups.map((group, groupIndex) => `
-      <div class="dropdown-group">
-        <div class="dropdown-group-title">${escapeHtml(group.title)}</div>
-        ${group.actions.map((action, actionIndex) => `
-          <button class="dropdown-action" type="button" role="menuitem" data-group="${groupIndex}" data-action-index="${actionIndex}">
-            <span class="dropdown-action-icon">${action.icon || '▦'}</span>
-            <span>${escapeHtml(action.label)}</span>
-          </button>
-        `).join('')}
-      </div>
-    `).join('')}
-  `;
+    let activeModule = 'inicio';
+    let dropdownAnchor = null;
 
-  moduleDropdown.classList.add('open');
-  positionModuleDropdown(anchor);
+    /* =========================================================
+       FUNÇÕES AUXILIARES
+       ========================================================= */
 
-  moduleDropdown.querySelectorAll('.dropdown-action').forEach(btn => {
-    btn.addEventListener('click', (event) => {
-      event.stopPropagation();
-      const action = mod.groups[Number(btn.dataset.group)].actions[Number(btn.dataset.actionIndex)];
-      closeModuleDropdown();
-      executeAction(action);
-    });
-  });
-}
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
 
-function renderRibbon(){
-  const mod = modules.find(m => m.id === activeModule) || modules[0];
-  ribbonEl.innerHTML = mod.groups.map(group => `
-    <div class="ribbon-group">
-      ${group.actions.map(action => `
-        <button class="action-btn" type="button"
-          data-page="${action.page || ''}"
-          data-label="${escapeHtml(action.label)}"
-          data-module-label="${escapeHtml(action.module || '')}"
-          data-action="${action.action || ''}">
-          <span class="action-icon">${action.icon || '▦'}</span>
-          <span>${escapeHtml(action.label)}</span>
+    function getModuleById(moduleId) {
+      return modules.find(module => module.id === moduleId) || null;
+    }
+
+    /* =========================================================
+       ABERTURA DAS PÁGINAS
+       ========================================================= */
+
+    function openPage(page, label = '') {
+      const separator = page.includes('?') ? '&' : '?';
+
+      frame.src =
+        page +
+        separator +
+        'v=' +
+        Date.now();
+
+      statusModule.textContent =
+        label || 'Área de trabalho';
+    }
+
+    function openPlaceholder(label) {
+      openPage(
+        'paginas/em_construcao.html?modulo=' +
+        encodeURIComponent(label),
+        label
+      );
+    }
+
+    function executeAction(action) {
+      if (!action) {
+        return;
+      }
+
+      if (action.action === 'reload') {
+        const currentUrl = frame.src;
+        const separator = currentUrl.includes('?') ? '&' : '?';
+
+        frame.src =
+          currentUrl +
+          separator +
+          'r=' +
+          Date.now();
+
+        return;
+      }
+
+      if (action.page) {
+        openPage(
+          action.page,
+          action.label
+        );
+
+        return;
+      }
+
+      openPlaceholder(
+        action.module || action.label
+      );
+    }
+
+    /* =========================================================
+       MENU SUPERIOR
+       ========================================================= */
+
+    function renderTabs() {
+      tabsEl.innerHTML = modules.map(module => `
+        <button
+          class="module-tab ${module.id === activeModule ? 'active' : ''}"
+          type="button"
+          data-module="${escapeHtml(module.id)}"
+          aria-haspopup="menu"
+          aria-expanded="false"
+        >
+          ${escapeHtml(module.label)}
         </button>
-      `).join('')}
-      <span class="group-title">${escapeHtml(group.title)}</span>
-    </div>
-  `).join('');
+      `).join('');
 
-  ribbonEl.querySelectorAll('.action-btn').forEach(btn => {
-    btn.addEventListener('click', () => executeAction({
-      action: btn.dataset.action,
-      page: btn.dataset.page,
-      label: btn.dataset.label,
-      module: btn.dataset.moduleLabel
-    }));
-  });
-}
+      tabsEl
+        .querySelectorAll('[data-module]')
+        .forEach(button => {
+          button.addEventListener('click', event => {
+            event.stopPropagation();
 
-function escapeHtml(value){
-  return String(value ?? '')
-    .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
-    .replaceAll('"','&quot;').replaceAll("'",'&#039;');
-}
+            const clickedModuleId =
+              button.dataset.module;
 
-async function verifySession(){
-  try{
-    const response = await fetch(API + 'auth_me.php', {
-      method:'GET', credentials:'include', cache:'no-store'
-    });
-    const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.msg || data.error || 'Sessão inválida');
+            const isSameOpen =
+              moduleDropdown.classList.contains('open') &&
+              dropdownAnchor?.dataset.module === clickedModuleId;
 
-    const user = data.user || {};
-    const nivel = String(user.nivel || '').trim().toLowerCase();
-    if (nivel !== 'admin') throw new Error('Usuário sem permissão');
+            if (isSameOpen) {
+              closeModuleDropdown();
+              return;
+            }
 
-    const nome = user.nome || user.login || 'Usuário';
-    document.getElementById('userName').textContent = nome;
-    document.getElementById('userDetail').textContent = nivel + ' • painel administrativo';
-    document.getElementById('avatar').textContent = nome.trim().charAt(0).toUpperCase();
-    document.getElementById('statusUser').textContent = nome + ' conectado';
+            activeModule = clickedModuleId;
 
-    renderTabs();
-    renderRibbon();
-    loading.classList.add('hidden');
-    app.classList.remove('hidden');
-  }catch(error){
-    console.error('Falha ao validar sessão:', error);
-    location.replace('./index.html');
-  }
-}
+            renderTabs();
 
-async function logout(){
-  try{
-    await fetch(API + 'auth_logout.php', {
-      method:'POST', credentials:'include', cache:'no-store'
-    });
-  }catch(error){
-    console.warn('Não foi possível confirmar o logout na API.');
-  }
-  localStorage.removeItem('PRESENCA_token');
-  sessionStorage.clear();
-  location.replace('./index.html');
-}
+            const module =
+              getModuleById(activeModule);
 
-document.getElementById('logout').addEventListener('click', logout);
-ribbonToggle.addEventListener('click', toggleRibbon);
-document.getElementById('btnHome').addEventListener('click', () => {
-  closeModuleDropdown();
-  activeModule = 'inicio'; renderTabs(); renderRibbon(); openPage('paginas/dashboard.html','Visão geral');
-});
+            statusModule.textContent =
+              module?.label || 'Módulo';
 
-document.addEventListener('click', (event) => {
-  if (!moduleDropdown.contains(event.target)) closeModuleDropdown();
-});
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') closeModuleDropdown();
-});
-window.addEventListener('resize', () => {
-  if (moduleDropdown.classList.contains('open')) positionModuleDropdown(dropdownAnchor);
-});
-tabsEl.addEventListener('scroll', () => {
-  if (moduleDropdown.classList.contains('open')) positionModuleDropdown(dropdownAnchor);
-});
+            const freshButton =
+              tabsEl.querySelector(
+                `[data-module="${CSS.escape(activeModule)}"]`
+              );
 
-function updateClock(){
-  document.getElementById('clock').textContent = new Intl.DateTimeFormat('pt-BR', {
-    dateStyle:'short', timeStyle:'short'
-  }).format(new Date());
-}
-updateClock();
-setInterval(updateClock, 30000);
-loadRibbonPreference();
-verifySession();
-</script>
+            openModuleDropdown(freshButton);
+          });
+        });
+    }
+
+    /* =========================================================
+       MENU SUSPENSO
+       ========================================================= */
+
+    function closeModuleDropdown() {
+      moduleDropdown.classList.remove('open');
+      moduleDropdown.innerHTML = '';
+
+      if (dropdownAnchor) {
+        dropdownAnchor.setAttribute(
+          'aria-expanded',
+          'false'
+        );
+      }
+
+      dropdownAnchor = null;
+    }
+
+    function positionModuleDropdown(anchor) {
+      if (!anchor) {
+        return;
+      }
+
+      const anchorRect =
+        anchor.getBoundingClientRect();
+
+      const menuWidth =
+        moduleDropdown.offsetWidth || 280;
+
+      const maxLeft =
+        Math.max(
+          10,
+          window.innerWidth - menuWidth - 10
+        );
+
+      const desiredLeft =
+        Math.min(
+          Math.max(10, anchorRect.left),
+          maxLeft
+        );
+
+      moduleDropdown.style.left =
+        desiredLeft + 'px';
+
+      moduleDropdown.style.top =
+        anchorRect.bottom + 'px';
+    }
+
+    function openModuleDropdown(anchor) {
+      const module =
+        getModuleById(activeModule) ||
+        modules[0];
+
+      closeModuleDropdown();
+
+      dropdownAnchor = anchor;
+
+      if (dropdownAnchor) {
+        dropdownAnchor.setAttribute(
+          'aria-expanded',
+          'true'
+        );
+      }
+
+      moduleDropdown.innerHTML = `
+        <div class="dropdown-title">
+          ${escapeHtml(module.label)}
+        </div>
+
+        ${module.groups.map(
+          (group, groupIndex) => `
+            <div class="dropdown-group">
+              <div class="dropdown-group-title">
+                ${escapeHtml(group.title)}
+              </div>
+
+              ${group.actions.map(
+                (action, actionIndex) => `
+                  <button
+                    class="dropdown-action"
+                    type="button"
+                    role="menuitem"
+                    data-group="${groupIndex}"
+                    data-action-index="${actionIndex}"
+                  >
+                    <span class="dropdown-action-icon">
+                      ${action.icon || '▦'}
+                    </span>
+
+                    <span>
+                      ${escapeHtml(action.label)}
+                    </span>
+                  </button>
+                `
+              ).join('')}
+            </div>
+          `
+        ).join('')}
+      `;
+
+      moduleDropdown.classList.add('open');
+
+      positionModuleDropdown(anchor);
+
+      moduleDropdown
+        .querySelectorAll('.dropdown-action')
+        .forEach(button => {
+          button.addEventListener('click', event => {
+            event.stopPropagation();
+
+            const groupIndex =
+              Number(button.dataset.group);
+
+            const actionIndex =
+              Number(button.dataset.actionIndex);
+
+            const action =
+              module
+                .groups[groupIndex]
+                .actions[actionIndex];
+
+            closeModuleDropdown();
+
+            executeAction(action);
+          });
+        });
+    }
+
+    /* =========================================================
+       AUTENTICAÇÃO
+       ========================================================= */
+
+    async function verifySession() {
+      try {
+        const response = await fetch(
+          API + 'auth_me.php',
+          {
+            method: 'GET',
+            credentials: 'include',
+            cache: 'no-store'
+          }
+        );
+
+        const data =
+          await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(
+            data.msg ||
+            data.error ||
+            'Sessão inválida'
+          );
+        }
+
+        const user =
+          data.user || {};
+
+        const nivel =
+          String(user.nivel || '')
+            .trim()
+            .toLowerCase();
+
+        if (nivel !== 'admin') {
+          throw new Error(
+            'Usuário sem permissão'
+          );
+        }
+
+        const nome =
+          user.nome ||
+          user.login ||
+          'Usuário';
+
+        document
+          .getElementById('userName')
+          .textContent = nome;
+
+        document
+          .getElementById('userDetail')
+          .textContent =
+            nivel +
+            ' • painel administrativo';
+
+        document
+          .getElementById('avatar')
+          .textContent =
+            nome
+              .trim()
+              .charAt(0)
+              .toUpperCase();
+
+        document
+          .getElementById('statusUser')
+          .textContent =
+            nome +
+            ' conectado';
+
+        renderTabs();
+
+        loading.classList.add('hidden');
+        app.classList.remove('hidden');
+      }
+      catch (error) {
+        console.error(
+          'Falha ao validar sessão:',
+          error
+        );
+
+        location.replace('./index.html');
+      }
+    }
+
+    /* =========================================================
+       LOGOUT
+       ========================================================= */
+
+    async function logout() {
+      try {
+        await fetch(
+          API + 'auth_logout.php',
+          {
+            method: 'POST',
+            credentials: 'include',
+            cache: 'no-store'
+          }
+        );
+      }
+      catch (error) {
+        console.warn(
+          'Não foi possível confirmar o logout na API.'
+        );
+      }
+
+      localStorage.removeItem(
+        'PRESENCA_token'
+      );
+
+      sessionStorage.clear();
+
+      location.replace('./index.html');
+    }
+
+    /* =========================================================
+       RELÓGIO
+       ========================================================= */
+
+    function updateClock() {
+      document
+        .getElementById('clock')
+        .textContent =
+          new Intl.DateTimeFormat(
+            'pt-BR',
+            {
+              dateStyle: 'short',
+              timeStyle: 'short'
+            }
+          ).format(new Date());
+    }
+
+    /* =========================================================
+       EVENTOS GERAIS
+       ========================================================= */
+
+    document
+      .getElementById('logout')
+      .addEventListener(
+        'click',
+        logout
+      );
+
+    document
+      .getElementById('btnHome')
+      .addEventListener(
+        'click',
+        () => {
+          closeModuleDropdown();
+
+          activeModule = 'inicio';
+
+          renderTabs();
+
+          openPage(
+            'paginas/dashboard.html',
+            'Visão geral'
+          );
+        }
+      );
+
+    document.addEventListener(
+      'click',
+      event => {
+        const clickedInsideDropdown =
+          moduleDropdown.contains(event.target);
+
+        const clickedTab =
+          event.target.closest('.module-tab');
+
+        if (
+          !clickedInsideDropdown &&
+          !clickedTab
+        ) {
+          closeModuleDropdown();
+        }
+      }
+    );
+
+    document.addEventListener(
+      'keydown',
+      event => {
+        if (event.key === 'Escape') {
+          closeModuleDropdown();
+        }
+      }
+    );
+
+    window.addEventListener(
+      'resize',
+      () => {
+        if (
+          moduleDropdown.classList.contains('open')
+        ) {
+          positionModuleDropdown(
+            dropdownAnchor
+          );
+        }
+      }
+    );
+
+    tabsEl.addEventListener(
+      'scroll',
+      () => {
+        if (
+          moduleDropdown.classList.contains('open')
+        ) {
+          positionModuleDropdown(
+            dropdownAnchor
+          );
+        }
+      }
+    );
+
+    /* =========================================================
+       INICIALIZAÇÃO
+       ========================================================= */
+
+    updateClock();
+
+    setInterval(
+      updateClock,
+      30000
+    );
+
+    verifySession();
+  </script>
 </body>
 </html>
