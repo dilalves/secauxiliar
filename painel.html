@@ -112,6 +112,25 @@
     .action-btn.small .action-icon{font-size:16px;width:19px}
     .stack{display:flex;flex-direction:column;gap:4px}
 
+
+    .module-dropdown{
+      position:fixed;z-index:2000;min-width:250px;max-width:min(420px,calc(100vw - 20px));
+      max-height:min(520px,calc(100vh - 120px));overflow:auto;padding:7px;
+      background:#fff;border:1px solid var(--line-strong);border-radius:0 0 7px 7px;
+      box-shadow:0 12px 28px rgba(20,45,75,.20);display:none
+    }
+    .module-dropdown.open{display:block}
+    .dropdown-title{padding:6px 9px 7px;color:var(--primary);font-size:12px;font-weight:700;border-bottom:1px solid #e3e9f1;margin-bottom:4px}
+    .dropdown-group{padding:4px 0 5px}
+    .dropdown-group+.dropdown-group{border-top:1px solid #e7ecf3}
+    .dropdown-group-title{padding:5px 9px 3px;color:#78879a;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+    .dropdown-action{
+      width:100%;min-height:34px;border:0;border-radius:5px;background:transparent;color:#253a55;
+      display:flex;align-items:center;gap:9px;padding:7px 9px;text-align:left;cursor:pointer;font-size:12px
+    }
+    .dropdown-action:hover,.dropdown-action:focus-visible{background:#edf4fc;outline:none}
+    .dropdown-action-icon{width:22px;flex:0 0 22px;text-align:center;color:var(--primary);font-size:17px}
+
     .workspace-shell{flex:1;min-height:0;padding:10px 10px 8px;background:var(--bg)}
     .workspace{
       width:100%;height:100%;background:#f8fbff;border:1px solid var(--line);
@@ -175,6 +194,7 @@
       </div>
     </div>
     <section class="ribbon" id="ribbon" aria-label="Comandos do módulo"></section>
+    <div class="module-dropdown" id="moduleDropdown" role="menu" aria-label="Opções do módulo"></div>
 
     <main class="workspace-shell">
       <div class="workspace">
@@ -359,12 +379,15 @@ const ribbonToggleIcon = document.getElementById('ribbonToggleIcon');
 const ribbonToggleText = document.getElementById('ribbonToggleText');
 const frame = document.getElementById('frame');
 const statusModule = document.getElementById('statusModule');
+const moduleDropdown = document.getElementById('moduleDropdown');
 let activeModule = 'inicio';
+let dropdownAnchor = null;
 
 const RIBBON_STORAGE_KEY = 'sec_auxiliar_ribbon_recolhida';
 
 function applyRibbonState(collapsed){
   ribbonEl.classList.toggle('collapsed', collapsed);
+  if (!collapsed) closeModuleDropdown();
   ribbonToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
   ribbonToggleIcon.textContent = collapsed ? '⌄' : '⌃';
   ribbonToggleText.textContent = collapsed ? 'Mostrar faixa' : 'Recolher faixa';
@@ -393,15 +416,87 @@ function openPlaceholder(label){
 
 function renderTabs(){
   tabsEl.innerHTML = modules.map(m => `
-    <button class="module-tab ${m.id === activeModule ? 'active' : ''}" type="button" data-module="${m.id}">${m.label}</button>
+    <button class="module-tab ${m.id === activeModule ? 'active' : ''}" type="button" data-module="${m.id}" aria-haspopup="menu" aria-expanded="false">${m.label}</button>
   `).join('');
 
   tabsEl.querySelectorAll('[data-module]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activeModule = btn.dataset.module;
+    btn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const clickedModule = btn.dataset.module;
+      const ribbonCollapsed = ribbonEl.classList.contains('collapsed');
+      const wasSameOpen = moduleDropdown.classList.contains('open') && dropdownAnchor?.dataset.module === clickedModule;
+
+      activeModule = clickedModule;
       renderTabs();
       renderRibbon();
       statusModule.textContent = modules.find(m => m.id === activeModule)?.label || 'Módulo';
+
+      if (ribbonCollapsed && !wasSameOpen) {
+        const freshButton = tabsEl.querySelector(`[data-module="${CSS.escape(clickedModule)}"]`);
+        openModuleDropdown(freshButton);
+      } else {
+        closeModuleDropdown();
+      }
+    });
+  });
+}
+
+function closeModuleDropdown(){
+  moduleDropdown.classList.remove('open');
+  moduleDropdown.innerHTML = '';
+  if (dropdownAnchor) dropdownAnchor.setAttribute('aria-expanded','false');
+  dropdownAnchor = null;
+}
+
+function positionModuleDropdown(anchor){
+  if (!anchor) return;
+  const rect = anchor.getBoundingClientRect();
+  const menuWidth = moduleDropdown.offsetWidth || 280;
+  const maxLeft = Math.max(10, window.innerWidth - menuWidth - 10);
+  moduleDropdown.style.left = Math.min(Math.max(10, rect.left), maxLeft) + 'px';
+  moduleDropdown.style.top = rect.bottom + 'px';
+}
+
+function executeAction(action){
+  if (action.action === 'reload') {
+    const current = frame.src;
+    frame.src = current.split('#')[0] + (current.includes('?') ? '&' : '?') + 'r=' + Date.now();
+    return;
+  }
+  if (action.page) openPage(action.page, action.label);
+  else openPlaceholder(action.module || action.label);
+}
+
+function openModuleDropdown(anchor){
+  const mod = modules.find(m => m.id === activeModule) || modules[0];
+  closeModuleDropdown();
+  dropdownAnchor = anchor;
+  if (dropdownAnchor) dropdownAnchor.setAttribute('aria-expanded','true');
+
+  moduleDropdown.innerHTML = `
+    <div class="dropdown-title">${escapeHtml(mod.label)}</div>
+    ${mod.groups.map((group, groupIndex) => `
+      <div class="dropdown-group">
+        <div class="dropdown-group-title">${escapeHtml(group.title)}</div>
+        ${group.actions.map((action, actionIndex) => `
+          <button class="dropdown-action" type="button" role="menuitem" data-group="${groupIndex}" data-action-index="${actionIndex}">
+            <span class="dropdown-action-icon">${action.icon || '▦'}</span>
+            <span>${escapeHtml(action.label)}</span>
+          </button>
+        `).join('')}
+      </div>
+    `).join('')}
+  `;
+
+  moduleDropdown.classList.add('open');
+  positionModuleDropdown(anchor);
+
+  moduleDropdown.querySelectorAll('.dropdown-action').forEach(btn => {
+    btn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const action = mod.groups[Number(btn.dataset.group)].actions[Number(btn.dataset.actionIndex)];
+      closeModuleDropdown();
+      executeAction(action);
     });
   });
 }
@@ -425,18 +520,12 @@ function renderRibbon(){
   `).join('');
 
   ribbonEl.querySelectorAll('.action-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.dataset.action === 'reload') {
-        const current = frame.src;
-        frame.src = current.split('#')[0] + (current.includes('?') ? '&' : '?') + 'r=' + Date.now();
-        return;
-      }
-      if (btn.dataset.page) {
-        openPage(btn.dataset.page, btn.dataset.label);
-      } else {
-        openPlaceholder(btn.dataset.moduleLabel || btn.dataset.label);
-      }
-    });
+    btn.addEventListener('click', () => executeAction({
+      action: btn.dataset.action,
+      page: btn.dataset.page,
+      label: btn.dataset.label,
+      module: btn.dataset.moduleLabel
+    }));
   });
 }
 
@@ -490,7 +579,21 @@ async function logout(){
 document.getElementById('logout').addEventListener('click', logout);
 ribbonToggle.addEventListener('click', toggleRibbon);
 document.getElementById('btnHome').addEventListener('click', () => {
+  closeModuleDropdown();
   activeModule = 'inicio'; renderTabs(); renderRibbon(); openPage('paginas/dashboard.html','Visão geral');
+});
+
+document.addEventListener('click', (event) => {
+  if (!moduleDropdown.contains(event.target)) closeModuleDropdown();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeModuleDropdown();
+});
+window.addEventListener('resize', () => {
+  if (moduleDropdown.classList.contains('open')) positionModuleDropdown(dropdownAnchor);
+});
+tabsEl.addEventListener('scroll', () => {
+  if (moduleDropdown.classList.contains('open')) positionModuleDropdown(dropdownAnchor);
 });
 
 function updateClock(){
