@@ -56,11 +56,26 @@
     .window-btn{width:34px;height:30px;border:0;border-radius:5px;background:transparent;color:#fff;cursor:pointer;font-size:17px}
     .window-btn:hover{background:rgba(255,255,255,.14)}
 
-    .module-tabs{
-      height:var(--tabs-h);flex:0 0 var(--tabs-h);display:flex;align-items:end;gap:2px;
-      padding:5px 10px 0;background:#f5f7fa;border-bottom:1px solid var(--line);
-      overflow-x:auto;overflow-y:hidden;scrollbar-width:thin
+    .tabs-row{
+      height:var(--tabs-h);flex:0 0 var(--tabs-h);display:flex;align-items:stretch;
+      background:#f5f7fa;border-bottom:1px solid var(--line);position:relative;z-index:4
     }
+    .module-tabs{
+      min-width:0;flex:1;display:flex;align-items:end;gap:2px;
+      padding:5px 6px 0 10px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin
+    }
+    .ribbon-toggle-wrap{
+      flex:0 0 auto;display:flex;align-items:center;padding:4px 9px 3px 6px;
+      border-left:1px solid #dde5ef;background:#f5f7fa
+    }
+    .ribbon-toggle{
+      height:30px;min-width:38px;padding:0 9px;border:1px solid transparent;border-radius:5px;
+      background:transparent;color:#35506f;cursor:pointer;font-size:15px;line-height:1;
+      display:flex;align-items:center;justify-content:center;gap:6px
+    }
+    .ribbon-toggle:hover{background:#e8eef6;border-color:#cad6e5}
+    .ribbon-toggle:focus-visible{outline:2px solid #7aa7dc;outline-offset:1px}
+    .ribbon-toggle-text{font-size:11px;font-weight:600;white-space:nowrap}
     .module-tab{
       height:36px;padding:0 14px;border:1px solid transparent;border-bottom:0;
       border-radius:6px 6px 0 0;background:transparent;color:#30435d;
@@ -75,7 +90,12 @@
     .ribbon{
       height:var(--ribbon-h);flex:0 0 var(--ribbon-h);display:flex;align-items:stretch;
       gap:0;padding:7px 10px 6px;background:#fff;border-bottom:1px solid var(--line);
-      box-shadow:0 2px 5px rgba(30,55,80,.05);overflow-x:auto;overflow-y:hidden
+      box-shadow:0 2px 5px rgba(30,55,80,.05);overflow-x:auto;overflow-y:hidden;
+      opacity:1;transition:height .18s ease,flex-basis .18s ease,padding .18s ease,opacity .12s ease,border-color .18s ease
+    }
+    .ribbon.collapsed{
+      height:0;flex-basis:0;padding-top:0;padding-bottom:0;opacity:0;
+      border-bottom-color:transparent;box-shadow:none;pointer-events:none
     }
     .ribbon-group{display:flex;align-items:flex-start;gap:5px;padding:2px 10px 18px;position:relative;border-right:1px solid #dbe3ed;min-width:max-content}
     .ribbon-group:last-child{border-right:0}
@@ -117,6 +137,8 @@
       .user-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .action-btn{width:78px;font-size:10px}
       .module-tab{padding:0 10px}
+      .ribbon-toggle-text{display:none}
+      .ribbon-toggle{min-width:32px;padding:0 7px}
       .status-right .hide-mobile{display:none}
     }
   </style>
@@ -142,7 +164,16 @@
       </div>
     </header>
 
-    <nav class="module-tabs" id="moduleTabs" aria-label="Módulos do sistema"></nav>
+    <div class="tabs-row">
+      <nav class="module-tabs" id="moduleTabs" aria-label="Módulos do sistema"></nav>
+      <div class="ribbon-toggle-wrap">
+        <button class="ribbon-toggle" id="ribbonToggle" type="button"
+          aria-controls="ribbon" aria-expanded="true" title="Recolher faixa de opções">
+          <span id="ribbonToggleIcon">⌃</span>
+          <span class="ribbon-toggle-text" id="ribbonToggleText">Recolher faixa</span>
+        </button>
+      </div>
+    </div>
     <section class="ribbon" id="ribbon" aria-label="Comandos do módulo"></section>
 
     <main class="workspace-shell">
@@ -323,9 +354,32 @@ const loading = document.getElementById('loading');
 const app = document.getElementById('app');
 const tabsEl = document.getElementById('moduleTabs');
 const ribbonEl = document.getElementById('ribbon');
+const ribbonToggle = document.getElementById('ribbonToggle');
+const ribbonToggleIcon = document.getElementById('ribbonToggleIcon');
+const ribbonToggleText = document.getElementById('ribbonToggleText');
 const frame = document.getElementById('frame');
 const statusModule = document.getElementById('statusModule');
 let activeModule = 'inicio';
+
+const RIBBON_STORAGE_KEY = 'sec_auxiliar_ribbon_recolhida';
+
+function applyRibbonState(collapsed){
+  ribbonEl.classList.toggle('collapsed', collapsed);
+  ribbonToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+  ribbonToggleIcon.textContent = collapsed ? '⌄' : '⌃';
+  ribbonToggleText.textContent = collapsed ? 'Mostrar faixa' : 'Recolher faixa';
+  ribbonToggle.title = collapsed ? 'Mostrar faixa de opções' : 'Recolher faixa de opções';
+}
+
+function loadRibbonPreference(){
+  applyRibbonState(localStorage.getItem(RIBBON_STORAGE_KEY) === '1');
+}
+
+function toggleRibbon(){
+  const collapsed = !ribbonEl.classList.contains('collapsed');
+  localStorage.setItem(RIBBON_STORAGE_KEY, collapsed ? '1' : '0');
+  applyRibbonState(collapsed);
+}
 
 function openPage(page, label=''){
   const sep = page.includes('?') ? '&' : '?';
@@ -434,6 +488,7 @@ async function logout(){
 }
 
 document.getElementById('logout').addEventListener('click', logout);
+ribbonToggle.addEventListener('click', toggleRibbon);
 document.getElementById('btnHome').addEventListener('click', () => {
   activeModule = 'inicio'; renderTabs(); renderRibbon(); openPage('paginas/dashboard.html','Visão geral');
 });
@@ -445,6 +500,7 @@ function updateClock(){
 }
 updateClock();
 setInterval(updateClock, 30000);
+loadRibbonPreference();
 verifySession();
 </script>
 </body>
