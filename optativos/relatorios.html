@@ -38,30 +38,44 @@
       padding:0 24px;
       box-shadow:0 2px 10px rgba(16,24,40,.12);
     }
+
     header.topbar .brand{
-      display:flex; align-items:center; gap:12px;
-      min-width: 0;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
     }
+
     header.topbar h5{
-      margin:0; font-weight:600;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      margin:0;
+      font-weight:600;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
       font-size:1.1rem;
     }
+
     header.topbar .right-actions{
       margin-left:auto;
-      display:flex; align-items:center; gap:10px;
+      display:flex;
+      align-items:center;
+      gap:10px;
     }
+
     .btn-logout{
       border-radius:999px;
-      background: rgba(255,255,255,.15);
+      background:rgba(255,255,255,.15);
       box-shadow:none;
     }
-    .btn-logout:hover{ background: rgba(255,255,255,.22); }
+
+    .btn-logout:hover{
+      background:rgba(255,255,255,.22);
+    }
 
     /* ===== Layout ===== */
     .wrap{
-      max-width: 720px;
-      margin:96px auto 0; /* por causa da topbar fixa */
+      max-width:720px;
+      margin:96px auto 0;
     }
 
     .panel-card{
@@ -73,8 +87,8 @@
     }
 
     .dropdown-content{
-      max-height: 320px !important;
-      overflow-y: auto !important;
+      max-height:320px !important;
+      overflow-y:auto !important;
     }
 
     .panel-head{
@@ -83,12 +97,14 @@
       gap:10px;
       align-items:flex-start;
     }
+
     .panel-head .title{
       margin:0;
       font-weight:800;
       color:#111827;
       font-size:1.15rem;
     }
+
     .panel-head .sub{
       margin:2px 0 0;
       color:var(--muted);
@@ -96,38 +112,52 @@
       line-height:1.35;
     }
 
-    .panel-body{ padding: 14px 18px 18px; }
+    .panel-body{
+      padding:14px 18px 18px;
+    }
 
     .actions{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
-      margin-top: 8px;
+      margin-top:8px;
     }
+
     .actions-center{
       justify-content:center;
     }
 
     .btn-wide{
-      border-radius: 12px;
+      border-radius:12px;
       box-shadow:none;
       text-transform:none;
       font-weight:700;
     }
 
     /* mobile */
-    @media (max-width: 600px){
-      body{ padding:16px; }
-      header.topbar{ padding:0 14px; }
-      .wrap{ margin-top:86px; }
-      .btn-wide{ width:100%; }
+    @media (max-width:600px){
+      body{
+        padding:16px;
+      }
+
+      header.topbar{
+        padding:0 14px;
+      }
+
+      .wrap{
+        margin-top:86px;
+      }
+
+      .btn-wide{
+        width:100%;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- Topo (igual painel) -->
+  <!-- Topo -->
   <header class="topbar">
     <div class="brand">
       <img src="/optativos/logo-mini.png" alt="Logo" style="height:28px;">
@@ -135,7 +165,8 @@
     </div>
 
     <div class="right-actions">
-      <a class="btn btn-small btn-logout white-text" href="https://apisec.secauxiliar.com.br/optativo/logout.php">
+      <a class="btn btn-small btn-logout white-text"
+         href="https://apisec.secauxiliar.com.br/optativo/logout.php">
         <i class="material-icons left">logout</i>Sair
       </a>
     </div>
@@ -146,9 +177,12 @@
     <div class="panel-card">
       <div class="panel-head">
         <i class="material-icons" style="color:var(--primary); margin-top:2px;">print</i>
+
         <div>
           <p class="title">Relatórios</p>
-          <p class="sub">Escolha o curso e abra o relatório para imprimir / salvar em PDF.</p>
+          <p class="sub">
+            Escolha o curso e abra o relatório para imprimir / salvar em PDF.
+          </p>
         </div>
       </div>
 
@@ -156,20 +190,13 @@
 
         <div class="input-field" style="margin-top:12px;">
           <select id="curso">
-            <option value="" disabled selected>Selecione o curso</option>
-
-            <!-- pode deixar fixo por enquanto -->
-            <option value="1">EXT - MEDICINA</option>
-            <option value="2">EXT - ESPECIAL BIOLÓGICAS</option>
-            <option value="3">EXT - ESPECIAL HUMANAS</option>
-            <option value="4">EXT - ESPECIAL EXATAS</option>
+            <option value="" disabled selected>Carregando cursos...</option>
           </select>
           <label>Curso</label>
         </div>
 
         <div class="divider"></div>
 
-        <!-- Botões centralizados -->
         <div class="actions actions-center" style="margin-top:16px;">
           <button class="btn blue darken-2 btn-wide" onclick="abrirListaGeral()">
             <i class="material-icons left">list</i>Lista Geral (Entrada)
@@ -193,44 +220,107 @@
 
   </div>
 
-<script>
-  // ✅ mesmo padrão do seu projeto
-  const API = 'https://apisec.secauxiliar.com.br/optativo/';
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/optativo/';
 
-  document.addEventListener('DOMContentLoaded', () => {
-    M.FormSelect.init(document.querySelectorAll('select'));
-  });
+    document.addEventListener('DOMContentLoaded', async () => {
+      await carregarCursos();
+    });
 
-  function cursoId(){
-    const v = document.getElementById('curso').value;
-    if(!v){
-      M.toast({html:'Selecione um curso'});
-      return null;
+    async function carregarCursos(){
+      const select = document.getElementById('curso');
+
+      try {
+        const resposta = await fetch(API + 'listar_cursos.php', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        let dados;
+
+        try {
+          dados = await resposta.json();
+        } catch {
+          throw new Error('A API retornou uma resposta inválida.');
+        }
+
+        if (!resposta.ok || !dados.ok) {
+          throw new Error(dados.erro || 'Não foi possível carregar os cursos.');
+        }
+
+        select.innerHTML =
+          '<option value="" disabled selected>Selecione o curso</option>';
+
+        const cursos = Array.isArray(dados.cursos) ? dados.cursos : [];
+
+        cursos.forEach(curso => {
+          const option = document.createElement('option');
+          option.value = curso.id;
+          option.textContent = curso.nome;
+          select.appendChild(option);
+        });
+
+        if (cursos.length === 0) {
+          select.innerHTML =
+            '<option value="" disabled selected>Nenhum curso ativo encontrado</option>';
+        }
+
+        M.FormSelect.init(select);
+
+      } catch (erro) {
+        console.error('Erro ao carregar cursos:', erro);
+
+        select.innerHTML =
+          '<option value="" disabled selected>Erro ao carregar cursos</option>';
+
+        M.FormSelect.init(select);
+
+        M.toast({
+          html: erro.message || 'Erro ao carregar os cursos.'
+        });
+      }
     }
-    return v;
-  }
 
-  function abrirListaGeral(){
-    const id = cursoId();
-    if(!id) return;
-    const url = API + 'relatorio_lista_entrada.php?curso_id=' + encodeURIComponent(id);
-    window.open(url, '_blank');
-  }
+    function cursoId(){
+      const valor = document.getElementById('curso').value;
 
-  function abrirListaSala(){
-    const id = cursoId();
-    if(!id) return;
-    const url = API + 'relatorio_porta_sala.php?curso_id=' + encodeURIComponent(id);
-    window.open(url, '_blank');
-  }
+      if (!valor) {
+        M.toast({ html: 'Selecione um curso' });
+        return null;
+      }
 
-  // ✅ novo relatório (admin solto: data + curso + sala)
-  function abrirPresencaDia(){
-    // não precisa passar curso_id, porque a tela já lista os cursos via API
-    const url = 'relatorio-presenca-dia.html';
-    window.open(url, '_blank');
-  }
-</script>
+      return valor;
+    }
+
+    function abrirListaGeral(){
+      const id = cursoId();
+      if (!id) return;
+
+      const url =
+        API +
+        'relatorio_lista_entrada.php?curso_id=' +
+        encodeURIComponent(id);
+
+      window.open(url, '_blank');
+    }
+
+    function abrirListaSala(){
+      const id = cursoId();
+      if (!id) return;
+
+      const url =
+        API +
+        'relatorio_porta_sala.php?curso_id=' +
+        encodeURIComponent(id);
+
+      window.open(url, '_blank');
+    }
+
+    function abrirPresencaDia(){
+      window.open('relatorio-presenca-dia.html', '_blank');
+    }
+  </script>
 
 </body>
 </html>
