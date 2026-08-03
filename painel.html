@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico"><title>SEC-AUXILIAR — Painel</title>
+<style>
+:root{--primary:#0b3b78;--primary-2:#124f99;--bg:#edf3fa;--surface:#fff;--line:#dbe6f3;--ink:#0f172a;--muted:#64748b;--sidebar:260px;--top:64px}*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}button{font:inherit}.hidden{display:none!important}
+.topbar{height:var(--top);position:fixed;inset:0 0 auto 0;background:linear-gradient(90deg,var(--primary),var(--primary-2));color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:1000;box-shadow:0 2px 12px rgba(15,23,42,.16)}.brand{display:flex;align-items:center;gap:12px;font-weight:800}.brand img{height:30px}.user{display:flex;align-items:center;gap:10px;font-size:14px}.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.18);font-weight:800}.hamb{display:none;border:0;background:transparent;color:#fff;font-size:25px;cursor:pointer}
+.sidebar{position:fixed;top:var(--top);left:0;bottom:0;width:var(--sidebar);background:#f8fbff;border-right:1px solid var(--line);padding:18px 14px;z-index:900;overflow:auto;transition:.22s}.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#8291a7;font-weight:800;padding:12px 10px 7px}.nav-btn,.group-btn{width:100%;border:0;background:transparent;color:#29415f;border-radius:11px;padding:12px 13px;display:flex;align-items:center;gap:11px;text-align:left;font-weight:700;cursor:pointer;margin:3px 0}.nav-btn:hover,.group-btn:hover{background:#e8f1fc}.nav-btn.active{background:var(--primary);color:#fff;box-shadow:0 7px 16px rgba(11,59,120,.18)}.icon{width:22px;text-align:center;font-size:17px}.chev{margin-left:auto;transition:.18s}.group.open .chev{transform:rotate(90deg)}.submenu{display:none;padding-left:12px}.group.open .submenu{display:block}.submenu .nav-btn{font-size:14px;padding:10px 12px}.logout{margin-top:20px;color:#9b2c2c;background:#fff1f1}.logout:hover{background:#ffe4e4}
+.main{margin-left:var(--sidebar);padding:calc(var(--top) + 18px) 18px 18px;min-height:100%}.workspace{height:calc(100vh - var(--top) - 36px);background:#f8fbff;border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:0 10px 30px rgba(11,59,120,.07)}iframe{width:100%;height:100%;border:0;border-radius:13px;background:#fff;display:block}.loading{height:100%;display:grid;place-items:center;color:var(--muted)}.overlay{display:none}
+@media(max-width:900px){.hamb{display:block}.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.overlay.show{display:block;position:fixed;inset:var(--top) 0 0 0;background:rgba(15,23,42,.35);z-index:850}.user-name{display:none}}
+</style>
+</head>
+<body>
+<div id="loading" class="loading">Verificando acesso...</div>
+<div id="app" class="hidden">
+<header class="topbar"><div class="brand"><button class="hamb" id="hamb">☰</button><img src="/optativos/logo-mini.png" alt="Objetivo"><span>SEC-AUXILIAR</span></div><div class="user"><span class="user-name" id="userName"></span><span class="avatar" id="avatar">U</span></div></header>
+<div class="overlay" id="overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="section-title">Principal</div>
+  <button class="nav-btn active" data-page="paginas/dashboard.html"><span class="icon">⌂</span>Visão geral</button>
+  <div class="section-title">Módulos</div>
+  <div class="group">
+    <button class="group-btn"><span class="icon">▦</span>Cadastros<span class="chev">›</span></button>
+    <div class="submenu">
+      <button class="nav-btn" data-page="paginas/em_construcao.html?modulo=Usuários">Usuários</button>
+      <button class="nav-btn" data-page="paginas/em_construcao.html?modulo=Unidades">Unidades</button>
+    </div>
+  </div>
+  <div class="group">
+    <button class="group-btn"><span class="icon">▤</span>Operações<span class="chev">›</span></button>
+    <div class="submenu">
+      <button class="nav-btn" data-page="paginas/em_construcao.html?modulo=Rotinas">Rotinas</button>
+      <button class="nav-btn" data-page="paginas/em_construcao.html?modulo=Importações">Importações</button>
+    </div>
+  </div>
+  <div class="group">
+    <button class="group-btn"><span class="icon">◫</span>Relatórios<span class="chev">›</span></button>
+    <div class="submenu"><button class="nav-btn" data-page="paginas/em_construcao.html?modulo=Relatórios">Relatórios gerais</button></div>
+  </div>
+  <button class="nav-btn logout" id="logout"><span class="icon">↪</span>Sair</button>
+</aside>
+<main class="main"><section class="workspace"><iframe id="frame" src="paginas/dashboard.html"></iframe></section></main>
+</div>
+<script>
+const API='https://apisec.secauxiliar.com.br/sec/';const app=document.getElementById('app'),loading=document.getElementById('loading'),frame=document.getElementById('frame'),sidebar=document.getElementById('sidebar'),overlay=document.getElementById('overlay');
+function closeMobile(){sidebar.classList.remove('open');overlay.classList.remove('show')}
+document.getElementById('hamb').onclick=()=>{sidebar.classList.toggle('open');overlay.classList.toggle('show')};overlay.onclick=closeMobile;
+document.querySelectorAll('.group-btn').forEach(b=>b.onclick=()=>b.parentElement.classList.toggle('open'));
+document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');const p=b.dataset.page,sep=p.includes('?')?'&':'?';frame.src=p+sep+'v='+Date.now();closeMobile()});
+async function check(){try{const r=await fetch(API+'auth_me.php',{credentials:'include',cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw new Error();const u=d.user||{},nivel=String(u.nivel||'').toLowerCase();if(nivel!=='admin')throw new Error();const nome=u.nome||u.login||'Usuário';document.getElementById('userName').textContent=nome+' • '+nivel;document.getElementById('avatar').textContent=nome.trim().charAt(0).toUpperCase();loading.classList.add('hidden');app.classList.remove('hidden')}catch(e){location.replace('./index.html')}}
+document.getElementById('logout').onclick=async()=>{try{await fetch(API+'auth_logout.php',{method:'POST',credentials:'include',cache:'no-store'})}catch(e){}location.replace('./index.html')};check();
+</script></body></html>
