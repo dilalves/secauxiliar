@@ -1173,9 +1173,10 @@
             title: 'Concursos',
             actions: [
               {
-                label: 'Concurso de Bolsa',                
-                module: 'Administração — Concursos'
-              },
+                label: 'Concurso de Bolsa',
+                page: 'PAGINAS/concursos.html',
+                nivel: 'admin'
+            },
               {
                 label: 'Gabarito',
                 module: 'Administração — Concursos'
@@ -1263,6 +1264,30 @@
     function executeAction(action) {
       if (!action) {
         return;
+      }
+
+      // Controle de permissão
+      if (action.nivel) {
+        const nivelUsuario = String(
+          window.usuario?.nivel || ''
+        )
+          .trim()
+          .toLowerCase();
+
+        const nivelNecessario = String(
+          action.nivel
+        )
+          .trim()
+          .toLowerCase();
+
+        if (nivelUsuario !== nivelNecessario) {
+          openPage(
+            'paginas/sem_permissao.html',
+            'Acesso negado'
+          );
+
+          return;
+        }
       }
 
       if (action.action === 'reload') {
@@ -1499,6 +1524,7 @@
 
         const user =
           data.user || {};
+          window.usuario = user;
 
         const nivel =
           String(user.nivel || '')
