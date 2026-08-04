@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SEC-AUXILIAR — Gabaritos</title>
+  <style>
+    :root{
+      --primary:#0b3b78;--primary2:#1759a8;--bg:#f4f7fb;--card:#fff;
+      --line:#dbe5f0;--ink:#172033;--muted:#68758a;--danger:#b42318;
+      --dangerbg:#fff1f0;--ok:#087443;--okbg:#ecfdf3;
+      --shadow:0 12px 35px rgba(18,38,63,.10)
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+    .topbar{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;padding:18px 24px}
+    .topbar-inner{max-width:1400px;margin:0 auto}
+    .topbar h1{margin:0;font-size:22px}.topbar small{display:block;margin-top:4px;opacity:.82}
+    .container{max-width:1400px;margin:22px auto;padding:0 18px 40px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+    .toolbar{padding:15px;display:flex;gap:10px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);flex-wrap:wrap}
+    .search{display:flex;gap:8px;flex:1;min-width:280px}
+    input,select,button{font:inherit}
+    input,select{width:100%;border:1px solid #cbd7e5;border-radius:8px;padding:9px 10px;background:#fff}
+    button{border:0;border-radius:8px;padding:9px 13px;cursor:pointer;font-weight:700}
+    .primary{background:var(--primary);color:#fff}.light{background:#eef3f8;color:#26364d}
+    .danger{background:var(--dangerbg);color:var(--danger)}.small{padding:6px 9px;font-size:13px}
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:collapse;min-width:920px}
+    th,td{padding:11px 10px;border-bottom:1px solid #e8eef5;text-align:left}
+    th{background:#f8fafc;font-size:13px;color:#43536a}
+    td{font-size:14px}.actions{display:flex;gap:7px;white-space:nowrap}
+    .status{padding:10px 13px;border-radius:8px;margin-bottom:13px;display:none}
+    .status.ok{display:block;background:var(--okbg);color:var(--ok);border:1px solid #a9e6c5}
+    .status.error{display:block;background:var(--dangerbg);color:var(--danger);border:1px solid #f4b8b3}
+    .empty{padding:34px;text-align:center;color:var(--muted)}
+    dialog{width:min(1100px,calc(100% - 24px));border:0;border-radius:14px;padding:0;box-shadow:0 24px 70px rgba(0,0,0,.28)}
+    dialog::backdrop{background:rgba(13,26,45,.55)}
+    .modal-head,.modal-foot{padding:16px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+    .modal-foot{border-top:1px solid var(--line);border-bottom:0;justify-content:flex-end;gap:8px}
+    .modal-body{padding:18px;max-height:72vh;overflow:auto}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+    .full{grid-column:1/-1}
+    label{display:block;margin-bottom:5px;font-size:13px;font-weight:700;color:#3c4c62}
+    .answers-title{margin:22px 0 10px;font-weight:800;color:var(--primary)}
+    .answers{display:grid;grid-template-columns:repeat(10,minmax(72px,1fr));gap:9px}
+    .answer{border:1px solid var(--line);border-radius:9px;padding:8px;background:#f9fbfd}
+    .answer label{text-align:center}.answer select{text-align:center;font-weight:700;padding:7px 5px}
+    .counter{font-size:13px;color:var(--muted)}
+    @media(max-width:900px){.answers{grid-template-columns:repeat(5,minmax(65px,1fr))}}
+    @media(max-width:650px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.answers{grid-template-columns:repeat(4,minmax(60px,1fr))}}
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <h1>Manutenção de Gabaritos</h1>
+    <small>Tabela gabaritos_concurso</small>
+  </div>
+</header>
+
+<main class="container">
+  <div id="status" class="status"></div>
+
+  <section class="card">
+    <div class="toolbar">
+      <div class="search">
+        <input id="busca" type="search" placeholder="Buscar por código da prova, descrição ou ID">
+        <button id="btnBuscar" class="light" type="button">Buscar</button>
+      </div>
+      <button id="btnNovo" class="primary" type="button">+ Novo gabarito</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cód. prova</th>
+            <th>Descrição</th>
+            <th>Respondidas</th>
+            <th>Link da prova</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="6" class="empty">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="toolbar">
+      <span id="contador" class="counter">0 registro(s)</span>
+    </div>
+  </section>
+</main>
+
+<dialog id="modal">
+  <form id="form">
+    <div class="modal-head">
+      <h2 id="titulo" style="margin:0">Novo gabarito</h2>
+      <button id="btnFechar" type="button" class="light small">Fechar</button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="IdGabarito" name="IdGabarito">
+
+      <div class="grid">
+        <div>
+          <label for="CodProva">Código da prova *</label>
+          <input id="CodProva" name="CodProva" maxlength="5" required>
+        </div>
+
+        <div>
+          <label for="Descricao">Descrição</label>
+          <input id="Descricao" name="Descricao" maxlength="50">
+        </div>
+
+        <div>
+          <label for="link_prova">Link da prova</label>
+          <input id="link_prova" name="link_prova" maxlength="200" type="url">
+        </div>
+      </div>
+
+      <div class="answers-title">Respostas</div>
+      <div id="answers" class="answers"></div>
+    </div>
+
+    <div class="modal-foot">
+      <button id="btnCancelar" type="button" class="light">Cancelar</button>
+      <button id="btnSalvar" type="submit" class="primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+'use strict';
+
+const API_BASE = 'https://apisec.secauxiliar.com.br/sec/';
+
+const API = {
+  listar: API_BASE + 'listar_gabaritos.php',
+  salvar: API_BASE + 'salvar_gabarito.php',
+  alterar: API_BASE + 'alterar_gabarito.php',
+  excluir: API_BASE + 'excluir_gabarito.php'
+};
+
+const tbody = document.getElementById('tbody');
+const contador = document.getElementById('contador');
+const busca = document.getElementById('busca');
+const modal = document.getElementById('modal');
+const form = document.getElementById('form');
+const statusBox = document.getElementById('status');
+const btnSalvar = document.getElementById('btnSalvar');
+
+let dados = [];
+let editando = false;
+
+function escapeHtml(valor) {
+  return String(valor ?? '')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+}
+
+function mensagem(texto, tipo='ok') {
+  statusBox.className = 'status ' + tipo;
+  statusBox.textContent = texto;
+
+  clearTimeout(mensagem.timer);
+  mensagem.timer = setTimeout(() => {
+    statusBox.className = 'status';
+    statusBox.textContent = '';
+  }, 5000);
+}
+
+async function api(url, options={}) {
+  const response = await fetch(url, {
+    cache: 'no-store',
+    credentials: 'include',
+    ...options
+  });
+
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error('Resposta inválida do servidor.');
+  }
+
+  if (!response.ok || data.ok === false) {
+    throw new Error(data.message || data.error || data.msg || 'Erro na operação.');
+  }
+
+  return data;
+}
+
+function montarQuestoes() {
+  const area = document.getElementById('answers');
+
+  area.innerHTML = Array.from({length:50}, (_,i) => {
+    const n = i + 1;
+
+    return `
+      <div class="answer">
+        <label for="Q${n}">Q${n}</label>
+        <select id="Q${n}" name="Q${n}">
+          <option value="">—</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+          <option value="#">#</option>
+        </select>
+      </div>
+    `;
+  }).join('');
+}
+
+function contarRespondidas(item) {
+  let total = 0;
+
+  for (let i=1; i<=50; i++) {
+    if (String(item['Q'+i] ?? '').trim() !== '') total++;
+  }
+
+  return total;
+}
+
+function renderizar() {
+  contador.textContent = `${dados.length} registro(s)`;
+
+  if (!dados.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum gabarito encontrado.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = dados.map((item, index) => {
+    const link = item.link_prova
+      ? `<a href="${escapeHtml(item.link_prova)}" target="_blank" rel="noopener">Abrir prova</a>`
+      : '';
+
+    return `
+      <tr>
+        <td>${escapeHtml(item.IdGabarito)}</td>
+        <td>${escapeHtml(item.CodProva)}</td>
+        <td>${escapeHtml(item.Descricao)}</td>
+        <td>${contarRespondidas(item)}/50</td>
+        <td>${link}</td>
+        <td>
+          <div class="actions">
+            <button type="button" class="light small" onclick="editar(${index})">Editar</button>
+            <button type="button" class="danger small" onclick="excluir(${index})">Excluir</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function carregar() {
+  tbody.innerHTML = '<tr><td colspan="6" class="empty">Carregando...</td></tr>';
+
+  try {
+    const q = busca.value.trim();
+    const retorno = await api(API.listar + '?q=' + encodeURIComponent(q));
+    dados = retorno.dados || [];
+    renderizar();
+  } catch (erro) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">${escapeHtml(erro.message)}</td></tr>`;
+    mensagem(erro.message, 'error');
+  }
+}
+
+function novo() {
+  editando = false;
+  form.reset();
+  document.getElementById('IdGabarito').value = '';
+  document.getElementById('titulo').textContent = 'Novo gabarito';
+
+  for (let i=1; i<=50; i++) {
+    document.getElementById('Q'+i).value = '';
+  }
+
+  modal.showModal();
+  document.getElementById('CodProva').focus();
+}
+
+window.editar = function(index) {
+  const item = dados[index];
+  editando = true;
+
+  document.getElementById('titulo').textContent =
+    `Alterar gabarito ${item.CodProva}`;
+
+  document.getElementById('IdGabarito').value = item.IdGabarito;
+  document.getElementById('CodProva').value = item.CodProva ?? '';
+  document.getElementById('Descricao').value = item.Descricao ?? '';
+  document.getElementById('link_prova').value = item.link_prova ?? '';
+
+  for (let i=1; i<=50; i++) {
+    document.getElementById('Q'+i).value = item['Q'+i] ?? '';
+  }
+
+  modal.showModal();
+};
+
+window.excluir = async function(index) {
+  const item = dados[index];
+
+  if (!confirm(`Excluir o gabarito da prova ${item.CodProva}?`)) return;
+
+  try {
+    const body = new URLSearchParams({
+      IdGabarito: item.IdGabarito
+    });
+
+    const retorno = await api(API.excluir, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      body
+    });
+
+    mensagem(retorno.message);
+    await carregar();
+  } catch (erro) {
+    mensagem(erro.message, 'error');
+  }
+};
+
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  btnSalvar.disabled = true;
+  btnSalvar.textContent = 'Salvando...';
+
+  try {
+    const body = new URLSearchParams(new FormData(form));
+    const endpoint = editando ? API.alterar : API.salvar;
+
+    const retorno = await api(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      body
+    });
+
+    modal.close();
+    mensagem(retorno.message);
+    await carregar();
+  } catch (erro) {
+    mensagem(erro.message, 'error');
+  } finally {
+    btnSalvar.disabled = false;
+    btnSalvar.textContent = 'Salvar';
+  }
+});
+
+document.getElementById('btnNovo').addEventListener('click', novo);
+document.getElementById('btnBuscar').addEventListener('click', carregar);
+document.getElementById('btnFechar').addEventListener('click', () => modal.close());
+document.getElementById('btnCancelar').addEventListener('click', () => modal.close());
+
+busca.addEventListener('keydown', event => {
+  if (event.key === 'Enter') carregar();
+});
+
+montarQuestoes();
+carregar();
+</script>
+</body>
+</html>
