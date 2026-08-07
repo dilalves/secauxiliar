@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Cadastrar Adesão</title>
+
+  <link
+    href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    rel="stylesheet"
+  >
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+
+    :root {
+      --azul: #0b4383;
+      --azul2: #143f75;
+      --fundo: #eef4fb;
+      --borda: #d6e2f2;
+      --texto: #17324f;
+      --muted: #697c91;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      background: var(--fundo);
+      color: var(--texto);
+    }
+
+    .topo {
+      height: 58px;
+      background: var(--azul2);
+      color: white;
+
+      display: flex;
+      align-items: center;
+
+      padding: 0 28px;
+
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .topo i {
+      margin-right: 10px;
+    }
+
+    .pagina {
+      max-width: 1000px;
+
+      margin: 28px auto;
+      padding: 0 18px;
+    }
+
+    .card {
+      background: white;
+
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+
+      padding: 26px;
+
+      box-shadow:
+        0 6px 20px
+        rgba(38, 72, 110, .08);
+    }
+
+    h1 {
+      margin: 0 0 5px;
+
+      font-size: 24px;
+      color: var(--azul);
+    }
+
+    .subtitulo {
+      color: var(--muted);
+      font-size: 14px;
+
+      margin-bottom: 26px;
+    }
+
+    .titulo-secao {
+      font-size: 16px;
+      font-weight: 700;
+
+      color: var(--azul);
+
+      margin-top: 26px;
+      margin-bottom: 14px;
+
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(12, 1fr);
+
+      gap: 16px;
+    }
+
+    .campo {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .col-2 { grid-column: span 2; }
+    .col-3 { grid-column: span 3; }
+    .col-4 { grid-column: span 4; }
+    .col-5 { grid-column: span 5; }
+    .col-6 { grid-column: span 6; }
+    .col-8 { grid-column: span 8; }
+    .col-9 { grid-column: span 9; }
+    .col-12 { grid-column: span 12; }
+
+    label {
+      font-size: 12px;
+
+      font-weight: 700;
+
+      margin-bottom: 6px;
+
+      color: #47617c;
+    }
+
+    input {
+      width: 100%;
+
+      height: 42px;
+
+      border:
+        1px solid #cddbea;
+
+      border-radius: 8px;
+
+      padding: 0 12px;
+
+      font-size: 14px;
+
+      color: #17324f;
+
+      outline: none;
+
+      transition: .2s;
+    }
+
+    input:focus {
+      border-color: var(--azul);
+
+      box-shadow:
+        0 0 0 3px
+        rgba(11, 67, 131, .10);
+    }
+
+    input[readonly] {
+      background: #f3f6fa;
+      color: #52677e;
+    }
+
+    .linha-busca {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .linha-busca .campo {
+      flex: 1;
+    }
+
+    button {
+      height: 42px;
+
+      border: none;
+      border-radius: 8px;
+
+      padding: 0 18px;
+
+      cursor: pointer;
+
+      font-weight: 700;
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      gap: 7px;
+    }
+
+    .btn-primary {
+      background: var(--azul);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #08376b;
+    }
+
+    .btn-secondary {
+      background: #e8f0fa;
+      color: var(--azul);
+    }
+
+    .acoes {
+      display: flex;
+      gap: 10px;
+
+      margin-top: 26px;
+
+      border-top:
+        1px solid #e3ebf5;
+
+      padding-top: 20px;
+    }
+
+    .info-unidade {
+      background: #f6f9fd;
+
+      border:
+        1px solid #deE8f4;
+
+      border-radius: 10px;
+
+      padding: 16px;
+
+      margin-top: 18px;
+    }
+
+    .oculto {
+      display: none;
+    }
+
+    .loading {
+      opacity: .6;
+      pointer-events: none;
+    }
+
+    @media(max-width: 750px) {
+
+      .col-2,
+      .col-3,
+      .col-4,
+      .col-5,
+      .col-6,
+      .col-8,
+      .col-9 {
+        grid-column: span 12;
+      }
+
+      .linha-busca {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .acoes {
+        flex-direction: column;
+      }
+
+    }
+
+  </style>
+</head>
+
+
+<body>
+
+<div class="topo">
+
+  <i class="material-icons">
+    add_business
+  </i>
+
+  Simulados Abertos - Cadastro Administrativo de Adesão
+
+</div>
+
+
+<div class="pagina">
+
+  <div class="card">
+
+    <h1>
+      Cadastrar adesão
+    </h1>
+
+    <div class="subtitulo">
+
+      Cadastre manualmente uma unidade
+      que receberá provas do evento.
+
+      A adesão será criada com status
+      <b>AGUARDANDO</b>.
+
+    </div>
+
+
+    <!-- EVENTO -->
+
+    <div class="titulo-secao">
+
+      <i class="material-icons">
+        event
+      </i>
+
+      Evento
+
+    </div>
+
+
+    <div class="grid">
+
+      <div class="campo col-4">
+
+        <label for="evento">
+          Evento
+        </label>
+
+        <input
+          id="evento"
+          type="text"
+          maxlength="30"
+          placeholder="Ex.: ENEM0926"
+          autocomplete="off"
+        >
+
+      </div>
+
+    </div>
+
+
+    <!-- UNIDADE -->
+
+    <div class="titulo-secao">
+
+      <i class="material-icons">
+        apartment
+      </i>
+
+      Unidade
+
+    </div>
+
+
+    <div class="linha-busca">
+
+      <div class="campo">
+
+        <label for="codigo_unidade">
+          Código da unidade
+        </label>
+
+        <input
+          id="codigo_unidade"
+          type="text"
+          maxlength="10"
+          placeholder="Ex.: 1501"
+          autocomplete="off"
+        >
+
+      </div>
+
+
+      <button
+        id="btnBuscar"
+        class="btn-primary"
+        type="button"
+      >
+
+        <i class="material-icons">
+          search
+        </i>
+
+        Buscar unidade
+
+      </button>
+
+    </div>
+
+
+    <!-- DADOS UNIDADE -->
+
+    <div
+      id="boxUnidade"
+      class="info-unidade oculto"
+    >
+
+      <div class="grid">
+
+        <div class="campo col-4">
+
+          <label>
+            Unidade
+          </label>
+
+          <input
+            id="unidade_nome"
+            readonly
+          >
+
+        </div>
+
+
+        <div class="campo col-4">
+
+          <label>
+            CNPJ
+          </label>
+
+          <input
+            id="cnpj"
+            readonly
+          >
+
+        </div>
+
+
+        <div class="campo col-4">
+
+          <label>
+            E-mail institucional
+          </label>
+
+          <input
+            id="email"
+            readonly
+          >
+
+        </div>
+
+      </div>
+
+
+      <!-- LOCAL PROVA -->
+
+      <div class="titulo-secao">
+
+        <i class="material-icons">
+          location_on
+        </i>
+
+        Local de prova
+
+      </div>
+
+
+      <div class="grid">
+
+        <div class="campo col-8">
+
+          <label>
+            Endereço
+          </label>
+
+          <input id="endereco">
+
+        </div>
+
+
+        <div class="campo col-4">
+
+          <label>
+            Cidade
+          </label>
+
+          <input id="cidade">
+
+        </div>
+
+
+        <div class="campo col-2">
+
+          <label>
+            UF
+          </label>
+
+          <input
+            id="uf"
+            maxlength="2"
+          >
+
+        </div>
+
+
+        <div class="campo col-3">
+
+          <label>
+            CEP
+          </label>
+
+          <input id="cep">
+
+        </div>
+
+
+        <div class="campo col-2">
+
+          <label>
+            DDD
+          </label>
+
+          <input id="ddd">
+
+        </div>
+
+
+        <div class="campo col-5">
+
+          <label>
+            Telefone
+          </label>
+
+          <input id="telefone">
+
+        </div>
+
+      </div>
+
+
+      <!-- QUANTIDADE -->
+
+      <div class="titulo-secao">
+
+        <i class="material-icons">
+          inventory_2
+        </i>
+
+        Quantidade de provas
+
+      </div>
+
+
+      <div class="grid">
+
+        <div class="campo col-3">
+
+          <label>
+            Quantidade de provas
+          </label>
+
+          <input
+            id="quantidade"
+            type="number"
+            min="1"
+            step="1"
+            placeholder="0"
+          >
+
+        </div>
+
+      </div>
+
+
+      <!-- AÇÕES -->
+
+      <div class="acoes">
+
+        <button
+          id="btnSalvar"
+          class="btn-primary"
+          type="button"
+        >
+
+          <i class="material-icons">
+            save
+          </i>
+
+          Cadastrar adesão
+
+        </button>
+
+
+        <button
+          id="btnCancelar"
+          class="btn-secondary"
+          type="button"
+        >
+
+          <i class="material-icons">
+            arrow_back
+          </i>
+
+          Voltar ao painel
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+(() => {
+
+  const API_BASE =
+    'https://apisec.secauxiliar.com.br/sim_adm';
+
+
+  const $ =
+    id => document.getElementById(id);
+
+
+  let unidadeAtual = null;
+
+
+  function parametro(nome) {
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    return params.get(nome) || '';
+
+  }
+
+
+  function limparUnidade() {
+
+    unidadeAtual = null;
+
+    $('boxUnidade')
+      .classList
+      .add('oculto');
+
+    [
+      'unidade_nome',
+      'cnpj',
+      'email',
+      'endereco',
+      'cidade',
+      'uf',
+      'cep',
+      'ddd',
+      'telefone',
+      'quantidade'
+
+    ].forEach(id => {
+
+      $(id).value = '';
+
+    });
+
+  }
+
+
+  async function apiGet(url) {
+
+    const response =
+      await fetch(
+        API_BASE + url,
+        {
+          credentials: 'include'
+        }
+      );
+
+    let json;
+
+    try {
+
+      json = await response.json();
+
+    } catch {
+
+      throw new Error(
+        'Resposta inválida do servidor.'
+      );
+
+    }
+
+
+    if (!response.ok || !json.ok) {
+
+      throw new Error(
+        json.msg ||
+        `Erro HTTP ${response.status}`
+      );
+
+    }
+
+    return json;
+
+  }
+
+
+  async function apiPost(url, body) {
+
+    const response =
+      await fetch(
+        API_BASE + url,
+        {
+          method: 'POST',
+
+          credentials: 'include',
+
+          headers: {
+            'Content-Type':
+              'application/json'
+          },
+
+          body:
+            JSON.stringify(body)
+        }
+      );
+
+
+    let json;
+
+    try {
+
+      json = await response.json();
+
+    } catch {
+
+      throw new Error(
+        'Resposta inválida do servidor.'
+      );
+
+    }
+
+
+    if (!response.ok || !json.ok) {
+
+      throw new Error(
+        json.msg ||
+        `Erro HTTP ${response.status}`
+      );
+
+    }
+
+    return json;
+
+  }
+
+
+  async function buscarUnidade() {
+
+    const codigo =
+      $('codigo_unidade')
+      .value
+      .trim();
+
+
+    if (!codigo) {
+
+      Swal.fire({
+        icon: 'warning',
+        title: 'Informe a unidade',
+        text:
+          'Digite o código da unidade.',
+        confirmButtonColor: '#0b4383'
+      });
+
+      return;
+
+    }
+
+
+    limparUnidade();
+
+    $('btnBuscar').disabled = true;
+
+    $('btnBuscar').innerHTML =
+      '<i class="material-icons">hourglass_top</i> Buscando...';
+
+
+    try {
+
+      const resultado =
+        await apiGet(
+          '/unidade_get.php?codigo=' +
+          encodeURIComponent(codigo)
+        );
+
+
+      unidadeAtual =
+        resultado.data;
+
+
+      $('unidade_nome').value =
+        unidadeAtual.unidade_internet || '';
+
+      $('cnpj').value =
+        unidadeAtual.cnpj || '';
+
+      $('email').value =
+        unidadeAtual.email_institucional || '';
+
+
+      $('endereco').value =
+        unidadeAtual.endereco || '';
+
+      $('cidade').value =
+        unidadeAtual.cidade || '';
+
+      $('uf').value =
+        (unidadeAtual.uf || '')
+        .toUpperCase();
+
+      $('cep').value =
+        unidadeAtual.cep || '';
+
+      $('ddd').value =
+        unidadeAtual.ddd || '';
+
+      $('telefone').value =
+        unidadeAtual.telefone || '';
+
+
+      $('boxUnidade')
+        .classList
+        .remove('oculto');
+
+
+      setTimeout(() => {
+
+        $('quantidade').focus();
+
+      }, 100);
+
+
+    } catch (erro) {
+
+      limparUnidade();
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Unidade não encontrada',
+        text: erro.message,
+        confirmButtonColor: '#0b4383'
+      });
+
+    } finally {
+
+      $('btnBuscar').disabled = false;
+
+      $('btnBuscar').innerHTML =
+        '<i class="material-icons">search</i> Buscar unidade';
+
+    }
+
+  }
+
+
+  async function salvar() {
+
+    if (!unidadeAtual) {
+
+      Swal.fire({
+        icon: 'warning',
+        title: 'Busque a unidade',
+        confirmButtonColor: '#0b4383'
+      });
+
+      return;
+
+    }
+
+
+    const evento =
+      $('evento')
+      .value
+      .trim()
+      .toUpperCase();
+
+
+    const quantidade =
+      parseInt(
+        $('quantidade').value || '0',
+        10
+      );
+
+
+    if (!evento) {
+
+      Swal.fire({
+        icon: 'warning',
+        title: 'Informe o evento',
+        confirmButtonColor: '#0b4383'
+      });
+
+      return;
+
+    }
+
+
+    if (
+      !Number.isFinite(quantidade) ||
+      quantidade <= 0
+    ) {
+
+      Swal.fire({
+        icon: 'warning',
+        title: 'Quantidade inválida',
+        text:
+          'Informe a quantidade de provas.',
+        confirmButtonColor: '#0b4383'
+      });
+
+      return;
+
+    }
+
+
+    if (
+      !$('endereco').value.trim() ||
+      !$('cidade').value.trim() ||
+      !$('uf').value.trim()
+    ) {
+
+      Swal.fire({
+        icon: 'warning',
+        title: 'Local incompleto',
+        text:
+          'Informe endereço, cidade e UF.',
+        confirmButtonColor: '#0b4383'
+      });
+
+      return;
+
+    }
+
+
+    const payload = {
+
+      evento,
+
+      unidade_login:
+        unidadeAtual.login,
+
+      quantidade,
+
+      endereco:
+        $('endereco').value.trim(),
+
+      cidade:
+        $('cidade').value.trim(),
+
+      uf:
+        $('uf')
+        .value
+        .trim()
+        .toUpperCase(),
+
+      cep:
+        $('cep').value.trim(),
+
+      ddd:
+        $('ddd').value.trim(),
+
+      telefone:
+        $('telefone').value.trim()
+
+    };
+
+
+    const confirmar =
+      await Swal.fire({
+
+        icon: 'question',
+
+        title: 'Cadastrar adesão?',
+
+        html:
+          '<b>' +
+          unidadeAtual.login +
+          ' - ' +
+          (unidadeAtual.unidade_internet || '') +
+          '</b><br><br>' +
+
+          'Evento: <b>' +
+          evento +
+          '</b><br>' +
+
+          'Quantidade de provas: <b>' +
+          quantidade +
+          '</b><br><br>' +
+
+          'A adesão entrará como ' +
+          '<b>AGUARDANDO</b>.',
+
+        showCancelButton: true,
+
+        confirmButtonText:
+          'Cadastrar',
+
+        cancelButtonText:
+          'Cancelar',
+
+        confirmButtonColor:
+          '#0b4383'
+
+      });
+
+
+    if (!confirmar.isConfirmed) {
+      return;
+    }
+
+
+    $('btnSalvar').disabled = true;
+
+
+    Swal.fire({
+      title:
+        'Cadastrando adesão...',
+
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+
+      didOpen: () =>
+        Swal.showLoading()
+    });
+
+
+    try {
+
+      await apiPost(
+        '/adesao_manual_save.php',
+        payload
+      );
+
+
+      const resultado =
+        await Swal.fire({
+
+          icon: 'success',
+
+          title:
+            'Adesão cadastrada!',
+
+          html:
+            'A unidade <b>' +
+            unidadeAtual.login +
+            '</b> foi incluída no evento ' +
+            '<b>' +
+            evento +
+            '</b> com status ' +
+            '<b>AGUARDANDO</b>.',
+
+          showCancelButton: true,
+
+          confirmButtonText:
+            'Nova adesão',
+
+          cancelButtonText:
+            'Voltar ao painel',
+
+          confirmButtonColor:
+            '#0b4383'
+
+        });
+
+
+      if (resultado.isConfirmed) {
+
+        $('codigo_unidade').value = '';
+
+        limparUnidade();
+
+        $('codigo_unidade').focus();
+
+      } else {
+
+        voltarPainel();
+
+      }
+
+
+    } catch (erro) {
+
+      Swal.fire({
+        icon: 'error',
+        title:
+          'Não foi possível cadastrar',
+        text:
+          erro.message,
+        confirmButtonColor:
+          '#0b4383'
+      });
+
+    } finally {
+
+      $('btnSalvar').disabled = false;
+
+    }
+
+  }
+
+
+  function voltarPainel() {
+
+    window.location.href =
+      '../painel.html';
+
+  }
+
+
+  $('btnBuscar')
+    .addEventListener(
+      'click',
+      buscarUnidade
+    );
+
+
+  $('codigo_unidade')
+    .addEventListener(
+      'keydown',
+      e => {
+
+        if (e.key === 'Enter') {
+
+          e.preventDefault();
+
+          buscarUnidade();
+
+        }
+
+      }
+    );
+
+
+  $('codigo_unidade')
+    .addEventListener(
+      'input',
+      () => {
+
+        if (
+          unidadeAtual &&
+          $('codigo_unidade')
+            .value
+            .trim() !==
+          unidadeAtual.login
+        ) {
+
+          limparUnidade();
+
+        }
+
+      }
+    );
+
+
+  $('btnSalvar')
+    .addEventListener(
+      'click',
+      salvar
+    );
+
+
+  $('btnCancelar')
+    .addEventListener(
+      'click',
+      voltarPainel
+    );
+
+
+  // Se veio do painel com:
+  //
+  // adesao_manual.html?evento=ENEM0926
+  //
+  // já preenche automaticamente.
+
+  const eventoURL =
+    parametro('evento');
+
+  if (eventoURL) {
+
+    $('evento').value =
+      eventoURL.toUpperCase();
+
+  }
+
+
+  $('codigo_unidade').focus();
+
+})();
+
+</script>
+
+</body>
+</html>
