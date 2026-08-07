@@ -27,22 +27,9 @@
       color: var(--texto);
     }
 
-    .topo {
-      height: 58px;
-      background: var(--azul2);
-      color: white;
-      display: flex;
-      align-items: center;
-      padding: 0 28px;
-      font-size: 17px;
-      font-weight: 700;
-    }
-
-    .topo i { margin-right: 10px; }
-
     .pagina {
       max-width: 1000px;
-      margin: 28px auto;
+      margin: 18px auto;
       padding: 0 18px;
     }
 
@@ -50,7 +37,7 @@
       background: white;
       border: 1px solid var(--borda);
       border-radius: 14px;
-      padding: 26px;
+      padding: 22px;
       box-shadow: 0 6px 20px rgba(38, 72, 110, .08);
     }
 
@@ -63,18 +50,30 @@
     .subtitulo {
       color: var(--muted);
       font-size: 14px;
-      margin-bottom: 26px;
+      margin-bottom: 18px;
     }
 
     .titulo-secao {
       font-size: 16px;
       font-weight: 700;
       color: var(--azul);
-      margin-top: 26px;
-      margin-bottom: 14px;
+      margin-top: 12px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       gap: 7px;
+    }
+
+    .linha-inicial {
+      display: grid;
+      grid-template-columns: 250px 1fr auto;
+      gap: 12px;
+      align-items: end;
+      margin-top: 16px;
+    }
+
+    .linha-inicial .campo {
+      min-width: 0;
     }
 
     .grid {
@@ -167,9 +166,9 @@
     .acoes {
       display: flex;
       gap: 10px;
-      margin-top: 26px;
+      margin-top: 18px;
       border-top: 1px solid #e3ebf5;
-      padding-top: 20px;
+      padding-top: 16px;
     }
 
     .info-unidade {
@@ -203,6 +202,11 @@
         flex-direction: column;
       }
 
+      .linha-inicial {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+      }
+
       .acoes { flex-direction: column; }
     }
   </style>
@@ -226,33 +230,22 @@
       A adesão será criada com status <b>AGUARDANDO</b>.
     </div>
 
-    <div class="titulo-secao">
-      <i class="material-icons">event</i>
-      Evento
-    </div>
+    <div class="linha-inicial">
 
-    <div class="grid">
-      <div class="campo col-4">
+      <div class="campo">
         <label for="evento">Evento</label>
         <select id="evento">
           <option value="">Carregando eventos...</option>
         </select>
       </div>
-    </div>
 
-    <div class="titulo-secao">
-      <i class="material-icons">apartment</i>
-      Unidade
-    </div>
-
-    <div class="linha-busca">
       <div class="campo">
-        <label for="codigo_unidade">Código da unidade</label>
+        <label for="codigo_unidade">Unidade</label>
         <input
           id="codigo_unidade"
           type="text"
           maxlength="20"
-          placeholder="Ex.: 0702"
+          placeholder="Código da unidade. Ex.: 0702"
           autocomplete="off"
         >
       </div>
@@ -261,6 +254,7 @@
         <i class="material-icons">search</i>
         Buscar unidade
       </button>
+
     </div>
 
     <div id="boxUnidade" class="info-unidade oculto">
