@@ -94,7 +94,6 @@
     .col-5 { grid-column: span 5; }
     .col-6 { grid-column: span 6; }
     .col-8 { grid-column: span 8; }
-    .col-9 { grid-column: span 9; }
     .col-12 { grid-column: span 12; }
 
     label {
@@ -181,10 +180,21 @@
       margin-top: 18px;
     }
 
+    .aviso {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid #dce8f5;
+      background: #f8fbff;
+      border-radius: 9px;
+      color: #536a82;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
     .oculto { display: none; }
 
     @media(max-width: 750px) {
-      .col-2, .col-3, .col-4, .col-5, .col-6, .col-8, .col-9 {
+      .col-2, .col-3, .col-4, .col-5, .col-6, .col-8 {
         grid-column: span 12;
       }
 
@@ -211,7 +221,8 @@
     <h1>Cadastrar adesão</h1>
 
     <div class="subtitulo">
-      Cadastre manualmente uma unidade que receberá provas do evento.
+      Informe apenas o evento, a unidade e a quantidade de provas.
+      Os dados do local serão copiados automaticamente do cadastro da unidade.
       A adesão será criada com status <b>AGUARDANDO</b>.
     </div>
 
@@ -240,8 +251,8 @@
         <input
           id="codigo_unidade"
           type="text"
-          maxlength="10"
-          placeholder="Ex.: 1501"
+          maxlength="20"
+          placeholder="Ex.: 0702"
           autocomplete="off"
         >
       </div>
@@ -270,47 +281,47 @@
           <input id="cnpj" readonly>
         </div>
 
+        <div class="campo col-8">
+          <label>Endereço</label>
+          <input id="endereco" readonly>
+        </div>
+
+        <div class="campo col-4">
+          <label>Cidade</label>
+          <input id="cidade" readonly>
+        </div>
+
+        <div class="campo col-2">
+          <label>UF</label>
+          <input id="uf" readonly>
+        </div>
+
+        <div class="campo col-3">
+          <label>CEP</label>
+          <input id="cep" readonly>
+        </div>
+
+        <div class="campo col-2">
+          <label>DDD</label>
+          <input id="ddd" readonly>
+        </div>
+
+        <div class="campo col-5">
+          <label>Telefone</label>
+          <input id="telefone" readonly>
+        </div>
+
         <div class="campo col-6">
           <label>E-mail institucional</label>
           <input id="email" readonly>
         </div>
       </div>
 
-      <div class="titulo-secao">
-        <i class="material-icons">location_on</i>
-        Local de prova
-      </div>
-
-      <div class="grid">
-        <div class="campo col-8">
-          <label>Endereço</label>
-          <input id="endereco">
-        </div>
-
-        <div class="campo col-4">
-          <label>Cidade</label>
-          <input id="cidade">
-        </div>
-
-        <div class="campo col-2">
-          <label>UF</label>
-          <input id="uf" maxlength="2">
-        </div>
-
-        <div class="campo col-3">
-          <label>CEP</label>
-          <input id="cep">
-        </div>
-
-        <div class="campo col-2">
-          <label>DDD</label>
-          <input id="ddd">
-        </div>
-
-        <div class="campo col-5">
-          <label>Telefone</label>
-          <input id="telefone">
-        </div>
+      <div class="aviso">
+        Os dados acima são apenas para conferência. No momento do cadastro,
+        o PHP consulta novamente a tabela <b>unidades</b> e grava em
+        <b>adesoes_simulados</b> o endereço, cidade, UF, CEP, DDD e telefone
+        que estiverem cadastrados. Campos sem informação serão gravados em branco.
       </div>
 
       <div class="titulo-secao">
@@ -320,7 +331,7 @@
 
       <div class="grid">
         <div class="campo col-3">
-          <label>Quantidade de provas</label>
+          <label for="quantidade">Quantidade de provas</label>
           <input
             id="quantidade"
             type="number"
@@ -356,8 +367,7 @@
   let unidadeAtual = null;
 
   function parametro(nome) {
-    const params = new URLSearchParams(window.location.search);
-    return params.get(nome) || '';
+    return new URLSearchParams(window.location.search).get(nome) || '';
   }
 
   async function apiGet(url) {
@@ -409,13 +419,13 @@
       'unidade_nome',
       'razao_social',
       'cnpj',
-      'email',
       'endereco',
       'cidade',
       'uf',
       'cep',
       'ddd',
       'telefone',
+      'email',
       'quantidade'
     ].forEach(id => $(id).value = '');
   }
@@ -484,7 +494,6 @@
         '/unidades_get.php?login=' + encodeURIComponent(codigo)
       );
 
-      // O PHP devolve "data" e também "dados" por compatibilidade.
       unidadeAtual = resultado.data || resultado.dados || null;
 
       if (!unidadeAtual) {
@@ -496,32 +505,15 @@
         unidadeAtual.unidade ||
         '';
 
-      $('razao_social').value =
-        unidadeAtual.razao_social || '';
-
-      $('cnpj').value =
-        unidadeAtual.cnpj || '';
-
-      $('email').value =
-        unidadeAtual.email_institucional || '';
-
-      $('endereco').value =
-        unidadeAtual.endereco || '';
-
-      $('cidade').value =
-        unidadeAtual.cidade || '';
-
-      $('uf').value =
-        (unidadeAtual.uf || '').toUpperCase();
-
-      $('cep').value =
-        unidadeAtual.cep || '';
-
-      $('ddd').value =
-        unidadeAtual.ddd || '';
-
-      $('telefone').value =
-        unidadeAtual.telefone || '';
+      $('razao_social').value = unidadeAtual.razao_social || '';
+      $('cnpj').value = unidadeAtual.cnpj || '';
+      $('endereco').value = unidadeAtual.endereco || '';
+      $('cidade').value = unidadeAtual.cidade || '';
+      $('uf').value = (unidadeAtual.uf || '').toUpperCase();
+      $('cep').value = unidadeAtual.cep || '';
+      $('ddd').value = unidadeAtual.ddd || '';
+      $('telefone').value = unidadeAtual.telefone || '';
+      $('email').value = unidadeAtual.email_institucional || '';
 
       $('boxUnidade').classList.remove('oculto');
 
@@ -555,11 +547,7 @@
     }
 
     const evento = $('evento').value.trim().toUpperCase();
-
-    const quantidade = parseInt(
-      $('quantidade').value || '0',
-      10
-    );
+    const quantidade = parseInt($('quantidade').value || '0', 10);
 
     if (!evento) {
       Swal.fire({
@@ -580,34 +568,9 @@
       return;
     }
 
-    if (
-      !$('endereco').value.trim() ||
-      !$('cidade').value.trim() ||
-      !$('uf').value.trim()
-    ) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Local incompleto',
-        text: 'Informe endereço, cidade e UF.',
-        confirmButtonColor: '#0b4383'
-      });
-      return;
-    }
+    const unidadeLogin = String(unidadeAtual.login || '').trim();
 
-    const payload = {
-      evento,
-      unidade_login: String(unidadeAtual.login || '').trim(),
-      quantidade,
-
-      endereco: $('endereco').value.trim(),
-      cidade: $('cidade').value.trim(),
-      uf: $('uf').value.trim().toUpperCase(),
-      cep: $('cep').value.trim(),
-      ddd: $('ddd').value.trim(),
-      telefone: $('telefone').value.trim()
-    };
-
-    if (!payload.unidade_login) {
+    if (!unidadeLogin) {
       Swal.fire({
         icon: 'error',
         title: 'Código da unidade ausente',
@@ -621,13 +584,12 @@
       icon: 'question',
       title: 'Cadastrar adesão?',
       html:
-        '<b>' +
-        payload.unidade_login +
-        ' - ' +
+        '<b>' + unidadeLogin + ' - ' +
         (unidadeAtual.unidade_internet || unidadeAtual.unidade || '') +
         '</b><br><br>' +
         'Evento: <b>' + evento + '</b><br>' +
         'Quantidade de provas: <b>' + quantidade + '</b><br><br>' +
+        'Os dados do local serão copiados do cadastro da unidade.<br>' +
         'A adesão entrará como <b>AGUARDANDO</b>.',
       showCancelButton: true,
       confirmButtonText: 'Cadastrar',
@@ -647,13 +609,17 @@
     });
 
     try {
-      await apiPost('/adesao_manual_save.php', payload);
+      await apiPost('/adesao_manual_save.php', {
+        evento,
+        unidade_login: unidadeLogin,
+        quantidade
+      });
 
       const resultado = await Swal.fire({
         icon: 'success',
         title: 'Adesão cadastrada!',
         html:
-          'A unidade <b>' + payload.unidade_login +
+          'A unidade <b>' + unidadeLogin +
           '</b> foi incluída no evento <b>' + evento +
           '</b> com status <b>AGUARDANDO</b>.',
         showCancelButton: true,
