@@ -86,6 +86,19 @@
   .b-prev { background:#e3f2fd; color:#0d47a1; }
   .b-pend { background:#fff8e1; color:#8d6e63; }
 
+  .turma-chip{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:3px 8px;
+    border-radius:999px;
+    background:#eceff1;
+    color:#455a64;
+    font-weight:800;
+    font-size:.75rem;
+    white-space:nowrap;
+  }
+
   /* ===== Desktop (cards/grid) ===== */
   .desktop-only { display:block; }
   .mobile-only  { display:none; }
@@ -438,17 +451,6 @@
           <span class="small">Última sincronização: <b id="lastSyncAt">—</b></span>
         </div>
 
-        <div class="row row-tight" style="margin-top:12px;">
-          <div class="input-field col s12 m8">
-            <select id="turmaSelect"></select>
-            <label>Turma / Curso do dia</label>
-          </div>
-
-          <div class="col s12 m4" style="margin-top:18px;">
-            <a class="btn blue darken-2" id="btnRecarregar" style="width:100%;">Recarregar lista</a>
-          </div>
-        </div>
-
         <div id="ctx_msg" class="small red-text ctx-inline-note" style="margin-top:8px;"></div>
       </div>
     </div>
@@ -473,12 +475,13 @@
                 <tr>
                   <th style="width:110px;">Matrícula</th>
                   <th>Aluno</th>
+                  <th style="width:110px;">Turma</th>
                   <th style="width:170px;">Caderno</th>
                   <th style="width:160px;">Situação</th>
                 </tr>
               </thead>
               <tbody id="tbody">
-                <tr><td colspan="4" class="muted">Carregando…</td></tr>
+                <tr><td colspan="5" class="muted">Carregando…</td></tr>
               </tbody>
             </table>
           </div>
@@ -582,7 +585,6 @@
   const $ctxFiscal = document.getElementById('ctx_fiscal');
   const $ctxMsg    = document.getElementById('ctx_msg');
 
-  const $turmaSelect = document.getElementById('turmaSelect');
   const $tbody = document.getElementById('tbody');
   const $listaMobile = document.getElementById('listaMobile');
   const $total = document.getElementById('total');
@@ -600,7 +602,6 @@
   const $lastCacheAt = document.getElementById('lastCacheAt');
   const $lastSyncAt = document.getElementById('lastSyncAt');
   const $btnSyncManual = document.getElementById('btnSyncManual');
-  const $btnRecarregar = document.getElementById('btnRecarregar');
   const $presentCount = document.getElementById('presentCount');
 
   const $btnMaterial = document.getElementById('btnMaterial');
@@ -624,16 +625,9 @@
   let isSyncRunning = false;
   let isMaterialSyncRunning = false;
   let materialCursoAtual = '';
-  let turmaEspecialAtual = '';
   let materialBloqueadoHoje = false;
 
   function msgCtx(t=''){ $ctxMsg.textContent = t; }
-
-  function reinitSelect(){
-    const inst = M.FormSelect.getInstance($turmaSelect);
-    if(inst) inst.destroy();
-    M.FormSelect.init($turmaSelect);
-  }
 
   function escapeHtml(s){
     return String(s ?? '').replace(/[&<>"']/g, m => ({
@@ -660,12 +654,12 @@
     return Number(contexto?.sala?.id || 0);
   }
 
-  function getTurmaId(){
-    return Number($turmaSelect?.value || 0);
+  function getTurmaId(a = alunoSelecionado){
+    return Number(a?.turma_id || 0);
   }
 
-  function getCacheKeyList(salaId, turmaId){
-    return `presenca_cache_lista_s${salaId}_t${turmaId}`;
+  function getCacheKeyList(salaId){
+    return `presenca_cache_lista_s${salaId}_todas`;
   }
 
   function getQueueKey(salaId){
@@ -810,30 +804,27 @@
   // ===== CACHE LISTA =====
   function saveListCache(rows){
     const salaId = getSalaId();
-    const turmaId = getTurmaId();
-    if(!salaId || !turmaId) return;
+    if(!salaId) return;
 
     const payload = {
       saved_at: nowIso(),
       rows: rows || []
     };
 
-    writeJSON(getCacheKeyList(salaId, turmaId), payload);
+    writeJSON(getCacheKeyList(salaId), payload);
     setMeta({ last_cache_at: payload.saved_at });
   }
 
   function loadListCache(){
     const salaId = getSalaId();
-    const turmaId = getTurmaId();
-    if(!salaId || !turmaId) return null;
+    if(!salaId) return null;
 
-    return readJSON(getCacheKeyList(salaId, turmaId), null);
+    return readJSON(getCacheKeyList(salaId), null);
   }
 
   // ===== CACHE MATERIAL =====
-  function saveMaterialCache(matricula, payload){
+  function saveMaterialCache(matricula, turmaId, payload){
     const salaId = getSalaId();
-    const turmaId = getTurmaId();
     if(!salaId || !turmaId || !matricula) return;
 
     writeJSON(getMaterialCacheKey(salaId, turmaId, matricula), {
@@ -842,9 +833,8 @@
     });
   }
 
-  function loadMaterialCache(matricula){
+  function loadMaterialCache(matricula, turmaId){
     const salaId = getSalaId();
-    const turmaId = getTurmaId();
     if(!salaId || !turmaId || !matricula) return null;
 
     return readJSON(getMaterialCacheKey(salaId, turmaId, matricula), null);
@@ -879,8 +869,8 @@
       .sort((a,b) => a-b);
   }
 
-  function getCachedMaterialNums(matricula){
-    const cache = loadMaterialCache(matricula);
+  function getCachedMaterialNums(matricula, turmaId){
+    const cache = loadMaterialCache(matricula, turmaId);
     return normalizeMaterialNums(cache?.payload?.entregues_nums || []);
   }
 
@@ -888,7 +878,7 @@
     if(!a || !payload) return;
 
     const numsServidor = normalizeMaterialNums(payload.entregues_nums || []);
-    const numsLocais = normalizeMaterialNums(getMaterialQueueForAluno(a.matricula).map(q => q.caderno));
+    const numsLocais = normalizeMaterialNums(getMaterialQueueForAluno(a).map(q => q.caderno));
     const numsView = mergeMaterialNums(numsServidor, numsLocais);
 
     a.material_nums = numsServidor;
@@ -921,15 +911,16 @@
 
   function applyQueueOnAlunos(){
     const queue = getQueue().filter(q => q.status !== 'enviado');
-    const turmaId = getTurmaId();
 
     alunos.forEach(a => {
       a.pendente_sync = false;
     });
 
     queue.forEach(q => {
-      if(Number(q.turma_id) !== Number(turmaId)) return;
-      const aluno = alunos.find(a => String(a.matricula) === String(q.matricula));
+      const aluno = alunos.find(a =>
+        String(a.matricula) === String(q.matricula) &&
+        Number(a.turma_id) === Number(q.turma_id)
+      );
       if(aluno){
         aluno.presenca_ok = true;
         aluno.pendente_sync = true;
@@ -940,7 +931,6 @@
 
   function applyMaterialQueueOnAlunos(){
     const queue = getMaterialQueue().filter(q => q.status !== 'enviado');
-    const turmaId = getTurmaId();
 
     alunos.forEach(a => {
       const baseNums = mergeMaterialNums(
@@ -948,7 +938,7 @@
         a.entregues_nums || [],
         a.material_entregues_nums || [],
         a.cadernos_entregues || [],
-        getCachedMaterialNums(a.matricula)
+        getCachedMaterialNums(a.matricula, a.turma_id)
       );
 
       a.material_nums = baseNums;
@@ -958,8 +948,10 @@
     });
 
     queue.forEach(q => {
-      if(Number(q.turma_id) !== Number(turmaId)) return;
-      const aluno = alunos.find(a => String(a.matricula) === String(q.matricula));
+      const aluno = alunos.find(a =>
+        String(a.matricula) === String(q.matricula) &&
+        Number(a.turma_id) === Number(q.turma_id)
+      );
       if(aluno){
         const cad = Number(q.caderno);
         aluno.material_nums_local = mergeMaterialNums(aluno.material_nums_local || [], [cad]);
@@ -1005,8 +997,9 @@
     return `<span class="material-chip material-chip-empty"><i class="material-icons">menu_book</i> —</span>`;
   }
 
-  function getMaterialQueueForAluno(matricula){
-    const turmaId = getTurmaId();
+  function getMaterialQueueForAluno(a){
+    const matricula = String(a?.matricula || '');
+    const turmaId = Number(a?.turma_id || 0);
     return getMaterialQueue().filter(q =>
       Number(q.turma_id) === Number(turmaId) &&
       String(q.matricula) === String(matricula) &&
@@ -1014,9 +1007,9 @@
     );
   }
 
-  function applyMaterialQueueToPayload(payload, matricula){
+  function applyMaterialQueueToPayload(payload, a){
     const base = JSON.parse(JSON.stringify(payload || {}));
-    const locais = getMaterialQueueForAluno(matricula);
+    const locais = getMaterialQueueForAluno(a);
 
     const entregues = Array.isArray(base.entregues) ? base.entregues.slice() : [];
     const entreguesNums = Array.isArray(base.entregues_nums) ? base.entregues_nums.slice() : [];
@@ -1056,7 +1049,7 @@
   }
 
   async function carregarMaterialAluno(a){
-    const turmaId = getTurmaId();
+    const turmaId = getTurmaId(a);
     const mat = String(a.matricula || '').trim();
 
     if(!mat || !turmaId){
@@ -1073,19 +1066,18 @@
         throw new Error(j.msg || 'Falha ao consultar material.');
       }
 
-      const payload = applyMaterialQueueToPayload(j, mat);
-      saveMaterialCache(mat, payload);
+      const payload = applyMaterialQueueToPayload(j, a);
+      saveMaterialCache(mat, turmaId, payload);
       return payload;
 
     }catch(err){
-      const cache = loadMaterialCache(mat);
+      const cache = loadMaterialCache(mat, turmaId);
       if(cache?.payload){
-        return applyMaterialQueueToPayload(cache.payload, mat);
+        return applyMaterialQueueToPayload(cache.payload, a);
       }
 
       const cursoFallback =
         String(a?.turma_especial_required || '').trim()
-        || String(turmaEspecialAtual || '').trim()
         || String(a?.turma_especial || '').trim()
         || '';
 
@@ -1101,7 +1093,7 @@
         disponiveis: [1,2,3,4,5,6,7,8],
         proximo_caderno: 1,
         finalizado: false
-      }, mat);
+      }, a);
     }
   }
 
@@ -1217,7 +1209,7 @@ function preencherModalMaterial(j){
 
   function marcarMaterialLocal(a, caderno, cursoOpcional){
     const salaId = getSalaId();
-    const turmaId = getTurmaId();
+    const turmaId = getTurmaId(a);
     const mat = String(a.matricula || '').trim();
 
     if(!salaId || !turmaId || !mat || !cursoOpcional){
@@ -1499,7 +1491,7 @@ async function entregarMaterialAluno(){
   if(!alunoSelecionado) return;
   if($btnEntregarMaterial.classList.contains('disabled')) return;
 
-  const turmaId = getTurmaId();
+  const turmaId = getTurmaId(alunoSelecionado);
   const mat = String(alunoSelecionado.matricula || '').trim();
   const caderno = Number($matCadernoSelect.value || 0);
   const cursoOpcional = String(materialCursoAtual || '').trim();
@@ -1651,20 +1643,22 @@ async function entregarMaterialAluno(){
     const list = !q ? alunos : alunos.filter(a => {
       const m = (a.matricula || '').toLowerCase();
       const n = (a.nome || '').toLowerCase();
-      return m.includes(q) || n.includes(q);
+      const t = (a.turma_sigla || '').toLowerCase();
+      return m.includes(q) || n.includes(q) || t.includes(q);
     });
 
     $total.textContent = String(list.length);
 
     if(list.length === 0){
-      $tbody.innerHTML = `<tr><td colspan="4" class="muted">Nenhum aluno encontrado.</td></tr>`;
+      $tbody.innerHTML = `<tr><td colspan="5" class="muted">Nenhum aluno encontrado.</td></tr>`;
     } else {
       $tbody.innerHTML = list.map(a => {
         const statusHtml = badgeStatusDesktop(a);
         return `
-          <tr class="list-item" data-mat="${escapeHtml(a.matricula)}">
+          <tr class="list-item" data-mat="${escapeHtml(a.matricula)}" data-turma="${Number(a.turma_id || 0)}">
             <td class="mono">${escapeHtml(a.matricula)}</td>
             <td><b>${escapeHtml(a.nome || '—')}</b></td>
+            <td><span class="turma-chip" title="${escapeHtml(a.curso_nome || '')}">${escapeHtml(a.turma_sigla || '—')}</span></td>
             <td>${materialChip(a)}</td>
             <td>${statusHtml}</td>
           </tr>
@@ -1693,13 +1687,13 @@ async function entregarMaterialAluno(){
               ? `<span class="pres-ind" title="${pend ? 'Presença pendente de sincronização' : 'Presente'}">${pend ? '⏳' : 'P'}</span>`
               : '');
         return `
-          <li class="collection-item list-item ${rowClass}" data-mat="${escapeHtml(a.matricula)}">
+          <li class="collection-item list-item ${rowClass}" data-mat="${escapeHtml(a.matricula)}" data-turma="${Number(a.turma_id || 0)}">
             <div class="aluno-line">
               <span class="aluno-mat mono">${escapeHtml(a.matricula)}</span>
               <span class="aluno-nome" title="${escapeHtml(a.nome || '')}">${escapeHtml(a.nome || '—')}</span>
               ${indicador}
             </div>
-            <div class="aluno-sub muted">${escapeHtml(sub)}</div>
+            <div class="aluno-sub muted"><span class="turma-chip">${escapeHtml(a.turma_sigla || '—')}</span> &nbsp; ${escapeHtml(sub)}</div>
           </li>
         `;
       }).join('');
@@ -1734,27 +1728,9 @@ async function entregarMaterialAluno(){
 
       const turmas = Array.isArray(j.turmas_hoje) ? j.turmas_hoje : (Array.isArray(j.turmas) ? j.turmas : []);
       if(turmas.length === 0){
-        $turmaSelect.innerHTML = `<option value="" disabled selected>Nenhuma turma hoje</option>`;
-        reinitSelect();
         msgCtx('Nenhuma turma encontrada para hoje nessa sala.');
         return j;
       }
-
-      const defId =
-        (j.turma_default && typeof j.turma_default === 'object' && j.turma_default.turma_id) ? j.turma_default.turma_id :
-        (typeof j.turma_default === 'number' ? j.turma_default :
-        (j.turma_default_id || turmas[0].turma_id));
-
-      $turmaSelect.innerHTML =
-        turmas.map(t => {
-          const hi = String(t.hora_inicio || '').substr(0,5);
-          const hf = String(t.hora_fim || '').substr(0,5);
-          const label = `${t.curso_nome} • ${hi}–${hf} (turma ${t.turma_id})`;
-          const sel = (Number(t.turma_id) === Number(defId)) ? 'selected' : '';
-          return `<option value="${t.turma_id}" ${sel}>${escapeHtml(label)}</option>`;
-        }).join('');
-
-      reinitSelect();
       atualizarPainelSync();
       return j;
     }catch{
@@ -1767,15 +1743,13 @@ async function entregarMaterialAluno(){
     const { silent = false } = opts;
     msgCtx('');
 
-    const turma_id = $turmaSelect.value;
-
     if(!silent){
-      $tbody.innerHTML = `<tr><td colspan="4" class="muted">Carregando…</td></tr>`;
+      $tbody.innerHTML = `<tr><td colspan="5" class="muted">Carregando…</td></tr>`;
       $listaMobile.innerHTML = `<li class="collection-item muted">Carregando…</li>`;
       $total.textContent = '0';
     }
 
-    const url = API + 'presenca_alunos_list.php?turma_id=' + encodeURIComponent(turma_id || '');
+    const url = API + 'presenca_alunos_list.php';
 
     try{
       const r = await fetch(url, { credentials:'include' });
@@ -1784,8 +1758,6 @@ async function entregarMaterialAluno(){
       if(!r.ok || !j.ok){
         throw new Error(j.msg || 'Falha ao carregar alunos');
       }
-
-      turmaEspecialAtual = String(j?.turma?.turma_especial_required || '').trim();
 
       alunos = (Array.isArray(j.rows) ? j.rows : []).map(x => {
         const st = String(x.status || '').toUpperCase();
@@ -1796,10 +1768,10 @@ async function entregarMaterialAluno(){
           status: st,
           presenca_ok,
           pendente_sync: false,
-          turma_especial_required: turmaEspecialAtual || String(x.turma_especial || '').trim() || '',
-          material_nums: mergeMaterialNums(x.material_nums || [], x.entregues_nums || [], x.material_entregues_nums || [], x.cadernos_entregues || [], getCachedMaterialNums(x.matricula)),
+          turma_especial_required: String(x.turma_especial_required || x.turma_especial || '').trim(),
+          material_nums: mergeMaterialNums(x.material_nums || [], x.entregues_nums || [], x.material_entregues_nums || [], x.cadernos_entregues || [], getCachedMaterialNums(x.matricula, x.turma_id)),
           material_nums_local: [],
-          material_nums_view: mergeMaterialNums(x.material_nums || [], x.entregues_nums || [], x.material_entregues_nums || [], x.cadernos_entregues || [], getCachedMaterialNums(x.matricula)),
+          material_nums_view: mergeMaterialNums(x.material_nums || [], x.entregues_nums || [], x.material_entregues_nums || [], x.cadernos_entregues || [], getCachedMaterialNums(x.matricula, x.turma_id)),
           material_qtd: Number(x.material_qtd || 0),
           material_qtd_local: 0,
           material_qtd_view: Number(x.material_qtd || 0)
@@ -1823,10 +1795,10 @@ async function entregarMaterialAluno(){
           ...x,
           presenca_ok: !!x.presenca_ok,
           pendente_sync: false,
-          turma_especial_required: String(x.turma_especial_required || turmaEspecialAtual || x.turma_especial || '').trim(),
-          material_nums: mergeMaterialNums(x.material_nums || [], x.entregues_nums || [], x.material_entregues_nums || [], x.cadernos_entregues || [], getCachedMaterialNums(x.matricula)),
+          turma_especial_required: String(x.turma_especial_required || x.turma_especial || '').trim(),
+          material_nums: mergeMaterialNums(x.material_nums || [], x.entregues_nums || [], x.material_entregues_nums || [], x.cadernos_entregues || [], getCachedMaterialNums(x.matricula, x.turma_id)),
           material_nums_local: [],
-          material_nums_view: mergeMaterialNums(x.material_nums || [], x.entregues_nums || [], x.material_entregues_nums || [], x.cadernos_entregues || [], getCachedMaterialNums(x.matricula)),
+          material_nums_view: mergeMaterialNums(x.material_nums || [], x.entregues_nums || [], x.material_entregues_nums || [], x.cadernos_entregues || [], getCachedMaterialNums(x.matricula, x.turma_id)),
           material_qtd: Number(x.material_qtd || 0),
           material_qtd_local: 0,
           material_qtd_view: Number(x.material_qtd || 0)
@@ -1838,7 +1810,7 @@ async function entregarMaterialAluno(){
         msgCtx('Sem resposta do servidor. Lista carregada do cache local.');
       } else {
         msgCtx('Falha ao carregar alunos e não há cache disponível.');
-        $tbody.innerHTML = `<tr><td colspan="4" class="muted">Erro ao carregar.</td></tr>`;
+        $tbody.innerHTML = `<tr><td colspan="5" class="muted">Erro ao carregar.</td></tr>`;
         $listaMobile.innerHTML = `<li class="collection-item muted">Erro ao carregar.</li>`;
       }
     }
@@ -1890,7 +1862,7 @@ async function entregarMaterialAluno(){
 
   function marcarPresencaLocal(a){
     const salaId = getSalaId();
-    const turmaId = getTurmaId();
+    const turmaId = getTurmaId(a);
     const mat = String(a.matricula || '').trim();
 
     if(!salaId || !turmaId || !mat){
@@ -1921,7 +1893,8 @@ async function entregarMaterialAluno(){
     if(!tr) return;
 
     const mat = tr.getAttribute('data-mat');
-    const a = alunos.find(x => x.matricula === mat);
+    const turmaId = Number(tr.getAttribute('data-turma') || 0);
+    const a = alunos.find(x => x.matricula === mat && Number(x.turma_id) === turmaId);
     if(!a) return;
 
     abrirModalAluno(a);
@@ -1933,7 +1906,8 @@ async function entregarMaterialAluno(){
     if(!li) return;
 
     const mat = li.getAttribute('data-mat');
-    const a = alunos.find(x => x.matricula === mat);
+    const turmaId = Number(li.getAttribute('data-turma') || 0);
+    const a = alunos.find(x => x.matricula === mat && Number(x.turma_id) === turmaId);
     if(!a) return;
 
     abrirModalAluno(a);
@@ -2006,17 +1980,7 @@ async function entregarMaterialAluno(){
     }
   });
 
-  $turmaSelect.addEventListener('change', async () => {
-    await sincronizarTudoPendentes({ silent: true });
-    await carregarAlunos();
-  });
-
   $busca.addEventListener('input', () => filtrarRender());
-
-  $btnRecarregar.addEventListener('click', async () => {
-    await sincronizarTudoPendentes({ silent: false, showToast: true });
-    await carregarAlunos();
-  });
 
   $btnSyncManual.addEventListener('click', async (e) => {
     e.preventDefault();
