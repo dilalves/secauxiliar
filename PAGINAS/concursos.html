@@ -57,7 +57,7 @@
         }
 
         .container {
-            max-width: 1250px;
+            max-width: 1750px;
             margin: 24px auto;
             padding: 0 18px 40px;
         }
@@ -68,6 +68,68 @@
             border-radius: 14px;
             box-shadow: var(--shadow);
             overflow: hidden;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        .units-card {
+            min-height: 300px;
+        }
+
+        .panel-title {
+            padding: 16px;
+            border-bottom: 1px solid var(--line);
+            background: #f8fafc;
+        }
+
+        .panel-title h2 {
+            margin: 0;
+            font-size: 17px;
+        }
+
+        .panel-title small {
+            display: block;
+            margin-top: 5px;
+            color: var(--muted);
+        }
+
+        .unit-form {
+            display: flex;
+            gap: 8px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .unit-form input {
+            min-width: 0;
+        }
+
+        .units-table {
+            min-width: 560px;
+        }
+
+        .contest-row {
+            cursor: pointer;
+        }
+
+        .contest-row.selected td,
+        .contest-row.selected:hover td {
+            background: #e8f1fc;
+        }
+
+        .contest-row.selected td:first-child {
+            box-shadow: inset 4px 0 0 var(--primary-2);
+        }
+
+        .panel-placeholder {
+            padding: 52px 22px;
+            text-align: center;
+            color: var(--muted);
         }
 
         .toolbar {
@@ -261,6 +323,10 @@
             font-size: 13px;
         }
 
+        @media (max-width: 1100px) {
+            .workspace { grid-template-columns: 1fr; }
+        }
+
         @media (max-width: 680px) {
             .grid { grid-template-columns: 1fr; }
             .field.full { grid-column: auto; }
@@ -284,6 +350,7 @@
     <main class="container">
         <div id="status" class="status"></div>
 
+        <div class="workspace">
         <section class="card">
             <div class="toolbar">
                 <div class="search-group">
@@ -328,6 +395,52 @@
                 <span class="counter" id="contador">0 registro(s)</span>
             </div>
         </section>
+
+        <aside class="card units-card">
+            <div class="panel-title">
+                <h2>Unidades participantes</h2>
+                <small id="concursoSelecionado">Selecione um concurso na lista.</small>
+            </div>
+
+            <form id="formUnidade" class="unit-form" hidden>
+                <input
+                    type="text"
+                    id="IdUnidade"
+                    name="IdUnidade"
+                    maxlength="20"
+                    placeholder="Código da unidade (ex.: 0702)"
+                    autocomplete="off"
+                    required
+                >
+                <button type="submit" class="btn-primary" id="btnAdicionarUnidade">
+                    Adicionar
+                </button>
+            </form>
+
+            <div id="unidadesPlaceholder" class="panel-placeholder">
+                Clique na linha de um concurso para visualizar suas unidades.
+            </div>
+
+            <div class="table-wrap" id="unidadesWrap" hidden>
+                <table class="units-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Unidade</th>
+                            <th>Presentes</th>
+                            <th>Concluído</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyUnidades"></tbody>
+                </table>
+            </div>
+
+            <div class="toolbar" id="rodapeUnidades" hidden>
+                <span class="counter" id="contadorUnidades">0 unidade(s)</span>
+            </div>
+        </aside>
+        </div>
     </main>
 
     <dialog id="modal">
@@ -403,7 +516,10 @@
         listar: API_BASE + 'listar_concursos.php',
         salvar: API_BASE + 'salvar_concurso.php',
         alterar: API_BASE + 'alterar_concurso.php',
-        excluir: API_BASE + 'excluir_concurso.php'
+        excluir: API_BASE + 'excluir_concurso.php',
+        listarUnidades: API_BASE + 'listar_unidades_concurso.php',
+        adicionarUnidade: API_BASE + 'adicionar_unidade_concurso.php',
+        excluirUnidade: API_BASE + 'excluir_unidade_concurso.php'
     };
         const tbody = document.getElementById('tbody');
         const busca = document.getElementById('busca');
@@ -413,9 +529,19 @@
         const form = document.getElementById('formConcurso');
         const tituloModal = document.getElementById('tituloModal');
         const btnSalvar = document.getElementById('btnSalvar');
+        const formUnidade = document.getElementById('formUnidade');
+        const tbodyUnidades = document.getElementById('tbodyUnidades');
+        const unidadesWrap = document.getElementById('unidadesWrap');
+        const unidadesPlaceholder = document.getElementById('unidadesPlaceholder');
+        const rodapeUnidades = document.getElementById('rodapeUnidades');
+        const concursoSelecionadoBox = document.getElementById('concursoSelecionado');
+        const contadorUnidades = document.getElementById('contadorUnidades');
+        const btnAdicionarUnidade = document.getElementById('btnAdicionarUnidade');
 
         let registros = [];
+        let unidades = [];
         let editando = false;
+        let concursoSelecionado = null;
 
         function escapar(texto) {
             return String(texto ?? '')
@@ -484,7 +610,10 @@
             }
 
             tbody.innerHTML = registros.map((item, indice) => `
-                <tr>
+                <tr
+                    class="contest-row ${String(concursoSelecionado?.IdConcurso) === String(item.IdConcurso) ? 'selected' : ''}"
+                    onclick="selecionarConcurso(${indice})"
+                >
                     <td>${escapar(item.IdConcurso)}</td>
                     <td>${escapar(formatarData(item.Data))}</td>
                     <td>${escapar(item.Hora)}</td>
@@ -498,14 +627,14 @@
                             <button
                                 type="button"
                                 class="btn-light btn-small"
-                                onclick="editarRegistro(${indice})"
+                                onclick="event.stopPropagation(); editarRegistro(${indice})"
                             >
                                 Editar
                             </button>
                             <button
                                 type="button"
                                 class="btn-danger btn-small"
-                                onclick="excluirRegistro(${indice})"
+                                onclick="event.stopPropagation(); excluirRegistro(${indice})"
                             >
                                 Excluir
                             </button>
@@ -514,6 +643,89 @@
                 </tr>
             `).join('');
         }
+
+        function limparPainelUnidades() {
+            concursoSelecionado = null;
+            unidades = [];
+            formUnidade.hidden = true;
+            unidadesWrap.hidden = true;
+            rodapeUnidades.hidden = true;
+            unidadesPlaceholder.hidden = false;
+            concursoSelecionadoBox.textContent = 'Selecione um concurso na lista.';
+        }
+
+        function renderizarUnidades() {
+            contadorUnidades.textContent = `${unidades.length} unidade(s)`;
+
+            if (unidades.length === 0) {
+                tbodyUnidades.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty">Nenhuma unidade vinculada.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbodyUnidades.innerHTML = unidades.map((item, indice) => `
+                <tr>
+                    <td>${escapar(item.IdUnidade)}</td>
+                    <td>${escapar(item.NomeUnidade)}</td>
+                    <td>${escapar(item.Presentes)}</td>
+                    <td>${Number(item.Concluido) === 1 ? 'Sim' : 'Não'}</td>
+                    <td>
+                        <button
+                            type="button"
+                            class="btn-danger btn-small"
+                            onclick="excluirUnidade(${indice})"
+                        >
+                            Remover
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function carregarUnidades() {
+            if (!concursoSelecionado) return;
+
+            const idSolicitado = String(concursoSelecionado.IdConcurso);
+            tbodyUnidades.innerHTML = `
+                <tr><td colspan="5" class="loading">Carregando...</td></tr>
+            `;
+
+            try {
+                const data = await api(
+                    `${API.listarUnidades}?IdConcurso=${encodeURIComponent(idSolicitado)}`
+                );
+
+                if (!concursoSelecionado || String(concursoSelecionado.IdConcurso) !== idSolicitado) {
+                    return;
+                }
+
+                unidades = data.dados || [];
+                renderizarUnidades();
+            } catch (erro) {
+                tbodyUnidades.innerHTML = `
+                    <tr><td colspan="5" class="empty">${escapar(erro.message)}</td></tr>
+                `;
+                exibirStatus(erro.message, 'error');
+            }
+        }
+
+        window.selecionarConcurso = function(indice) {
+            concursoSelecionado = registros[indice];
+            unidades = [];
+            renderizar();
+
+            concursoSelecionadoBox.textContent =
+                `Concurso ${concursoSelecionado.IdConcurso} — ${concursoSelecionado.Descricao}`;
+            formUnidade.hidden = false;
+            unidadesPlaceholder.hidden = true;
+            unidadesWrap.hidden = false;
+            rodapeUnidades.hidden = false;
+            document.getElementById('IdUnidade').value = '';
+            carregarUnidades();
+        };
 
         async function carregar() {
             tbody.innerHTML = `
@@ -526,6 +738,14 @@
                 const q = busca.value.trim();
                 const data = await api(`${API.listar}?q=${encodeURIComponent(q)}`);
                 registros = data.dados || [];
+
+                if (concursoSelecionado) {
+                    concursoSelecionado = registros.find(
+                        item => String(item.IdConcurso) === String(concursoSelecionado.IdConcurso)
+                    ) || null;
+                }
+
+                if (!concursoSelecionado) limparPainelUnidades();
                 renderizar();
             } catch (erro) {
                 tbody.innerHTML = `
@@ -588,6 +808,9 @@
                 });
 
                 exibirStatus(data.message);
+                if (String(concursoSelecionado?.IdConcurso) === String(item.IdConcurso)) {
+                    limparPainelUnidades();
+                }
                 await carregar();
             } catch (erro) {
                 exibirStatus(erro.message, 'error');
@@ -622,6 +845,68 @@
                 btnSalvar.textContent = 'Salvar';
             }
         });
+
+        formUnidade.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (!concursoSelecionado) return;
+
+            btnAdicionarUnidade.disabled = true;
+            btnAdicionarUnidade.textContent = 'Adicionando...';
+
+            try {
+                const body = new URLSearchParams({
+                    IdConcurso: concursoSelecionado.IdConcurso,
+                    IdUnidade: document.getElementById('IdUnidade').value.trim()
+                });
+
+                const data = await api(API.adicionarUnidade, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body
+                });
+
+                document.getElementById('IdUnidade').value = '';
+                exibirStatus(data.message);
+                await carregarUnidades();
+                document.getElementById('IdUnidade').focus();
+            } catch (erro) {
+                exibirStatus(erro.message, 'error');
+            } finally {
+                btnAdicionarUnidade.disabled = false;
+                btnAdicionarUnidade.textContent = 'Adicionar';
+            }
+        });
+
+        window.excluirUnidade = async function(indice) {
+            if (!concursoSelecionado) return;
+            const unidade = unidades[indice];
+
+            if (!confirm(`Remover a unidade ${unidade.IdUnidade} - ${unidade.NomeUnidade}?`)) {
+                return;
+            }
+
+            try {
+                const body = new URLSearchParams({
+                    IdConcurso: concursoSelecionado.IdConcurso,
+                    IdUnidade: unidade.IdUnidade
+                });
+
+                const data = await api(API.excluirUnidade, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body
+                });
+
+                exibirStatus(data.message);
+                await carregarUnidades();
+            } catch (erro) {
+                exibirStatus(erro.message, 'error');
+            }
+        };
 
         document.getElementById('btnNovo').addEventListener('click', abrirNovo);
         document.getElementById('btnBuscar').addEventListener('click', carregar);
