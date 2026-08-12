@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SEC-AUXILIAR — Tabelas de preços</title>
+    <style>
+        :root {
+            --bg:#f4f7fb; --card:#fff; --line:#dbe5f0; --ink:#172033;
+            --muted:#68758a; --primary:#0b3b78; --primary2:#1759a8;
+            --danger:#b42318; --dangerbg:#fff1f0; --ok:#087443;
+            --okbg:#ecfdf3; --shadow:0 12px 35px rgba(18,38,63,.10);
+        }
+        * { box-sizing:border-box; }
+        body { margin:0; font-family:Arial,Helvetica,sans-serif; background:var(--bg); color:var(--ink); }
+        .topbar { background:linear-gradient(135deg,var(--primary),var(--primary2)); color:#fff; padding:18px 24px; }
+        .topbar-inner { max-width:1800px; margin:auto; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+        h1 { margin:0; font-size:22px; }
+        .topbar small { display:block; margin-top:4px; opacity:.82; }
+        .container { max-width:1800px; margin:20px auto; padding:0 16px 36px; }
+        .card { background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
+        .status { display:none; margin-bottom:12px; padding:11px 14px; border-radius:9px; }
+        .status.ok { display:block; color:var(--ok); background:var(--okbg); border:1px solid #a9e6c5; }
+        .status.error { display:block; color:var(--danger); background:var(--dangerbg); border:1px solid #f4b8b3; }
+        .table-selector { padding:14px 16px; margin-bottom:14px; display:flex; align-items:end; gap:10px; flex-wrap:wrap; }
+        .table-selector .select-box { flex:1; min-width:280px; }
+        label { display:block; margin-bottom:6px; font-size:13px; font-weight:700; color:#3c4c62; }
+        input, select, button { font:inherit; }
+        input, select { width:100%; border:1px solid #cbd7e5; border-radius:9px; padding:10px 11px; background:#fff; color:var(--ink); outline:none; }
+        input:focus, select:focus { border-color:var(--primary2); box-shadow:0 0 0 3px rgba(23,89,168,.12); }
+        button { border:0; border-radius:9px; padding:10px 14px; cursor:pointer; font-weight:700; }
+        button:disabled { opacity:.55; cursor:not-allowed; }
+        .btn-primary { background:var(--primary); color:#fff; }
+        .btn-primary:hover { background:var(--primary2); }
+        .btn-light { background:#eef3f8; color:#26364d; }
+        .btn-danger { background:var(--dangerbg); color:var(--danger); }
+        .btn-small { padding:7px 9px; font-size:12px; }
+        .workspace { display:grid; grid-template-columns:minmax(0,3fr) minmax(360px,2fr); gap:14px; align-items:start; }
+        .panel-head, .toolbar { padding:14px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+        .panel-head { background:#f8fafc; }
+        .panel-head h2 { margin:0; font-size:17px; }
+        .panel-head small { color:var(--muted); }
+        .search { display:flex; gap:7px; flex:1; min-width:260px; }
+        .table-wrap { overflow:auto; max-height:calc(100vh - 310px); }
+        table { width:100%; border-collapse:collapse; }
+        .prices-table { min-width:1420px; }
+        .units-table { min-width:540px; }
+        th, td { padding:10px 8px; border-bottom:1px solid #e8eef5; text-align:left; vertical-align:middle; }
+        th { position:sticky; top:0; z-index:1; background:#f8fafc; color:#43536a; font-size:12px; white-space:nowrap; }
+        td { font-size:13px; }
+        tr:hover td { background:#fbfdff; }
+        .money, .number { text-align:right; white-space:nowrap; }
+        .actions { display:flex; gap:5px; white-space:nowrap; }
+        .counter { color:var(--muted); font-size:13px; }
+        .empty, .loading, .placeholder { padding:42px 18px; text-align:center; color:var(--muted); }
+        .unit-form { display:flex; gap:8px; padding:14px 16px; border-bottom:1px solid var(--line); }
+        .badge { display:inline-block; padding:4px 7px; border-radius:999px; font-size:11px; font-weight:700; }
+        .badge.yes { color:#087443; background:#ecfdf3; }
+        .badge.no { color:#68758a; background:#eef3f8; }
+        dialog { width:min(1020px,calc(100% - 26px)); max-height:92vh; border:0; border-radius:15px; padding:0; box-shadow:0 24px 70px rgba(0,0,0,.28); }
+        dialog::backdrop { background:rgba(13,26,45,.55); }
+        .modal-header, .modal-footer { padding:16px 20px; display:flex; align-items:center; justify-content:space-between; gap:9px; border-bottom:1px solid var(--line); }
+        .modal-footer { justify-content:flex-end; border-top:1px solid var(--line); border-bottom:0; }
+        .modal-header h2 { margin:0; font-size:20px; }
+        .modal-body { padding:20px; overflow:auto; max-height:calc(92vh - 132px); }
+        .grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+        .span2 { grid-column:span 2; }
+        .span4 { grid-column:1/-1; }
+        .section-title { grid-column:1/-1; margin:5px 0 -3px; padding-bottom:7px; border-bottom:1px solid var(--line); font-size:14px; color:var(--primary); }
+        .checks { display:flex; align-items:center; flex-wrap:wrap; gap:18px; }
+        .check { display:flex; align-items:center; gap:7px; }
+        .check input { width:auto; }
+        .check label { margin:0; }
+        .reference { width:100%; border-collapse:collapse; }
+        .reference th { position:static; }
+        .reference td, .reference th { border:1px solid var(--line); }
+        .hint { margin:12px 0 0; color:var(--muted); font-size:13px; line-height:1.5; }
+        @media(max-width:1100px){ .workspace{grid-template-columns:1fr;} .table-wrap{max-height:none;} }
+        @media(max-width:720px){ .grid{grid-template-columns:1fr 1fr;} .span4{grid-column:1/-1;} .table-selector>button{flex:1;} }
+        @media(max-width:480px){ .grid{grid-template-columns:1fr;} .span2,.span4{grid-column:auto;} }
+    </style>
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar-inner">
+        <div><h1>Manutenção de Tabelas de Preços</h1><small>Cursos, valores, descontos e unidades</small></div>
+    </div>
+</header>
+
+<main class="container">
+    <div id="status" class="status"></div>
+
+    <section class="card table-selector">
+        <div class="select-box">
+            <label for="tabelaAtual">Tabela de preços</label>
+            <select id="tabelaAtual"><option value="">Carregando...</option></select>
+        </div>
+        <button type="button" class="btn-primary" id="btnNovaTabela">+ Nova tabela</button>
+        <button type="button" class="btn-light" id="btnEditarTabela">Editar tabela</button>
+        <button type="button" class="btn-danger" id="btnExcluirTabela">Excluir tabela</button>
+        <button type="button" class="btn-light" id="btnFaixas">Consultar faixas</button>
+    </section>
+
+    <div class="workspace">
+        <section class="card">
+            <div class="panel-head">
+                <div><h2>Cursos e preços</h2><small id="nomeTabelaPrecos">Selecione uma tabela.</small></div>
+                <button type="button" class="btn-primary" id="btnNovoPreco">+ Novo preço</button>
+            </div>
+            <div class="toolbar">
+                <div class="search">
+                    <input type="search" id="buscaPreco" placeholder="Buscar por código, curso ou período">
+                    <button type="button" class="btn-light" id="btnBuscarPreco">Buscar</button>
+                </div>
+                <span class="counter" id="contadorPrecos">0 preço(s)</span>
+            </div>
+            <div class="table-wrap">
+                <table class="prices-table">
+                    <thead><tr>
+                        <th>ID</th><th>Curso</th><th>Período/Área</th><th>Contratual</th><th>Promoção</th>
+                        <th>Pro/Trab</th><th>KEA</th><th>0</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>100</th>
+                        <th>Dif.</th><th>Sábado</th><th>Faixa</th><th>Grupo</th><th>Desc.</th><th>Mostrar</th><th>Ativo</th><th>Opc.</th><th>Ações</th>
+                    </tr></thead>
+                    <tbody id="tbodyPrecos"><tr><td colspan="23" class="placeholder">Selecione uma tabela de preços.</td></tr></tbody>
+                </table>
+            </div>
+        </section>
+
+        <aside class="card">
+            <div class="panel-head">
+                <div><h2>Unidades que utilizam esta tabela</h2><small id="nomeTabelaUnidades">Selecione uma tabela.</small></div>
+            </div>
+            <form id="formUnidade" class="unit-form">
+                <input type="text" id="IdUnidade" maxlength="20" placeholder="Código da unidade (ex.: 0702)" required>
+                <button type="submit" class="btn-primary" id="btnAdicionarUnidade">Adicionar</button>
+            </form>
+            <div class="table-wrap">
+                <table class="units-table">
+                    <thead><tr><th>Código</th><th>Unidade</th><th>Ativa</th><th>Ação</th></tr></thead>
+                    <tbody id="tbodyUnidades"><tr><td colspan="4" class="placeholder">Selecione uma tabela de preços.</td></tr></tbody>
+                </table>
+            </div>
+            <div class="toolbar"><span class="counter" id="contadorUnidades">0 unidade(s)</span></div>
+        </aside>
+    </div>
+</main>
+
+<dialog id="modalTabela">
+    <form id="formTabela">
+        <div class="modal-header"><h2 id="tituloTabela">Nova tabela</h2><button type="button" class="btn-light fechar">Fechar</button></div>
+        <div class="modal-body">
+            <input type="hidden" id="TabelaId" name="IdTabela">
+            <div class="grid">
+                <div class="span4"><label for="TabelaDescricao">Descrição *</label><input id="TabelaDescricao" name="Descricao" maxlength="100" required placeholder="Ex.: CAPITAL"></div>
+                <div class="span4 check"><input type="checkbox" id="TabelaAtivo" name="Ativo" value="1" checked><label for="TabelaAtivo">Tabela ativa</label></div>
+            </div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn-light fechar">Cancelar</button><button type="submit" class="btn-primary" id="btnSalvarTabela">Salvar</button></div>
+    </form>
+</dialog>
+
+<dialog id="modalPreco">
+    <form id="formPreco">
+        <div class="modal-header"><h2 id="tituloPreco">Novo preço</h2><button type="button" class="btn-light fechar">Fechar</button></div>
+        <div class="modal-body">
+            <input type="hidden" id="PrecoId" name="IdPreco"><input type="hidden" id="PrecoTabelaId" name="IdTabela">
+            <div class="grid">
+                <div class="span2"><label for="Curso">Curso *</label><input id="Curso" name="Curso" maxlength="100" required></div>
+                <div class="span2"><label for="PeriodoArea">Período / Área</label><input id="PeriodoArea" name="PeriodoArea" maxlength="100"></div>
+                <div><label for="Contratual">Contratual</label><input type="number" step="0.01" id="Contratual" name="Contratual"></div>
+                <div><label for="Valor">Promoção</label><input type="number" step="0.01" id="Valor" name="Valor"></div>
+                <div><label for="VrSab">Valor sábado</label><input type="number" step="0.01" id="VrSab" name="VrSab"></div>
+                <div><label for="ParDif">Diferença</label><input type="number" step="1" id="ParDif" name="ParDif"></div>
+
+                <h3 class="section-title">Descontos (%)</h3>
+                <div><label for="Cc">Pro/Trab</label><input type="number" step="0.01" id="Cc" name="Cc"></div>
+                <div><label for="Ea">KEA</label><input type="number" step="0.01" id="Ea" name="Ea"></div>
+                <div><label for="F0">Faixa 0</label><input type="number" step="0.01" id="F0" name="F0"></div>
+                <div><label for="Fa">Faixa A</label><input type="number" step="0.01" id="Fa" name="Fa"></div>
+                <div><label for="Fb">Faixa B</label><input type="number" step="0.01" id="Fb" name="Fb"></div>
+                <div><label for="Fc">Faixa C</label><input type="number" step="0.01" id="Fc" name="Fc"></div>
+                <div><label for="Fd">Faixa D</label><input type="number" step="0.01" id="Fd" name="Fd"></div>
+                <div><label for="Fe">Faixa E</label><input type="number" step="0.01" id="Fe" name="Fe"></div>
+                <div><label for="F100">Faixa 100</label><input type="number" step="0.01" id="F100" name="F100"></div>
+                <div><label for="FaixaDesc">Cód. faixa</label><input id="FaixaDesc" name="FaixaDesc" maxlength="2"></div>
+                <div><label for="Grupo">Grupo</label><input type="number" step="1" id="Grupo" name="Grupo"></div>
+
+                <h3 class="section-title">Opções</h3>
+                <div class="span4 checks">
+                    <div class="check"><input type="checkbox" id="TemDesc" name="TemDesc" value="S" checked><label for="TemDesc">Tem desconto</label></div>
+                    <div class="check"><input type="checkbox" id="Mostrar" name="Mostrar" value="S" checked><label for="Mostrar">Mostrar</label></div>
+                    <div class="check"><input type="checkbox" id="Ativo" name="Ativo" value="S" checked><label for="Ativo">Ativo</label></div>
+                    <div class="check"><input type="checkbox" id="Opcional" name="Opcional" value="S"><label for="Opcional">Curso opcional</label></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn-light fechar">Cancelar</button><button type="submit" class="btn-primary" id="btnSalvarPreco">Salvar</button></div>
+    </form>
+</dialog>
+
+<dialog id="modalCopiar">
+    <form id="formCopiar">
+        <div class="modal-header"><h2>Copiar preço</h2><button type="button" class="btn-light fechar">Fechar</button></div>
+        <div class="modal-body">
+            <input type="hidden" id="CopiarIdPreco" name="IdPreco">
+            <label for="IdTabelaDestino">Tabela de destino</label><select id="IdTabelaDestino" name="IdTabelaDestino" required></select>
+            <p class="hint">Será criado um novo IdPreco com os mesmos dados. Alterações futuras não afetarão o preço original.</p>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn-light fechar">Cancelar</button><button type="submit" class="btn-primary" id="btnConfirmarCopia">Copiar</button></div>
+    </form>
+</dialog>
+
+<dialog id="modalFaixas">
+    <div class="modal-header"><h2>Faixas de pontuação — referência</h2><button type="button" class="btn-light fechar">Fechar</button></div>
+    <div class="modal-body">
+        <table class="reference">
+            <thead><tr><th>Código</th><th>Tipo</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr></thead>
+            <tbody>
+                <tr><td>1</td><td>EXTENSIVO</td><td>400–500</td><td>500,01–600</td><td>600,01–700</td><td>700,01–800</td><td>800,01–1000</td></tr>
+                <tr><td>2</td><td>TURMAS DE MAIO</td><td>400–500</td><td>500,01–600</td><td>600,01–700</td><td>700,01–800</td><td>800,01–1000</td></tr>
+                <tr><td>3</td><td>SEMI-1</td><td>400–500</td><td>500,01–600</td><td>600,01–700</td><td>700,01–800</td><td>800,01–1000</td></tr>
+                <tr><td>4</td><td>SEMI-2</td><td>400–500</td><td>500,01–600</td><td>600,01–700</td><td>700,01–800</td><td>800,01–1000</td></tr>
+                <tr><td>5</td><td>INTENSIVO</td><td>400–500</td><td>500,01–600</td><td>600,01–700</td><td>700,01–800</td><td>800,01–1000</td></tr>
+                <tr><td>6</td><td>SEGUNDA FASE</td><td>400–500</td><td>500,01–600</td><td>600,01–700</td><td>700,01–800</td><td>800,01–1000</td></tr>
+                <tr><td>7</td><td>ITA</td><td>400–500</td><td>500,01–600</td><td>600,01–700</td><td>700,01–800</td><td>800,01–1000</td></tr>
+            </tbody>
+        </table>
+        <p class="hint">Referência visual fixa; estas faixas não são gravadas em outra tabela.</p>
+    </div>
+</dialog>
+
+<script>
+const API_BASE = 'https://apisec.secauxiliar.com.br/sec/';
+const API = {
+    tabelas: API_BASE+'listar_tabelas_precos.php', salvarTabela: API_BASE+'salvar_tabela_precos.php', excluirTabela: API_BASE+'excluir_tabela_precos.php',
+    precos: API_BASE+'listar_precos.php', salvarPreco: API_BASE+'salvar_preco.php', excluirPreco: API_BASE+'excluir_preco.php', copiarPreco: API_BASE+'copiar_preco.php',
+    unidades: API_BASE+'listar_unidades_tabela_preco.php', adicionarUnidade: API_BASE+'adicionar_unidade_tabela_preco.php', excluirUnidade: API_BASE+'excluir_unidade_tabela_preco.php'
+};
+const $ = id => document.getElementById(id);
+let tabelas=[], precos=[], unidades=[];
+
+function esc(v){ return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;'); }
+function atual(){ return tabelas.find(x=>String(x.IdTabela)===String($('tabelaAtual').value))||null; }
+function moeda(v){ if(v===null||v===undefined||v==='')return ''; return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function num(v){ return v===null||v===undefined?'':v; }
+function badge(v){ return String(v).toUpperCase()==='S'||Number(v)===1?'<span class="badge yes">Sim</span>':'<span class="badge no">Não</span>'; }
+function status(msg,tipo='ok'){ const b=$('status'); b.className='status '+tipo; b.textContent=msg; clearTimeout(status.timer); status.timer=setTimeout(()=>{b.className='status';b.textContent='';},5000); }
+async function api(url,opt={}){ const r=await fetch(url,{cache:'no-store',...opt}); let d; try{d=await r.json();}catch{throw new Error('Resposta inválida do servidor.');} if(!r.ok||d.ok===false)throw new Error(d.message||'Erro na operação.'); return d; }
+function post(url,data){ return api(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'},body:new URLSearchParams(data)}); }
+function fechar(dialog){ dialog.close(); }
+
+async function carregarTabelas(selecionar=null){
+    try{
+        const d=await api(API.tabelas); tabelas=d.dados||[];
+        $('tabelaAtual').innerHTML=tabelas.length?tabelas.map(t=>`<option value="${esc(t.IdTabela)}">${esc(t.Descricao)}${Number(t.Ativo)!==1?' (inativa)':''} — ${esc(t.TotalPrecos)} preço(s) / ${esc(t.TotalUnidades)} unidade(s)</option>`).join(''):'<option value="">Nenhuma tabela cadastrada</option>';
+        if(selecionar&&tabelas.some(t=>String(t.IdTabela)===String(selecionar)))$('tabelaAtual').value=selecionar;
+        await trocarTabela();
+    }catch(e){status(e.message,'error');}
+}
+async function trocarTabela(){
+    const t=atual(); const nome=t?t.Descricao:'Selecione uma tabela.';
+    $('nomeTabelaPrecos').textContent=nome; $('nomeTabelaUnidades').textContent=nome;
+    const disabled=!t; ['btnEditarTabela','btnExcluirTabela','btnNovoPreco','btnAdicionarUnidade','IdUnidade','buscaPreco','btnBuscarPreco'].forEach(id=>$(id).disabled=disabled);
+    if(!t){precos=[];unidades=[];renderPrecos();renderUnidades();return;}
+    await Promise.all([carregarPrecos(),carregarUnidades()]);
+}
+async function carregarPrecos(){
+    const t=atual(); if(!t)return; $('tbodyPrecos').innerHTML='<tr><td colspan="23" class="loading">Carregando...</td></tr>';
+    try{const d=await api(`${API.precos}?IdTabela=${encodeURIComponent(t.IdTabela)}&q=${encodeURIComponent($('buscaPreco').value.trim())}`); if(String(atual()?.IdTabela)!==String(t.IdTabela))return; precos=d.dados||[];renderPrecos();}catch(e){status(e.message,'error');}
+}
+function renderPrecos(){
+    $('contadorPrecos').textContent=`${precos.length} preço(s)`;
+    if(!atual()){$('tbodyPrecos').innerHTML='<tr><td colspan="23" class="placeholder">Selecione uma tabela de preços.</td></tr>';return;}
+    if(!precos.length){$('tbodyPrecos').innerHTML='<tr><td colspan="23" class="empty">Nenhum preço cadastrado nesta tabela.</td></tr>';return;}
+    $('tbodyPrecos').innerHTML=precos.map((p,i)=>`<tr>
+        <td>${esc(p.IdPreco)}</td><td>${esc(p.Curso)}</td><td>${esc(p.PeriodoArea)}</td><td class="money">${esc(moeda(p.Contratual))}</td><td class="money">${esc(moeda(p.Valor))}</td>
+        <td class="number">${esc(num(p.Cc))}</td><td class="number">${esc(num(p.Ea))}</td><td class="number">${esc(num(p.F0))}</td><td class="number">${esc(num(p.Fa))}</td><td class="number">${esc(num(p.Fb))}</td><td class="number">${esc(num(p.Fc))}</td><td class="number">${esc(num(p.Fd))}</td><td class="number">${esc(num(p.Fe))}</td><td class="number">${esc(num(p.F100))}</td>
+        <td class="number">${esc(num(p.ParDif))}</td><td class="money">${esc(moeda(p.VrSab))}</td><td>${esc(p.FaixaDesc)}</td><td>${esc(p.Grupo)}</td><td>${badge(p.TemDesc)}</td><td>${badge(p.Mostrar)}</td><td>${badge(p.Ativo)}</td><td>${badge(p.Opcional)}</td>
+        <td><div class="actions"><button class="btn-light btn-small" onclick="editarPreco(${i})">Editar</button><button class="btn-light btn-small" onclick="abrirCopiar(${i})">Copiar</button><button class="btn-danger btn-small" onclick="excluirPreco(${i})">Excluir</button></div></td></tr>`).join('');
+}
+async function carregarUnidades(){
+    const t=atual(); if(!t)return; $('tbodyUnidades').innerHTML='<tr><td colspan="4" class="loading">Carregando...</td></tr>';
+    try{const d=await api(`${API.unidades}?IdTabela=${encodeURIComponent(t.IdTabela)}`); if(String(atual()?.IdTabela)!==String(t.IdTabela))return; unidades=d.dados||[];renderUnidades();}catch(e){status(e.message,'error');}
+}
+function renderUnidades(){
+    $('contadorUnidades').textContent=`${unidades.length} unidade(s)`;
+    if(!atual()){$('tbodyUnidades').innerHTML='<tr><td colspan="4" class="placeholder">Selecione uma tabela de preços.</td></tr>';return;}
+    if(!unidades.length){$('tbodyUnidades').innerHTML='<tr><td colspan="4" class="empty">Nenhuma unidade vinculada.</td></tr>';return;}
+    $('tbodyUnidades').innerHTML=unidades.map((u,i)=>`<tr><td>${esc(u.IdUnidade)}</td><td>${esc(u.NomeUnidade)}</td><td>${badge(u.UnidadeAtiva)}</td><td><button class="btn-danger btn-small" onclick="excluirUnidade(${i})">Remover</button></td></tr>`).join('');
+}
+function abrirNovaTabela(){ $('formTabela').reset();$('TabelaId').value='';$('TabelaAtivo').checked=true;$('tituloTabela').textContent='Nova tabela de preços';$('modalTabela').showModal();$('TabelaDescricao').focus(); }
+function abrirEditarTabela(){const t=atual();if(!t)return;$('TabelaId').value=t.IdTabela;$('TabelaDescricao').value=t.Descricao;$('TabelaAtivo').checked=Number(t.Ativo)===1;$('tituloTabela').textContent='Editar tabela de preços';$('modalTabela').showModal();}
+function abrirNovoPreco(){const t=atual();if(!t)return;$('formPreco').reset();$('PrecoId').value='';$('PrecoTabelaId').value=t.IdTabela;['TemDesc','Mostrar','Ativo'].forEach(id=>$(id).checked=true);$('Opcional').checked=false;$('tituloPreco').textContent=`Novo preço — ${t.Descricao}`;$('modalPreco').showModal();$('Curso').focus();}
+window.editarPreco=i=>{const p=precos[i];$('formPreco').reset();$('PrecoId').value=p.IdPreco;$('PrecoTabelaId').value=p.IdTabela;['Curso','PeriodoArea','Contratual','Valor','VrSab','ParDif','Cc','Ea','F0','Fa','Fb','Fc','Fd','Fe','F100','FaixaDesc','Grupo'].forEach(id=>$(id).value=num(p[id]));['TemDesc','Mostrar','Ativo','Opcional'].forEach(id=>$(id).checked=String(p[id]).toUpperCase()==='S');$('tituloPreco').textContent=`Editar preço ${p.IdPreco}`;$('modalPreco').showModal();};
+window.abrirCopiar=i=>{const p=precos[i];const origem=atual();const destinos=tabelas.filter(t=>String(t.IdTabela)!==String(origem.IdTabela));if(!destinos.length){status('Cadastre outra tabela para copiar este preço.','error');return;}$('CopiarIdPreco').value=p.IdPreco;$('IdTabelaDestino').innerHTML=destinos.map(t=>`<option value="${esc(t.IdTabela)}">${esc(t.Descricao)}</option>`).join('');$('modalCopiar').showModal();};
+window.excluirPreco=async i=>{const p=precos[i],idTabela=atual()?.IdTabela;if(!confirm(`Excluir o preço ${p.IdPreco} - ${p.Curso}?`))return;try{const d=await post(API.excluirPreco,{IdPreco:p.IdPreco});status(d.message);await carregarTabelas(idTabela);}catch(e){status(e.message,'error');}};
+window.excluirUnidade=async i=>{const u=unidades[i],t=atual();if(!confirm(`Remover ${u.IdUnidade} - ${u.NomeUnidade} da tabela ${t.Descricao}?`))return;try{const d=await post(API.excluirUnidade,{IdTabela:t.IdTabela,IdUnidade:u.IdUnidade});status(d.message);await carregarTabelas(t.IdTabela);}catch(e){status(e.message,'error');}};
+
+$('formTabela').addEventListener('submit',async e=>{e.preventDefault();const b=$('btnSalvarTabela');b.disabled=true;try{const d=await post(API.salvarTabela,new FormData(e.currentTarget));fechar($('modalTabela'));status(d.message);await carregarTabelas(d.IdTabela);}catch(x){status(x.message,'error');}finally{b.disabled=false;}});
+$('formPreco').addEventListener('submit',async e=>{e.preventDefault();const b=$('btnSalvarPreco');b.disabled=true;try{const d=await post(API.salvarPreco,new FormData(e.currentTarget));fechar($('modalPreco'));status(d.message);await carregarPrecos();await carregarTabelas(atual()?.IdTabela);}catch(x){status(x.message,'error');}finally{b.disabled=false;}});
+$('formCopiar').addEventListener('submit',async e=>{e.preventDefault();const b=$('btnConfirmarCopia');b.disabled=true;try{const d=await post(API.copiarPreco,new FormData(e.currentTarget));fechar($('modalCopiar'));status(d.message);await carregarTabelas(atual()?.IdTabela);}catch(x){status(x.message,'error');}finally{b.disabled=false;}});
+$('formUnidade').addEventListener('submit',async e=>{e.preventDefault();const t=atual(),b=$('btnAdicionarUnidade');if(!t)return;b.disabled=true;try{const d=await post(API.adicionarUnidade,{IdTabela:t.IdTabela,IdUnidade:$('IdUnidade').value.trim()});$('IdUnidade').value='';status(d.message);await carregarTabelas(t.IdTabela);$('IdUnidade').focus();}catch(x){status(x.message,'error');}finally{b.disabled=false;}});
+$('tabelaAtual').addEventListener('change',trocarTabela);$('btnNovaTabela').addEventListener('click',abrirNovaTabela);$('btnEditarTabela').addEventListener('click',abrirEditarTabela);$('btnNovoPreco').addEventListener('click',abrirNovoPreco);$('btnBuscarPreco').addEventListener('click',carregarPrecos);$('buscaPreco').addEventListener('keydown',e=>{if(e.key==='Enter')carregarPrecos();});$('btnFaixas').addEventListener('click',()=>$('modalFaixas').showModal());
+$('btnExcluirTabela').addEventListener('click',async()=>{const t=atual();if(!t||!confirm(`Excluir a tabela ${t.Descricao}?`))return;try{const d=await post(API.excluirTabela,{IdTabela:t.IdTabela});status(d.message);await carregarTabelas();}catch(e){status(e.message,'error');}});
+document.querySelectorAll('dialog .fechar').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
+document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}));
+carregarTabelas();
+</script>
+</body>
+</html>
