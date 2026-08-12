@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Importar Recibos do Colégio</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f9;
+            color: #263238;
+        }
+
+        .topo {
+            background: #1565c0;
+            color: #fff;
+            padding: 18px 28px;
+            font-size: 21px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,.15);
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08);
+            margin-bottom: 22px;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+
+        .subtitulo {
+            color: #666;
+            margin-bottom: 22px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 2px dashed #b0bec5;
+            border-radius: 10px;
+            padding: 32px;
+            text-align: center;
+            background: #fafafa;
+        }
+
+        .upload-area input[type="file"] {
+            margin-bottom: 18px;
+        }
+
+        button {
+            border: 0;
+            border-radius: 6px;
+            padding: 11px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        button:hover {
+            opacity: .9;
+        }
+
+        button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .btn-azul {
+            background: #1565c0;
+            color: white;
+        }
+
+        .btn-verde {
+            background: #2e7d32;
+            color: white;
+        }
+
+        .btn-cinza {
+            background: #607d8b;
+            color: white;
+        }
+
+        .resumo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(150px,1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .resumo-item {
+            background: #f5f7fa;
+            border: 1px solid #dde3e8;
+            border-radius: 8px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .resumo-numero {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1565c0;
+        }
+
+        .resumo-label {
+            margin-top: 5px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .recibo {
+            border: 1px solid #dce2e7;
+            border-radius: 8px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .recibo-topo {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: center;
+            background: #f6f8fa;
+            padding: 14px 16px;
+            border-bottom: 1px solid #dde3e8;
+        }
+
+        .recibo-nome {
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .status-ok {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .status-erro {
+            color: #c62828;
+            font-weight: bold;
+        }
+
+        .recibo-corpo {
+            padding: 15px 16px;
+        }
+
+        .dados-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(180px, 1fr));
+            gap: 10px 18px;
+            margin-bottom: 15px;
+        }
+
+        .dado {
+            font-size: 13px;
+        }
+
+        .dado strong {
+            display: block;
+            color: #607d8b;
+            margin-bottom: 3px;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            background: #edf2f7;
+            padding: 9px;
+            font-size: 12px;
+            border-bottom: 1px solid #ccd5dd;
+        }
+
+        td {
+            padding: 9px;
+            border-bottom: 1px solid #eceff1;
+            font-size: 13px;
+        }
+
+        td.valor,
+        th.valor {
+            text-align: right;
+        }
+
+        .financeiro {
+            display: flex;
+            gap: 25px;
+            justify-content: flex-end;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .financeiro strong {
+            color: #455a64;
+        }
+
+        .erro-box {
+            margin-top: 12px;
+            background: #ffebee;
+            color: #b71c1c;
+            border: 1px solid #ef9a9a;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+
+        .acoes {
+            text-align: right;
+            margin-top: 22px;
+        }
+
+        .mensagem {
+            display: none;
+            border-radius: 7px;
+            padding: 14px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .mensagem.sucesso {
+            display: block;
+            background: #e8f5e9;
+            color: #1b5e20;
+            border: 1px solid #a5d6a7;
+        }
+
+        .mensagem.erro {
+            display: block;
+            background: #ffebee;
+            color: #b71c1c;
+            border: 1px solid #ef9a9a;
+        }
+
+        .carregando {
+            display: none;
+            margin-top: 15px;
+            color: #1565c0;
+            font-weight: bold;
+        }
+
+        @media (max-width: 900px) {
+            .resumo-grid,
+            .dados-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .resumo-grid,
+            .dados-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .financeiro {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="topo">
+    Importar Recibos do Colégio
+</div>
+
+<div class="container">
+
+    <div id="mensagem" class="mensagem"></div>
+
+    <div class="card">
+        <h2>Arquivo de recibos</h2>
+
+        <div class="subtitulo">
+            Selecione o PDF enviado pelo Departamento Pessoal.
+            O sistema fará a leitura dos recibos antes da importação.
+        </div>
+
+        <div class="upload-area">
+
+            <input
+                type="file"
+                id="arquivoPdf"
+                accept=".pdf,application/pdf"
+            >
+
+            <br>
+
+            <button
+                id="btnAnalisar"
+                class="btn-azul"
+                onclick="analisarPdf()"
+            >
+                ANALISAR PDF
+            </button>
+
+            <div id="carregando" class="carregando">
+                Processando PDF...
+            </div>
+
+        </div>
+    </div>
+
+
+    <div id="areaResultado" style="display:none;">
+
+        <div class="card">
+
+            <h2>Resumo da análise</h2>
+
+            <div id="nomeArquivo" class="subtitulo"></div>
+
+            <div class="resumo-grid">
+
+                <div class="resumo-item">
+                    <div id="qtdPaginas" class="resumo-numero">0</div>
+                    <div class="resumo-label">Páginas</div>
+                </div>
+
+                <div class="resumo-item">
+                    <div id="qtdRecibos" class="resumo-numero">0</div>
+                    <div class="resumo-label">Recibos</div>
+                </div>
+
+                <div class="resumo-item">
+                    <div id="qtdLancamentos" class="resumo-numero">0</div>
+                    <div class="resumo-label">Lançamentos</div>
+                </div>
+
+                <div class="resumo-item">
+                    <div id="qtdErros" class="resumo-numero">0</div>
+                    <div class="resumo-label">Páginas com erro</div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>Recibos encontrados</h2>
+
+            <div class="subtitulo">
+                Confira os dados antes de confirmar a importação.
+            </div>
+
+            <div id="listaRecibos"></div>
+
+            <div class="acoes">
+
+                <button
+                    class="btn-cinza"
+                    onclick="novaImportacao()"
+                >
+                    CANCELAR
+                </button>
+
+                <button
+                    id="btnImportar"
+                    class="btn-verde"
+                    onclick="confirmarImportacao()"
+                >
+                    CONFIRMAR IMPORTAÇÃO
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const API_URL =
+    'https://apisec.secauxiliar.com.br/prestadores_adm/importar_pagamentos_colegio.php';
+
+let tokenImportacao = null;
+let existemErros = false;
+
+
+/* =========================================================
+   MOEDA
+========================================================= */
+
+function moeda(valor) {
+
+    const numero = Number(valor || 0);
+
+    return numero.toLocaleString(
+        'pt-BR',
+        {
+            style: 'currency',
+            currency: 'BRL'
+        }
+    );
+}
+
+
+/* =========================================================
+   DATA
+========================================================= */
+
+function dataBR(data) {
+
+    if (!data) return '-';
+
+    const partes = data.split('-');
+
+    if (partes.length !== 3) {
+        return data;
+    }
+
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+
+/* =========================================================
+   ESCAPAR HTML
+========================================================= */
+
+function esc(valor) {
+
+    if (valor === null || valor === undefined) {
+        return '';
+    }
+
+    return String(valor)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+
+/* =========================================================
+   MENSAGEM
+========================================================= */
+
+function mostrarMensagem(texto, tipo) {
+
+    const el = document.getElementById('mensagem');
+
+    el.className = 'mensagem ' + tipo;
+    el.textContent = texto;
+
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+
+function limparMensagem() {
+
+    const el = document.getElementById('mensagem');
+
+    el.className = 'mensagem';
+    el.textContent = '';
+}
+
+
+/* =========================================================
+   ANALISAR PDF
+========================================================= */
+
+async function analisarPdf() {
+
+    limparMensagem();
+
+    const input =
+        document.getElementById('arquivoPdf');
+
+    const arquivo =
+        input.files[0];
+
+    if (!arquivo) {
+
+        mostrarMensagem(
+            'Selecione um arquivo PDF.',
+            'erro'
+        );
+
+        return;
+    }
+
+    if (
+        arquivo.type !== 'application/pdf' &&
+        !arquivo.name.toLowerCase().endsWith('.pdf')
+    ) {
+
+        mostrarMensagem(
+            'O arquivo selecionado precisa ser PDF.',
+            'erro'
+        );
+
+        return;
+    }
+
+    const btn =
+        document.getElementById('btnAnalisar');
+
+    const carregando =
+        document.getElementById('carregando');
+
+    btn.disabled = true;
+    carregando.style.display = 'block';
+
+    const form = new FormData();
+
+    form.append('acao', 'analisar');
+    form.append('arquivo', arquivo);
+
+    try {
+
+        const resposta = await fetch(
+            API_URL,
+            {
+                method: 'POST',
+                body: form,
+                credentials: 'include'
+            }
+        );
+
+        const texto =
+            await resposta.text();
+
+        let dados;
+
+        try {
+
+            dados = JSON.parse(texto);
+
+        } catch {
+
+            throw new Error(
+                'O servidor não retornou um JSON válido.\n\n' +
+                texto.substring(0, 500)
+            );
+        }
+
+        if (!resposta.ok || !dados.ok) {
+
+            throw new Error(
+                dados.erro ||
+                'Falha ao analisar o PDF.'
+            );
+        }
+
+        tokenImportacao =
+            dados.token;
+
+        document.getElementById(
+            'nomeArquivo'
+        ).textContent =
+            'Arquivo: ' + arquivo.name;
+
+
+        montarResumo(dados);
+        montarRecibos(dados.recibos || []);
+
+        document.getElementById(
+            'areaResultado'
+        ).style.display = 'block';
+
+        document.getElementById(
+            'areaResultado'
+        ).scrollIntoView({
+            behavior: 'smooth'
+        });
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        mostrarMensagem(
+            erro.message ||
+            'Erro inesperado ao analisar PDF.',
+            'erro'
+        );
+
+    } finally {
+
+        btn.disabled = false;
+        carregando.style.display = 'none';
+    }
+}
+
+
+/* =========================================================
+   RESUMO
+========================================================= */
+
+function montarResumo(dados) {
+
+    const resumo =
+        dados.resumo || {};
+
+    document.getElementById(
+        'qtdPaginas'
+    ).textContent =
+        resumo.paginas || 0;
+
+    document.getElementById(
+        'qtdRecibos'
+    ).textContent =
+        resumo.recibos || 0;
+
+    document.getElementById(
+        'qtdLancamentos'
+    ).textContent =
+        resumo.lancamentos || 0;
+
+    document.getElementById(
+        'qtdErros'
+    ).textContent =
+        resumo.paginas_com_erro || 0;
+
+    existemErros =
+        Number(resumo.paginas_com_erro || 0) > 0;
+
+    document.getElementById(
+        'btnImportar'
+    ).disabled =
+        existemErros;
+}
+
+
+/* =========================================================
+   RECIBOS
+========================================================= */
+
+function montarRecibos(recibos) {
+
+    const area =
+        document.getElementById('listaRecibos');
+
+    area.innerHTML = '';
+
+    if (!recibos.length) {
+
+        area.innerHTML =
+            '<div class="erro-box">' +
+            'Nenhum recibo foi identificado.' +
+            '</div>';
+
+        return;
+    }
+
+    recibos.forEach(recibo => {
+
+        let linhas = '';
+
+        (recibo.servicos || []).forEach(
+            servico => {
+
+                linhas += `
+                    <tr>
+                        <td>
+                            ${esc(dataBR(servico.data_evento))}
+                        </td>
+
+                        <td>
+                            ${esc(servico.evento)}
+                        </td>
+
+                        <td class="valor">
+                            ${moeda(servico.valor)}
+                        </td>
+
+                        <td>
+                            ${esc(servico.referente)}
+                        </td>
+                    </tr>
+                `;
+            }
+        );
+
+
+        let errosHtml = '';
+
+        if (
+            recibo.erros &&
+            recibo.erros.length
+        ) {
+
+            errosHtml = `
+                <div class="erro-box">
+                    ${recibo.erros
+                        .map(e => esc(e))
+                        .join('<br>')}
+                </div>
+            `;
+        }
+
+
+        const status = recibo.ok
+            ? '<span class="status-ok">✓ OK</span>'
+            : '<span class="status-erro">⚠ ERRO</span>';
+
+
+        const html = `
+
+            <div class="recibo">
+
+                <div class="recibo-topo">
+
+                    <div>
+
+                        <div class="recibo-nome">
+                            Página ${esc(recibo.pagina)}
+                            -
+                            ${esc(recibo.nome || 'Nome não identificado')}
+                        </div>
+
+                    </div>
+
+                    <div>
+                        ${status}
+                    </div>
+
+                </div>
+
+
+                <div class="recibo-corpo">
+
+                    <div class="dados-grid">
+
+                        <div class="dado">
+                            <strong>CPF</strong>
+                            ${esc(recibo.cpf || '-')}
+                        </div>
+
+                        <div class="dado">
+                            <strong>Pagamento</strong>
+                            ${esc(dataBR(recibo.data_pagamento))}
+                        </div>
+
+                        <div class="dado">
+                            <strong>Banco</strong>
+                            ${esc(recibo.banco || '-')}
+                        </div>
+
+                        <div class="dado">
+                            <strong>Agência</strong>
+                            ${esc(recibo.agencia || '-')}
+                        </div>
+
+                        <div class="dado">
+                            <strong>Pagador</strong>
+                            ${esc(recibo.pagador || '-')}
+                        </div>
+
+                        <div class="dado">
+                            <strong>Lançamentos</strong>
+                            ${esc(recibo.quantidade || 0)}
+                        </div>
+
+                    </div>
+
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>Data</th>
+                                <th>Evento</th>
+                                <th class="valor">Valor</th>
+                                <th>Referente</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+                            ${linhas}
+                        </tbody>
+
+                    </table>
+
+
+                    <div class="financeiro">
+
+                        <div>
+                            <strong>ISS:</strong>
+                            ${moeda(recibo.iss)}
+                        </div>
+
+                        <div>
+                            <strong>INSS:</strong>
+                            ${moeda(recibo.inss)}
+                        </div>
+
+                        <div>
+                            <strong>Líquido:</strong>
+                            ${moeda(recibo.liquido)}
+                        </div>
+
+                    </div>
+
+
+                    ${errosHtml}
+
+                </div>
+
+            </div>
+        `;
+
+        area.insertAdjacentHTML(
+            'beforeend',
+            html
+        );
+    });
+}
+
+
+/* =========================================================
+   CONFIRMAR IMPORTAÇÃO
+========================================================= */
+
+async function confirmarImportacao() {
+
+    limparMensagem();
+
+    if (!tokenImportacao) {
+
+        mostrarMensagem(
+            'Nenhuma análise disponível para importação.',
+            'erro'
+        );
+
+        return;
+    }
+
+    if (existemErros) {
+
+        mostrarMensagem(
+            'Existem páginas com erro. A importação foi bloqueada.',
+            'erro'
+        );
+
+        return;
+    }
+
+    if (
+        !confirm(
+            'Confirma a importação dos recibos para o banco de dados?'
+        )
+    ) {
+        return;
+    }
+
+
+    const btn =
+        document.getElementById('btnImportar');
+
+    btn.disabled = true;
+    btn.textContent = 'IMPORTANDO...';
+
+
+    const form =
+        new FormData();
+
+    form.append(
+        'acao',
+        'importar'
+    );
+
+    form.append(
+        'token',
+        tokenImportacao
+    );
+
+
+    try {
+
+        const resposta =
+            await fetch(
+                API_URL,
+                {
+                    method: 'POST',
+                    body: form,
+                    credentials: 'include'
+                }
+            );
+
+
+        const texto =
+            await resposta.text();
+
+        let dados;
+
+        try {
+
+            dados =
+                JSON.parse(texto);
+
+        } catch {
+
+            throw new Error(
+                'O servidor não retornou um JSON válido.\n\n' +
+                texto.substring(0,500)
+            );
+        }
+
+
+        if (
+            !resposta.ok ||
+            !dados.ok
+        ) {
+
+            throw new Error(
+                dados.erro ||
+                'Falha durante a importação.'
+            );
+        }
+
+
+        mostrarMensagem(
+            'Importação concluída! ' +
+            dados.inseridos +
+            ' lançamento(s) incluído(s) e ' +
+            dados.duplicados +
+            ' duplicado(s) ignorado(s).',
+            'sucesso'
+        );
+
+
+        tokenImportacao = null;
+
+        document.getElementById(
+            'areaResultado'
+        ).style.display = 'none';
+
+        document.getElementById(
+            'arquivoPdf'
+        ).value = '';
+
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        mostrarMensagem(
+            erro.message ||
+            'Erro inesperado durante a importação.',
+            'erro'
+        );
+
+
+    } finally {
+
+        btn.disabled = false;
+        btn.textContent =
+            'CONFIRMAR IMPORTAÇÃO';
+    }
+}
+
+
+/* =========================================================
+   NOVA IMPORTAÇÃO
+========================================================= */
+
+function novaImportacao() {
+
+    tokenImportacao = null;
+    existemErros = false;
+
+    document.getElementById(
+        'arquivoPdf'
+    ).value = '';
+
+    document.getElementById(
+        'areaResultado'
+    ).style.display = 'none';
+
+    document.getElementById(
+        'listaRecibos'
+    ).innerHTML = '';
+
+    limparMensagem();
+
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+</script>
+
+</body>
+</html>
