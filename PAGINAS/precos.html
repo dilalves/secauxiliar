@@ -43,7 +43,7 @@
         .search { display:flex; gap:7px; flex:1; min-width:260px; }
         .table-wrap { overflow:auto; max-height:calc(100vh - 310px); }
         table { width:100%; border-collapse:collapse; }
-        .prices-table { min-width:1420px; }
+        .prices-table { min-width:1180px; }
         .units-table { min-width:540px; }
         th, td { padding:10px 8px; border-bottom:1px solid #e8eef5; text-align:left; vertical-align:middle; }
         th { position:sticky; top:0; z-index:1; background:#f8fafc; color:#43536a; font-size:12px; white-space:nowrap; }
@@ -97,8 +97,9 @@
         </div>
         <button type="button" class="btn-primary" id="btnNovaTabela">+ Nova tabela</button>
         <button type="button" class="btn-light" id="btnEditarTabela">Editar tabela</button>
-        <button type="button" class="btn-danger" id="btnExcluirTabela">Excluir tabela</button>
+        <button type="button" class="btn-danger" id="btnArquivarTabela">Arquivar tabela</button>
         <button type="button" class="btn-light" id="btnFaixas">Consultar faixas</button>
+        <div class="check"><input type="checkbox" id="mostrarArquivadas"><label for="mostrarArquivadas">Mostrar arquivadas</label></div>
     </section>
 
     <div class="workspace">
@@ -109,7 +110,7 @@
             </div>
             <div class="toolbar">
                 <div class="search">
-                    <input type="search" id="buscaPreco" placeholder="Buscar por código, curso ou período">
+                    <input type="search" id="buscaPreco" placeholder="Buscar por código, tipo, turno ou curso">
                     <button type="button" class="btn-light" id="btnBuscarPreco">Buscar</button>
                 </div>
                 <span class="counter" id="contadorPrecos">0 preço(s)</span>
@@ -117,11 +118,11 @@
             <div class="table-wrap">
                 <table class="prices-table">
                     <thead><tr>
-                        <th>ID</th><th>Curso</th><th>Período/Área</th><th>Contratual</th><th>Promoção</th>
+                        <th>ID</th><th>Tipo</th><th>Turno</th><th>Curso</th><th>Contratual</th>
                         <th>Pro/Trab</th><th>KEA</th><th>0</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>100</th>
-                        <th>Dif.</th><th>Sábado</th><th>Faixa</th><th>Grupo</th><th>Desc.</th><th>Mostrar</th><th>Ativo</th><th>Opc.</th><th>Ações</th>
+                        <th>Faixa</th><th>Desc.</th><th>Mostrar</th><th>Ativo</th><th>Ações</th>
                     </tr></thead>
-                    <tbody id="tbodyPrecos"><tr><td colspan="23" class="placeholder">Selecione uma tabela de preços.</td></tr></tbody>
+                    <tbody id="tbodyPrecos"><tr><td colspan="19" class="placeholder">Selecione uma tabela de preços.</td></tr></tbody>
                 </table>
             </div>
         </section>
@@ -165,12 +166,10 @@
         <div class="modal-body">
             <input type="hidden" id="PrecoId" name="IdPreco"><input type="hidden" id="PrecoTabelaId" name="IdTabela">
             <div class="grid">
-                <div class="span2"><label for="Curso">Curso *</label><input id="Curso" name="Curso" maxlength="100" required></div>
-                <div class="span2"><label for="PeriodoArea">Período / Área</label><input id="PeriodoArea" name="PeriodoArea" maxlength="100"></div>
-                <div><label for="Contratual">Contratual</label><input type="number" step="0.01" id="Contratual" name="Contratual"></div>
-                <div><label for="Valor">Promoção</label><input type="number" step="0.01" id="Valor" name="Valor"></div>
-                <div><label for="VrSab">Valor sábado</label><input type="number" step="0.01" id="VrSab" name="VrSab"></div>
-                <div><label for="ParDif">Diferença</label><input type="number" step="1" id="ParDif" name="ParDif"></div>
+                <div><label for="Tipo">Tipo *</label><select id="Tipo" name="Tipo" required><option value="REGULAR">Regular</option><option value="OPCIONAL">Opcional</option></select></div>
+                <div><label for="Turno">Turno *</label><select id="Turno" name="Turno" required><option value="MANHA">Manhã</option><option value="TARDE">Tarde</option><option value="VESPERTINO">Vespertino</option><option value="NOITE">Noite</option></select></div>
+                <div class="span2" id="campoCurso"><label for="Curso">Nome do curso opcional *</label><input id="Curso" name="Curso" maxlength="100"></div>
+                <div><label for="Contratual">Valor contratual</label><input type="number" step="0.01" id="Contratual" name="Contratual"></div>
 
                 <h3 class="section-title">Descontos (%)</h3>
                 <div><label for="Cc">Pro/Trab</label><input type="number" step="0.01" id="Cc" name="Cc"></div>
@@ -183,14 +182,12 @@
                 <div><label for="Fe">Faixa E</label><input type="number" step="0.01" id="Fe" name="Fe"></div>
                 <div><label for="F100">Faixa 100</label><input type="number" step="0.01" id="F100" name="F100"></div>
                 <div><label for="FaixaDesc">Cód. faixa</label><input id="FaixaDesc" name="FaixaDesc" maxlength="2"></div>
-                <div><label for="Grupo">Grupo</label><input type="number" step="1" id="Grupo" name="Grupo"></div>
 
                 <h3 class="section-title">Opções</h3>
                 <div class="span4 checks">
                     <div class="check"><input type="checkbox" id="TemDesc" name="TemDesc" value="S" checked><label for="TemDesc">Tem desconto</label></div>
                     <div class="check"><input type="checkbox" id="Mostrar" name="Mostrar" value="S" checked><label for="Mostrar">Mostrar</label></div>
                     <div class="check"><input type="checkbox" id="Ativo" name="Ativo" value="S" checked><label for="Ativo">Ativo</label></div>
-                    <div class="check"><input type="checkbox" id="Opcional" name="Opcional" value="S"><label for="Opcional">Curso opcional</label></div>
                 </div>
             </div>
         </div>
@@ -232,7 +229,7 @@
 <script>
 const API_BASE = 'https://apisec.secauxiliar.com.br/sec/';
 const API = {
-    tabelas: API_BASE+'listar_tabelas_precos.php', salvarTabela: API_BASE+'salvar_tabela_precos.php', excluirTabela: API_BASE+'excluir_tabela_precos.php',
+    tabelas: API_BASE+'listar_tabelas_precos.php', salvarTabela: API_BASE+'salvar_tabela_precos.php', arquivarTabela: API_BASE+'arquivar_tabela_precos.php',
     precos: API_BASE+'listar_precos.php', salvarPreco: API_BASE+'salvar_preco.php', excluirPreco: API_BASE+'excluir_preco.php', copiarPreco: API_BASE+'copiar_preco.php',
     unidades: API_BASE+'listar_unidades_tabela_preco.php', adicionarUnidade: API_BASE+'adicionar_unidade_tabela_preco.php', excluirUnidade: API_BASE+'excluir_unidade_tabela_preco.php'
 };
@@ -251,8 +248,8 @@ function fechar(dialog){ dialog.close(); }
 
 async function carregarTabelas(selecionar=null){
     try{
-        const d=await api(API.tabelas); tabelas=d.dados||[];
-        $('tabelaAtual').innerHTML=tabelas.length?tabelas.map(t=>`<option value="${esc(t.IdTabela)}">${esc(t.Descricao)}${Number(t.Ativo)!==1?' (inativa)':''} — ${esc(t.TotalPrecos)} preço(s) / ${esc(t.TotalUnidades)} unidade(s)</option>`).join(''):'<option value="">Nenhuma tabela cadastrada</option>';
+        const d=await api(`${API.tabelas}?arquivadas=${$('mostrarArquivadas').checked?1:0}`); tabelas=d.dados||[];
+        $('tabelaAtual').innerHTML=tabelas.length?tabelas.map(t=>`<option value="${esc(t.IdTabela)}">${esc(t.Descricao)}${Number(t.Arquivada)===1?' (arquivada)':Number(t.Ativo)!==1?' (inativa)':''} — ${esc(t.TotalPrecos)} preço(s) / ${esc(t.TotalUnidades)} unidade(s)</option>`).join(''):'<option value="">Nenhuma tabela cadastrada</option>';
         if(selecionar&&tabelas.some(t=>String(t.IdTabela)===String(selecionar)))$('tabelaAtual').value=selecionar;
         await trocarTabela();
     }catch(e){status(e.message,'error');}
@@ -260,23 +257,31 @@ async function carregarTabelas(selecionar=null){
 async function trocarTabela(){
     const t=atual(); const nome=t?t.Descricao:'Selecione uma tabela.';
     $('nomeTabelaPrecos').textContent=nome; $('nomeTabelaUnidades').textContent=nome;
-    const disabled=!t; ['btnEditarTabela','btnExcluirTabela','btnNovoPreco','btnAdicionarUnidade','IdUnidade','buscaPreco','btnBuscarPreco'].forEach(id=>$(id).disabled=disabled);
+    const arquivada=Number(t?.Arquivada)===1;
+    const disabled=!t||arquivada;
+    ['btnEditarTabela','btnNovoPreco','btnAdicionarUnidade','IdUnidade'].forEach(id=>$(id).disabled=disabled);
+    ['buscaPreco','btnBuscarPreco'].forEach(id=>$(id).disabled=!t);
+    $('btnArquivarTabela').disabled=!t;
+    $('btnArquivarTabela').textContent=arquivada?'Restaurar tabela':'Arquivar tabela';
+    $('btnArquivarTabela').className=arquivada?'btn-primary':'btn-danger';
+    if(t&&arquivada){$('nomeTabelaPrecos').textContent=nome+' — somente consulta';$('nomeTabelaUnidades').textContent=nome+' — somente consulta';}
     if(!t){precos=[];unidades=[];renderPrecos();renderUnidades();return;}
     await Promise.all([carregarPrecos(),carregarUnidades()]);
 }
 async function carregarPrecos(){
-    const t=atual(); if(!t)return; $('tbodyPrecos').innerHTML='<tr><td colspan="23" class="loading">Carregando...</td></tr>';
+    const t=atual(); if(!t)return; $('tbodyPrecos').innerHTML='<tr><td colspan="19" class="loading">Carregando...</td></tr>';
     try{const d=await api(`${API.precos}?IdTabela=${encodeURIComponent(t.IdTabela)}&q=${encodeURIComponent($('buscaPreco').value.trim())}`); if(String(atual()?.IdTabela)!==String(t.IdTabela))return; precos=d.dados||[];renderPrecos();}catch(e){status(e.message,'error');}
 }
 function renderPrecos(){
     $('contadorPrecos').textContent=`${precos.length} preço(s)`;
-    if(!atual()){$('tbodyPrecos').innerHTML='<tr><td colspan="23" class="placeholder">Selecione uma tabela de preços.</td></tr>';return;}
-    if(!precos.length){$('tbodyPrecos').innerHTML='<tr><td colspan="23" class="empty">Nenhum preço cadastrado nesta tabela.</td></tr>';return;}
+    if(!atual()){$('tbodyPrecos').innerHTML='<tr><td colspan="19" class="placeholder">Selecione uma tabela de preços.</td></tr>';return;}
+    if(!precos.length){$('tbodyPrecos').innerHTML='<tr><td colspan="19" class="empty">Nenhum preço cadastrado nesta tabela.</td></tr>';return;}
+    const somenteLeitura=Number(atual().Arquivada)===1;
     $('tbodyPrecos').innerHTML=precos.map((p,i)=>`<tr>
-        <td>${esc(p.IdPreco)}</td><td>${esc(p.Curso)}</td><td>${esc(p.PeriodoArea)}</td><td class="money">${esc(moeda(p.Contratual))}</td><td class="money">${esc(moeda(p.Valor))}</td>
+        <td>${esc(p.IdPreco)}</td><td>${esc(p.Tipo)}</td><td>${esc(nomeTurno(p.Turno))}</td><td>${esc(p.Curso)}</td><td class="money">${esc(moeda(p.Contratual))}</td>
         <td class="number">${esc(num(p.Cc))}</td><td class="number">${esc(num(p.Ea))}</td><td class="number">${esc(num(p.F0))}</td><td class="number">${esc(num(p.Fa))}</td><td class="number">${esc(num(p.Fb))}</td><td class="number">${esc(num(p.Fc))}</td><td class="number">${esc(num(p.Fd))}</td><td class="number">${esc(num(p.Fe))}</td><td class="number">${esc(num(p.F100))}</td>
-        <td class="number">${esc(num(p.ParDif))}</td><td class="money">${esc(moeda(p.VrSab))}</td><td>${esc(p.FaixaDesc)}</td><td>${esc(p.Grupo)}</td><td>${badge(p.TemDesc)}</td><td>${badge(p.Mostrar)}</td><td>${badge(p.Ativo)}</td><td>${badge(p.Opcional)}</td>
-        <td><div class="actions"><button class="btn-light btn-small" onclick="editarPreco(${i})">Editar</button><button class="btn-light btn-small" onclick="abrirCopiar(${i})">Copiar</button><button class="btn-danger btn-small" onclick="excluirPreco(${i})">Excluir</button></div></td></tr>`).join('');
+        <td>${esc(p.FaixaDesc)}</td><td>${badge(p.TemDesc)}</td><td>${badge(p.Mostrar)}</td><td>${badge(p.Ativo)}</td>
+        <td>${somenteLeitura?'<span class="counter">Somente consulta</span>':`<div class="actions"><button class="btn-light btn-small" onclick="editarPreco(${i})">Editar</button><button class="btn-light btn-small" onclick="abrirCopiar(${i})">Copiar</button><button class="btn-danger btn-small" onclick="excluirPreco(${i})">Excluir</button></div>`}</td></tr>`).join('');
 }
 async function carregarUnidades(){
     const t=atual(); if(!t)return; $('tbodyUnidades').innerHTML='<tr><td colspan="4" class="loading">Carregando...</td></tr>';
@@ -286,13 +291,16 @@ function renderUnidades(){
     $('contadorUnidades').textContent=`${unidades.length} unidade(s)`;
     if(!atual()){$('tbodyUnidades').innerHTML='<tr><td colspan="4" class="placeholder">Selecione uma tabela de preços.</td></tr>';return;}
     if(!unidades.length){$('tbodyUnidades').innerHTML='<tr><td colspan="4" class="empty">Nenhuma unidade vinculada.</td></tr>';return;}
-    $('tbodyUnidades').innerHTML=unidades.map((u,i)=>`<tr><td>${esc(u.IdUnidade)}</td><td>${esc(u.NomeUnidade)}</td><td>${badge(u.UnidadeAtiva)}</td><td><button class="btn-danger btn-small" onclick="excluirUnidade(${i})">Remover</button></td></tr>`).join('');
+    const somenteLeitura=Number(atual().Arquivada)===1;
+    $('tbodyUnidades').innerHTML=unidades.map((u,i)=>`<tr><td>${esc(u.IdUnidade)}</td><td>${esc(u.NomeUnidade)}</td><td>${badge(u.UnidadeAtiva)}</td><td>${somenteLeitura?'<span class="counter">Somente consulta</span>':`<button class="btn-danger btn-small" onclick="excluirUnidade(${i})">Remover</button>`}</td></tr>`).join('');
 }
 function abrirNovaTabela(){ $('formTabela').reset();$('TabelaId').value='';$('TabelaAtivo').checked=true;$('tituloTabela').textContent='Nova tabela de preços';$('modalTabela').showModal();$('TabelaDescricao').focus(); }
 function abrirEditarTabela(){const t=atual();if(!t)return;$('TabelaId').value=t.IdTabela;$('TabelaDescricao').value=t.Descricao;$('TabelaAtivo').checked=Number(t.Ativo)===1;$('tituloTabela').textContent='Editar tabela de preços';$('modalTabela').showModal();}
-function abrirNovoPreco(){const t=atual();if(!t)return;$('formPreco').reset();$('PrecoId').value='';$('PrecoTabelaId').value=t.IdTabela;['TemDesc','Mostrar','Ativo'].forEach(id=>$(id).checked=true);$('Opcional').checked=false;$('tituloPreco').textContent=`Novo preço — ${t.Descricao}`;$('modalPreco').showModal();$('Curso').focus();}
-window.editarPreco=i=>{const p=precos[i];$('formPreco').reset();$('PrecoId').value=p.IdPreco;$('PrecoTabelaId').value=p.IdTabela;['Curso','PeriodoArea','Contratual','Valor','VrSab','ParDif','Cc','Ea','F0','Fa','Fb','Fc','Fd','Fe','F100','FaixaDesc','Grupo'].forEach(id=>$(id).value=num(p[id]));['TemDesc','Mostrar','Ativo','Opcional'].forEach(id=>$(id).checked=String(p[id]).toUpperCase()==='S');$('tituloPreco').textContent=`Editar preço ${p.IdPreco}`;$('modalPreco').showModal();};
-window.abrirCopiar=i=>{const p=precos[i];const origem=atual();const destinos=tabelas.filter(t=>String(t.IdTabela)!==String(origem.IdTabela));if(!destinos.length){status('Cadastre outra tabela para copiar este preço.','error');return;}$('CopiarIdPreco').value=p.IdPreco;$('IdTabelaDestino').innerHTML=destinos.map(t=>`<option value="${esc(t.IdTabela)}">${esc(t.Descricao)}</option>`).join('');$('modalCopiar').showModal();};
+function nomeTurno(turno){return {MANHA:'Manhã',TARDE:'Tarde',VESPERTINO:'Vespertino',NOITE:'Noite'}[turno]||turno||'';}
+function ajustarTipo(){const opcional=$('Tipo').value==='OPCIONAL';$('campoCurso').hidden=!opcional;$('Curso').required=opcional;if(!opcional)$('Curso').value='CURSO REGULAR';else if($('Curso').value==='CURSO REGULAR')$('Curso').value='';}
+function abrirNovoPreco(){const t=atual();if(!t||Number(t.Arquivada)===1)return;$('formPreco').reset();$('PrecoId').value='';$('PrecoTabelaId').value=t.IdTabela;$('Tipo').value='REGULAR';$('Turno').value='MANHA';['TemDesc','Mostrar','Ativo'].forEach(id=>$(id).checked=true);ajustarTipo();$('tituloPreco').textContent=`Novo preço — ${t.Descricao}`;$('modalPreco').showModal();$('Tipo').focus();}
+window.editarPreco=i=>{const p=precos[i];$('formPreco').reset();$('PrecoId').value=p.IdPreco;$('PrecoTabelaId').value=p.IdTabela;$('Tipo').value=p.Tipo;$('Turno').value=p.Turno;['Curso','Contratual','Cc','Ea','F0','Fa','Fb','Fc','Fd','Fe','F100','FaixaDesc'].forEach(id=>$(id).value=num(p[id]));['TemDesc','Mostrar','Ativo'].forEach(id=>$(id).checked=String(p[id]).toUpperCase()==='S');ajustarTipo();$('tituloPreco').textContent=`Editar preço ${p.IdPreco}`;$('modalPreco').showModal();};
+window.abrirCopiar=i=>{const p=precos[i];const origem=atual();const destinos=tabelas.filter(t=>String(t.IdTabela)!==String(origem.IdTabela)&&Number(t.Arquivada)!==1);if(!destinos.length){status('Cadastre outra tabela ativa ou inativa para copiar este preço.','error');return;}$('CopiarIdPreco').value=p.IdPreco;$('IdTabelaDestino').innerHTML=destinos.map(t=>`<option value="${esc(t.IdTabela)}">${esc(t.Descricao)}</option>`).join('');$('modalCopiar').showModal();};
 window.excluirPreco=async i=>{const p=precos[i],idTabela=atual()?.IdTabela;if(!confirm(`Excluir o preço ${p.IdPreco} - ${p.Curso}?`))return;try{const d=await post(API.excluirPreco,{IdPreco:p.IdPreco});status(d.message);await carregarTabelas(idTabela);}catch(e){status(e.message,'error');}};
 window.excluirUnidade=async i=>{const u=unidades[i],t=atual();if(!confirm(`Remover ${u.IdUnidade} - ${u.NomeUnidade} da tabela ${t.Descricao}?`))return;try{const d=await post(API.excluirUnidade,{IdTabela:t.IdTabela,IdUnidade:u.IdUnidade});status(d.message);await carregarTabelas(t.IdTabela);}catch(e){status(e.message,'error');}};
 
@@ -300,8 +308,9 @@ $('formTabela').addEventListener('submit',async e=>{e.preventDefault();const b=$
 $('formPreco').addEventListener('submit',async e=>{e.preventDefault();const b=$('btnSalvarPreco');b.disabled=true;try{const d=await post(API.salvarPreco,new FormData(e.currentTarget));fechar($('modalPreco'));status(d.message);await carregarPrecos();await carregarTabelas(atual()?.IdTabela);}catch(x){status(x.message,'error');}finally{b.disabled=false;}});
 $('formCopiar').addEventListener('submit',async e=>{e.preventDefault();const b=$('btnConfirmarCopia');b.disabled=true;try{const d=await post(API.copiarPreco,new FormData(e.currentTarget));fechar($('modalCopiar'));status(d.message);await carregarTabelas(atual()?.IdTabela);}catch(x){status(x.message,'error');}finally{b.disabled=false;}});
 $('formUnidade').addEventListener('submit',async e=>{e.preventDefault();const t=atual(),b=$('btnAdicionarUnidade');if(!t)return;b.disabled=true;try{const d=await post(API.adicionarUnidade,{IdTabela:t.IdTabela,IdUnidade:$('IdUnidade').value.trim()});$('IdUnidade').value='';status(d.message);await carregarTabelas(t.IdTabela);$('IdUnidade').focus();}catch(x){status(x.message,'error');}finally{b.disabled=false;}});
+$('Tipo').addEventListener('change',ajustarTipo);$('mostrarArquivadas').addEventListener('change',()=>carregarTabelas());
 $('tabelaAtual').addEventListener('change',trocarTabela);$('btnNovaTabela').addEventListener('click',abrirNovaTabela);$('btnEditarTabela').addEventListener('click',abrirEditarTabela);$('btnNovoPreco').addEventListener('click',abrirNovoPreco);$('btnBuscarPreco').addEventListener('click',carregarPrecos);$('buscaPreco').addEventListener('keydown',e=>{if(e.key==='Enter')carregarPrecos();});$('btnFaixas').addEventListener('click',()=>$('modalFaixas').showModal());
-$('btnExcluirTabela').addEventListener('click',async()=>{const t=atual();if(!t||!confirm(`Excluir a tabela ${t.Descricao}?`))return;try{const d=await post(API.excluirTabela,{IdTabela:t.IdTabela});status(d.message);await carregarTabelas();}catch(e){status(e.message,'error');}});
+$('btnArquivarTabela').addEventListener('click',async()=>{const t=atual();if(!t)return;const arquivada=Number(t.Arquivada)===1;const acao=arquivada?'restaurar':'arquivar';if(!confirm(`Deseja ${acao} a tabela ${t.Descricao}?`))return;try{const d=await post(API.arquivarTabela,{IdTabela:t.IdTabela,Arquivada:arquivada?0:1});status(d.message);if(!arquivada)$('mostrarArquivadas').checked=true;await carregarTabelas(t.IdTabela);}catch(e){status(e.message,'error');}});
 document.querySelectorAll('dialog .fechar').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}));
 carregarTabelas();
