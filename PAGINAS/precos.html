@@ -17,7 +17,7 @@
         .topbar-inner { max-width:1800px; margin:auto; display:flex; align-items:center; justify-content:space-between; gap:16px; }
         h1 { margin:0; font-size:22px; }
         .topbar small { display:block; margin-top:4px; opacity:.82; }
-        .container { max-width:1800px; margin:20px auto; padding:0 16px 36px; }
+        .container { width:100%; max-width:none; margin:12px 0; padding:0 12px 24px; }
         .card { background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
         .status { display:none; margin-bottom:12px; padding:11px 14px; border-radius:9px; }
         .status.ok { display:block; color:var(--ok); background:var(--okbg); border:1px solid #a9e6c5; }
@@ -41,9 +41,9 @@
         .panel-head h2 { margin:0; font-size:17px; }
         .panel-head small { color:var(--muted); }
         .search { display:flex; gap:7px; flex:1; min-width:260px; }
-        .table-wrap { overflow:auto; max-height:calc(100vh - 310px); }
+        .table-wrap { overflow-y:auto; overflow-x:hidden; max-height:calc(100vh - 310px); }
         table { width:100%; border-collapse:collapse; }
-        .prices-table { min-width:1180px; }
+        .prices-table { width:100%; min-width:0; table-layout:fixed; }
         .units-table { min-width:540px; }
         th, td { padding:10px 8px; border-bottom:1px solid #e8eef5; text-align:left; vertical-align:middle; }
         th { position:sticky; top:0; z-index:1; background:#f8fafc; color:#43536a; font-size:12px; white-space:nowrap; }
@@ -51,6 +51,19 @@
         tr:hover td { background:#fbfdff; }
         .money, .number { text-align:right; white-space:nowrap; }
         .actions { display:flex; gap:5px; white-space:nowrap; }
+        .prices-table th, .prices-table td { padding:8px 3px; font-size:11px; overflow:hidden; text-overflow:ellipsis; }
+        .prices-table th:nth-child(1) { width:3%; }
+        .prices-table th:nth-child(2) { width:7%; }
+        .prices-table th:nth-child(3) { width:7%; }
+        .prices-table th:nth-child(4) { width:11%; }
+        .prices-table th:nth-child(5) { width:10%; }
+        .prices-table th:nth-child(n+6):nth-child(-n+14) { width:4%; text-align:center; }
+        .prices-table th:nth-child(15) { width:4%; text-align:center; }
+        .prices-table th:nth-child(n+16):nth-child(-n+18) { width:5%; text-align:center; }
+        .prices-table th:nth-child(19) { width:15%; }
+        .prices-table td:nth-child(n+6):nth-child(-n+18) { text-align:center; }
+        .prices-table .actions { gap:3px; justify-content:flex-start; }
+        .prices-table .btn-small { padding:5px 5px; font-size:10px; }
         .counter { color:var(--muted); font-size:13px; }
         .empty, .loading, .placeholder { padding:42px 18px; text-align:center; color:var(--muted); }
         .unit-form { display:flex; gap:8px; padding:14px 16px; border-bottom:1px solid var(--line); }
@@ -172,15 +185,15 @@
                 <div><label for="Contratual">Valor contratual</label><input type="number" step="0.01" id="Contratual" name="Contratual"></div>
 
                 <h3 class="section-title">Descontos (%)</h3>
-                <div><label for="Cc">Pro/Trab</label><input type="number" step="0.01" id="Cc" name="Cc"></div>
-                <div><label for="Ea">KEA</label><input type="number" step="0.01" id="Ea" name="Ea"></div>
-                <div><label for="F0">Faixa 0</label><input type="number" step="0.01" id="F0" name="F0"></div>
-                <div><label for="Fa">Faixa A</label><input type="number" step="0.01" id="Fa" name="Fa"></div>
-                <div><label for="Fb">Faixa B</label><input type="number" step="0.01" id="Fb" name="Fb"></div>
-                <div><label for="Fc">Faixa C</label><input type="number" step="0.01" id="Fc" name="Fc"></div>
-                <div><label for="Fd">Faixa D</label><input type="number" step="0.01" id="Fd" name="Fd"></div>
-                <div><label for="Fe">Faixa E</label><input type="number" step="0.01" id="Fe" name="Fe"></div>
-                <div><label for="F100">Faixa 100</label><input type="number" step="0.01" id="F100" name="F100"></div>
+                <div><label for="Cc">Pro/Trab</label><input type="number" step="1" min="0" max="100" inputmode="numeric" id="Cc" name="Cc"></div>
+                <div><label for="Ea">KEA</label><input type="number" step="1" min="0" max="100" inputmode="numeric" id="Ea" name="Ea"></div>
+                <div><label for="F0">Faixa 0</label><input type="number" step="1" min="0" max="100" inputmode="numeric" id="F0" name="F0"></div>
+                <div><label for="Fa">Faixa A</label><input type="number" step="1" min="0" max="100" inputmode="numeric" id="Fa" name="Fa"></div>
+                <div><label for="Fb">Faixa B</label><input type="number" step="1" min="0" max="100" inputmode="numeric" id="Fb" name="Fb"></div>
+                <div><label for="Fc">Faixa C</label><input type="number" step="1" min="0" max="100" inputmode="numeric" id="Fc" name="Fc"></div>
+                <div><label for="Fd">Faixa D</label><input type="number" step="1" min="0" max="100" inputmode="numeric" id="Fd" name="Fd"></div>
+                <div><label for="Fe">Faixa E</label><input type="number" step="1" min="0" max="100" inputmode="numeric" id="Fe" name="Fe"></div>
+                <div><label for="F100">Faixa 100</label><input type="number" step="1" min="0" max="100" inputmode="numeric" id="F100" name="F100"></div>
                 <div><label for="FaixaDesc">Cód. faixa</label><input id="FaixaDesc" name="FaixaDesc" maxlength="2"></div>
 
                 <h3 class="section-title">Opções</h3>
@@ -240,6 +253,7 @@ function esc(v){ return String(v??'').replaceAll('&','&amp;').replaceAll('<','&l
 function atual(){ return tabelas.find(x=>String(x.IdTabela)===String($('tabelaAtual').value))||null; }
 function moeda(v){ if(v===null||v===undefined||v==='')return ''; return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
 function num(v){ return v===null||v===undefined?'':v; }
+function inteiro(v){ if(v===null||v===undefined||v==='')return ''; return String(Math.round(Number(v))); }
 function badge(v){ return String(v).toUpperCase()==='S'||Number(v)===1?'<span class="badge yes">Sim</span>':'<span class="badge no">Não</span>'; }
 function status(msg,tipo='ok'){ const b=$('status'); b.className='status '+tipo; b.textContent=msg; clearTimeout(status.timer); status.timer=setTimeout(()=>{b.className='status';b.textContent='';},5000); }
 async function api(url,opt={}){ const r=await fetch(url,{cache:'no-store',...opt}); let d; try{d=await r.json();}catch{throw new Error('Resposta inválida do servidor.');} if(!r.ok||d.ok===false)throw new Error(d.message||'Erro na operação.'); return d; }
@@ -279,7 +293,7 @@ function renderPrecos(){
     const somenteLeitura=Number(atual().Arquivada)===1;
     $('tbodyPrecos').innerHTML=precos.map((p,i)=>`<tr>
         <td>${esc(p.IdPreco)}</td><td>${esc(p.Tipo)}</td><td>${esc(nomeTurno(p.Turno))}</td><td>${esc(p.Curso)}</td><td class="money">${esc(moeda(p.Contratual))}</td>
-        <td class="number">${esc(num(p.Cc))}</td><td class="number">${esc(num(p.Ea))}</td><td class="number">${esc(num(p.F0))}</td><td class="number">${esc(num(p.Fa))}</td><td class="number">${esc(num(p.Fb))}</td><td class="number">${esc(num(p.Fc))}</td><td class="number">${esc(num(p.Fd))}</td><td class="number">${esc(num(p.Fe))}</td><td class="number">${esc(num(p.F100))}</td>
+        <td class="number">${esc(inteiro(p.Cc))}</td><td class="number">${esc(inteiro(p.Ea))}</td><td class="number">${esc(inteiro(p.F0))}</td><td class="number">${esc(inteiro(p.Fa))}</td><td class="number">${esc(inteiro(p.Fb))}</td><td class="number">${esc(inteiro(p.Fc))}</td><td class="number">${esc(inteiro(p.Fd))}</td><td class="number">${esc(inteiro(p.Fe))}</td><td class="number">${esc(inteiro(p.F100))}</td>
         <td>${esc(p.FaixaDesc)}</td><td>${badge(p.TemDesc)}</td><td>${badge(p.Mostrar)}</td><td>${badge(p.Ativo)}</td>
         <td>${somenteLeitura?'<span class="counter">Somente consulta</span>':`<div class="actions"><button class="btn-light btn-small" onclick="editarPreco(${i})">Editar</button><button class="btn-light btn-small" onclick="abrirCopiar(${i})">Copiar</button><button class="btn-danger btn-small" onclick="excluirPreco(${i})">Excluir</button></div>`}</td></tr>`).join('');
 }
@@ -299,7 +313,7 @@ function abrirEditarTabela(){const t=atual();if(!t)return;$('TabelaId').value=t.
 function nomeTurno(turno){return {MANHA:'Manhã',TARDE:'Tarde',VESPERTINO:'Vespertino',NOITE:'Noite'}[turno]||turno||'';}
 function ajustarTipo(){const opcional=$('Tipo').value==='OPCIONAL';$('campoCurso').hidden=!opcional;$('Curso').required=opcional;if(!opcional)$('Curso').value='CURSO REGULAR';else if($('Curso').value==='CURSO REGULAR')$('Curso').value='';}
 function abrirNovoPreco(){const t=atual();if(!t||Number(t.Arquivada)===1)return;$('formPreco').reset();$('PrecoId').value='';$('PrecoTabelaId').value=t.IdTabela;$('Tipo').value='REGULAR';$('Turno').value='MANHA';['TemDesc','Mostrar','Ativo'].forEach(id=>$(id).checked=true);ajustarTipo();$('tituloPreco').textContent=`Novo preço — ${t.Descricao}`;$('modalPreco').showModal();$('Tipo').focus();}
-window.editarPreco=i=>{const p=precos[i];$('formPreco').reset();$('PrecoId').value=p.IdPreco;$('PrecoTabelaId').value=p.IdTabela;$('Tipo').value=p.Tipo;$('Turno').value=p.Turno;['Curso','Contratual','Cc','Ea','F0','Fa','Fb','Fc','Fd','Fe','F100','FaixaDesc'].forEach(id=>$(id).value=num(p[id]));['TemDesc','Mostrar','Ativo'].forEach(id=>$(id).checked=String(p[id]).toUpperCase()==='S');ajustarTipo();$('tituloPreco').textContent=`Editar preço ${p.IdPreco}`;$('modalPreco').showModal();};
+window.editarPreco=i=>{const p=precos[i];$('formPreco').reset();$('PrecoId').value=p.IdPreco;$('PrecoTabelaId').value=p.IdTabela;$('Tipo').value=p.Tipo;$('Turno').value=p.Turno;['Curso','Contratual','FaixaDesc'].forEach(id=>$(id).value=num(p[id]));['Cc','Ea','F0','Fa','Fb','Fc','Fd','Fe','F100'].forEach(id=>$(id).value=inteiro(p[id]));['TemDesc','Mostrar','Ativo'].forEach(id=>$(id).checked=String(p[id]).toUpperCase()==='S');ajustarTipo();$('tituloPreco').textContent=`Editar preço ${p.IdPreco}`;$('modalPreco').showModal();};
 window.abrirCopiar=i=>{const p=precos[i];const origem=atual();const destinos=tabelas.filter(t=>String(t.IdTabela)!==String(origem.IdTabela)&&Number(t.Arquivada)!==1);if(!destinos.length){status('Cadastre outra tabela ativa ou inativa para copiar este preço.','error');return;}$('CopiarIdPreco').value=p.IdPreco;$('IdTabelaDestino').innerHTML=destinos.map(t=>`<option value="${esc(t.IdTabela)}">${esc(t.Descricao)}</option>`).join('');$('modalCopiar').showModal();};
 window.excluirPreco=async i=>{const p=precos[i],idTabela=atual()?.IdTabela;if(!confirm(`Excluir o preço ${p.IdPreco} - ${p.Curso}?`))return;try{const d=await post(API.excluirPreco,{IdPreco:p.IdPreco});status(d.message);await carregarTabelas(idTabela);}catch(e){status(e.message,'error');}};
 window.excluirUnidade=async i=>{const u=unidades[i],t=atual();if(!confirm(`Remover ${u.IdUnidade} - ${u.NomeUnidade} da tabela ${t.Descricao}?`))return;try{const d=await post(API.excluirUnidade,{IdTabela:t.IdTabela,IdUnidade:u.IdUnidade});status(d.message);await carregarTabelas(t.IdTabela);}catch(e){status(e.message,'error');}};
