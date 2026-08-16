@@ -181,7 +181,7 @@
             <div class="grid">
                 <div><label for="Tipo">Tipo *</label><select id="Tipo" name="Tipo" required><option value="REGULAR">Regular</option><option value="OPCIONAL">Opcional</option></select></div>
                 <div><label for="Turno">Turno *</label><select id="Turno" name="Turno" required><option value="MANHA">Manhã</option><option value="TARDE">Tarde</option><option value="VESPERTINO">Vespertino</option><option value="NOITE">Noite</option></select></div>
-                <div class="span2" id="campoCurso"><label for="Curso">Nome do curso opcional *</label><input id="Curso" name="Curso" maxlength="100"></div>
+                <div class="span2" id="campoCurso"><label for="Curso" id="labelCurso">Nome do curso *</label><input id="Curso" name="Curso" maxlength="100" required></div>
                 <div><label for="Contratual">Valor contratual</label><input type="number" step="0.01" id="Contratual" name="Contratual"></div>
 
                 <h3 class="section-title">Descontos (%)</h3>
@@ -311,7 +311,7 @@ function renderUnidades(){
 function abrirNovaTabela(){ $('formTabela').reset();$('TabelaId').value='';$('TabelaAtivo').checked=true;$('tituloTabela').textContent='Nova tabela de preços';$('modalTabela').showModal();$('TabelaDescricao').focus(); }
 function abrirEditarTabela(){const t=atual();if(!t)return;$('TabelaId').value=t.IdTabela;$('TabelaDescricao').value=t.Descricao;$('TabelaAtivo').checked=Number(t.Ativo)===1;$('tituloTabela').textContent='Editar tabela de preços';$('modalTabela').showModal();}
 function nomeTurno(turno){return {MANHA:'Manhã',TARDE:'Tarde',VESPERTINO:'Vespertino',NOITE:'Noite'}[turno]||turno||'';}
-function ajustarTipo(){const opcional=$('Tipo').value==='OPCIONAL';$('campoCurso').hidden=!opcional;$('Curso').required=opcional;if(!opcional)$('Curso').value='CURSO REGULAR';else if($('Curso').value==='CURSO REGULAR')$('Curso').value='';}
+function ajustarTipo(){const opcional=$('Tipo').value==='OPCIONAL';$('campoCurso').hidden=false;$('Curso').required=true;$('labelCurso').textContent=opcional?'Nome do curso opcional *':'Nome do curso regular *';}
 function abrirNovoPreco(){const t=atual();if(!t||Number(t.Arquivada)===1)return;$('formPreco').reset();$('PrecoId').value='';$('PrecoTabelaId').value=t.IdTabela;$('Tipo').value='REGULAR';$('Turno').value='MANHA';['TemDesc','Mostrar','Ativo'].forEach(id=>$(id).checked=true);ajustarTipo();$('tituloPreco').textContent=`Novo preço — ${t.Descricao}`;$('modalPreco').showModal();$('Tipo').focus();}
 window.editarPreco=i=>{const p=precos[i];$('formPreco').reset();$('PrecoId').value=p.IdPreco;$('PrecoTabelaId').value=p.IdTabela;$('Tipo').value=p.Tipo;$('Turno').value=p.Turno;['Curso','Contratual','FaixaDesc'].forEach(id=>$(id).value=num(p[id]));['Cc','Ea','F0','Fa','Fb','Fc','Fd','Fe','F100'].forEach(id=>$(id).value=inteiro(p[id]));['TemDesc','Mostrar','Ativo'].forEach(id=>$(id).checked=String(p[id]).toUpperCase()==='S');ajustarTipo();$('tituloPreco').textContent=`Editar preço ${p.IdPreco}`;$('modalPreco').showModal();};
 window.abrirCopiar=i=>{const p=precos[i];const origem=atual();const destinos=tabelas.filter(t=>String(t.IdTabela)!==String(origem.IdTabela)&&Number(t.Arquivada)!==1);if(!destinos.length){status('Cadastre outra tabela ativa ou inativa para copiar este preço.','error');return;}$('CopiarIdPreco').value=p.IdPreco;$('IdTabelaDestino').innerHTML=destinos.map(t=>`<option value="${esc(t.IdTabela)}">${esc(t.Descricao)}</option>`).join('');$('modalCopiar').showModal();};
