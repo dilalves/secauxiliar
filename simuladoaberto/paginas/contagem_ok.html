@@ -645,7 +645,6 @@
 
       <button id="btnGerarLinkD1" class="btn-sec hidden">Gerar link Presença D1</button>
       <button id="btnGerarLinkD2" class="btn-sec hidden">Gerar link Presença D2</button>
-      <button id="btnGerarLinkAcompanhamento" class="btn-sec hidden">Gerar link Acompanhamento</button>
     </div>
 
     <div class="resumo">
@@ -884,7 +883,6 @@
 
     const btnGerarLinkD1 = document.getElementById('btnGerarLinkD1');
     const btnGerarLinkD2 = document.getElementById('btnGerarLinkD2');
-    const btnGerarLinkAcompanhamento = document.getElementById('btnGerarLinkAcompanhamento');
 
     const linkModal = document.getElementById('linkModal');
     const modalTitulo = document.getElementById('modalTitulo');
@@ -973,11 +971,8 @@
       if (!temEvento) {
         btnGerarLinkD1.classList.add('hidden');
         btnGerarLinkD2.classList.add('hidden');
-        btnGerarLinkAcompanhamento.classList.add('hidden');
         return;
       }
-
-      btnGerarLinkAcompanhamento.classList.remove('hidden');
 
       if (tipo === 'ENEM') {
         btnGerarLinkD1.classList.remove('hidden');
@@ -995,25 +990,15 @@
     function abrirModalLink(data){
       ultimoLinkGerado = data.url || '';
 
-      const isAcompanhamento = data.tipo === 'acompanhamento';
-
-      const diaLabel = isAcompanhamento
-        ? 'Visão geral'
-        : data.dia === 'D2'
+      const diaLabel = data.dia === 'D2'
         ? '2º dia'
         : (getTipoEventoPorValorEvento(data.evento) === 'FUVESTAO' ? 'Dia único' : '1º dia');
 
       modalTitulo.textContent = data.reused ? 'Link já existente' : 'Link gerado com sucesso';
-      modalSubtitulo.textContent = isAcompanhamento
-        ? (data.reused
-          ? 'Já existia um link executivo válido para este evento e ele foi reaproveitado.'
-          : 'Compartilhe este link com a Direção e o Marketing para acompanhamento do evento.')
-        : (data.reused
-          ? 'Já existia um link válido para este evento/dia e ele foi reaproveitado.'
-          : 'Compartilhe o link abaixo com as unidades para informar a quantidade de presentes.');
-      modalNota.textContent = isAcompanhamento
-        ? 'A página é somente para consulta e não permite alterar nenhuma informação.'
-        : 'Esse link ficará disponível somente até a data da prova.';
+      modalSubtitulo.textContent = data.reused
+        ? 'Já existia um link válido para este evento/dia e ele foi reaproveitado.'
+        : 'Compartilhe o link abaixo com as unidades para informar a quantidade de presentes.';
+      modalNota.textContent = 'Esse link ficará disponível somente até a data da prova.';
       mEvento.textContent = data.evento || '-';
       mDia.textContent = diaLabel;
       mExpira.textContent = fmtDataHora(data.expires_at);
@@ -1663,43 +1648,6 @@ tbody.innerHTML = html;
       }
     }
 
-    async function gerarLinkAcompanhamento(){
-      const textoOriginal = btnGerarLinkAcompanhamento.textContent;
-
-      try {
-        if (!evento.value) {
-          alert('Selecione um evento antes de gerar o link.');
-          return;
-        }
-
-        btnGerarLinkAcompanhamento.disabled = true;
-        btnGerarLinkAcompanhamento.textContent = 'Gerando...';
-
-        const fd = new FormData();
-        fd.append('evento', evento.value);
-
-        const r = await fetch(API + 'api_acompanhamento_link_create.php', {
-          method: 'POST',
-          body: fd,
-          credentials: 'include'
-        });
-
-        const data = await r.json();
-
-        if (!r.ok || !data.ok) {
-          throw new Error(data.error || 'Falha ao gerar link de acompanhamento.');
-        }
-
-        abrirModalLink(data);
-      } catch (e) {
-        console.error(e);
-        alert(e.message || 'Erro ao gerar link de acompanhamento.');
-      } finally {
-        btnGerarLinkAcompanhamento.disabled = false;
-        btnGerarLinkAcompanhamento.textContent = textoOriginal;
-      }
-    }
-
     function iniciarAutoRefresh() {
       pararAutoRefresh();
 
@@ -1749,8 +1697,6 @@ tbody.innerHTML = html;
     btnGerarLinkD2.addEventListener('click', async () => {
       await gerarLinkPresenca('D2');
     });
-
-    btnGerarLinkAcompanhamento.addEventListener('click', gerarLinkAcompanhamento);
 
     btnFecharModal.addEventListener('click', fecharModalLink);
 
