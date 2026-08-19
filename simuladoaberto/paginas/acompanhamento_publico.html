@@ -19,21 +19,23 @@
       --vermelho:#991b1b;
     }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--fundo);color:var(--texto);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+    html,body{height:100%;overflow:hidden}
+    body{margin:0;background:var(--fundo);color:var(--texto);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;display:flex;flex-direction:column}
     body.modal-aberto{overflow:hidden}
-    .header{background:linear-gradient(135deg,var(--azul),var(--azul-2));color:#fff;box-shadow:0 5px 18px rgba(11,59,120,.2)}
+    .header{background:linear-gradient(135deg,var(--azul),var(--azul-2));color:#fff;box-shadow:0 5px 18px rgba(11,59,120,.2);flex:0 0 auto}
     .header-inner{max-width:1880px;margin:auto;min-height:72px;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:18px}
     .marca{display:flex;align-items:center;gap:13px;min-width:0}
-    .logo{width:46px;height:38px;flex:0 0 auto}
+    .logo{width:168px;height:42px;object-fit:contain;flex:0 0 auto;filter:brightness(0) invert(1)}
     .marca-titulo{font-weight:800;font-size:18px;line-height:1.15}
     .marca-sub{font-size:12px;opacity:.82;margin-top:3px}
     .atualizacao{font-size:12px;text-align:right;opacity:.9;white-space:nowrap}
-    .pagina{max-width:1880px;margin:18px auto;padding:0 18px 24px}
-    .titulo-linha{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+    .pagina{width:100%;max-width:1880px;margin:0 auto;padding:18px;flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+    #conteudo{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+    .titulo-linha{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;flex:0 0 auto}
     h1{margin:0;color:var(--azul);font-size:25px}
     .subtitulo{color:var(--muted);font-size:14px;margin-top:4px}
     .evento-badge{background:#fff;border:1px solid #cfe0f5;color:var(--azul);padding:9px 14px;border-radius:999px;font-weight:800;box-shadow:0 5px 15px rgba(11,59,120,.06)}
-    .card{background:var(--card);border:1px solid var(--linha);border-radius:16px;padding:15px;box-shadow:0 8px 25px rgba(11,59,120,.07)}
+    .card{background:var(--card);border:1px solid var(--linha);border-radius:16px;padding:15px;box-shadow:0 8px 25px rgba(11,59,120,.07);flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
     .resumo{display:grid;grid-template-columns:repeat(8,minmax(135px,1fr));gap:10px;margin-bottom:14px}
     .resumo-card{background:#f4f8fe;border:1px solid #dce7f6;border-radius:12px;padding:12px 13px;min-width:0}
     .resumo-label{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.035em;white-space:nowrap}
@@ -43,7 +45,7 @@
     .btn{height:34px;border:0;border-radius:9px;padding:0 13px;background:var(--azul);color:#fff;font-weight:700;cursor:pointer}
     .btn:hover{filter:brightness(1.06)}
     .btn:disabled{opacity:.65;cursor:wait}
-    .tabela-wrap{overflow:auto;border:1px solid var(--linha);border-radius:12px;background:#fff;max-height:calc(100vh - 310px);min-height:250px}
+    .tabela-wrap{overflow:auto;border:1px solid var(--linha);border-radius:12px;background:#fff;flex:1 1 auto;min-height:0}
     table{width:100%;border-collapse:collapse;min-width:1160px}
     th,td{padding:8px;border-bottom:1px solid #edf2f7;text-align:left;vertical-align:middle;font-size:12px;white-space:nowrap}
     th{position:sticky;top:0;background:#f2f7fd;color:#17345d;z-index:3;box-shadow:0 2px 0 #d9e5f2}
@@ -80,7 +82,7 @@
     .status{display:inline-flex;padding:3px 8px;border-radius:999px;background:#eef4ff;color:#17345d;font-size:11px;font-weight:800;border:1px solid #d8e6ff}
     .modal-actions{display:flex;justify-content:flex-end;margin-top:13px}
     @media(max-width:1300px){.resumo{grid-template-columns:repeat(4,1fr)}}
-    @media(max-width:760px){.header-inner{padding:10px 14px}.pagina{padding:0 10px}.resumo{grid-template-columns:repeat(2,1fr)}.modal-grid{grid-template-columns:repeat(2,1fr)}.atualizacao{display:none}.tabela-wrap{max-height:none}}
+    @media(max-width:760px){.header-inner{padding:10px 14px}.pagina{padding:10px}.logo{width:128px;height:36px}.resumo{grid-template-columns:repeat(2,1fr)}.modal-grid{grid-template-columns:repeat(2,1fr)}.atualizacao{display:none}}
     @media(max-width:440px){.resumo{grid-template-columns:1fr}.modal-grid{grid-template-columns:1fr}.marca-titulo{font-size:15px}}
   </style>
 </head>
@@ -88,14 +90,10 @@
   <header class="header">
     <div class="header-inner">
       <div class="marca">
-        <svg class="logo" viewBox="0 0 92 76" aria-label="Objetivo" role="img">
-          <g fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M7 17l22 21L7 59M32 17l22 21-22 21M59 17l26 21-26 21"/>
-          </g>
-        </svg>
+        <img class="logo" src="logo_objetivo.png" alt="Objetivo — Sistema de Ensino">
         <div>
           <div class="marca-titulo">Simulados Abertos — Painel Executivo</div>
-          <div class="marca-sub">Sistema de Ensino Objetivo</div>
+          <div class="marca-sub">Acompanhamento em tempo real</div>
         </div>
       </div>
       <div class="atualizacao" id="atualizacaoTopo">Carregando informações...</div>
