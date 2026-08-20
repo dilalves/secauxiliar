@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Objetivo — Área do Marketing</title>
+  <style>
+    :root{
+      --azul:#0b3b78;
+      --azul-2:#164f94;
+      --fundo:#eef5fb;
+      --card:#fff;
+      --linha:#d9e5f2;
+      --texto:#10233f;
+      --muted:#64748b;
+      --verde:#116b38;
+      --laranja:#92400e;
+      --vermelho:#991b1b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;overflow:hidden}
+    body{margin:0;background:var(--fundo);color:var(--texto);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;display:flex;flex-direction:column}
+    body.modal-aberto{overflow:hidden}
+    .header{background:linear-gradient(135deg,var(--azul),var(--azul-2));color:#fff;box-shadow:0 5px 18px rgba(11,59,120,.2);flex:0 0 auto}
+    .header-inner{max-width:1880px;margin:auto;min-height:72px;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .marca{display:flex;align-items:center;gap:13px;min-width:0}
+    .logo{width:168px;height:42px;object-fit:contain;flex:0 0 auto;filter:brightness(0) invert(1)}
+    .marca-titulo{font-weight:800;font-size:18px;line-height:1.15}
+    .marca-sub{font-size:12px;opacity:.82;margin-top:3px}
+    .atualizacao{font-size:12px;text-align:right;opacity:.9;white-space:nowrap}
+    .header-right{display:flex;align-items:center;justify-content:flex-end;gap:14px}
+    .usuario-logado{font-size:12px;text-align:right;line-height:1.3}
+    .usuario-logado strong{display:block;font-size:13px}
+    .btn-sair{height:34px;border-radius:9px;padding:0 14px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.12);color:#fff;font-weight:800;cursor:pointer}
+    .btn-sair:hover{background:rgba(255,255,255,.2)}
+    .pagina{width:100%;max-width:1880px;margin:0 auto;padding:18px;flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+    #conteudo{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+    .titulo-linha{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;flex:0 0 auto}
+    h1{margin:0;color:var(--azul);font-size:25px}
+    .subtitulo{color:var(--muted);font-size:14px;margin-top:4px}
+    .controles-evento{display:flex;align-items:end;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+    .campo-evento{display:flex;flex-direction:column;gap:5px}
+    .campo-evento label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:800}
+    .campo-evento select{height:38px;min-width:170px;border:1px solid #cfe0f5;border-radius:9px;background:#fff;color:var(--azul);padding:0 34px 0 11px;font-weight:800}
+    .card{background:var(--card);border:1px solid var(--linha);border-radius:16px;padding:15px;box-shadow:0 8px 25px rgba(11,59,120,.07);flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+    .resumo{display:grid;grid-template-columns:repeat(8,minmax(135px,1fr));gap:10px;margin-bottom:14px}
+    .resumo-card{background:#f4f8fe;border:1px solid #dce7f6;border-radius:12px;padding:12px 13px;min-width:0}
+    .resumo-label{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.035em;white-space:nowrap}
+    .resumo-valor{font-size:25px;font-weight:850;color:var(--azul);margin-top:5px;font-variant-numeric:tabular-nums}
+    .hidden{display:none!important}
+    .barra-info{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin:3px 0 11px}
+    .btn{height:34px;border:0;border-radius:9px;padding:0 13px;background:var(--azul);color:#fff;font-weight:700;cursor:pointer}
+    .btn:hover{filter:brightness(1.06)}
+    .btn:disabled{opacity:.65;cursor:wait}
+    .btn-sec{height:38px;border:1px solid #cfe0f5;border-radius:9px;padding:0 14px;background:#e8f0fb;color:var(--azul);font-weight:800;cursor:pointer}
+    .btn-sec:hover{filter:brightness(1.03)}
+    .tabela-wrap{overflow:auto;border:1px solid var(--linha);border-radius:12px;background:#fff;flex:1 1 auto;min-height:0}
+    table{width:100%;border-collapse:collapse;min-width:1160px}
+    th,td{padding:8px;border-bottom:1px solid #edf2f7;text-align:left;vertical-align:middle;font-size:12px;white-space:nowrap}
+    th{position:sticky;top:0;background:#f2f7fd;color:#17345d;z-index:3;box-shadow:0 2px 0 #d9e5f2}
+    tr:hover td{background:#f7faff}
+    .num{text-align:center;font-variant-numeric:tabular-nums}
+    .grupo-row td{background:#eaf2fb!important;color:var(--azul);font-weight:850;text-transform:uppercase;letter-spacing:.04em;font-size:13px;border-top:2px solid #d9e5f2}
+    .subtotal-row td{background:#f7faff!important;color:var(--azul);font-weight:850;border-bottom:2px solid #d9e5f2}
+    .subtotal-label{text-align:right}
+    .linha-cancelada td{color:#c62828;font-weight:650;background:#fff5f5}
+    .linha-sem-contagem td{background:#fff7d6!important;color:#5f4300;font-weight:650}
+    .diff{display:inline-flex;min-width:40px;justify-content:center;padding:3px 8px;border-radius:999px;font-weight:850;border:1px solid transparent}
+    .diff-ok{color:var(--verde);background:#ecfdf3;border-color:#b7efc7}
+    .diff-alerta{color:var(--laranja);background:#fff7ed;border-color:#fed7aa}
+    .diff-erro{color:var(--vermelho);background:#fef2f2;border-color:#fecaca}
+    .btn-detalhes{height:28px;border-radius:999px;padding:0 11px;background:#e8f0fb;color:var(--azul);border:1px solid #cfe0f5;font-weight:750;cursor:pointer}
+    .vazio{text-align:center;color:var(--muted);padding:30px}
+    .erro-pagina{display:none;text-align:center;padding:55px 20px;background:#fff;border:1px solid #fecaca;border-radius:16px;color:var(--vermelho);box-shadow:0 8px 25px rgba(153,27,27,.06)}
+    .erro-pagina.show{display:block}
+    .erro-pagina h2{margin:0 0 8px}
+    .backdrop{position:fixed;inset:0;background:rgba(16,35,63,.36);display:none;align-items:center;justify-content:center;padding:16px;z-index:9999}
+    .backdrop.show{display:flex}
+    .modal{width:min(1180px,100%);max-height:92vh;background:#fff;border:1px solid var(--linha);border-radius:16px;box-shadow:0 20px 60px rgba(11,59,120,.25);display:flex;flex-direction:column;overflow:hidden}
+    .modal-head{padding:16px 18px 11px;border-bottom:1px solid #edf2f7}
+    .modal-title{margin:0;color:var(--azul);font-size:21px}
+    .modal-sub{margin:5px 0 0;color:var(--muted);font-size:13px}
+    .modal-body{padding:16px;overflow:auto}
+    .modal-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:16px}
+    .modal-box{background:#f4f8fe;border:1px solid #dce7f6;border-radius:12px;padding:12px 13px}
+    .modal-label{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}
+    .modal-valor{font-size:20px;color:var(--azul);font-weight:850;margin-top:4px}
+    .secao{font-size:15px;color:var(--azul);font-weight:850;margin:4px 0 9px}
+    .mini-wrap{border:1px solid var(--linha);border-radius:12px;overflow:auto;max-height:330px}
+    .mini-wrap table{min-width:880px}
+    .status{display:inline-flex;padding:3px 8px;border-radius:999px;background:#eef4ff;color:#17345d;font-size:11px;font-weight:800;border:1px solid #d8e6ff}
+    .modal-actions{display:flex;justify-content:flex-end;margin-top:13px}
+    .modal-inscritos{width:min(1540px,100%)}
+    .inscritos-filtros{display:grid;grid-template-columns:minmax(240px,1fr) 160px auto auto;gap:10px;align-items:end;margin-bottom:12px}
+    .filtro-grupo{display:flex;flex-direction:column;gap:5px}
+    .filtro-grupo label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:800}
+    .filtro-grupo input,.filtro-grupo select{height:38px;border:1px solid #cfe0f5;border-radius:9px;background:#fff;padding:0 11px;color:var(--texto)}
+    .inscritos-info{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin:5px 0 10px}
+    .inscritos-wrap{border:1px solid var(--linha);border-radius:12px;overflow:auto;max-height:54vh}
+    .inscritos-wrap table{min-width:1250px}
+    .nome-inscrito{font-weight:750;text-transform:uppercase;color:var(--texto)}
+    .contato-link{color:var(--azul);text-decoration:none}
+    .contato-link:hover{text-decoration:underline}
+    .origem-pill{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:850;border:1px solid #d8e6ff;background:#eef4ff;color:#17345d}
+    .origem-avulsa{background:#fff7ed;color:#92400e;border-color:#fed7aa}
+    .paginacao{display:flex;align-items:center;justify-content:flex-end;gap:9px;margin-top:12px}
+    .paginacao span{font-size:13px;color:var(--muted);min-width:130px;text-align:center}
+    @media(max-width:1300px){.resumo{grid-template-columns:repeat(4,1fr)}}
+    @media(max-width:900px){.inscritos-filtros{grid-template-columns:1fr 1fr}.header-right .atualizacao{display:none}}
+    @media(max-width:760px){.header-inner{padding:10px 14px}.pagina{padding:10px}.logo{width:128px;height:36px}.resumo{grid-template-columns:repeat(2,1fr)}.modal-grid{grid-template-columns:repeat(2,1fr)}.atualizacao{display:none}.usuario-logado{display:none}.inscritos-filtros{grid-template-columns:1fr}.controles-evento{justify-content:flex-start}.titulo-linha{align-items:flex-start}}
+    @media(max-width:440px){.resumo{grid-template-columns:1fr}.modal-grid{grid-template-columns:1fr}.marca-titulo{font-size:15px}}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="marca">
+        <img class="logo" src="logo_objetivo.png" alt="Objetivo — Sistema de Ensino">
+        <div>
+          <div class="marca-titulo">Simulados Abertos — Área do Marketing</div>
+          <div class="marca-sub">Acompanhamento de eventos e inscritos</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="usuario-logado"><strong id="usuarioNome">Usuário</strong><span id="usuarioNivel">Marketing</span></div>
+        <div class="atualizacao" id="atualizacaoTopo">Validando acesso...</div>
+        <button type="button" class="btn-sair" id="btnSair">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="pagina">
+    <div id="conteudo">
+      <div class="titulo-linha">
+        <div>
+          <h1>Acompanhamento dos Simulados</h1>
+          <div class="subtitulo">Evolução de inscrições, presença, arquivos e contatos dos inscritos</div>
+        </div>
+        <div class="controles-evento">
+          <div class="campo-evento">
+            <label for="evento">Evento</label>
+            <select id="evento"><option value="">Carregando...</option></select>
+          </div>
+          <button type="button" class="btn-sec" id="btnInscritos">Acompanhar Inscritos</button>
+        </div>
+      </div>
+
+      <section class="card">
+        <div class="resumo">
+          <div class="resumo-card"><div class="resumo-label">Unidades</div><div class="resumo-valor" id="kUnidades">0</div></div>
+          <div class="resumo-card"><div class="resumo-label">Total de vagas</div><div class="resumo-valor" id="kVagas">0</div></div>
+          <div class="resumo-card"><div class="resumo-label">Total de inscritos</div><div class="resumo-valor" id="kInscritos">0</div></div>
+          <div class="resumo-card"><div class="resumo-label" id="lblD1">Presentes D1</div><div class="resumo-valor" id="kD1">0</div></div>
+          <div class="resumo-card" id="cardD2"><div class="resumo-label">Presentes D2</div><div class="resumo-valor" id="kD2">0</div></div>
+          <div class="resumo-card" id="cardRed"><div class="resumo-label">Presentes Redação</div><div class="resumo-valor" id="kRed">0</div></div>
+          <div class="resumo-card"><div class="resumo-label">Total de arquivos</div><div class="resumo-valor" id="kArquivos">0</div></div>
+          <div class="resumo-card"><div class="resumo-label">Diferença</div><div class="resumo-valor" id="kDiferenca">0</div></div>
+        </div>
+
+        <div class="barra-info">
+          <span id="info">Carregando acompanhamento...</span>
+          <button type="button" class="btn" id="btnAtualizar">Atualizar agora</button>
+        </div>
+
+        <div class="tabela-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th><th>Unidade</th><th class="num">Vagas</th><th class="num">Inscritos</th>
+                <th class="num" id="thD1">Presentes D1</th><th class="num" id="thD2">Presentes D2</th><th class="num" id="thRed">Presentes Red.</th>
+                <th class="num" id="thArqD1">Arq. D1</th><th class="num" id="thDifD1">Dif. D1</th>
+                <th class="num" id="thArqD2">Arq. D2</th><th class="num" id="thDifD2">Dif. D2</th><th class="num">Detalhes</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"><tr><td colspan="12" class="vazio">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <section class="erro-pagina" id="erroPagina">
+      <h2>Não foi possível abrir o acompanhamento</h2>
+      <div id="erroMensagem">Verifique se o link está completo e ainda está válido.</div>
+    </section>
+  </main>
+
+  <div class="backdrop" id="modalDetalhes">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+      <div class="modal-head"><h2 class="modal-title" id="modalTitulo">Detalhes da unidade</h2><div class="modal-sub" id="modalSub">Lotes enviados no evento</div></div>
+      <div class="modal-body">
+        <div class="modal-grid">
+          <div class="modal-box"><div class="modal-label" id="mL1">Presentes D1</div><div class="modal-valor" id="mV1">0</div></div>
+          <div class="modal-box"><div class="modal-label" id="mL2">Arquivos D1</div><div class="modal-valor" id="mV2">0</div></div>
+          <div class="modal-box"><div class="modal-label" id="mL3">Presentes D2</div><div class="modal-valor" id="mV3">0</div></div>
+          <div class="modal-box"><div class="modal-label" id="mL4">Arquivos D2</div><div class="modal-valor" id="mV4">0</div></div>
+        </div>
+        <div class="secao" id="tituloLotes">Lotes enviados</div>
+        <div class="mini-wrap">
+          <table>
+            <thead><tr><th class="num">Lote</th><th class="num">Dia</th><th>Data de envio</th><th class="num">Quantidade</th><th class="num">Processada</th><th>Status</th><th>Baixado</th><th>Processado</th><th>Finalizado</th></tr></thead>
+            <tbody id="lotesBody"><tr><td colspan="9" class="vazio">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+        <div class="modal-actions"><button type="button" class="btn" id="btnFechar">Fechar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="backdrop" id="modalInscritos">
+    <div class="modal modal-inscritos" role="dialog" aria-modal="true" aria-labelledby="inscritosTitulo">
+      <div class="modal-head">
+        <h2 class="modal-title" id="inscritosTitulo">Inscritos do evento</h2>
+        <div class="modal-sub" id="inscritosSub">Nome, celular, telefone e e-mail para acompanhamento do Marketing.</div>
+      </div>
+      <div class="modal-body">
+        <div class="inscritos-filtros">
+          <div class="filtro-grupo">
+            <label for="buscaInscrito">Pesquisar</label>
+            <input id="buscaInscrito" type="search" placeholder="Nome, inscrição, telefone, e-mail ou unidade">
+          </div>
+          <div class="filtro-grupo">
+            <label for="origemInscrito">Origem</label>
+            <select id="origemInscrito">
+              <option value="TODAS">Todas</option>
+              <option value="SITE">Site</option>
+              <option value="AVULSA">Avulsa</option>
+            </select>
+          </div>
+          <button type="button" class="btn" id="btnPesquisarInscrito">Pesquisar</button>
+          <button type="button" class="btn-sec" id="btnBaixarInscritos">Baixar relação</button>
+        </div>
+
+        <div class="inscritos-info">
+          <span id="inscritosInfo">Selecione um evento para carregar os inscritos.</span>
+          <span>Inscrições avulsas não possuem telefone cadastrado.</span>
+        </div>
+
+        <div class="inscritos-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Inscrição</th>
+                <th>Nome</th>
+                <th>Celular</th>
+                <th>Telefone</th>
+                <th>E-mail</th>
+                <th>Código</th>
+                <th>Unidade</th>
+                <th>Data da inscrição</th>
+                <th>Origem</th>
+              </tr>
+            </thead>
+            <tbody id="inscritosBody">
+              <tr><td colspan="9" class="vazio">Clique em Acompanhar Inscritos para carregar a relação.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="paginacao">
+          <button type="button" class="btn-sec" id="btnPaginaAnterior">Anterior</button>
+          <span id="paginaInfo">Página 1 de 1</span>
+          <button type="button" class="btn-sec" id="btnProximaPagina">Próxima</button>
+          <button type="button" class="btn" id="btnFecharInscritos">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
+    const eventoSelect = document.getElementById('evento');
+    let eventoAtual = '';
+    let tipoAtual = '';
+    let timer = null;
+    let carregando = false;
+    let usuarioAtual = null;
+    let paginaInscritos = 1;
+    let totalPaginasInscritos = 1;
+    let carregandoInscritos = false;
+
+    const $ = id => document.getElementById(id);
+    const n = v => Number(v || 0).toLocaleString('pt-BR');
+    const esc = v => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+    const fmt = v => {
+      if (!v) return '-';
+      const d = new Date(String(v).replace(' ', 'T'));
+      return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleString('pt-BR');
+    };
+    const diff = v => {
+      const x = Number(v || 0);
+      const cls = x === 0 ? 'diff-ok' : (x > 0 ? 'diff-alerta' : 'diff-erro');
+      return `<span class="diff ${cls}">${n(x)}</span>`;
+    };
+    const colspan = c => 8 + (c.dia2 ? 3 : 0) + (c.red ? 1 : 0);
+
+    function configurar(data){
+      const dia2 = !!data.tem_dia2;
+      const fuvestao = String(data.tipo_evento || '').toUpperCase() === 'FUVESTAO';
+      const red = !fuvestao;
+      $('cardD2').classList.toggle('hidden', !dia2);
+      $('cardRed').classList.toggle('hidden', !red);
+      ['thD2','thArqD2','thDifD2'].forEach(id => $(id).classList.toggle('hidden', !dia2));
+      $('thRed').classList.toggle('hidden', !red);
+      $('lblD1').textContent = fuvestao ? 'Presentes' : (dia2 ? 'Presentes D1' : 'Presentes');
+      $('thD1').textContent = fuvestao ? 'Contagem' : (dia2 ? 'Presentes D1' : 'Presentes');
+      $('thArqD1').textContent = fuvestao ? 'Arquivos' : (dia2 ? 'Arq. D1' : 'Arquivos');
+      $('thDifD1').textContent = fuvestao ? 'Dif.' : (dia2 ? 'Dif. D1' : 'Dif.');
+      return {dia2, red, fuvestao};
+    }
+
+    function subtotalLinha(s, label, c){
+      let h = `<tr class="subtotal-row"><td colspan="2" class="subtotal-label">Subtotal ${esc(label)}</td><td class="num">${n(s.vagas)}</td><td class="num">${n(s.inscritos)}</td><td class="num">${n(s.d1)}</td>`;
+      if (c.dia2) h += `<td class="num">${n(s.d2)}</td>`;
+      if (c.red) h += `<td class="num">${n(s.red)}</td>`;
+      h += `<td class="num">${n(s.a1)}</td><td class="num">${diff(s.d1-s.a1)}</td>`;
+      if (c.dia2) h += `<td class="num">${n(s.a2)}</td><td class="num">${diff(s.d2-s.a2)}</td>`;
+      return h + '<td></td></tr>';
+    }
+
+    function renderRows(rows, c){
+      if (!rows.length) {
+        $('tbody').innerHTML = `<tr><td colspan="${colspan(c)}" class="vazio">Nenhuma unidade encontrada para este evento.</td></tr>`;
+        return;
+      }
+      let grupo = '';
+      let html = '';
+      let s = {vagas:0,inscritos:0,d1:0,d2:0,red:0,a1:0,a2:0};
+      const zerar = () => s = {vagas:0,inscritos:0,d1:0,d2:0,red:0,a1:0,a2:0};
+      rows.forEach((r,i) => {
+        const cancelada = String(r.status || '').toUpperCase() === 'CANCELADA';
+        const semContagem = !cancelada && Number(r.total_inscritos || 0) > 0 && Number(r.presentes_d1 || 0) === 0;
+        const atual = String(r.tipo_unidade || '').toUpperCase() === 'PROPRIA' ? 'UNIDADES PRÓPRIAS' : 'UNIDADES CONVENIADAS';
+        if (atual !== grupo) {
+          if (grupo) { html += subtotalLinha(s, grupo, c); zerar(); }
+          grupo = atual;
+          html += `<tr class="grupo-row"><td colspan="${colspan(c)}">${atual}</td></tr>`;
+        }
+        s.vagas += Number(r.vagas || 0); s.inscritos += Number(r.total_inscritos || 0); s.d1 += Number(r.presentes_d1 || 0);
+        s.d2 += Number(r.presentes_d2 || 0); s.red += Number(r.presentes_red || 0); s.a1 += Number(r.arquivos_d1 || 0); s.a2 += Number(r.arquivos_d2 || 0);
+        const dados = encodeURIComponent(JSON.stringify({codigo:r.codigo,unidade:r.unidade,presentes_d1:r.presentes_d1,presentes_d2:r.presentes_d2,arquivos_d1:r.arquivos_d1,arquivos_d2:r.arquivos_d2,dif_d1:r.dif_arquivos_d1}));
+        html += `<tr class="${cancelada?'linha-cancelada':(semContagem?'linha-sem-contagem':'')}"><td>${esc(r.codigo)}</td><td>${esc(r.unidade)}</td><td class="num">${n(r.vagas)}</td><td class="num">${n(r.total_inscritos)}</td><td class="num">${n(r.presentes_d1)}</td>`;
+        if (c.dia2) html += `<td class="num">${n(r.presentes_d2)}</td>`;
+        if (c.red) html += `<td class="num">${n(r.presentes_red)}</td>`;
+        html += `<td class="num">${n(r.arquivos_d1)}</td><td class="num">${diff(r.dif_arquivos_d1)}</td>`;
+        if (c.dia2) html += `<td class="num">${n(r.arquivos_d2)}</td><td class="num">${diff(r.dif_arquivos_d2)}</td>`;
+        html += `<td class="num"><button class="btn-detalhes" data-detalhes="${dados}">Detalhes</button></td></tr>`;
+        if (i === rows.length - 1) html += subtotalLinha(s, grupo, c);
+      });
+      $('tbody').innerHTML = html;
+    }
+
+    async function carregar(silencioso=false){
+      if (carregando) return;
+      eventoAtual = String(eventoSelect.value || '').trim();
+      if (!eventoAtual) return;
+
+      carregando = true;
+      $('btnAtualizar').disabled = true;
+      if (!silencioso) $('info').textContent = 'Carregando acompanhamento...';
+      try {
+        const qs = new URLSearchParams({evento:eventoAtual});
+        const r = await fetch(API + 'api_marketing_resumo.php?' + qs, {credentials:'include',cache:'no-store'});
+        const data = await r.json();
+        if (r.status === 401 || r.status === 403) {
+          location.href = '../index.html';
+          return;
+        }
+        if (!r.ok || !data.ok) throw new Error(data.error || 'Falha ao carregar o acompanhamento.');
+        eventoAtual = data.evento || '';
+        tipoAtual = String(data.tipo_evento || '').toUpperCase();
+        const c = configurar(data);
+        const z = data.resumo || {};
+        $('kUnidades').textContent=n(z.total_unidades); $('kVagas').textContent=n(z.total_vagas); $('kInscritos').textContent=n(z.total_inscritos);
+        $('kD1').textContent=n(z.total_presentes_d1); $('kD2').textContent=n(z.total_presentes_d2); $('kRed').textContent=n(z.total_presentes_red);
+        $('kArquivos').textContent=n(z.total_arquivos); $('kDiferenca').textContent=n(Number(z.total_participantes||0)-Number(z.total_arquivos||0));
+        const rows = data.rows || [];
+        renderRows(rows,c);
+        const agora = new Date().toLocaleString('pt-BR');
+        $('info').textContent = `${rows.length} unidade(s) encontrada(s). Atualização automática a cada 15 segundos.`;
+        $('atualizacaoTopo').textContent = 'Última atualização: ' + agora;
+      } catch(e) {
+        if (!silencioso) {
+          $('info').textContent = e.message || 'Falha ao carregar o acompanhamento.';
+          $('tbody').innerHTML = `<tr><td colspan="12" class="vazio">${esc(e.message || 'Erro ao carregar os dados.')}</td></tr>`;
+        }
+      } finally {
+        carregando=false; $('btnAtualizar').disabled=false;
+      }
+    }
+
+    async function abrirDetalhes(d){
+      $('modalTitulo').textContent = d.unidade || 'Detalhes da unidade';
+      $('modalSub').textContent = `Evento ${eventoAtual} • Unidade ${d.codigo}`;
+      $('mL1').textContent = tipoAtual === 'ENEM' ? 'Presentes D1' : 'Presentes informados';
+      $('mV1').textContent=n(d.presentes_d1); $('mL2').textContent=tipoAtual==='ENEM'?'Arq. D1':'Arquivos enviados'; $('mV2').textContent=n(d.arquivos_d1);
+      $('mL3').textContent=tipoAtual==='ENEM'?'Presentes D2':'Processados'; $('mV3').textContent=tipoAtual==='ENEM'?n(d.presentes_d2):'Carregando...';
+      $('mL4').textContent=tipoAtual==='ENEM'?'Arq. D2':'Diferença'; $('mV4').textContent=tipoAtual==='ENEM'?n(d.arquivos_d2):n(d.dif_d1);
+      $('tituloLotes').textContent='Lotes enviados'; $('lotesBody').innerHTML='<tr><td colspan="9" class="vazio">Carregando lotes...</td></tr>';
+      $('modalDetalhes').classList.add('show'); document.body.classList.add('modal-aberto');
+      try {
+        const qs = new URLSearchParams({evento:eventoAtual,codigo:d.codigo});
+        const r = await fetch(API+'api_marketing_lotes.php?'+qs,{credentials:'include',cache:'no-store'});
+        const data = await r.json();
+        if (r.status === 401 || r.status === 403) { location.href='../index.html'; return; }
+        if(!r.ok||!data.ok) throw new Error(data.error||'Falha ao carregar os detalhes.');
+        const lotes=data.lotes||[], resumo=data.resumo||{};
+        $('tituloLotes').textContent=`Lotes enviados (${n(resumo.total_lotes||lotes.length)})`;
+        if(tipoAtual!=='ENEM'){ $('mV2').textContent=n(resumo.total_qnt??d.arquivos_d1); $('mV3').textContent=n(resumo.total_processado); $('mV4').textContent=n(Number(d.presentes_d1||0)-Number(resumo.total_qnt??d.arquivos_d1)); }
+        if(!lotes.length){$('lotesBody').innerHTML='<tr><td colspan="9" class="vazio">Nenhum lote encontrado para esta unidade.</td></tr>';return;}
+        $('lotesBody').innerHTML=lotes.map(l=>`<tr><td class="num">${esc(l.lote)}</td><td class="num">${esc(l.dia)}</td><td>${esc(fmt(l.data_reg))}</td><td class="num">${n(l.qnt)}</td><td class="num">${n(l.quantidade_processada)}</td><td><span class="status">${esc(l.status||'-')}</span></td><td>${esc(fmt(l.dt_baixado))}</td><td>${esc(fmt(l.dt_processado))}</td><td>${esc(fmt(l.dt_finalizado))}</td></tr>`).join('');
+      }catch(e){$('lotesBody').innerHTML=`<tr><td colspan="9" class="vazio">${esc(e.message||'Erro ao carregar lotes.')}</td></tr>`;}
+    }
+
+    function fechar(){
+      $('modalDetalhes').classList.remove('show');
+      if (!$('modalInscritos').classList.contains('show')) document.body.classList.remove('modal-aberto');
+    }
+
+    function fecharInscritos(){
+      $('modalInscritos').classList.remove('show');
+      if (!$('modalDetalhes').classList.contains('show')) document.body.classList.remove('modal-aberto');
+    }
+
+    function contatoTelefone(valor){
+      const texto = String(valor || '').trim();
+      if (!texto) return '-';
+      const numero = texto.replace(/[^0-9+]/g, '');
+      return `<a class="contato-link" href="tel:${esc(numero)}">${esc(texto)}</a>`;
+    }
+
+    function contatoEmail(valor){
+      const texto = String(valor || '').trim();
+      if (!texto) return '-';
+      return `<a class="contato-link" href="mailto:${esc(texto)}">${esc(texto)}</a>`;
+    }
+
+    function renderInscritos(rows){
+      if (!rows.length) {
+        $('inscritosBody').innerHTML = '<tr><td colspan="9" class="vazio">Nenhum inscrito encontrado para os filtros informados.</td></tr>';
+        return;
+      }
+
+      $('inscritosBody').innerHTML = rows.map(r => {
+        const origem = String(r.origem || '').toUpperCase();
+        return `
+          <tr>
+            <td>${esc(r.inscricao || '-')}</td>
+            <td class="nome-inscrito">${esc(r.nome || '-')}</td>
+            <td>${contatoTelefone(r.celular)}</td>
+            <td>${contatoTelefone(r.telefone)}</td>
+            <td>${contatoEmail(r.email)}</td>
+            <td>${esc(r.codigo || '-')}</td>
+            <td>${esc(r.unidade || '-')}</td>
+            <td>${esc(fmt(r.data_inscricao))}</td>
+            <td><span class="origem-pill ${origem === 'AVULSA' ? 'origem-avulsa' : ''}">${esc(origem || '-')}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function carregarInscritos(){
+      if (carregandoInscritos || !eventoAtual) return;
+      carregandoInscritos = true;
+      $('btnPesquisarInscrito').disabled = true;
+      $('inscritosInfo').textContent = 'Carregando inscritos...';
+      $('inscritosBody').innerHTML = '<tr><td colspan="9" class="vazio">Carregando...</td></tr>';
+
+      try {
+        const qs = new URLSearchParams({
+          evento:eventoAtual,
+          q:$('buscaInscrito').value.trim(),
+          origem:$('origemInscrito').value,
+          pagina:String(paginaInscritos),
+          por_pagina:'100'
+        });
+        const r = await fetch(API + 'api_marketing_inscritos.php?' + qs, {credentials:'include',cache:'no-store'});
+        const data = await r.json();
+        if (r.status === 401 || r.status === 403) { location.href='../index.html'; return; }
+        if (!r.ok || !data.ok) throw new Error(data.error || data.msg || 'Falha ao carregar inscritos.');
+
+        const pag = data.paginacao || {};
+        paginaInscritos = Number(pag.pagina || 1);
+        totalPaginasInscritos = Number(pag.total_paginas || 1);
+        renderInscritos(data.rows || []);
+        $('inscritosInfo').textContent = `${n(pag.total || 0)} inscrito(s) encontrado(s) no evento ${eventoAtual}.`;
+        $('paginaInfo').textContent = `Página ${n(paginaInscritos)} de ${n(totalPaginasInscritos)}`;
+        $('btnPaginaAnterior').disabled = paginaInscritos <= 1;
+        $('btnProximaPagina').disabled = paginaInscritos >= totalPaginasInscritos;
+      } catch(e) {
+        $('inscritosInfo').textContent = e.message || 'Erro ao carregar inscritos.';
+        $('inscritosBody').innerHTML = `<tr><td colspan="9" class="vazio">${esc(e.message || 'Erro ao carregar inscritos.')}</td></tr>`;
+      } finally {
+        carregandoInscritos = false;
+        $('btnPesquisarInscrito').disabled = false;
+      }
+    }
+
+    async function abrirInscritos(){
+      eventoAtual = String(eventoSelect.value || '').trim();
+      if (!eventoAtual) {
+        alert('Selecione um evento.');
+        return;
+      }
+
+      paginaInscritos = 1;
+      $('inscritosTitulo').textContent = `Inscritos — ${eventoAtual}`;
+      $('modalInscritos').classList.add('show');
+      document.body.classList.add('modal-aberto');
+      await carregarInscritos();
+    }
+
+    async function baixarInscritos(){
+      if (!eventoAtual) return;
+      const botao = $('btnBaixarInscritos');
+      const texto = botao.textContent;
+      botao.disabled = true;
+      botao.textContent = 'Gerando...';
+
+      try {
+        const qs = new URLSearchParams({
+          evento:eventoAtual,
+          q:$('buscaInscrito').value.trim(),
+          origem:$('origemInscrito').value
+        });
+        const r = await fetch(API + 'api_marketing_inscritos_csv.php?' + qs, {credentials:'include',cache:'no-store'});
+        if (r.status === 401 || r.status === 403) { location.href='../index.html'; return; }
+        if (!r.ok) {
+          let mensagem = 'Falha ao gerar a relação.';
+          try {
+            const data = await r.json();
+            mensagem = data.error || data.msg || mensagem;
+          } catch (_) {}
+          throw new Error(mensagem);
+        }
+
+        const blob = await r.blob();
+        const cd = r.headers.get('Content-Disposition') || '';
+        const match = cd.match(/filename="?([^";]+)"?/i);
+        const nomeArquivo = match ? match[1] : `inscritos_${eventoAtual}.csv`;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = nomeArquivo;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch(e) {
+        alert(e.message || 'Erro ao baixar a relação.');
+      } finally {
+        botao.disabled = false;
+        botao.textContent = texto;
+      }
+    }
+
+    async function validarSessao(){
+      const r = await fetch(API + 'auth_me.php', {credentials:'include',cache:'no-store'});
+      const data = await r.json();
+      if (!r.ok || !data.ok) {
+        location.replace('../index.html');
+        return false;
+      }
+
+      const user = data.user || {};
+      const nivel = String(user.nivel || '').trim().toLowerCase();
+      if (!['marketing','admin'].includes(nivel)) {
+        location.replace('../index.html');
+        return false;
+      }
+
+      usuarioAtual = user;
+      $('usuarioNome').textContent = user.nome || user.login || 'Usuário';
+      $('usuarioNivel').textContent = nivel === 'admin' ? 'Administrador' : 'Marketing';
+      return true;
+    }
+
+    async function carregarEventos(){
+      const r = await fetch(API + 'api_marketing_eventos.php', {credentials:'include',cache:'no-store'});
+      const data = await r.json();
+      if (r.status === 401 || r.status === 403) { location.replace('../index.html'); return false; }
+      if (!r.ok || !data.ok) throw new Error(data.error || data.msg || 'Falha ao carregar os eventos.');
+
+      eventoSelect.innerHTML = '';
+      (data.eventos || []).forEach(ev => {
+        const opt = document.createElement('option');
+        opt.value = ev;
+        opt.textContent = ev;
+        eventoSelect.appendChild(opt);
+      });
+
+      if (!eventoSelect.options.length) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Nenhum evento encontrado';
+        eventoSelect.appendChild(opt);
+        return false;
+      }
+
+      eventoAtual = eventoSelect.value;
+      return true;
+    }
+
+    async function sair(){
+      $('btnSair').disabled = true;
+      try {
+        await fetch(API + 'auth_logout.php', {method:'POST',credentials:'include',cache:'no-store'});
+      } catch (_) {}
+      localStorage.removeItem('PRESENCA_token');
+      location.replace('../index.html');
+    }
+
+    $('tbody').addEventListener('click',e=>{const b=e.target.closest('[data-detalhes]');if(!b)return;try{abrirDetalhes(JSON.parse(decodeURIComponent(b.dataset.detalhes)));}catch(err){console.error(err);}});
+    $('btnFechar').addEventListener('click',fechar);
+    $('modalDetalhes').addEventListener('click',e=>{if(e.target===$('modalDetalhes'))fechar();});
+    $('btnInscritos').addEventListener('click',abrirInscritos);
+    $('btnFecharInscritos').addEventListener('click',fecharInscritos);
+    $('modalInscritos').addEventListener('click',e=>{if(e.target===$('modalInscritos'))fecharInscritos();});
+    $('btnPesquisarInscrito').addEventListener('click',()=>{paginaInscritos=1;carregarInscritos();});
+    $('origemInscrito').addEventListener('change',()=>{paginaInscritos=1;carregarInscritos();});
+    $('buscaInscrito').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();paginaInscritos=1;carregarInscritos();}});
+    $('btnPaginaAnterior').addEventListener('click',()=>{if(paginaInscritos>1){paginaInscritos--;carregarInscritos();}});
+    $('btnProximaPagina').addEventListener('click',()=>{if(paginaInscritos<totalPaginasInscritos){paginaInscritos++;carregarInscritos();}});
+    $('btnBaixarInscritos').addEventListener('click',baixarInscritos);
+    $('btnAtualizar').addEventListener('click',()=>carregar(false));
+    $('btnSair').addEventListener('click',sair);
+    eventoSelect.addEventListener('change',async()=>{eventoAtual=eventoSelect.value;fecharInscritos();await carregar(false);});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('modalDetalhes').classList.contains('show')?fechar():fecharInscritos();}});
+    document.addEventListener('visibilitychange',()=>{
+      if(document.hidden){clearInterval(timer);return;}
+      if(eventoSelect.value) carregar(true);
+      clearInterval(timer);
+      timer=setInterval(()=>carregar(true),15000);
+    });
+
+    (async function init(){
+      try {
+        if (!await validarSessao()) return;
+        if (!await carregarEventos()) {
+          $('info').textContent = 'Nenhum evento encontrado.';
+          return;
+        }
+        await carregar(false);
+        timer = setInterval(()=>carregar(true),15000);
+      } catch(e) {
+        $('atualizacaoTopo').textContent = 'Erro ao carregar';
+        $('info').textContent = e.message || 'Falha ao iniciar a área do Marketing.';
+      }
+    })();
+  </script>
+</body>
+</html>
