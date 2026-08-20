@@ -70,7 +70,10 @@
     .diff-ok{color:var(--verde);background:#ecfdf3;border-color:#b7efc7}
     .diff-alerta{color:var(--laranja);background:#fff7ed;border-color:#fed7aa}
     .diff-erro{color:var(--vermelho);background:#fef2f2;border-color:#fecaca}
-    .btn-detalhes{height:28px;border-radius:999px;padding:0 11px;background:#e8f0fb;color:var(--azul);border:1px solid #cfe0f5;font-weight:750;cursor:pointer}
+    .acoes-unidade{display:flex;align-items:center;justify-content:center;gap:6px}
+    .btn-detalhes,.btn-inscritos-unidade{height:28px;border-radius:999px;padding:0 11px;font-weight:750;cursor:pointer}
+    .btn-detalhes{background:#e8f0fb;color:var(--azul);border:1px solid #cfe0f5}
+    .btn-inscritos-unidade{background:#ecfdf3;color:var(--verde);border:1px solid #b7efc7}
     .vazio{text-align:center;color:var(--muted);padding:30px}
     .erro-pagina{display:none;text-align:center;padding:55px 20px;background:#fff;border:1px solid #fecaca;border-radius:16px;color:var(--vermelho);box-shadow:0 8px 25px rgba(153,27,27,.06)}
     .erro-pagina.show{display:block}
@@ -142,7 +145,7 @@
             <label for="evento">Evento</label>
             <select id="evento"><option value="">Carregando...</option></select>
           </div>
-          <button type="button" class="btn-sec" id="btnInscritos">Acompanhar Inscritos</button>
+          <button type="button" class="btn-sec" id="btnBaixarGeral">Baixar relação geral</button>
         </div>
       </div>
 
@@ -170,7 +173,7 @@
                 <th>Código</th><th>Unidade</th><th class="num">Vagas</th><th class="num">Inscritos</th>
                 <th class="num" id="thD1">Presentes D1</th><th class="num" id="thD2">Presentes D2</th><th class="num" id="thRed">Presentes Red.</th>
                 <th class="num" id="thArqD1">Arq. D1</th><th class="num" id="thDifD1">Dif. D1</th>
-                <th class="num" id="thArqD2">Arq. D2</th><th class="num" id="thDifD2">Dif. D2</th><th class="num">Detalhes</th>
+                <th class="num" id="thArqD2">Arq. D2</th><th class="num" id="thDifD2">Dif. D2</th><th class="num">Ações</th>
               </tr>
             </thead>
             <tbody id="tbody"><tr><td colspan="12" class="vazio">Carregando...</td></tr></tbody>
@@ -252,7 +255,7 @@
               </tr>
             </thead>
             <tbody id="inscritosBody">
-              <tr><td colspan="9" class="vazio">Clique em Acompanhar Inscritos para carregar a relação.</td></tr>
+              <tr><td colspan="9" class="vazio">Clique em Inscritos na linha de uma unidade para carregar a relação.</td></tr>
             </tbody>
           </table>
         </div>
@@ -278,6 +281,8 @@
     let paginaInscritos = 1;
     let totalPaginasInscritos = 1;
     let carregandoInscritos = false;
+    let unidadeInscritosAtual = '';
+    let nomeUnidadeInscritosAtual = '';
 
     const $ = id => document.getElementById(id);
     const n = v => Number(v || 0).toLocaleString('pt-BR');
@@ -344,7 +349,8 @@
         if (c.red) html += `<td class="num">${n(r.presentes_red)}</td>`;
         html += `<td class="num">${n(r.arquivos_d1)}</td><td class="num">${diff(r.dif_arquivos_d1)}</td>`;
         if (c.dia2) html += `<td class="num">${n(r.arquivos_d2)}</td><td class="num">${diff(r.dif_arquivos_d2)}</td>`;
-        html += `<td class="num"><button class="btn-detalhes" data-detalhes="${dados}">Detalhes</button></td></tr>`;
+        const unidadeDados = encodeURIComponent(JSON.stringify({codigo:r.codigo,unidade:r.unidade}));
+        html += `<td class="num"><div class="acoes-unidade"><button class="btn-detalhes" data-detalhes="${dados}">Detalhes</button><button class="btn-inscritos-unidade" data-inscritos-unidade="${unidadeDados}">Inscritos</button></div></td></tr>`;
         if (i === rows.length - 1) html += subtotalLinha(s, grupo, c);
       });
       $('tbody').innerHTML = html;
@@ -469,6 +475,7 @@
       try {
         const qs = new URLSearchParams({
           evento:eventoAtual,
+          unidade:unidadeInscritosAtual,
           q:$('buscaInscrito').value.trim(),
           origem:$('origemInscrito').value,
           pagina:String(paginaInscritos),
@@ -483,7 +490,8 @@
         paginaInscritos = Number(pag.pagina || 1);
         totalPaginasInscritos = Number(pag.total_paginas || 1);
         renderInscritos(data.rows || []);
-        $('inscritosInfo').textContent = `${n(pag.total || 0)} inscrito(s) encontrado(s) no evento ${eventoAtual}.`;
+        const escopo = unidadeInscritosAtual ? ` na unidade ${unidadeInscritosAtual}` : '';
+        $('inscritosInfo').textContent = `${n(pag.total || 0)} inscrito(s) encontrado(s)${escopo} no evento ${eventoAtual}.`;
         $('paginaInfo').textContent = `Página ${n(paginaInscritos)} de ${n(totalPaginasInscritos)}`;
         $('btnPaginaAnterior').disabled = paginaInscritos <= 1;
         $('btnProximaPagina').disabled = paginaInscritos >= totalPaginasInscritos;
@@ -496,15 +504,20 @@
       }
     }
 
-    async function abrirInscritos(){
+    async function abrirInscritos(d){
       eventoAtual = String(eventoSelect.value || '').trim();
       if (!eventoAtual) {
         alert('Selecione um evento.');
         return;
       }
 
+      unidadeInscritosAtual = String(d?.codigo || '').trim();
+      nomeUnidadeInscritosAtual = String(d?.unidade || '').trim();
       paginaInscritos = 1;
-      $('inscritosTitulo').textContent = `Inscritos — ${eventoAtual}`;
+      $('buscaInscrito').value = '';
+      $('origemInscrito').value = 'TODAS';
+      $('inscritosTitulo').textContent = `Inscritos — ${unidadeInscritosAtual} • ${nomeUnidadeInscritosAtual || 'Unidade'}`;
+      $('inscritosSub').textContent = `Evento ${eventoAtual} • Relação filtrada exclusivamente pela unidade ${unidadeInscritosAtual}.`;
       $('modalInscritos').classList.add('show');
       document.body.classList.add('modal-aberto');
       await carregarInscritos();
@@ -520,6 +533,7 @@
       try {
         const qs = new URLSearchParams({
           evento:eventoAtual,
+          unidade:unidadeInscritosAtual,
           q:$('buscaInscrito').value.trim(),
           origem:$('origemInscrito').value
         });
@@ -548,6 +562,51 @@
         URL.revokeObjectURL(url);
       } catch(e) {
         alert(e.message || 'Erro ao baixar a relação.');
+      } finally {
+        botao.disabled = false;
+        botao.textContent = texto;
+      }
+    }
+
+    async function baixarRelacaoGeral(){
+      eventoAtual = String(eventoSelect.value || '').trim();
+      if (!eventoAtual) {
+        alert('Selecione um evento.');
+        return;
+      }
+
+      const botao = $('btnBaixarGeral');
+      const texto = botao.textContent;
+      botao.disabled = true;
+      botao.textContent = 'Gerando...';
+
+      try {
+        const qs = new URLSearchParams({evento:eventoAtual,origem:'TODAS'});
+        const r = await fetch(API + 'api_marketing_inscritos_csv.php?' + qs, {credentials:'include',cache:'no-store'});
+        if (r.status === 401 || r.status === 403) { location.href='../index.html'; return; }
+        if (!r.ok) {
+          let mensagem = 'Falha ao gerar a relação geral.';
+          try {
+            const data = await r.json();
+            mensagem = data.error || data.msg || mensagem;
+          } catch (_) {}
+          throw new Error(mensagem);
+        }
+
+        const blob = await r.blob();
+        const cd = r.headers.get('Content-Disposition') || '';
+        const match = cd.match(/filename="?([^";]+)"?/i);
+        const nomeArquivo = match ? match[1] : `inscritos_${eventoAtual}.csv`;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = nomeArquivo;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch(e) {
+        alert(e.message || 'Erro ao baixar a relação geral.');
       } finally {
         botao.disabled = false;
         botao.textContent = texto;
@@ -610,10 +669,15 @@
       location.replace('../index.html');
     }
 
-    $('tbody').addEventListener('click',e=>{const b=e.target.closest('[data-detalhes]');if(!b)return;try{abrirDetalhes(JSON.parse(decodeURIComponent(b.dataset.detalhes)));}catch(err){console.error(err);}});
+    $('tbody').addEventListener('click',e=>{
+      const detalhes=e.target.closest('[data-detalhes]');
+      if(detalhes){try{abrirDetalhes(JSON.parse(decodeURIComponent(detalhes.dataset.detalhes)));}catch(err){console.error(err);}return;}
+      const inscritos=e.target.closest('[data-inscritos-unidade]');
+      if(inscritos){try{abrirInscritos(JSON.parse(decodeURIComponent(inscritos.dataset.inscritosUnidade)));}catch(err){console.error(err);}}
+    });
     $('btnFechar').addEventListener('click',fechar);
     $('modalDetalhes').addEventListener('click',e=>{if(e.target===$('modalDetalhes'))fechar();});
-    $('btnInscritos').addEventListener('click',abrirInscritos);
+    $('btnBaixarGeral').addEventListener('click',baixarRelacaoGeral);
     $('btnFecharInscritos').addEventListener('click',fecharInscritos);
     $('modalInscritos').addEventListener('click',e=>{if(e.target===$('modalInscritos'))fecharInscritos();});
     $('btnPesquisarInscrito').addEventListener('click',()=>{paginaInscritos=1;carregarInscritos();});
