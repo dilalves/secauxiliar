@@ -50,6 +50,7 @@
     .resumo-valor{font-size:25px;font-weight:850;color:var(--azul);margin-top:5px;font-variant-numeric:tabular-nums}
     .hidden{display:none!important}
     .barra-info{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin:3px 0 11px}
+    .barra-acoes{display:flex;align-items:center;gap:8px}
     .btn{height:34px;border:0;border-radius:9px;padding:0 13px;background:var(--azul);color:#fff;font-weight:700;cursor:pointer}
     .btn:hover{filter:brightness(1.06)}
     .btn:disabled{opacity:.65;cursor:wait}
@@ -109,9 +110,27 @@
     .origem-avulsa{background:#fff7ed;color:#92400e;border-color:#fed7aa}
     .paginacao{display:flex;align-items:center;justify-content:flex-end;gap:9px;margin-top:12px}
     .paginacao span{font-size:13px;color:var(--muted);min-width:130px;text-align:center}
+    .modal-evolucao{width:min(1500px,100%)}
+    .evolucao-resumo{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+    .evolucao-card{background:#f4f8fe;border:1px solid #dce7f6;border-radius:12px;padding:11px 13px}
+    .evolucao-label{font-size:10px;color:var(--muted);font-weight:850;text-transform:uppercase;letter-spacing:.04em}
+    .evolucao-valor{font-size:22px;color:var(--azul);font-weight:850;margin-top:4px}
+    .evolucao-legenda{display:flex;align-items:center;gap:18px;margin:2px 0 10px;color:var(--muted);font-size:12px;font-weight:750}
+    .legenda-item{display:flex;align-items:center;gap:6px}
+    .legenda-cor{width:12px;height:12px;border-radius:3px}
+    .legenda-site{background:#2563eb}.legenda-avulsa{background:#f59e0b}
+    .grafico-scroll{overflow-x:auto;overflow-y:hidden;border:1px solid var(--linha);border-radius:12px;background:#fbfdff;padding:14px 14px 8px}
+    .grafico-barras{height:330px;min-width:max-content;display:flex;align-items:flex-end;gap:9px;padding:0 8px;border-bottom:2px solid #cbd5e1;background:repeating-linear-gradient(to top,transparent 0,transparent 63px,#e8eef6 64px)}
+    .grafico-coluna{width:52px;height:315px;display:grid;grid-template-rows:24px 250px 34px;align-items:end;justify-items:center;flex:0 0 52px}
+    .grafico-total{font-size:11px;color:var(--azul);font-weight:850;align-self:end}
+    .grafico-pista{height:250px;width:100%;display:flex;align-items:flex-end;justify-content:center}
+    .grafico-barra{width:34px;max-height:250px;display:flex;flex-direction:column-reverse;justify-content:flex-start;border-radius:5px 5px 0 0;overflow:hidden;box-shadow:0 1px 4px rgba(11,59,120,.14)}
+    .grafico-segmento{width:100%;min-height:0}.grafico-site{background:#2563eb}.grafico-avulsa{background:#f59e0b}
+    .grafico-data{font-size:10px;color:#475569;font-weight:750;align-self:start;padding-top:7px;white-space:nowrap}
+    .grafico-vazio{text-align:center;color:var(--muted);padding:70px 20px}
     @media(max-width:1300px){.resumo{grid-template-columns:repeat(4,1fr)}}
     @media(max-width:900px){.inscritos-filtros{grid-template-columns:1fr 1fr}.header-right .atualizacao{display:none}}
-    @media(max-width:760px){.header-inner{padding:10px 14px}.pagina{padding:10px}.logo{width:128px;height:36px}.resumo{grid-template-columns:repeat(2,1fr)}.modal-grid{grid-template-columns:repeat(2,1fr)}.atualizacao{display:none}.usuario-logado{display:none}.inscritos-filtros{grid-template-columns:1fr}.controles-evento{justify-content:flex-start}.titulo-linha{align-items:flex-start}}
+    @media(max-width:760px){.header-inner{padding:10px 14px}.pagina{padding:10px}.logo{width:128px;height:36px}.resumo{grid-template-columns:repeat(2,1fr)}.modal-grid,.evolucao-resumo{grid-template-columns:repeat(2,1fr)}.atualizacao{display:none}.usuario-logado{display:none}.inscritos-filtros{grid-template-columns:1fr}.controles-evento{justify-content:flex-start}.titulo-linha{align-items:flex-start}}
     @media(max-width:440px){.resumo{grid-template-columns:1fr}.modal-grid{grid-template-columns:1fr}.marca-titulo{font-size:15px}}
   </style>
 </head>
@@ -163,7 +182,10 @@
 
         <div class="barra-info">
           <span id="info">Carregando acompanhamento...</span>
-          <button type="button" class="btn" id="btnAtualizar">Atualizar agora</button>
+          <div class="barra-acoes">
+            <button type="button" class="btn-sec" id="btnEvolucao" style="height:34px">Evolução</button>
+            <button type="button" class="btn" id="btnAtualizar">Atualizar agora</button>
+          </div>
         </div>
 
         <div class="tabela-wrap">
@@ -270,6 +292,32 @@
     </div>
   </div>
 
+  <div class="backdrop" id="modalEvolucao">
+    <div class="modal modal-evolucao" role="dialog" aria-modal="true" aria-labelledby="evolucaoTitulo">
+      <div class="modal-head">
+        <h2 class="modal-title" id="evolucaoTitulo">Evolução diária de inscritos</h2>
+        <div class="modal-sub" id="evolucaoSub">Inscrições realizadas por dia — Internet + Avulso.</div>
+      </div>
+      <div class="modal-body">
+        <div class="evolucao-resumo">
+          <div class="evolucao-card"><div class="evolucao-label">Total de inscritos</div><div class="evolucao-valor" id="evTotal">0</div></div>
+          <div class="evolucao-card"><div class="evolucao-label">Internet</div><div class="evolucao-valor" id="evSite">0</div></div>
+          <div class="evolucao-card"><div class="evolucao-label">Avulsos</div><div class="evolucao-valor" id="evAvulsa">0</div></div>
+          <div class="evolucao-card"><div class="evolucao-label">Melhor dia</div><div class="evolucao-valor" id="evMelhorDia">-</div></div>
+        </div>
+        <div class="evolucao-legenda">
+          <span class="legenda-item"><span class="legenda-cor legenda-site"></span>Internet</span>
+          <span class="legenda-item"><span class="legenda-cor legenda-avulsa"></span>Avulso</span>
+          <span>O número acima da barra representa o total do dia.</span>
+        </div>
+        <div class="grafico-scroll" id="graficoScroll">
+          <div class="grafico-vazio" id="graficoEvolucao">Carregando evolução...</div>
+        </div>
+        <div class="modal-actions"><button type="button" class="btn" id="btnFecharEvolucao">Fechar</button></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
     const eventoSelect = document.getElementById('evento');
@@ -281,6 +329,7 @@
     let paginaInscritos = 1;
     let totalPaginasInscritos = 1;
     let carregandoInscritos = false;
+    let carregandoEvolucao = false;
     let unidadeInscritosAtual = '';
     let nomeUnidadeInscritosAtual = '';
 
@@ -439,6 +488,78 @@
       const texto = String(valor || '').trim();
       if (!texto) return '-';
       return `<a class="contato-link" href="mailto:${esc(texto)}">${esc(texto)}</a>`;
+    }
+
+    function dataCurta(valor){
+      const partes = String(valor || '').split('-');
+      return partes.length === 3 ? `${partes[2]}/${partes[1]}` : String(valor || '-');
+    }
+
+    function renderEvolucao(rows){
+      const destino = $('graficoEvolucao');
+      if (!rows.length) {
+        destino.className = 'grafico-vazio';
+        destino.innerHTML = 'Nenhuma inscrição encontrada para este evento.';
+        return;
+      }
+
+      const maximo = Math.max(...rows.map(r => Number(r.total || 0)), 1);
+      const alturaMaxima = 235;
+      destino.className = 'grafico-barras';
+      destino.innerHTML = rows.map(r => {
+        const site = Number(r.site || 0);
+        const avulsa = Number(r.avulsa || 0);
+        const total = Number(r.total || 0);
+        const alturaSite = site > 0 ? Math.max(2, Math.round((site / maximo) * alturaMaxima)) : 0;
+        const alturaAvulsa = avulsa > 0 ? Math.max(2, Math.round((avulsa / maximo) * alturaMaxima)) : 0;
+        const titulo = `${dataCurta(r.data)}: ${n(total)} inscrito(s) — Internet ${n(site)} | Avulso ${n(avulsa)}`;
+        return `<div class="grafico-coluna" title="${esc(titulo)}"><div class="grafico-total">${n(total)}</div><div class="grafico-pista"><div class="grafico-barra"><div class="grafico-segmento grafico-site" style="height:${alturaSite}px"></div><div class="grafico-segmento grafico-avulsa" style="height:${alturaAvulsa}px"></div></div></div><div class="grafico-data">${esc(dataCurta(r.data))}</div></div>`;
+      }).join('');
+
+      requestAnimationFrame(() => { $('graficoScroll').scrollLeft = $('graficoScroll').scrollWidth; });
+    }
+
+    async function abrirEvolucao(){
+      eventoAtual = String(eventoSelect.value || '').trim();
+      if (!eventoAtual || carregandoEvolucao) return;
+
+      carregandoEvolucao = true;
+      $('evolucaoTitulo').textContent = `Evolução diária — ${eventoAtual}`;
+      $('evolucaoSub').textContent = 'Inscrições realizadas por dia — Internet + Avulso.';
+      $('evTotal').textContent = '...';
+      $('evSite').textContent = '...';
+      $('evAvulsa').textContent = '...';
+      $('evMelhorDia').textContent = '...';
+      $('graficoEvolucao').className = 'grafico-vazio';
+      $('graficoEvolucao').textContent = 'Carregando evolução...';
+      $('modalEvolucao').classList.add('show');
+      document.body.classList.add('modal-aberto');
+
+      try {
+        const qs = new URLSearchParams({evento:eventoAtual});
+        const r = await fetch(API + 'api_marketing_evolucao.php?' + qs, {credentials:'include',cache:'no-store'});
+        const data = await r.json();
+        if (r.status === 401 || r.status === 403) { location.href='../index.html'; return; }
+        if (!r.ok || !data.ok) throw new Error(data.error || data.msg || 'Falha ao carregar a evolução.');
+
+        const resumo = data.resumo || {};
+        const melhor = resumo.melhor_dia || null;
+        $('evTotal').textContent = n(resumo.total || 0);
+        $('evSite').textContent = n(resumo.site || 0);
+        $('evAvulsa').textContent = n(resumo.avulsa || 0);
+        $('evMelhorDia').textContent = melhor ? `${dataCurta(melhor.data)} • ${n(melhor.total)}` : '-';
+        renderEvolucao(data.rows || []);
+      } catch(e) {
+        $('graficoEvolucao').className = 'grafico-vazio';
+        $('graficoEvolucao').textContent = e.message || 'Erro ao carregar a evolução.';
+      } finally {
+        carregandoEvolucao = false;
+      }
+    }
+
+    function fecharEvolucao(){
+      $('modalEvolucao').classList.remove('show');
+      if (!$('modalDetalhes').classList.contains('show') && !$('modalInscritos').classList.contains('show')) document.body.classList.remove('modal-aberto');
     }
 
     function renderInscritos(rows){
@@ -686,10 +807,13 @@
     $('btnPaginaAnterior').addEventListener('click',()=>{if(paginaInscritos>1){paginaInscritos--;carregarInscritos();}});
     $('btnProximaPagina').addEventListener('click',()=>{if(paginaInscritos<totalPaginasInscritos){paginaInscritos++;carregarInscritos();}});
     $('btnBaixarInscritos').addEventListener('click',baixarInscritos);
+    $('btnEvolucao').addEventListener('click',abrirEvolucao);
+    $('btnFecharEvolucao').addEventListener('click',fecharEvolucao);
+    $('modalEvolucao').addEventListener('click',e=>{if(e.target===$('modalEvolucao'))fecharEvolucao();});
     $('btnAtualizar').addEventListener('click',()=>carregar(false));
     $('btnSair').addEventListener('click',sair);
     eventoSelect.addEventListener('change',async()=>{eventoAtual=eventoSelect.value;fecharInscritos();await carregar(false);});
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('modalDetalhes').classList.contains('show')?fechar():fecharInscritos();}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('modalEvolucao').classList.contains('show'))fecharEvolucao();else if($('modalDetalhes').classList.contains('show'))fechar();else fecharInscritos();}});
     document.addEventListener('visibilitychange',()=>{
       if(document.hidden){clearInterval(timer);return;}
       if(eventoSelect.value) carregar(true);
