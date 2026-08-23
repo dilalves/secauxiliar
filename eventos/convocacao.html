@@ -1154,29 +1154,29 @@
             return `${fmtData(data)} ${hora.slice(0, 5)}`.trim();
           }
 
-          function compararDataEventoComHoje(dataEvento) {
-            if (!dataEvento) return null;
+          function dataEventoIso(dataEvento) {
+            const valor = String(dataEvento || "").trim();
 
-            const partes = String(dataEvento)
-              .substring(0, 10)
-              .split("-")
-              .map(Number);
+            let match = valor.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (match) return `${match[1]}-${match[2]}-${match[3]}`;
 
-            if (
-              partes.length !== 3 ||
-              partes.some((parte) => !Number.isInteger(parte))
-            ) {
-              return null;
-            }
+            match = valor.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+            if (match) return `${match[3]}-${match[2]}-${match[1]}`;
 
-            const [ano, mes, dia] = partes;
-            const data = new Date(ano, mes - 1, dia);
-            data.setHours(0, 0, 0, 0);
+            return "";
+          }
 
+          function dataHojeIso() {
             const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+            const dia = String(hoje.getDate()).padStart(2, "0");
+            return `${ano}-${mes}-${dia}`;
+          }
 
-            return Math.sign(data.getTime() - hoje.getTime());
+          function postoEstaVazio(valor) {
+            const posto = String(valor ?? "").trim().toLowerCase();
+            return posto === "" || posto === "posto" || posto === "-";
           }
 
           function mapUrl(lat, lng) {
@@ -1324,12 +1324,11 @@
                   const status = statusPresenca(x);
                   const entradaMapa = mapUrl(x.entrada_lat, x.entrada_lng);
                   const saidaMapa = mapUrl(x.saida_lat, x.saida_lng);
-                  const comparacaoData = compararDataEventoComHoje(
-                    eventoAtual?.data_evento,
-                  );
-                  const postoVazio = String(x.posto || "").trim() === "";
-                  const eventoPassado = comparacaoData !== null && comparacaoData < 0;
-                  const eventoHoje = comparacaoData === 0;
+                  const dataEvento = dataEventoIso(eventoAtual?.data_evento);
+                  const dataHoje = dataHojeIso();
+                  const postoVazio = postoEstaVazio(x.posto);
+                  const eventoPassado = dataEvento !== "" && dataEvento < dataHoje;
+                  const eventoHoje = dataEvento !== "" && dataEvento === dataHoje;
                   const removerBloqueado =
                     eventoPassado || (eventoHoje && !postoVazio);
 
@@ -1425,11 +1424,17 @@
             await carregarTudo();
           }
           async function rem(pid) {
-            await api("recrutamento_convocados.php", {
+            const resposta = await api("recrutamento_convocados.php", {
               acao: "remover",
               evento_id: el("eventoSel").value,
               prestador_id: pid,
             });
+
+            if (!resposta.ok) {
+              alert(resposta.error || "Não foi possível remover o prestador.");
+              return;
+            }
+
             await carregarTudo();
           }
           async function upd(pid, campo, valor) {
