@@ -1154,20 +1154,30 @@
             return `${fmtData(data)} ${hora.slice(0, 5)}`.trim();
           }
 
-          function eventoHojeOuPassado(dataEvento) {
-          if (!dataEvento) {
-            return false;
+          function compararDataEventoComHoje(dataEvento) {
+            if (!dataEvento) return null;
+
+            const partes = String(dataEvento)
+              .substring(0, 10)
+              .split("-")
+              .map(Number);
+
+            if (
+              partes.length !== 3 ||
+              partes.some((parte) => !Number.isInteger(parte))
+            ) {
+              return null;
+            }
+
+            const [ano, mes, dia] = partes;
+            const data = new Date(ano, mes - 1, dia);
+            data.setHours(0, 0, 0, 0);
+
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            return Math.sign(data.getTime() - hoje.getTime());
           }
-
-          const hoje = new Date();
-          hoje.setHours(0, 0, 0, 0);
-
-          const data = new Date(
-            String(dataEvento).substring(0, 10) + "T00:00:00"
-          );
-
-          return data <= hoje;
-        }
 
           function mapUrl(lat, lng) {
             if (!lat || !lng) return "";
@@ -1314,8 +1324,20 @@
                   const status = statusPresenca(x);
                   const entradaMapa = mapUrl(x.entrada_lat, x.entrada_lng);
                   const saidaMapa = mapUrl(x.saida_lat, x.saida_lng);
+                  const comparacaoData = compararDataEventoComHoje(
+                    eventoAtual?.data_evento,
+                  );
+                  const postoVazio = String(x.posto || "").trim() === "";
+                  const eventoPassado = comparacaoData !== null && comparacaoData < 0;
+                  const eventoHoje = comparacaoData === 0;
                   const removerBloqueado =
-                    eventoHojeOuPassado(eventoAtual?.data_evento);
+                    eventoPassado || (eventoHoje && !postoVazio);
+
+                  const tituloRemover = eventoPassado
+                    ? "Não é possível remover integrantes após a realização do evento."
+                    : eventoHoje && !postoVazio
+                      ? "No dia do evento, a remoção é permitida somente quando o posto estiver vazio."
+                      : "Remover da equipe";
 
                   return `
                     <div class="teamItem">
@@ -1333,11 +1355,7 @@
                             <button
                               class="smallBtn btnDanger"
                               ${removerBloqueado ? "disabled" : ""}
-                              title="${
-                                removerBloqueado
-                                  ? "Não é possível remover integrantes no dia do evento ou após sua realização."
-                                  : "Remover da equipe"
-                              }"
+                              title="${tituloRemover}"
                               onclick="${
                                 removerBloqueado
                                   ? "return false"
