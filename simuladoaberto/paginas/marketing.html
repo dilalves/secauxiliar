@@ -183,7 +183,7 @@
         <div class="barra-info">
           <span id="info">Carregando acompanhamento...</span>
           <div class="barra-acoes">
-            <button type="button" class="btn-sec" id="btnEvolucao" style="height:34px">Evolução</button>
+            <button type="button" class="btn-sec" id="btnEvolucao" style="height:34px">Evolução ao vivo</button>
             <button type="button" class="btn" id="btnAtualizar">Atualizar agora</button>
           </div>
         </div>
@@ -777,6 +777,11 @@
         return false;
       }
 
+      const eventoUrl = new URLSearchParams(location.search).get('evento') || '';
+      if (eventoUrl && Array.from(eventoSelect.options).some(opt => opt.value === eventoUrl)) {
+        eventoSelect.value = eventoUrl;
+      }
+
       eventoAtual = eventoSelect.value;
       return true;
     }
@@ -807,7 +812,11 @@
     $('btnPaginaAnterior').addEventListener('click',()=>{if(paginaInscritos>1){paginaInscritos--;carregarInscritos();}});
     $('btnProximaPagina').addEventListener('click',()=>{if(paginaInscritos<totalPaginasInscritos){paginaInscritos++;carregarInscritos();}});
     $('btnBaixarInscritos').addEventListener('click',baixarInscritos);
-    $('btnEvolucao').addEventListener('click',abrirEvolucao);
+    $('btnEvolucao').addEventListener('click',()=>{
+      const evento = String(eventoSelect.value || '').trim();
+      if (!evento) return;
+      location.href = 'marketing_evolucao.html?evento=' + encodeURIComponent(evento);
+    });
     $('btnFecharEvolucao').addEventListener('click',fecharEvolucao);
     $('modalEvolucao').addEventListener('click',e=>{if(e.target===$('modalEvolucao'))fecharEvolucao();});
     $('btnAtualizar').addEventListener('click',()=>carregar(false));
