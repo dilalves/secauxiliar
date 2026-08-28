@@ -954,10 +954,6 @@
     return String(valor ?? '').trim();
   }
 
-function temMarcadorPendente(valor) {
-  return /[#*@]/.test(normalizarValor(valor));
-}
-
 function valorVazioOuPendente(valor, tipo = '') {
   const v = normalizarValor(valor).toUpperCase();
 
@@ -966,9 +962,7 @@ function valorVazioOuPendente(valor, tipo = '') {
     v === 'NULL' ||
     v === 'SEM LEITURA' ||
     v === 'N/D' ||
-    v.includes('#') ||
-    v.includes('@') ||
-    v.includes('*')
+    v.includes('#')
   ) {
     return true;
   }
@@ -1546,14 +1540,11 @@ function valorVazioOuPendente(valor, tipo = '') {
 
         // 👉 REGRA NOVA
         if (tipo === 'inscricao') {
-          // Só permite CONFERIDO para inscrição realmente vazia.
-          // Valores com @, # ou * precisam ser corrigidos.
-          const inscricao = valorCampo(row, 'inscricao');
+          // Para inscrição, só libera se versão já estiver OK
           const cor = valorCampo(row, 'corprova');
           const corPendente = valorVazioOuPendente(cor);
-          const inscricaoComMarcador = temMarcadorPendente(inscricao);
 
-          if (corPendente || inscricaoComMarcador) {
+          if (corPendente) {
             denyBtn.style.display = 'none';
           } else {
             denyBtn.style.display = 'inline-flex';
@@ -1745,7 +1736,6 @@ async function marcarConferido(row, tipo) {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({
-      id: row.id,
       evento: eventoTela,
       dia: row.dia,
       arquivo_origem: row.arquivo_origem,
@@ -2041,36 +2031,6 @@ function resetarImagemCompleta() {
 
     if (!lote || !unidade || !evento || !dia) {
       Swal.fire('Erro', 'Dados insuficientes para finalizar o lote.', 'error');
-      return;
-    }
-
-    // Revalida as pendências diretamente no servidor antes de liberar o OK.
-    // Isso protege também contra contador antigo ou linha baixada indevidamente.
-    try {
-      const pendenciasAtuais = await fetchJson(
-        `${URL_PENDENCIAS}?evento=${encodeURIComponent(evento)}&dia=${encodeURIComponent(dia)}&ftp=${encodeURIComponent(lote)}`
-      );
-
-      const totalPendenciasAtuais = Number(pendenciasAtuais.total || 0);
-
-      if (totalPendenciasAtuais > 0) {
-        row.pendencias = totalPendenciasAtuais;
-        row.ok_habilitado = false;
-        montarTabelaLotes(lotesCache);
-
-        Swal.fire(
-          'Lote ainda possui pendências',
-          `Há ${totalPendenciasAtuais} linha(s) com inscrição ou versão/cor pendente. Corrija todas antes de finalizar.`,
-          'warning'
-        );
-        return;
-      }
-    } catch (err) {
-      Swal.fire(
-        'Não foi possível conferir as pendências',
-        err.message || 'Tente novamente antes de finalizar o lote.',
-        'error'
-      );
       return;
     }
 
@@ -2395,3 +2355,4 @@ function montarCampoEdicao(row, tipo, valorAtual) {
 
 </body>
 </html>
+
