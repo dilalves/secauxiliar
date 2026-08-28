@@ -1546,14 +1546,12 @@ function valorVazioOuPendente(valor, tipo = '') {
 
         // 👉 REGRA NOVA
         if (tipo === 'inscricao') {
-          // Só permite CONFERIDO para inscrição realmente vazia.
-          // Valores com @, # ou * precisam ser corrigidos.
-          const inscricao = valorCampo(row, 'inscricao');
+          // A inscrição pode ser aceita como não preenchida pelo aluno.
+          // O CONFERIDO só fica bloqueado enquanto a versão/cor estiver pendente.
           const cor = valorCampo(row, 'corprova');
           const corPendente = valorVazioOuPendente(cor);
-          const inscricaoComMarcador = temMarcadorPendente(inscricao);
 
-          if (corPendente || inscricaoComMarcador) {
+          if (corPendente) {
             denyBtn.style.display = 'none';
           } else {
             denyBtn.style.display = 'inline-flex';
@@ -1659,7 +1657,8 @@ function valorVazioOuPendente(valor, tipo = '') {
 
     atualizarPendenciaLocal(id, tipo, valor);
 
-    const inscricaoOk = !valorVazioOuPendente(row.INSCRICAO, 'inscricao');
+    const inscricaoJaConferida = !!normalizarValor(row.CONFERIDO);
+    const inscricaoOk = inscricaoJaConferida || !valorVazioOuPendente(row.INSCRICAO, 'inscricao');
     const corOk = !valorVazioOuPendente(row.CORPROVA, 'corprova');
 
     if (inscricaoOk && corOk) {
