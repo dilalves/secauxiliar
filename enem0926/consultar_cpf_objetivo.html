@@ -760,6 +760,14 @@
               Alteração de e-mail indisponível
             </button>
           `}
+
+          <button type="button"
+                  class="btn-consultar"
+                  style="width:auto; height:42px; padding:0 16px; background:#166534;"
+                  onclick="abrirDeclaracaoComparecimento()">
+            <i class="material-icons">description</i>
+            Declaração de comparecimento
+          </button>
         </div>
 
         <div class="note">
@@ -813,6 +821,164 @@
     } finally {
       $btn.disabled = false;
       $btn.innerHTML = '<i class="material-icons">search</i> Consultar CPF';
+    }
+  }
+
+  async function abrirDeclaracaoComparecimento(){
+    if (!candidatoAtual) return;
+
+    const cpf = somenteDigitos(candidatoAtual.cpf || '');
+    if (cpf.length !== 11) {
+      Swal.fire('Atenção', 'CPF do candidato não está disponível para emissão.', 'warning');
+      return;
+    }
+
+    Swal.fire({
+      title: 'Verificando declaração...',
+      text: 'Conferindo inscrição, unidade e datas do evento.',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    try {
+      const resp = await fetch(
+        API + 'declaracao_opcoes.php?cpf=' + encodeURIComponent(cpf),
+        {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store'
+        }
+      );
+
+      const json = await resp.json().catch(() => ({}));
+
+      if (!resp.ok || !json.ok) {
+        await Swal.fire({
+          title: 'Declaração indisponível',
+          text: json.msg || json.error || 'Não foi possível liberar a declaração.',
+          icon: 'info',
+          confirmButtonColor: '#0b3b78'
+        });
+        return;
+      }
+
+      const opcoes = Array.isArray(json.opcoes) ? json.opcoes : [];
+      if (opcoes.length === 0) {
+        await Swal.fire({
+          title: 'Declaração ainda indisponível',
+          html: `<div style="text-align:left;line-height:1.55">
+                   <p>${escapeHtml(json.msg || 'Ainda não há dia de prova liberado para emissão.')}</p>
+                 </div>`,
+          icon: 'info',
+          confirmButtonColor: '#0b3b78'
+        });
+        return;
+      }
+
+      const radios = opcoes.map((o, idx) => `
+        <label style="
+          display:flex;
+          align-items:flex-start;
+          gap:10px;
+          padding:11px 12px;
+          margin:8px 0;
+          border:1px solid #dbe5f2;
+          border-radius:12px;
+          cursor:pointer;
+          background:#fff;
+        ">
+          <input
+            type="radio"
+            name="declaracao_periodo"
+            value="${escapeHtml(o.valor)}"
+            ${idx === 0 ? 'checked' : ''}
+            style="margin-top:4px; opacity:1; position:static; pointer-events:auto;"
+          >
+          <span style="color:#0f172a; line-height:1.35;">
+            <b>${escapeHtml(o.titulo)}</b><br>
+            <small style="color:#64748b;">${escapeHtml(o.subtitulo || '')}</small>
+          </span>
+        </label>
+      `).join('');
+
+      const { value: periodo } = await Swal.fire({
+        title: 'Declaração de comparecimento',
+        width: 650,
+        html: `
+          <div style="text-align:left">
+            <div style="margin-bottom:12px;padding:11px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;color:#1e3a8a;font-size:13px;line-height:1.45;">
+              <b>${escapeHtml(candidatoAtual.nome || '')}</b><br>
+              ${escapeHtml(json.inscricao || '')} • ${escapeHtml(json.unidade_nome || json.unidade_login || '')}
+            </div>
+
+            <div style="font-size:13px;color:#475569;margin-bottom:8px;">
+              Selecione o dia que constará na declaração:
+            </div>
+
+            ${radios}
+
+            <label style="display:flex;align-items:flex-start;gap:9px;margin-top:14px;padding:11px 12px;background:#fff8e1;border:1px solid #f0d98a;border-radius:10px;cursor:pointer;">
+              <input id="confirmaListaPresenca" type="checkbox" style="margin-top:4px;opacity:1;position:static;pointer-events:auto;">
+              <span style="font-size:12px;color:#795600;line-height:1.45;">
+                Confirmo que conferi a assinatura do candidato na lista de presença correspondente ao dia selecionado.
+              </span>
+            </label>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Emitir declaração',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#166534',
+        focusConfirm: false,
+        preConfirm: () => {
+          const escolhido = document.querySelector('input[name="declaracao_periodo"]:checked');
+          const confirmou = document.getElementById('confirmaListaPresenca')?.checked;
+
+          if (!escolhido) {
+            Swal.showValidationMessage('Selecione o dia da declaração.');
+            return false;
+          }
+
+          if (!confirmou) {
+            Swal.showValidationMessage('Confirme a conferência da lista de presença.');
+            return false;
+          }
+
+          return escolhido.value;
+        }
+      });
+
+      if (!periodo) return;
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = API + 'gerar_declaracao.php';
+      form.target = '_blank';
+      form.style.display = 'none';
+
+      const campos = {
+        cpf: cpf,
+        periodo: periodo,
+        confirmado: '1',
+        nome: candidatoAtual.nome || ''
+      };
+
+      Object.entries(campos).forEach(([k, v]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = k;
+        input.value = v;
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+      form.remove();
+
+    } catch (e) {
+      console.error(e);
+      Swal.fire('Erro', 'Erro de comunicação com o servidor.', 'error');
     }
   }
 
