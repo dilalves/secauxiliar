@@ -633,13 +633,37 @@
       return;
     }
 
-    const headers = ['INSCRICAO', 'NOME', 'CPF', 'DATA_INSCRICAO', 'SABATISTA'];
+    const headers = [
+      'INSCRICAO',
+      'NOME',
+      'CPF',
+      'DATA_INSCRICAO',
+      'DATA_NASCIMENTO',
+      'TELEFONE_CELULAR',
+      'TELEFONE_RESIDENCIAL',
+      'EMAIL',
+      'ENDERECO',
+      'CEP',
+      'BAIRRO',
+      'CIDADE',
+      'UF',
+      'SABATISTA'
+    ];
 
     const rows = dadosAtuais.map(item => [
       `="${String(item.inscricao ?? '').trim()}"`,
       String(item.nome ?? '').toUpperCase(),
       `="${String(item.cpf ?? '').trim()}"`,
       fmtDate(item.data_inscricao ?? ''),
+      fmtDate(item.data_nascimento ?? ''),
+      item.telefone_celular ? `="${String(item.telefone_celular).trim()}"` : '',
+      item.telefone_residencial ? `="${String(item.telefone_residencial).trim()}"` : '',
+      String(item.email ?? '').trim(),
+      String(item.endereco ?? '').trim(),
+      item.cep ? `="${String(item.cep).trim()}"` : '',
+      String(item.bairro ?? '').trim(),
+      String(item.cidade ?? '').trim(),
+      String(item.uf ?? '').trim().toUpperCase(),
       isSabatista(item) ? 'SIM' : 'NAO'
     ]);
 
