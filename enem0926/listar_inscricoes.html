@@ -32,14 +32,8 @@
     color:var(--text);
   }
 
-  body{
-    min-height:100vh;
-  }
-
-  a{
-    color:inherit;
-    text-decoration:none;
-  }
+  body{ min-height:100vh; }
+  a{ color:inherit; text-decoration:none; }
 
   .container{
     max-width:1100px;
@@ -47,7 +41,6 @@
     padding:0 16px;
   }
 
-  /* ===== Topbar no padrão do painel ===== */
   header.topbar{
     position:fixed;
     top:0;
@@ -116,7 +109,7 @@
     flex:0 0 auto;
   }
 
-  chip-link{
+  .chip-link{
     display:inline-flex;
     align-items:center;
     gap:8px;
@@ -184,7 +177,6 @@
     color:#fff;
   }
 
-  /* ===== Conteúdo ===== */
   main{
     padding-top:116px;
     padding-bottom:32px;
@@ -249,9 +241,7 @@
     box-shadow:0 4px 14px rgba(11,59,120,.15);
   }
 
-  .btn:hover{
-    opacity:.95;
-  }
+  .btn:hover{ opacity:.95; }
 
   .btn.secondary{
     background:#fff;
@@ -284,7 +274,7 @@
 
   .meta{
     display:grid;
-    grid-template-columns:repeat(4, minmax(180px, 1fr));
+    grid-template-columns:repeat(5, minmax(160px, 1fr));
     gap:14px;
     padding:18px 20px 0;
   }
@@ -344,9 +334,7 @@
     vertical-align:top;
   }
 
-  tbody tr:hover{
-    background:#fafcff;
-  }
+  tbody tr:hover{ background:#fafcff; }
 
   .empty{
     padding:30px 20px;
@@ -354,80 +342,73 @@
     color:var(--muted);
   }
 
-  .chip{
+  .section-row td{
+    padding:11px 10px;
+    background:#fff8e6;
+    color:#8a5a00;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    border-top:2px solid #f0d89a;
+    border-bottom:1px solid #f0d89a;
+  }
+
+  .sabatista-row{ background:#fffdf7; }
+
+  .sabatista-badge{
     display:inline-flex;
     align-items:center;
-    gap:6px;
-    padding:5px 10px;
+    padding:4px 8px;
+    margin-left:8px;
     border-radius:999px;
-    font-size:12px;
+    background:#fff3cd;
+    color:#7a5200;
+    border:1px solid #f1d58a;
+    font-size:11px;
     font-weight:700;
-    border:1px solid var(--line);
+    vertical-align:middle;
+  }
+
+  .user-menu{ position:relative; }
+  .btn-user{ cursor:pointer; border:none; }
+  .btn-user .caret{ font-size:22px; opacity:.95; }
+  .dropdown{
+    position:absolute;
+    right:0;
+    top:54px;
+    min-width:220px;
     background:#fff;
-    color:var(--primary);
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:0 14px 34px rgba(0,0,0,.14);
+    padding:8px;
+    display:none;
+    z-index:9999;
   }
-
-  .muted{
-    color:var(--muted);
+  .dropdown.open{ display:block; }
+  .dd-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:10px;
   }
+  .dd-item i{ color:var(--accent); font-size:18px; }
+  .dd-item:hover{ background:#f0f4ff; }
 
-/* User dropdown */
-    .user-menu{ position:relative; }
-    .btn-user{
-      cursor:pointer;
-      border:none;
-    }
-    .btn-user .caret{
-      font-size:22px;
-      opacity:.95;
-    }
-    .dropdown{
-      position:absolute;
-      right:0;
-      top:54px;
-      min-width:220px;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:14px;
-      box-shadow:0 14px 34px rgba(0,0,0,.14);
-      padding:8px;
-      display:none;
-      z-index:9999;
-    }
-    .dropdown.open{ display:block; }
-    .dd-item{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 12px;
-      border-radius:10px;
-      color:var(--ink);
-    }
-    .dd-item i{ color:var(--accent); font-size:18px; }
-    .dd-item:hover{
-      background:#f0f4ff;
-    }
-
-        /* ✅ Ajuste: chip do usuário 100% branco no topo azul */
-    .chip-user{
-      color:#fff !important;
-      background:rgba(255,255,255,.14) !important;
-      border:1px solid rgba(255,255,255,.22) !important;
-    }
-    .chip-user .txt b,
-    .chip-user .txt span{
-      color:#fff !important;
-    }
-    .chip-user .mat,
-    .chip-user .caret{
-      color:#fff !important;
-      opacity:.95;
-    }
+  .chip-user{
+    color:#fff !important;
+    background:rgba(255,255,255,.14) !important;
+    border:1px solid rgba(255,255,255,.22) !important;
+  }
+  .chip-user .txt b,
+  .chip-user .txt span{ color:#fff !important; }
+  .chip-user .mat,
+  .chip-user .caret{ color:#fff !important; opacity:.95; }
 
   @media (max-width: 1100px){
-    .meta{
-      grid-template-columns:repeat(2, minmax(180px, 1fr));
-    }
+    .meta{ grid-template-columns:repeat(2, minmax(180px, 1fr)); }
   }
 
   @media (max-width: 720px){
@@ -437,37 +418,15 @@
       padding-right:12px;
     }
 
-    .brand .title{
-      font-size:14px;
-    }
-
-    .brand .sub{
-      display:none;
-    }
-
-    .page-head h1{
-      font-size:24px;
-    }
-
-    .meta{
-      grid-template-columns:1fr;
-    }
-
-    .toolbar{
-      width:100%;
-    }
-
-    .btn{
-      width:100%;
-      justify-content:center;
-    }
-
-    .chip-user .txt span{
-      display:none;
-    }
+    .brand .title{ font-size:14px; }
+    .brand .sub{ display:none; }
+    .page-head h1{ font-size:24px; }
+    .meta{ grid-template-columns:1fr; }
+    .toolbar{ width:100%; }
+    .btn{ width:100%; justify-content:center; }
+    .chip-user .txt span{ display:none; }
   }
 </style>
- 
 </head>
 <body>
 <header class="topbar">
@@ -508,242 +467,275 @@
     </div>
   </div>
 </header>
-  <main class="wrap">
-    <section class="page-card">
-      <div class="page-head">
-        <div>
-          <h1>Inscritos do Simulado</h1>
-          <div class="page-sub">Listagem consolidada de inscritos do site e inscrições avulsas.</div>
-        </div>
 
-        <div class="toolbar">
-          <button class="btn secondary" id="btnExcel">
-            <i class="material-icons">download</i>
-            <span>Baixar Excel</span>
-          </button>
-
-          <button class="btn" id="btnRecarregar">
-            <i class="material-icons">refresh</i>
-            <span>Recarregar</span>
-          </button>
-        </div>
+<main class="wrap">
+  <section class="page-card">
+    <div class="page-head">
+      <div>
+        <h1>Inscritos do Simulado</h1>
+        <div class="page-sub">Listagem consolidada de inscritos do site e inscrições avulsas.</div>
       </div>
 
-      <div id="status" class="status"></div>
+      <div class="toolbar">
+        <button class="btn secondary" id="btnExcel">
+          <i class="material-icons">download</i>
+          <span>Baixar Excel</span>
+        </button>
 
-      <div class="meta">
-        <div class="info">
-          <div class="label">Evento</div>
-          <div class="value" id="metaEvento">—</div>
-        </div>
+        <button class="btn" id="btnRecarregar">
+          <i class="material-icons">refresh</i>
+          <span>Recarregar</span>
+        </button>
+      </div>
+    </div>
 
-       
-        <div class="info">
-          <div class="label">Total Site</div>
-          <div class="value" id="metaTotalSite">0</div>
-        </div>
+    <div id="status" class="status"></div>
 
-        <div class="info">
-          <div class="label">Total Avulsos</div>
-          <div class="value" id="metaTotalAvulsos">0</div>
-        </div>
-
-        <div class="info">
-          <div class="label">Total Geral</div>
-          <div class="value" id="metaTotalGeral">0</div>
-        </div>
+    <div class="meta">
+      <div class="info">
+        <div class="label">Evento</div>
+        <div class="value" id="metaEvento">—</div>
       </div>
 
-      <div class="table-wrap">
-        <table id="tabela">
-          <thead>
-            <tr>
-              <th>Inscrição</th>
-              <th>Nome</th>
-              <th>CPF</th>
-              <th>Data da inscrição</th>
-            </tr>
-          </thead>
-          <tbody id="tbody">
-            <tr><td colspan="4" class="empty">Carregando inscritos...</td></tr>
-          </tbody>
-        </table>
+      <div class="info">
+        <div class="label">Total Site</div>
+        <div class="value" id="metaTotalSite">0</div>
       </div>
-    </section>
-  </main>
 
-  <script>
-    const EVENTO = 'ENEM0926';
-    const API_URL = `https://apisec.secauxiliar.com.br/enem0926/listar_inscritos.php?evento=${encodeURIComponent(EVENTO)}`;
+      <div class="info">
+        <div class="label">Total Avulsos</div>
+        <div class="value" id="metaTotalAvulsos">0</div>
+      </div>
 
-    let dadosAtuais = [];
+      <div class="info">
+        <div class="label">Sabatistas</div>
+        <div class="value" id="metaSabatistas">0</div>
+      </div>
 
-    const statusEl = document.getElementById('status');
-    const tbody = document.getElementById('tbody');
-    const metaEvento = document.getElementById('metaEvento');
-    //const metaUnidade = document.getElementById('metaUnidade');
-    const metaTotalSite = document.getElementById('metaTotalSite');
-    const metaTotalAvulsos = document.getElementById('metaTotalAvulsos');
-    const metaTotalGeral = document.getElementById('metaTotalGeral');
-    const btnRecarregar = document.getElementById('btnRecarregar');
-    const btnExcel = document.getElementById('btnExcel');
+      <div class="info">
+        <div class="label">Total Geral</div>
+        <div class="value" id="metaTotalGeral">0</div>
+      </div>
+    </div>
 
-    function showStatus(msg, type = 'ok') {
-      statusEl.className = `status ${type}`;
-      statusEl.textContent = msg;
+    <div class="table-wrap">
+      <table id="tabela">
+        <thead>
+          <tr>
+            <th>Inscrição</th>
+            <th>Nome</th>
+            <th>CPF</th>
+            <th>Data da inscrição</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="4" class="empty">Carregando inscritos...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+  const EVENTO = 'ENEM0926';
+  const API_URL = `https://apisec.secauxiliar.com.br/enem0926/listar_inscritos.php?evento=${encodeURIComponent(EVENTO)}`;
+
+  let dadosAtuais = [];
+
+  const statusEl = document.getElementById('status');
+  const tbody = document.getElementById('tbody');
+  const metaEvento = document.getElementById('metaEvento');
+  const metaTotalSite = document.getElementById('metaTotalSite');
+  const metaTotalAvulsos = document.getElementById('metaTotalAvulsos');
+  const metaSabatistas = document.getElementById('metaSabatistas');
+  const metaTotalGeral = document.getElementById('metaTotalGeral');
+  const btnRecarregar = document.getElementById('btnRecarregar');
+  const btnExcel = document.getElementById('btnExcel');
+
+  function showStatus(msg, type = 'ok') {
+    statusEl.className = `status ${type}`;
+    statusEl.textContent = msg;
+  }
+
+  function clearStatus() {
+    statusEl.className = 'status';
+    statusEl.textContent = '';
+  }
+
+  function esc(v) {
+    return String(v ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function fmtDate(v) {
+    if (!v) return '';
+    const s = String(v).trim();
+
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+      const [y,m,d] = s.substring(0,10).split('-');
+      return `${d}/${m}/${y}`;
     }
+    return s;
+  }
 
-    function clearStatus() {
-      statusEl.className = 'status';
-      statusEl.textContent = '';
-    }
+  function isSabatista(item) {
+    return String(item?.aluno_sabatista ?? '').trim().toUpperCase() === 'SIM';
+  }
 
-    function esc(v) {
-      return String(v ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
+  function linhaInscrito(item, sabatista = false) {
+    return `
+      <tr class="${sabatista ? 'sabatista-row' : ''}">
+        <td>${esc(item.inscricao)}</td>
+        <td>
+          ${esc(String(item.nome ?? '').toUpperCase())}
+          ${sabatista ? '<span class="sabatista-badge">SABATISTA</span>' : ''}
+        </td>
+        <td>${esc(item.cpf)}</td>
+        <td>${esc(fmtDate(item.data_inscricao))}</td>
+      </tr>
+    `;
+  }
 
-    function fmtDate(v) {
-      if (!v) return '';
-      const s = String(v).trim();
-
-      if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-        const [y,m,d] = s.substring(0,10).split('-');
-        return `${d}/${m}/${y}`;
-      }
-      return s;
-    }
-
-    function preencherTabela(lista) {
-      if (!Array.isArray(lista) || !lista.length) {
-        tbody.innerHTML = `<tr><td colspan="4" class="empty">Nenhum inscrito encontrado para esta unidade.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = lista.map(item => `
-        <tr>
-          <td>${esc(item.inscricao)}</td>
-          <td>${esc(String(item.nome ?? '').toUpperCase())}</td>
-          <td>${esc(item.cpf)}</td>
-          <td>${esc(fmtDate(item.data_inscricao))}</td>
-        </tr>
-      `).join('');
-    }
-
-    function baixarExcel() {
-      if (!dadosAtuais.length) {
-        showStatus('Não há dados para exportar.', 'err');
-        return;
-      }
-
-      const headers = ['INSCRICAO', 'NOME', 'CPF', 'DATA_INSCRICAO'];
-
-      const rows = dadosAtuais.map(item => [
-        `="${String(item.inscricao ?? '').trim()}"`,
-        String(item.nome ?? '').toUpperCase(),
-        `="${String(item.cpf ?? '').trim()}"`,
-        fmtDate(item.data_inscricao ?? '')
-      ]);
-
-      const csv = [
-        headers.join(';'),
-        ...rows.map(row =>
-          row.map(v => `"${String(v).replaceAll('"', '""')}"`).join(';')
-        )
-      ].join('\n');
-
-      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Relacao_Inscritos_Simulado_Aberto_${EVENTO}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    async function carregar() {
-      clearStatus();
-      tbody.innerHTML = `<tr><td colspan="4" class="empty">Carregando inscritos...</td></tr>`;
-
-      try {
-        const resp = await fetch(API_URL, {
-          method: 'GET',
-          credentials: 'include'
-        });
-
-        const data = await resp.json();
-
-        if (!resp.ok || !data.ok) {
-          throw new Error(data.error || data.msg || 'Erro ao carregar inscritos.');
-        }
-
-        dadosAtuais = Array.isArray(data.inscritos) ? data.inscritos : [];
-
-        metaEvento.textContent = data.evento || EVENTO;
-        //metaUnidade.textContent = data.unidade?.unidade || data.unidade?.razao_social || data.unidade_login || '—';
-        metaTotalSite.textContent = data.totais?.site ?? 0;
-        metaTotalAvulsos.textContent = data.totais?.avulsos ?? 0;
-        metaTotalGeral.textContent = data.totais?.geral ?? data.total ?? 0;
-
-        preencherTabela(dadosAtuais);
-        showStatus(`Dados carregados com sucesso. Total geral: ${data.totais?.geral ?? data.total ?? 0} inscrito(s).`, 'ok');
-      } catch (err) {
-        console.error(err);
-        dadosAtuais = [];
-        tbody.innerHTML = `<tr><td colspan="4" class="empty">Não foi possível carregar os inscritos.</td></tr>`;
-        showStatus(err.message || 'Erro ao carregar inscritos.', 'err');
-      }
-    }
- 
-async function carregarUsuario() {
-  const uLogin = document.getElementById('uLogin');
-  const uNome = document.getElementById('uNome');
-
-  if (!uLogin || !uNome) return;
-
-  uLogin.textContent = 'Carregando...';
-  uNome.textContent = '';
-
-  try {
-    const res = await fetch('https://apisec.secauxiliar.com.br/enem0926/auth_me_unidade.php', {
-      credentials: 'include'
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      uLogin.textContent = 'Sessão';
-      uNome.textContent = 'Faça login novamente';
+  function preencherTabela(lista) {
+    if (!Array.isArray(lista) || !lista.length) {
+      tbody.innerHTML = `<tr><td colspan="4" class="empty">Nenhum inscrito encontrado para esta unidade.</td></tr>`;
       return;
     }
 
-    const login = data.login || '';
-    const unidade = data.unidade || '';
+    const regulares = lista.filter(item => !isSabatista(item));
+    const sabatistas = lista.filter(item => isSabatista(item));
 
-    uLogin.textContent = login ? `Unidade ${login}` : 'Unidade';
-    uNome.textContent = unidade || '';
-  } catch (e) {
-    console.error(e);
-    uLogin.textContent = 'Erro';
-    uNome.textContent = 'Sem conexão';
+    let html = '';
+
+    if (regulares.length) {
+      html += regulares.map(item => linhaInscrito(item, false)).join('');
+    }
+
+    if (sabatistas.length) {
+      html += `
+        <tr class="section-row">
+          <td colspan="4">Sabatistas — ${sabatistas.length} aluno(s)</td>
+        </tr>
+      `;
+      html += sabatistas.map(item => linhaInscrito(item, true)).join('');
+    }
+
+    tbody.innerHTML = html;
   }
-}
 
-    btnRecarregar.addEventListener('click', carregar);
-    btnExcel.addEventListener('click', baixarExcel);
+  function baixarExcel() {
+    if (!dadosAtuais.length) {
+      showStatus('Não há dados para exportar.', 'err');
+      return;
+    }
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      await carregarUsuario();
-      await carregar();
-    });
+    const headers = ['INSCRICAO', 'NOME', 'CPF', 'DATA_INSCRICAO', 'SABATISTA'];
 
+    const rows = dadosAtuais.map(item => [
+      `="${String(item.inscricao ?? '').trim()}"`,
+      String(item.nome ?? '').toUpperCase(),
+      `="${String(item.cpf ?? '').trim()}"`,
+      fmtDate(item.data_inscricao ?? ''),
+      isSabatista(item) ? 'SIM' : 'NAO'
+    ]);
 
-  </script>
+    const csv = [
+      headers.join(';'),
+      ...rows.map(row =>
+        row.map(v => `"${String(v).replaceAll('"', '""')}"`).join(';')
+      )
+    ].join('\n');
+
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Relacao_Inscritos_Simulado_Aberto_${EVENTO}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function carregar() {
+    clearStatus();
+    tbody.innerHTML = `<tr><td colspan="4" class="empty">Carregando inscritos...</td></tr>`;
+
+    try {
+      const resp = await fetch(API_URL, {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      const data = await resp.json();
+
+      if (!resp.ok || !data.ok) {
+        throw new Error(data.error || data.msg || 'Erro ao carregar inscritos.');
+      }
+
+      dadosAtuais = Array.isArray(data.inscritos) ? data.inscritos : [];
+
+      metaEvento.textContent = data.evento || EVENTO;
+      metaTotalSite.textContent = data.totais?.site ?? 0;
+      metaTotalAvulsos.textContent = data.totais?.avulsos ?? 0;
+      metaSabatistas.textContent = data.totais?.sabatistas ?? 0;
+      metaTotalGeral.textContent = data.totais?.geral ?? data.total ?? 0;
+
+      preencherTabela(dadosAtuais);
+      showStatus(`Dados carregados com sucesso. Total geral: ${data.totais?.geral ?? data.total ?? 0} inscrito(s).`, 'ok');
+    } catch (err) {
+      console.error(err);
+      dadosAtuais = [];
+      tbody.innerHTML = `<tr><td colspan="4" class="empty">Não foi possível carregar os inscritos.</td></tr>`;
+      showStatus(err.message || 'Erro ao carregar inscritos.', 'err');
+    }
+  }
+
+  async function carregarUsuario() {
+    const uLogin = document.getElementById('uLogin');
+    const uNome = document.getElementById('uNome');
+
+    if (!uLogin || !uNome) return;
+
+    uLogin.textContent = 'Carregando...';
+    uNome.textContent = '';
+
+    try {
+      const res = await fetch('https://apisec.secauxiliar.com.br/enem0926/auth_me_unidade.php', {
+        credentials: 'include'
+      });
+
+      const data = await res.json();
+
+      if (!data.ok) {
+        uLogin.textContent = 'Sessão';
+        uNome.textContent = 'Faça login novamente';
+        return;
+      }
+
+      const login = data.login || '';
+      const unidade = data.unidade || '';
+
+      uLogin.textContent = login ? `Unidade ${login}` : 'Unidade';
+      uNome.textContent = unidade || '';
+    } catch (e) {
+      console.error(e);
+      uLogin.textContent = 'Erro';
+      uNome.textContent = 'Sem conexão';
+    }
+  }
+
+  btnRecarregar.addEventListener('click', carregar);
+  btnExcel.addEventListener('click', baixarExcel);
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await carregarUsuario();
+    await carregar();
+  });
+</script>
 </body>
 </html>
