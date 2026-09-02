@@ -637,7 +637,7 @@
             <h2>Dados da prova</h2>
             <div class="grid">
               <div class="field">
-                <div class="label">Data da prova</div>
+                <div class="label">${d.data_prova2 ? '1º dia da prova' : 'Data da prova'}</div>
                 <div class="value">${escapeHtml(formatDateBR(d.data_prova))}</div>
               </div>
 
@@ -646,6 +646,17 @@
                 <div class="value">${escapeHtml(d.hora_prova || '-')}</div>
               </div>
 
+              ${d.data_prova2 ? `
+                <div class="field">
+                  <div class="label">2º dia da prova</div>
+                  <div class="value">${escapeHtml(formatDateBR(d.data_prova2))}</div>
+                </div>
+
+                <div class="field">
+                  <div class="label">Horário</div>
+                  <div class="value">${escapeHtml(d.hora_prova || '-')}</div>
+                </div>
+              ` : ''}
               <div class="field full">
                 <div class="label">Local de realização</div>
                 <div class="prova-box">
