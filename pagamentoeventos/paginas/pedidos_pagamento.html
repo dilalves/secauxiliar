@@ -983,9 +983,9 @@ async function abrirHistoricoPrestador(idx){
 
     // Descobre qual foi o último envio para pagamento.
     const datasEnvio = pedidos
-      .filter(p => p.data_envio && !p.data_recibo)
+      .filter(p => p.data_envio)
       .map(p => String(p.data_envio));
-
+      
     const ultimoEnvio = datasEnvio.length
       ? datasEnvio.sort().reverse()[0]
       : null;
@@ -994,11 +994,10 @@ async function abrirHistoricoPrestador(idx){
     // Soma somente os lançamentos pertencentes ao último envio.
     const totalUltimoEnvio = ultimoEnvio
       ? pedidos
-          .filter(p =>
-            p.data_envio &&
-            !p.data_recibo &&
-            String(p.data_envio) === ultimoEnvio
-          )
+      .filter(p =>
+        p.data_envio &&
+        String(p.data_envio) === ultimoEnvio
+      )
           .reduce((soma, p) => soma + Number(p.valor_bruto || 0), 0)
       : 0;
 
@@ -1006,14 +1005,12 @@ async function abrirHistoricoPrestador(idx){
       ? pedidos
           .filter(p =>
             p.data_envio &&
-            !p.data_recibo &&
             String(p.data_envio) === ultimoEnvio
           )
           .reduce((soma, p) => soma + Number(p.valor_liquido || 0), 0)
       : 0;
-
     // Renderiza os KPIs do histórico. com os valores em aberto e do último envio.
-    
+
     $('histKpis').innerHTML = `
       <div class="hist-kpi">
         <span class="label">Em aberto · OK</span>
@@ -1026,12 +1023,12 @@ async function abrirHistoricoPrestador(idx){
       </div>
 
       <div class="hist-kpi">
-        <span class="label">Último envio · DP</span>
+        <span class="label">Último envio · Bruto</span>
         <span class="valor">${moeda(totalUltimoEnvio)}</span>
       </div>
 
       <div class="hist-kpi">
-        <span class="label">Líquido · DP</span>
+        <span class="label">Último envio · Líquido</span>
         <span class="valor">${moeda(liquidoUltimoEnvio)}</span>
       </div>
     `;
