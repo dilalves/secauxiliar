@@ -977,6 +977,16 @@ async function abrirHistoricoPrestador(idx){
           .reduce((soma, p) => soma + Number(p.valor_bruto || 0), 0)
       : 0;
 
+    const liquidoUltimoEnvio = ultimoEnvio
+      ? pedidos
+          .filter(p =>
+            p.data_envio &&
+            !p.data_recibo &&
+            String(p.data_envio) === ultimoEnvio
+          )
+          .reduce((soma, p) => soma + Number(p.valor_liquido || 0), 0)
+      : 0;
+
 
     $('histKpis').innerHTML = `
       <div class="hist-kpi">
@@ -987,6 +997,11 @@ async function abrirHistoricoPrestador(idx){
       <div class="hist-kpi">
         <span class="label">Último envio · DP</span>
         <span class="valor">${moeda(totalUltimoEnvio)}</span>
+      </div>
+
+      <div class="hist-kpi">
+        <span class="label">Líquido · DP</span>
+        <span class="valor">${moeda(liquidoUltimoEnvio)}</span>
       </div>
     `;
 
