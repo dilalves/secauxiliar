@@ -145,6 +145,37 @@ input[readonly]{background:#f1f5f9;color:#334155;font-weight:800}
 .eventtable tr:hover td{background:#f8fbff}
 
 /* Histórico do prestador */
+
+.hist-kpis{
+  display:flex;
+  gap:12px;
+  margin:10px 0;
+}
+
+.hist-kpi{
+  min-width:220px;
+  padding:10px 14px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#f8fbff;
+}
+
+.hist-kpi .label{
+  display:block;
+  font-size:11px;
+  font-weight:900;
+  color:#64748b;
+  text-transform:uppercase;
+  margin-bottom:3px;
+}
+
+.hist-kpi .valor{
+  display:block;
+  font-size:20px;
+  font-weight:900;
+  color:#0b3b78;
+}
+
 #modalHistorico{
   align-items:flex-start;
   padding-top:18px;
@@ -350,8 +381,9 @@ input[readonly]{background:#f1f5f9;color:#334155;font-weight:800}
       </div>
       <button class="btn" onclick="fecharHistoricoPrestador()">Fechar</button>
     </div>
-    <div id="histResumo" class="muted" style="margin-bottom:10px"></div>
-    <div id="histBody">Carregando...</div>
+      <div id="histKpis" class="hist-kpis"></div>
+      <div id="histResumo" class="muted" style="margin-bottom:10px"></div>
+      <div id="histBody">Carregando...</div>
   </div>
 </div>
 
@@ -902,6 +934,7 @@ async function abrirHistoricoPrestador(idx){
   $('histDados').textContent = dados.join('  •  ');
   $('histResumo').textContent = '';
   $('histBody').innerHTML = 'Carregando histórico...';
+  $('histKpis').innerHTML = '';
 
   try{
     const qs = new URLSearchParams();
@@ -911,6 +944,51 @@ async function abrirHistoricoPrestador(idx){
 
     const j = await apiGet('pedidos_prestador_historico.php?' + qs.toString());
     const pedidos = j.pedidos || [];
+
+    // Total em aberto: lançamentos liberados (OK)
+    // que ainda não foram enviados para pagamento.
+    const totalAberto = pedidos
+      .filter(p =>
+        Number(p.liberado) === 1 &&
+        !p.data_envio &&
+        !p.data_recibo
+      )
+      .reduce((soma, p) => soma + Number(p.valor_bruto || 0), 0);
+
+
+    // Descobre qual foi o último envio para pagamento.
+    const datasEnvio = pedidos
+      .filter(p => p.data_envio && !p.data_recibo)
+      .map(p => String(p.data_envio));
+
+    const ultimoEnvio = datasEnvio.length
+      ? datasEnvio.sort().reverse()[0]
+      : null;
+
+
+    // Soma somente os lançamentos pertencentes ao último envio.
+    const totalUltimoEnvio = ultimoEnvio
+      ? pedidos
+          .filter(p =>
+            p.data_envio &&
+            !p.data_recibo &&
+            String(p.data_envio) === ultimoEnvio
+          )
+          .reduce((soma, p) => soma + Number(p.valor_bruto || 0), 0)
+      : 0;
+
+
+    $('histKpis').innerHTML = `
+      <div class="hist-kpi">
+        <span class="label">Em aberto · OK</span>
+        <span class="valor">${moeda(totalAberto)}</span>
+      </div>
+
+      <div class="hist-kpi">
+        <span class="label">Último envio · DP</span>
+        <span class="valor">${moeda(totalUltimoEnvio)}</span>
+      </div>
+    `;
 
     $('histResumo').textContent = pedidos.length
       ? `${pedidos.length} lançamento(s) encontrado(s), em ordem decrescente de data. Duplo clique em uma linha para abrir o evento.`
