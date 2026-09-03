@@ -955,6 +955,31 @@ async function abrirHistoricoPrestador(idx){
       )
       .reduce((soma, p) => soma + Number(p.valor_bruto || 0), 0);
 
+    // Líquido dos lançamentos em aberto.
+    // INSS padrão = 11%
+    // ISS vem da unidade de cada lançamento.
+    const INSS_PERCENTUAL = 11;
+
+    const liquidoAberto = pedidos
+      .filter(p =>
+        Number(p.liberado) === 1 &&
+        !p.data_envio &&
+        !p.data_recibo
+      )
+      .reduce((soma, p) => {
+
+        const bruto = Number(p.valor_bruto || 0);
+        const iss = Number(p.iss_percentual || 0);
+
+        const descontoIss = bruto * (iss / 100);
+        const descontoInss = bruto * (INSS_PERCENTUAL / 100);
+
+        const liquido = bruto - descontoIss - descontoInss;
+
+        return soma + liquido;
+
+      }, 0);
+
 
     // Descobre qual foi o último envio para pagamento.
     const datasEnvio = pedidos
@@ -987,11 +1012,17 @@ async function abrirHistoricoPrestador(idx){
           .reduce((soma, p) => soma + Number(p.valor_liquido || 0), 0)
       : 0;
 
-
+    // Renderiza os KPIs do histórico. com os valores em aberto e do último envio.
+    
     $('histKpis').innerHTML = `
       <div class="hist-kpi">
         <span class="label">Em aberto · OK</span>
         <span class="valor">${moeda(totalAberto)}</span>
+      </div>
+
+      <div class="hist-kpi">
+        <span class="label">Em aberto · Líquido</span>
+        <span class="valor">${moeda(liquidoAberto)}</span>
       </div>
 
       <div class="hist-kpi">
@@ -1004,6 +1035,7 @@ async function abrirHistoricoPrestador(idx){
         <span class="valor">${moeda(liquidoUltimoEnvio)}</span>
       </div>
     `;
+
 
     $('histResumo').textContent = pedidos.length
       ? `${pedidos.length} lançamento(s) encontrado(s), em ordem decrescente de data. Duplo clique em uma linha para abrir o evento.`
