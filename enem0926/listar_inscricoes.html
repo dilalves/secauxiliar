@@ -310,7 +310,7 @@
   table{
     width:100%;
     border-collapse:collapse;
-    min-width:760px;
+    min-width:900px;
     background:#fff;
   }
 
@@ -377,6 +377,16 @@
     border-bottom-color:#b9d6fb;
   }
 
+  .necessidade-section td{
+    padding:8px 10px;
+    background:#f4f8fd;
+    color:#334155;
+    border-bottom:1px solid #dbe6f3;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+  }
+
   .laudo-row{ background:#f7fbff; }
   .laudo-row:hover{ background:#eef6ff; }
 
@@ -392,13 +402,6 @@
     font-size:11px;
     font-weight:700;
     vertical-align:middle;
-  }
-
-  .atendimento-info{
-    display:block;
-    margin-top:5px;
-    color:#475569;
-    font-size:11px;
   }
 
   .btn-laudo{
@@ -581,11 +584,12 @@
             <th>Nome</th>
             <th>CPF</th>
             <th>Data da inscrição</th>
+            <th>Necessidade</th>
             <th>Laudo</th>
           </tr>
         </thead>
         <tbody id="tbody">
-          <tr><td colspan="5" class="empty">Carregando inscritos...</td></tr>
+          <tr><td colspan="6" class="empty">Carregando inscritos...</td></tr>
         </tbody>
       </table>
     </div>
@@ -648,6 +652,14 @@
     return item?.possui_laudo === true || item?.possui_laudo === 1 || item?.possui_laudo === '1';
   }
 
+  function textoNecessidade(item) {
+    return String(item?.necessita_atendimento ?? '').trim();
+  }
+
+  function chaveNecessidade(item) {
+    return textoNecessidade(item).toLocaleUpperCase('pt-BR');
+  }
+
   function urlLaudo(item) {
     const idCandidato = String(item?.id_candidato ?? '').trim();
     const idConcurso = String(item?.id_concurso ?? '').trim();
@@ -669,12 +681,10 @@
           ${esc(String(item.nome ?? '').toUpperCase())}
           ${sabatista ? '<span class="sabatista-badge">SABATISTA</span>' : ''}
           ${comLaudo ? '<span class="laudo-badge">COM LAUDO</span>' : ''}
-          ${comLaudo && item.necessita_atendimento
-            ? `<span class="atendimento-info">${esc(item.necessita_atendimento)}</span>`
-            : ''}
         </td>
         <td>${esc(item.cpf)}</td>
         <td>${esc(fmtDate(item.data_inscricao))}</td>
+        <td>${comLaudo ? esc(textoNecessidade(item).toUpperCase()) : ''}</td>
         <td>
           ${linkLaudo
             ? `<a class="btn-laudo" href="${esc(linkLaudo)}" target="_blank" rel="noopener">
@@ -688,7 +698,7 @@
 
   function preencherTabela(lista) {
     if (!Array.isArray(lista) || !lista.length) {
-      tbody.innerHTML = `<tr><td colspan="5" class="empty">Nenhum inscrito encontrado para esta unidade.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="empty">Nenhum inscrito encontrado para esta unidade.</td></tr>`;
       return;
     }
 
@@ -706,7 +716,7 @@
     if (sabatistas.length) {
       html += `
         <tr class="section-row">
-          <td colspan="5">Sabatistas — ${sabatistas.length} aluno(s)</td>
+          <td colspan="6">Sabatistas — ${sabatistas.length} aluno(s)</td>
         </tr>
       `;
       html += sabatistas.map(item => linhaInscrito(item, 'sabatista')).join('');
@@ -715,10 +725,35 @@
     if (comLaudo.length) {
       html += `
         <tr class="section-row laudo-section">
-          <td colspan="5">Atendimento especial — com laudo — ${comLaudo.length} aluno(s)</td>
+          <td colspan="6">Atendimento especial — com laudo — ${comLaudo.length} aluno(s)</td>
         </tr>
       `;
-      html += comLaudo.map(item => linhaInscrito(item, 'laudo')).join('');
+
+      const grupos = new Map();
+
+      comLaudo.forEach(item => {
+        const chave = chaveNecessidade(item);
+        if (!grupos.has(chave)) {
+          grupos.set(chave, {
+            titulo: textoNecessidade(item).toUpperCase(),
+            alunos: []
+          });
+        }
+        grupos.get(chave).alunos.push(item);
+      });
+
+      const gruposOrdenados = Array.from(grupos.values()).sort((a, b) =>
+        a.titulo.localeCompare(b.titulo, 'pt-BR', { sensitivity: 'base' })
+      );
+
+      gruposOrdenados.forEach(grupo => {
+        html += `
+          <tr class="necessidade-section">
+            <td colspan="6">${esc(grupo.titulo)} — ${grupo.alunos.length} aluno(s)</td>
+          </tr>
+        `;
+        html += grupo.alunos.map(item => linhaInscrito(item, 'laudo')).join('');
+      });
     }
 
     tbody.innerHTML = html;
@@ -788,7 +823,7 @@
 
   async function carregar() {
     clearStatus();
-    tbody.innerHTML = `<tr><td colspan="5" class="empty">Carregando inscritos...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">Carregando inscritos...</td></tr>`;
 
     try {
       const resp = await fetch(API_URL, {
@@ -816,7 +851,7 @@
     } catch (err) {
       console.error(err);
       dadosAtuais = [];
-      tbody.innerHTML = `<tr><td colspan="5" class="empty">Não foi possível carregar os inscritos.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="empty">Não foi possível carregar os inscritos.</td></tr>`;
       showStatus(err.message || 'Erro ao carregar inscritos.', 'err');
     }
   }
