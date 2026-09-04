@@ -274,7 +274,7 @@
 
   .meta{
     display:grid;
-    grid-template-columns:repeat(6, minmax(140px, 1fr));
+    grid-template-columns:repeat(5, minmax(160px, 1fr));
     gap:14px;
     padding:18px 20px 0;
   }
@@ -369,56 +369,6 @@
     font-weight:700;
     vertical-align:middle;
   }
-
-  .laudo-section td{
-    background:#eaf3ff;
-    color:#0b3b78;
-    border-top-color:#9ec5f8;
-    border-bottom-color:#b9d6fb;
-  }
-
-  .laudo-row{ background:#f7fbff; }
-  .laudo-row:hover{ background:#eef6ff; }
-
-  .laudo-badge{
-    display:inline-flex;
-    align-items:center;
-    padding:4px 8px;
-    margin-left:8px;
-    border-radius:999px;
-    background:#dbeafe;
-    color:#174ea6;
-    border:1px solid #93c5fd;
-    font-size:11px;
-    font-weight:700;
-    vertical-align:middle;
-  }
-
-  .atendimento-info{
-    display:block;
-    margin-top:5px;
-    color:#475569;
-    font-size:11px;
-  }
-
-  .btn-laudo{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:6px;
-    min-height:34px;
-    padding:7px 11px;
-    border-radius:9px;
-    background:#0b3b78;
-    color:#fff;
-    font-size:12px;
-    font-weight:700;
-    white-space:nowrap;
-    box-shadow:0 3px 10px rgba(11,59,120,.16);
-  }
-
-  .btn-laudo:hover{ background:#12509d; }
-  .btn-laudo .material-icons{ font-size:17px; }
 
   .user-menu{ position:relative; }
   .btn-user{ cursor:pointer; border:none; }
@@ -563,11 +513,6 @@
       </div>
 
       <div class="info">
-        <div class="label">Com laudo</div>
-        <div class="value" id="metaLaudos">0</div>
-      </div>
-
-      <div class="info">
         <div class="label">Total Geral</div>
         <div class="value" id="metaTotalGeral">0</div>
       </div>
@@ -581,11 +526,10 @@
             <th>Nome</th>
             <th>CPF</th>
             <th>Data da inscrição</th>
-            <th>Laudo</th>
           </tr>
         </thead>
         <tbody id="tbody">
-          <tr><td colspan="5" class="empty">Carregando inscritos...</td></tr>
+          <tr><td colspan="4" class="empty">Carregando inscritos...</td></tr>
         </tbody>
       </table>
     </div>
@@ -595,7 +539,6 @@
 <script>
   const EVENTO = 'ENEM0926';
   const API_URL = `https://apisec.secauxiliar.com.br/enem0926/listar_inscritos.php?evento=${encodeURIComponent(EVENTO)}`;
-  const LAUDO_API_URL = 'https://apisec.secauxiliar.com.br/enem0926/baixar_laudo.php';
 
   let dadosAtuais = [];
 
@@ -605,7 +548,6 @@
   const metaTotalSite = document.getElementById('metaTotalSite');
   const metaTotalAvulsos = document.getElementById('metaTotalAvulsos');
   const metaSabatistas = document.getElementById('metaSabatistas');
-  const metaLaudos = document.getElementById('metaLaudos');
   const metaTotalGeral = document.getElementById('metaTotalGeral');
   const btnRecarregar = document.getElementById('btnRecarregar');
   const btnExcel = document.getElementById('btnExcel');
@@ -644,81 +586,42 @@
     return String(item?.aluno_sabatista ?? '').trim().toUpperCase() === 'SIM';
   }
 
-  function possuiLaudo(item) {
-    return item?.possui_laudo === true || item?.possui_laudo === 1 || item?.possui_laudo === '1';
-  }
-
-  function urlLaudo(item) {
-    const idCandidato = String(item?.id_candidato ?? '').trim();
-    const idConcurso = String(item?.id_concurso ?? '').trim();
-
-    if (!/^\d+$/.test(idCandidato) || !/^\d+$/.test(idConcurso)) return '';
-
-    return `${LAUDO_API_URL}?idcandidato=${encodeURIComponent(idCandidato)}&idconcurso=${encodeURIComponent(idConcurso)}`;
-  }
-
-  function linhaInscrito(item, tipo = 'regular') {
-    const sabatista = isSabatista(item);
-    const comLaudo = tipo === 'laudo';
-    const linkLaudo = comLaudo ? urlLaudo(item) : '';
-
+  function linhaInscrito(item, sabatista = false) {
     return `
-      <tr class="${comLaudo ? 'laudo-row' : (sabatista ? 'sabatista-row' : '')}">
+      <tr class="${sabatista ? 'sabatista-row' : ''}">
         <td>${esc(item.inscricao)}</td>
         <td>
           ${esc(String(item.nome ?? '').toUpperCase())}
           ${sabatista ? '<span class="sabatista-badge">SABATISTA</span>' : ''}
-          ${comLaudo ? '<span class="laudo-badge">COM LAUDO</span>' : ''}
-          ${comLaudo && item.necessita_atendimento
-            ? `<span class="atendimento-info">${esc(item.necessita_atendimento)}</span>`
-            : ''}
         </td>
         <td>${esc(item.cpf)}</td>
         <td>${esc(fmtDate(item.data_inscricao))}</td>
-        <td>
-          ${linkLaudo
-            ? `<a class="btn-laudo" href="${esc(linkLaudo)}" target="_blank" rel="noopener">
-                 <i class="material-icons">description</i> Baixar
-               </a>`
-            : ''}
-        </td>
       </tr>
     `;
   }
 
   function preencherTabela(lista) {
     if (!Array.isArray(lista) || !lista.length) {
-      tbody.innerHTML = `<tr><td colspan="5" class="empty">Nenhum inscrito encontrado para esta unidade.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" class="empty">Nenhum inscrito encontrado para esta unidade.</td></tr>`;
       return;
     }
 
-    const comLaudo = lista.filter(item => possuiLaudo(item));
-    const semLaudo = lista.filter(item => !possuiLaudo(item));
-    const regulares = semLaudo.filter(item => !isSabatista(item));
-    const sabatistas = semLaudo.filter(item => isSabatista(item));
+    const regulares = lista.filter(item => !isSabatista(item));
+    const sabatistas = lista.filter(item => isSabatista(item));
 
     let html = '';
 
     if (regulares.length) {
-      html += regulares.map(item => linhaInscrito(item, 'regular')).join('');
+      html += regulares.map(item => linhaInscrito(item, false)).join('');
     }
 
     if (sabatistas.length) {
       html += `
         <tr class="section-row">
-          <td colspan="5">Sabatistas — ${sabatistas.length} aluno(s)</td>
+          <td colspan="4">Sabatistas — ${sabatistas.length} aluno(s)</td>
         </tr>
       `;
-      html += sabatistas.map(item => linhaInscrito(item, 'sabatista')).join('');
-    }
-
-    if (comLaudo.length) {
-      html += `
-        <tr class="section-row laudo-section">
-          <td colspan="5">Atendimento especial — com laudo — ${comLaudo.length} aluno(s)</td>
-        </tr>
-      `;
-      html += comLaudo.map(item => linhaInscrito(item, 'laudo')).join('');
+      html += sabatistas.map(item => linhaInscrito(item, true)).join('');
     }
 
     tbody.innerHTML = html;
@@ -744,9 +647,7 @@
       'BAIRRO',
       'CIDADE',
       'UF',
-      'SABATISTA',
-      'NECESSITA_ATENDIMENTO',
-      'POSSUI_LAUDO'
+      'SABATISTA'
     ];
 
     const rows = dadosAtuais.map(item => [
@@ -763,9 +664,7 @@
       String(item.bairro ?? '').trim(),
       String(item.cidade ?? '').trim(),
       String(item.uf ?? '').trim().toUpperCase(),
-      isSabatista(item) ? 'SIM' : 'NAO',
-      String(item.necessita_atendimento ?? '').trim(),
-      possuiLaudo(item) ? 'SIM' : 'NAO'
+      isSabatista(item) ? 'SIM' : 'NAO'
     ]);
 
     const csv = [
@@ -788,7 +687,7 @@
 
   async function carregar() {
     clearStatus();
-    tbody.innerHTML = `<tr><td colspan="5" class="empty">Carregando inscritos...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="empty">Carregando inscritos...</td></tr>`;
 
     try {
       const resp = await fetch(API_URL, {
@@ -808,7 +707,6 @@
       metaTotalSite.textContent = data.totais?.site ?? 0;
       metaTotalAvulsos.textContent = data.totais?.avulsos ?? 0;
       metaSabatistas.textContent = data.totais?.sabatistas ?? 0;
-      metaLaudos.textContent = data.totais?.laudos ?? 0;
       metaTotalGeral.textContent = data.totais?.geral ?? data.total ?? 0;
 
       preencherTabela(dadosAtuais);
@@ -816,7 +714,7 @@
     } catch (err) {
       console.error(err);
       dadosAtuais = [];
-      tbody.innerHTML = `<tr><td colspan="5" class="empty">Não foi possível carregar os inscritos.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" class="empty">Não foi possível carregar os inscritos.</td></tr>`;
       showStatus(err.message || 'Erro ao carregar inscritos.', 'err');
     }
   }
