@@ -29,7 +29,7 @@
     .status-atualizacao{display:flex;align-items:center;gap:7px;height:32px;padding:0 10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.36);border-radius:8px;color:#fff;font-size:11px;white-space:nowrap;align-self:flex-end}
     .status-ponto{width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.14)}
     .status-ponto.carregando{background:var(--laranja);box-shadow:0 0 0 4px rgba(245,158,11,.14)}
-    .kpis{display:grid;grid-template-columns:repeat(4,minmax(170px,1fr));gap:9px;margin-bottom:8px;flex:0 0 auto}
+    .kpis{display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:9px;margin-bottom:8px;flex:0 0 auto}
     .kpi{background:#fff;border:1px solid var(--linha);border-radius:12px;padding:7px 12px;min-height:53px;box-shadow:0 5px 16px rgba(11,59,120,.055)}
     .kpi-label{font-size:9px;text-transform:uppercase;letter-spacing:.045em;color:var(--muted);font-weight:850}.kpi-valor{font-size:21px;line-height:1.05;color:var(--azul);font-weight:900;margin-top:3px;font-variant-numeric:tabular-nums}
     .card{background:var(--card);border:1px solid var(--linha);border-radius:13px;box-shadow:0 6px 20px rgba(11,59,120,.065)}
@@ -78,6 +78,7 @@
 
     <section class="kpis">
       <div class="kpi"><div class="kpi-label">Total de inscritos</div><div class="kpi-valor" id="kTotal">0</div></div>
+      <div class="kpi"><div class="kpi-label">Inscritos — Unidades UNIP</div><div class="kpi-valor" id="kUnip">0</div></div>
       <div class="kpi"><div class="kpi-label">Internet</div><div class="kpi-valor" id="kSite">0</div></div>
       <div class="kpi"><div class="kpi-label">Avulsos</div><div class="kpi-valor" id="kAvulsa">0</div></div>
       <div class="kpi"><div class="kpi-label">Melhor dia</div><div class="kpi-valor" id="kMelhor">-</div></div>
@@ -180,6 +181,7 @@
         if(!r.ok||!data.ok) throw new Error(data.error||data.msg||'Falha ao carregar a evolução.');
         const z=data.resumo||{}, melhor=z.melhor_dia||null;
         $('kTotal').textContent=n(z.total); $('kSite').textContent=n(z.site); $('kAvulsa').textContent=n(z.avulsa);
+        $('kUnip').textContent=n((data.unips||[]).reduce((total,r)=>total+Number(r.total||0),0));
         $('kMelhor').textContent=melhor?`${dataCurta(melhor.data)} • ${n(melhor.total)}`:'-';
         document.title=`Objetivo — Evolução ${evento}`;
         renderGrafico(data.rows||[]); renderFeed(data.recentes||[]); renderUnips(data.unips||[]);
