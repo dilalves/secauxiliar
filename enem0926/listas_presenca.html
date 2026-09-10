@@ -402,7 +402,7 @@
     .helper{
       margin-top:16px;
       display:grid;
-      grid-template-columns:repeat(4, 1fr);
+      grid-template-columns:repeat(6, 1fr);
       gap:12px;
     }
 
@@ -562,10 +562,14 @@
       filter:grayscale(.08);
     }
 
+    @media (max-width: 1100px){
+      .helper{ grid-template-columns:repeat(3, 1fr); }
+    }
+
     @media (max-width: 980px){
       .toolbar-grid{ grid-template-columns:1fr 1fr; }
       .actions-grid{ grid-template-columns:1fr; }
-      .helper{ grid-template-columns:1fr 1fr; }
+      .helper{ grid-template-columns:repeat(2, 1fr); }
     }
 
     @media (max-width: 680px){
@@ -727,7 +731,7 @@
         <div class="helper">
           <div class="kpi">
             <div class="v" id="kpiSalas">--</div>
-            <div class="l">Salas encontradas</div>
+            <div class="l">Salas físicas</div>
           </div>
           <div class="kpi">
             <div class="v" id="kpiAlunos">--</div>
@@ -736,6 +740,14 @@
           <div class="kpi">
             <div class="v" id="kpiComSala">--</div>
             <div class="l">Com sala</div>
+          </div>
+          <div class="kpi">
+            <div class="v" id="kpiSabatistas">--</div>
+            <div class="l">Sabatistas</div>
+          </div>
+          <div class="kpi">
+            <div class="v" id="kpiNecessidades">--</div>
+            <div class="l">Nec. especiais</div>
           </div>
           <div class="kpi">
             <div class="v" id="kpiSemSala">--</div>
@@ -801,6 +813,8 @@
       kpiSalas: document.getElementById('kpiSalas'),
       kpiAlunos: document.getElementById('kpiAlunos'),
       kpiComSala: document.getElementById('kpiComSala'),
+      kpiSabatistas: document.getElementById('kpiSabatistas'),
+      kpiNecessidades: document.getElementById('kpiNecessidades'),
       kpiSemSala: document.getElementById('kpiSemSala'),
 
       uLogin: document.getElementById('uLogin'),
@@ -929,12 +943,21 @@
 
     function atualizarKpis(dados) {
       const totais = dados?.totais || {};
-      els.kpiSalas.textContent = totais.salas ?? '--';
+      const salas = Array.isArray(dados?.salas) ? dados.salas : [];
+
+      // Conta somente salas físicas. Grupos virtuais:
+      // -1 = SABATISTA
+      // -2 = NECESSIDADES ESPECIAIS
+      const totalSalasFisicas = salas.filter(s => Number(s.sala_id) > 0).length;
+
+      els.kpiSalas.textContent = totalSalasFisicas;
       els.kpiAlunos.textContent = totais.geral ?? '--';
       els.kpiComSala.textContent = totais.com_sala ?? '--';
+      els.kpiSabatistas.textContent = totais.sabatistas ?? 0;
+      els.kpiNecessidades.textContent = totais.necessidades_especiais ?? 0;
       els.kpiSemSala.textContent = totais.sem_sala ?? '--';
 
-      els.badgeSalas.textContent = `${totais.salas ?? 0} sala(s)`;
+      els.badgeSalas.textContent = `${totalSalasFisicas} sala(s)`;
       els.badgeAlunos.textContent = `${totais.geral ?? 0} aluno(s)`;
     }
 
