@@ -460,6 +460,22 @@
   .chip-user .mat,
   .chip-user .caret{ color:#fff !important; opacity:.95; }
 
+
+  .laudo-modal{position:fixed;inset:0;z-index:20000;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(15,23,42,.72)}
+  .laudo-modal.open{display:flex}
+  .laudo-modal-card{width:min(1100px,96vw);height:min(820px,92vh);background:#fff;border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.30);overflow:hidden;display:flex;flex-direction:column}
+  .laudo-modal-head{min-height:58px;padding:10px 14px 10px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line)}
+  .laudo-modal-title{font-size:16px;font-weight:700;color:var(--primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .laudo-modal-close{width:40px;height:40px;border:0;border-radius:10px;background:#f1f5f9;color:#334155;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .laudo-modal-body{flex:1;min-height:0;background:#eef2f7;display:flex;align-items:center;justify-content:center;overflow:auto}
+  .laudo-modal-body iframe{width:100%;height:100%;border:0;background:#fff}
+  .laudo-modal-body img{display:block;max-width:100%;max-height:100%;object-fit:contain;margin:auto}
+  .laudo-msg{max-width:520px;margin:24px;padding:26px;border-radius:16px;background:#fff;text-align:center;box-shadow:0 8px 30px rgba(15,23,42,.08)}
+  .laudo-msg .material-icons{font-size:46px;color:var(--primary);margin-bottom:8px}
+  .laudo-msg.err .material-icons{color:#b42318}
+  .laudo-msg h3{margin:0 0 8px;color:#0f172a}
+  .laudo-msg p{margin:0;color:#64748b;line-height:1.5}
+
   @media (max-width: 1100px){
     .meta{ grid-template-columns:repeat(2, minmax(180px, 1fr)); }
   }
@@ -596,6 +612,19 @@
   </section>
 </main>
 
+
+<div class="laudo-modal" id="laudoModal" aria-hidden="true">
+  <div class="laudo-modal-card" role="dialog" aria-modal="true" aria-labelledby="laudoModalTitle">
+    <div class="laudo-modal-head">
+      <div class="laudo-modal-title" id="laudoModalTitle">Documento</div>
+      <button type="button" class="laudo-modal-close" id="laudoModalClose" title="Fechar">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+    <div class="laudo-modal-body" id="laudoModalBody"></div>
+  </div>
+</div>
+
 <script>
   const EVENTO = 'ENEM0926';
   const API_URL = `https://apisec.secauxiliar.com.br/enem0926/listar_inscritos.php?evento=${encodeURIComponent(EVENTO)}`;
@@ -669,6 +698,85 @@
     return `${LAUDO_API_URL}?idcandidato=${encodeURIComponent(idCandidato)}&idconcurso=${encodeURIComponent(idConcurso)}`;
   }
 
+
+  const laudoModal = document.getElementById('laudoModal');
+  const laudoModalBody = document.getElementById('laudoModalBody');
+  const laudoModalTitle = document.getElementById('laudoModalTitle');
+  const laudoModalClose = document.getElementById('laudoModalClose');
+  let laudoObjectUrl = '';
+
+  function limparLaudoObjectUrl() {
+    if (laudoObjectUrl) { URL.revokeObjectURL(laudoObjectUrl); laudoObjectUrl = ''; }
+  }
+
+  function abrirModalLaudo(titulo) {
+    limparLaudoObjectUrl();
+    laudoModalTitle.textContent = titulo || 'Documento';
+    laudoModalBody.innerHTML = `<div class="laudo-msg"><i class="material-icons">hourglass_top</i><h3>Carregando documento...</h3><p>Aguarde enquanto consultamos o laudo.</p></div>`;
+    laudoModal.classList.add('open');
+    laudoModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function fecharModalLaudo() {
+    laudoModal.classList.remove('open');
+    laudoModal.setAttribute('aria-hidden', 'true');
+    laudoModalBody.innerHTML = '';
+    limparLaudoObjectUrl();
+  }
+
+  function mensagemModalLaudo(titulo, mensagem) {
+    laudoModalBody.innerHTML = `<div class="laudo-msg err"><i class="material-icons">error_outline</i><h3>${esc(titulo)}</h3><p>${esc(mensagem)}</p></div>`;
+  }
+
+  async function visualizarLaudo(url, nome) {
+    abrirModalLaudo(`Laudo — ${nome || 'candidato'}`);
+    try {
+      const resp = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json,application/pdf,image/*' }
+      });
+      const contentType = String(resp.headers.get('content-type') || '').toLowerCase();
+
+      if (!resp.ok) {
+        let mensagem = '';
+        if (contentType.includes('application/json')) {
+          const data = await resp.json().catch(() => ({}));
+          mensagem = data.error || data.msg || '';
+        } else {
+          mensagem = await resp.text().catch(() => '');
+        }
+        if (resp.status === 404) {
+          mensagemModalLaudo('Documento não encontrado', mensagem || 'Não há documento disponível para este candidato.');
+        } else {
+          mensagemModalLaudo('Não foi possível abrir o documento', mensagem || `O servidor retornou erro ${resp.status}. Tente novamente.`);
+        }
+        return;
+      }
+
+      const blob = await resp.blob();
+      if (!blob.size) {
+        mensagemModalLaudo('Documento não encontrado', 'O arquivo retornado está vazio.');
+        return;
+      }
+      laudoObjectUrl = URL.createObjectURL(blob);
+      if (contentType.includes('application/pdf')) {
+        laudoModalBody.innerHTML = `<iframe src="${laudoObjectUrl}" title="Visualização do laudo"></iframe>`;
+      } else if (contentType.startsWith('image/')) {
+        laudoModalBody.innerHTML = `<img src="${laudoObjectUrl}" alt="Laudo do candidato">`;
+      } else {
+        mensagemModalLaudo('Formato não suportado', 'O documento foi localizado, mas não pode ser visualizado nesta tela.');
+      }
+    } catch (err) {
+      console.error(err);
+      mensagemModalLaudo('Falha de comunicação', 'Não foi possível consultar o documento agora. Tente novamente em alguns instantes.');
+    }
+  }
+
+  laudoModalClose.addEventListener('click', fecharModalLaudo);
+  laudoModal.addEventListener('click', e => { if (e.target === laudoModal) fecharModalLaudo(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && laudoModal.classList.contains('open')) fecharModalLaudo(); });
+
   function linhaInscrito(item, tipo = 'regular') {
     const sabatista = isSabatista(item);
     const comLaudo = tipo === 'laudo';
@@ -687,9 +795,10 @@
         <td>${comLaudo ? esc(textoNecessidade(item).toUpperCase()) : ''}</td>
         <td>
           ${linkLaudo
-            ? `<a class="btn-laudo" href="${esc(linkLaudo)}" target="_blank" rel="noopener">
-                 <i class="material-icons">description</i> Baixar
-               </a>`
+            ? `<button type="button" class="btn-laudo" style="border:0;cursor:pointer"
+                 onclick="visualizarLaudo('${esc(linkLaudo)}', '${esc(String(item.nome ?? '').toUpperCase())}')">
+                 <i class="material-icons">visibility</i> Visualizar
+               </button>`
             : ''}
         </td>
       </tr>
