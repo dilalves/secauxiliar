@@ -868,6 +868,7 @@
   const URL_FINALIZAR_LOTE = `${API_BASE}/finalizar_lote.php`;
   const URL_LISTAR_ARQUIVOS_LOTE = `${API_BASE}/listar_arquivos_lote_conferencia.php`; 
   const URL_RECUSAR_LOTE = `${API_BASE}/recusar_lote_conferencia.php`;
+  const URL_RECUSAR_ARQUIVO_LOTE = `${API_BASE}/recusar_arquivo_lote_conferencia.php`;
   const URL_GERAR_STATS_ALTERNATIVAS = `${API_BASE}/gerar_stats_alternativas.php`;
 
 
@@ -1878,12 +1879,30 @@ function resetarImagemCompleta() {
                     ${r.processado ? '✅' : ''}
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      class="btn-mini view"
-                      onclick="verImagem('${escapeHtml(arquivoRecebido)}','${escapeHtml(dia)}', true)">
-                      Ver
-                    </button>
+                    <div class="acoes">
+                      <button
+                        type="button"
+                        class="btn-mini view"
+                        onclick="verImagem('${escapeHtml(arquivoRecebido)}','${escapeHtml(dia)}', true)">
+                        Ver
+                      </button>
+                      ${
+                        r.processado
+                          ? `<button
+                              type="button"
+                              class="btn-mini block"
+                              title="Arquivo já processado. Não pode ser recusado por esta tela."
+                              onclick="event.stopPropagation();">
+                              Rec.
+                            </button>`
+                          : `<button
+                              type="button"
+                              class="btn-mini reject"
+                              onclick="recusarArquivoLote(${Number(r.id || 0)}, '${escapeHtml(arquivoRecebido)}', '${escapeHtml(dia)}')">
+                              Rec.
+                            </button>`
+                      }
+                    </div>
                   </td>
                 </tr>
               `;
@@ -1892,6 +1911,148 @@ function resetarImagemCompleta() {
         </table>
       </div>
     `;
+  }
+
+  function atualizarLoteAposRecusaArquivoLocal(ctx, qntAtual) {
+    const evento = String(ctx?.evento || '').trim().toUpperCase();
+    const unidade = String(ctx?.unidade || '').trim();
+    const ftp = String(ctx?.lote || '').trim();
+    const dia = String(ctx?.dia || '').trim().toUpperCase();
+    const novaQnt = Number(qntAtual ?? ctx?.rows?.length ?? 0);
+
+    [lotesTodosCache, lotesCache].forEach(lista => {
+      if (!Array.isArray(lista)) return;
+
+      lista.forEach(lote => {
+        const mesmo =
+          String(lote.simulado || elEvento.value || '').trim().toUpperCase() === evento &&
+          String(lote.id_und || '').trim() === unidade &&
+          String(lote.ftp || '').trim() === ftp &&
+          String(lote.dia || '').trim().toUpperCase() === dia;
+
+        if (!mesmo) return;
+
+        lote.qnt = novaQnt;
+
+        const processadas = Number(lote.quantidade_processada_real || 0);
+        lote.diferenca = novaQnt - processadas;
+        lote.ok_habilitado =
+          !isLoteRedacao(lote) &&
+          Number(lote.diferenca || 0) === 0 &&
+          Number(lote.pendencias || 0) === 0;
+      });
+    });
+
+    const chaveSelecionada =
+      linhaSelecionada !== null && lotesCache[linhaSelecionada]
+        ? getChaveLote(lotesCache[linhaSelecionada])
+        : '';
+
+    reaplicarFiltrosSemRecarregar(chaveSelecionada);
+  }
+
+  async function recusarArquivoLote(idUpload, arquivoRecebido, diaArquivo = '') {
+    const ctx = arquivosLoteModalContext;
+
+    if (!ctx) {
+      Swal.fire('Erro', 'O contexto do lote não está disponível.', 'error');
+      return;
+    }
+
+    const id = Number(idUpload || 0);
+
+    if (!id) {
+      await Swal.fire('Erro', 'ID do arquivo inválido.', 'error');
+      abrirModalArquivosLote(ctx);
+      return;
+    }
+
+    const confirma = await Swal.fire({
+      icon: 'warning',
+      title: 'Recusar somente este arquivo?',
+      html: `
+        <div style="text-align:left;line-height:1.55;">
+          <p><b>Arquivo:</b> <span class="mono">${escapeHtml(arquivoRecebido || '')}</span></p>
+          <p><b>Evento:</b> ${escapeHtml(ctx.evento || '')}</p>
+          <p><b>Unidade:</b> ${escapeHtml(ctx.unidade || '')}</p>
+          <p><b>FTP/Lote:</b> ${escapeHtml(ctx.lote || '')}</p>
+          <p><b>Dia:</b> ${escapeHtml(diaArquivo || ctx.dia || '')}</p>
+          <hr style="border:none;border-top:1px solid #e5edf7;margin:10px 0;">
+          <p>Somente esta imagem será marcada como <b>RECUSADA</b>.</p>
+          <p>A quantidade do lote será recontada automaticamente.</p>
+        </div>
+      `,
+      input: 'textarea',
+      inputLabel: 'Motivo da recusa',
+      inputPlaceholder: 'Ex.: imagem inválida, folha incorreta, arquivo ilegível...',
+      inputValue: 'Imagem inválida para processamento.',
+      inputAttributes: {
+        maxlength: 180
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Sim, recusar arquivo',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#991b1b'
+    });
+
+    if (!confirma.isConfirmed) {
+      abrirModalArquivosLote(ctx);
+      return;
+    }
+
+    const motivo = normalizarValor(confirma.value || 'Imagem recusada manualmente pelo administrador.');
+
+    try {
+      Swal.fire({
+        title: 'Recusando arquivo...',
+        html: 'Atualizando a imagem e recontando a quantidade do lote.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const data = await fetchJson(URL_RECUSAR_ARQUIVO_LOTE, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          id,
+          evento: ctx.evento,
+          unidade: ctx.unidade,
+          ftp: ctx.lote,
+          dia: diaArquivo || ctx.dia,
+          motivo
+        })
+      });
+
+      ctx.rows = (ctx.rows || []).filter(r => Number(r.id) !== id);
+      ctx.total = Number(data.qnt_atual ?? ctx.rows.length);
+
+      atualizarLoteAposRecusaArquivoLocal(ctx, ctx.total);
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Arquivo recusado',
+        html: `
+          <div style="text-align:left;line-height:1.55;">
+            <p>O arquivo foi retirado da contagem válida do lote.</p>
+            <p><b>Quantidade atual do lote:</b> ${escapeHtml(String(ctx.total))}</p>
+          </div>
+        `,
+        confirmButtonText: 'Continuar',
+        confirmButtonColor: '#0b3b78'
+      });
+
+      abrirModalArquivosLote(ctx);
+
+    } catch (err) {
+      await Swal.fire(
+        'Erro',
+        err.message || 'Falha ao recusar o arquivo.',
+        'error'
+      );
+
+      abrirModalArquivosLote(ctx);
+    }
   }
 
   function abrirModalArquivosLote(ctx) {
