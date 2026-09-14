@@ -904,6 +904,11 @@
   let rotacaoRecorteAtual = 0;
   let rotacaoImagemCompletaAtual = 0;
 
+  // Guarda somente o contexto da modal "Arquivos do lote".
+  // Assim, ao fechar a imagem aberta pelo botão "Ver",
+  // voltamos para a lista de arquivos do mesmo lote.
+  let arquivosLoteModalContext = null;
+
   function aplicarRotacaoRecorte() {
     const img = document.getElementById('imgRecortePendencia');
     const info = document.getElementById('rotacaoRecorteInfo');
@@ -1784,7 +1789,7 @@ function resetarImagemCompleta() {
 }
 
 
-  function verImagem(arquivoOrigem, dia = '') {
+  function verImagem(arquivoOrigem, dia = '', voltarParaArquivosLote = false) {
     const evento = encodeURIComponent(document.getElementById('evento').value || '');
     const url = `${URL_IMAGEM_RECORTE}?arquivo=${encodeURIComponent(arquivoOrigem)}&dia=${encodeURIComponent(dia)}&evento=${evento}&full=1`;
 
@@ -1817,6 +1822,12 @@ function resetarImagemCompleta() {
       confirmButtonText: 'Fechar',
       didOpen: () => {
         resetarImagemCompleta();
+      }
+    }).then(() => {
+      // Só volta para a lista quando a imagem foi aberta
+      // pelo botão "Ver" da modal "Arquivos do lote".
+      if (voltarParaArquivosLote && arquivosLoteModalContext) {
+        abrirModalArquivosLote(arquivosLoteModalContext);
       }
     });
   }
@@ -1870,7 +1881,7 @@ function resetarImagemCompleta() {
                     <button
                       type="button"
                       class="btn-mini view"
-                      onclick="verImagem('${escapeHtml(arquivoRecebido)}','${escapeHtml(dia)}')">
+                      onclick="verImagem('${escapeHtml(arquivoRecebido)}','${escapeHtml(dia)}', true)">
                       Ver
                     </button>
                   </td>
@@ -1881,6 +1892,37 @@ function resetarImagemCompleta() {
         </table>
       </div>
     `;
+  }
+
+  function abrirModalArquivosLote(ctx) {
+    if (!ctx) return Promise.resolve();
+
+    arquivosLoteModalContext = ctx;
+
+    return Swal.fire({
+      title: 'Arquivos do lote',
+      width: 1200,
+      html: `
+        <div style="text-align:left;">
+          <div class="modal-info-lote">
+            <span>Evento: ${escapeHtml(ctx.evento)}</span>
+            <span>Unidade: ${escapeHtml(ctx.unidade)}</span>
+            <span>FTP/Lote: ${escapeHtml(ctx.lote)}</span>
+            <span>Dia: ${escapeHtml(ctx.dia)}</span>
+            <span>Arquivos: ${escapeHtml(String(ctx.total))}</span>
+          </div>
+          ${montarTabelaArquivosLote(ctx.rows, ctx.dia)}
+        </div>
+      `,
+      confirmButtonText: 'Fechar',
+      confirmButtonColor: '#0b3b78'
+    }).then(result => {
+      // Ao fechar a própria lista de arquivos, encerramos o contexto.
+      if (result.isConfirmed || result.isDismissed) {
+        arquivosLoteModalContext = null;
+      }
+      return result;
+    });
   }
 
   async function listarArquivosLote(idx) {
@@ -1913,24 +1955,16 @@ function resetarImagemCompleta() {
       const data = await fetchJson(url);
       const rows = data.rows || [];
 
-      await Swal.fire({
-        title: 'Arquivos do lote',
-        width: 1200,
-        html: `
-          <div style="text-align:left;">
-            <div class="modal-info-lote">
-              <span>Evento: ${escapeHtml(evento)}</span>
-              <span>Unidade: ${escapeHtml(unidade)}</span>
-              <span>FTP/Lote: ${escapeHtml(lote)}</span>
-              <span>Dia: ${escapeHtml(dia)}</span>
-              <span>Arquivos: ${escapeHtml(String(data.total ?? rows.length))}</span>
-            </div>
-            ${montarTabelaArquivosLote(rows, dia)}
-          </div>
-        `,
-        confirmButtonText: 'Fechar',
-        confirmButtonColor: '#0b3b78'
-      });
+      arquivosLoteModalContext = {
+        evento,
+        unidade,
+        lote,
+        dia,
+        rows,
+        total: data.total ?? rows.length
+      };
+
+      await abrirModalArquivosLote(arquivosLoteModalContext);
 
     } catch (err) {
       Swal.fire('Erro', err.message || 'Falha ao listar os arquivos do lote.', 'error');
