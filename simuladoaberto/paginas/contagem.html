@@ -69,6 +69,10 @@
       min-width:240px;
     }
 
+    .campo-filtro{
+      min-width:175px;
+    }
+
     label{
       font-size:13px;
       color:var(--muted);
@@ -641,6 +645,27 @@
       </div>
 
       <button id="btnBuscar">Buscar</button>
+
+      <div class="campo campo-filtro">
+        <label for="filtroSituacao">Situação</label>
+        <select id="filtroSituacao">
+          <option value="TODAS">Todas</option>
+          <option value="ATIVAS">Ativas</option>
+          <option value="CANCELADAS">Canceladas</option>
+        </select>
+      </div>
+
+      <div class="campo campo-filtro">
+        <label for="filtroArquivos">Arquivos</label>
+        <select id="filtroArquivos">
+          <option value="TODOS">Todos</option>
+          <option value="D1_ZERO">D1 = 0</option>
+          <option value="D2_ZERO">D2 = 0</option>
+          <option value="COBRANCA_D1">Cobrança D1</option>
+          <option value="COBRANCA_D2">Cobrança D2</option>
+        </select>
+      </div>
+
       <button id="btnLimpar" class="btn-sec">Limpar filtro</button>
 
       <button id="btnGerarLinkD1" class="btn-sec hidden">Gerar link Presença D1</button>
@@ -860,6 +885,10 @@
     const evento = document.getElementById('evento');
     const tbody = document.getElementById('tbody');
     const infoBar = document.getElementById('infoBar');
+    const filtroSituacao = document.getElementById('filtroSituacao');
+    const filtroArquivos = document.getElementById('filtroArquivos');
+
+    let dadosContagemAtuais = null;
 
     const kpiUnidades = document.getElementById('kpiUnidades');
     const kpiVagas = document.getElementById('kpiVagas');
@@ -1403,6 +1432,245 @@
       atualizarBotoesLink();
     }
 
+    function filtrarRows(rows){
+      const situacao = filtroSituacao?.value || 'TODAS';
+      const arquivos = filtroArquivos?.value || 'TODOS';
+
+      return (rows || []).filter(r => {
+        const cancelada = String(r.status || '').toUpperCase() === 'CANCELADA';
+
+        if (situacao === 'ATIVAS' && cancelada) return false;
+        if (situacao === 'CANCELADAS' && !cancelada) return false;
+
+        const arqD1 = Number(r.arquivos_d1 || 0);
+        const arqD2 = Number(r.arquivos_d2 || 0);
+        const presD1 = Number(r.presentes_d1 || 0);
+        const presD2 = Number(r.presentes_d2 || 0);
+
+        if (arquivos === 'D1_ZERO' && arqD1 !== 0) return false;
+        if (arquivos === 'D2_ZERO' && arqD2 !== 0) return false;
+        if (arquivos === 'COBRANCA_D1' && !(presD1 > 0 && arqD1 === 0)) return false;
+        if (arquivos === 'COBRANCA_D2' && !(presD2 > 0 && arqD2 === 0)) return false;
+
+        return true;
+      });
+    }
+
+    function calcularResumoFiltrado(rows, config){
+      const resumo = {
+        total_unidades: 0,
+        total_vagas: 0,
+        total_inscritos: 0,
+        total_presentes_d1: 0,
+        total_presentes_d2: 0,
+        total_presentes_red: 0,
+        total_arquivos: 0,
+        total_participantes: 0
+      };
+
+      (rows || []).forEach(r => {
+        resumo.total_unidades += 1;
+        resumo.total_vagas += Number(r.vagas || 0);
+        resumo.total_inscritos += Number(r.total_inscritos || 0);
+        resumo.total_presentes_d1 += Number(r.presentes_d1 || 0);
+        resumo.total_presentes_d2 += Number(r.presentes_d2 || 0);
+        resumo.total_presentes_red += Number(r.presentes_red || 0);
+
+        const arqD1 = Number(r.arquivos_d1 || 0);
+        const arqD2 = Number(r.arquivos_d2 || 0);
+        resumo.total_arquivos += arqD1 + (config.mostrarDia2 ? arqD2 : 0);
+
+        resumo.total_participantes += Number(r.presentes_d1 || 0)
+          + (config.mostrarDia2 ? Number(r.presentes_d2 || 0) : 0);
+      });
+
+      return resumo;
+    }
+
+    function aplicarFiltrosLocais(){
+      if (!dadosContagemAtuais) return;
+      renderizarContagem(dadosContagemAtuais);
+    }
+
+    function renderizarContagem(data){
+      const rowsOriginais = data.rows || [];
+      const config = configurarColunas(data);
+      const rows = filtrarRows(rowsOriginais);
+      const resumo = calcularResumoFiltrado(rows, config);
+
+      kpiUnidades.textContent = n(resumo.total_unidades);
+      kpiVagas.textContent = n(resumo.total_vagas);
+      kpiInscritos.textContent = n(resumo.total_inscritos);
+      kpiD1.textContent = n(resumo.total_presentes_d1);
+      kpiD2.textContent = n(resumo.total_presentes_d2);
+      kpiRed.textContent = n(resumo.total_presentes_red);
+      kpiArquivos.textContent = n(resumo.total_arquivos);
+      kpiDifArquivos.textContent = n(Number(resumo.total_participantes || 0) - Number(resumo.total_arquivos || 0));
+
+      const filtrosAtivos =
+        (filtroSituacao?.value || 'TODAS') !== 'TODAS' ||
+        (filtroArquivos?.value || 'TODOS') !== 'TODOS';
+
+      infoBar.textContent = filtrosAtivos
+        ? `${rows.length} de ${rowsOriginais.length} unidade(s) exibida(s) pelos filtros.`
+        : `${rows.length} unidade(s) encontrada(s).`;
+
+      if (!rows.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="${getColspan(config.mostrarDia2, config.mostrarRed)}" class="vazio">
+              Nenhuma unidade encontrada para os filtros selecionados.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let grupoAtual = '';
+      let html = '';
+
+      let subtotal = {
+        vagas: 0,
+        inscritos: 0,
+        d1: 0,
+        d2: 0,
+        red: 0,
+        arqD1: 0,
+        arqD2: 0
+      };
+
+      function zerarSubtotal(){
+        subtotal = {
+          vagas: 0,
+          inscritos: 0,
+          d1: 0,
+          d2: 0,
+          red: 0,
+          arqD1: 0,
+          arqD2: 0
+        };
+      }
+
+      function linhaSubtotal(label){
+        const difD1 = Number(subtotal.d1 || 0) - Number(subtotal.arqD1 || 0);
+        const difD2 = Number(subtotal.d2 || 0) - Number(subtotal.arqD2 || 0);
+
+        let linha = `
+          <tr class="subtotal-row">
+            <td colspan="2" class="subtotal-label">Subtotal ${label}</td>
+            <td class="num">${n(subtotal.vagas)}</td>
+            <td class="num">${n(subtotal.inscritos)}</td>
+            <td class="num">${n(subtotal.d1)}</td>
+        `;
+
+        if (config.mostrarDia2) linha += `<td class="num">${n(subtotal.d2)}</td>`;
+        if (config.mostrarRed) linha += `<td class="num">${n(subtotal.red)}</td>`;
+
+        linha += `
+            <td class="num">${n(subtotal.arqD1)}</td>
+            <td class="num">${montarDiff(difD1)}</td>
+        `;
+
+        if (config.mostrarDia2) {
+          linha += `
+            <td class="num">${n(subtotal.arqD2)}</td>
+            <td class="num">${montarDiff(difD2)}</td>
+          `;
+        }
+
+        linha += `<td></td></tr>`;
+        return linha;
+      }
+
+      rows.forEach((r, idx) => {
+        const isCancelada = String(r.status || '').toUpperCase() === 'CANCELADA';
+        const semContagem = !isCancelada
+          && Number(r.total_inscritos || 0) > 0
+          && Number(r.presentes_d1 || 0) === 0;
+
+        const tipo = String(r.tipo_unidade || 'CONVENIADA').toUpperCase();
+        const grupoLabel = tipo === 'PROPRIA'
+          ? 'UNIDADES PRÓPRIAS'
+          : 'UNIDADES CONVENIADAS';
+
+        if (grupoLabel !== grupoAtual) {
+          if (grupoAtual !== '') {
+            html += linhaSubtotal(grupoAtual);
+            zerarSubtotal();
+          }
+
+          html += `
+            <tr class="grupo-row">
+              <td colspan="${getColspan(config.mostrarDia2, config.mostrarRed)}">${grupoLabel}</td>
+            </tr>
+          `;
+
+          grupoAtual = grupoLabel;
+        }
+
+        subtotal.vagas += Number(r.vagas || 0);
+        subtotal.inscritos += Number(r.total_inscritos || 0);
+        subtotal.d1 += Number(r.presentes_d1 || 0);
+        subtotal.d2 += Number(r.presentes_d2 || 0);
+        subtotal.red += Number(r.presentes_red || 0);
+        subtotal.arqD1 += Number(r.arquivos_d1 || 0);
+        subtotal.arqD2 += Number(r.arquivos_d2 || 0);
+
+        html += `
+          <tr class="${isCancelada ? 'linha-cancelada' : (semContagem ? 'linha-sem-contagem' : '')}">
+            <td>${esc(r.codigo)}</td>
+            <td>${esc(r.unidade)}</td>
+            <td class="num">${n(r.vagas)}</td>
+            <td class="num">${n(r.total_inscritos)}</td>
+
+            <td class="num">
+              ${montarCampoEdicao({
+                valor: r.presentes_d1,
+                campo: 'presentes_d1',
+                codigo: r.codigo,
+                unidade: r.unidade,
+                isFuvestao: config.isFuvestao
+              })}
+            </td>
+
+            ${config.mostrarDia2 ? `
+              <td class="num">
+                ${montarCampoEdicao({
+                  valor: r.presentes_d2,
+                  campo: 'presentes_d2',
+                  codigo: r.codigo,
+                  unidade: r.unidade,
+                  isFuvestao: config.isFuvestao
+                })}
+              </td>
+            ` : ``}
+
+            ${config.mostrarRed ? `
+              <td class="num">
+                ${montarCampoEdicao({
+                  valor: r.presentes_red,
+                  campo: 'presentes_red',
+                  codigo: r.codigo,
+                  unidade: r.unidade,
+                  isFuvestao: config.isFuvestao
+                })}
+              </td>
+            ` : ``}
+
+            <td class="num">${n(r.arquivos_d1)}</td>
+            <td class="num">${montarDiff(r.dif_arquivos_d1)}</td>
+            ${config.mostrarDia2 ? `<td class="num">${n(r.arquivos_d2)}</td>` : ``}
+            ${config.mostrarDia2 ? `<td class="num">${montarDiff(r.dif_arquivos_d2)}</td>` : ``}
+            <td class="num">${montarBotaoDetalhes(r)}</td>
+          </tr>
+        `;
+
+        if (idx === rows.length - 1) html += linhaSubtotal(grupoAtual);
+      });
+
+      tbody.innerHTML = html;
+    }
+
     async function carregarContagem(opcoes = {}){
       const silencioso = !!opcoes.silencioso;
 
@@ -1430,188 +1698,9 @@
         throw new Error(data.error || 'Falha ao carregar contagem de presentes');
       }
 
-      const rows = data.rows || [];
-      const resumo = data.resumo || {};
-      const config = configurarColunas(data);
-
-      kpiUnidades.textContent = n(resumo.total_unidades);
-      kpiVagas.textContent = n(resumo.total_vagas);
-      kpiInscritos.textContent = n(resumo.total_inscritos);
-      kpiD1.textContent = n(resumo.total_presentes_d1);
-      kpiD2.textContent = n(resumo.total_presentes_d2);
-      kpiRed.textContent = n(resumo.total_presentes_red);      
-      kpiArquivos.textContent = n(resumo.total_arquivos);
-      kpiDifArquivos.textContent = n(Number(resumo.total_participantes || 0) - Number(resumo.total_arquivos || 0));
-
-      infoBar.textContent = `${rows.length} unidade(s) encontrada(s).`;
-
-      if (!rows.length) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="${getColspan(config.mostrarDia2, config.mostrarRed)}" class="vazio">
-              Nenhum registro encontrado para o evento selecionado.
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-let grupoAtual = '';
-let html = '';
-
-let subtotal = {
-  vagas: 0,
-  inscritos: 0,
-  d1: 0,
-  d2: 0,
-  red: 0,
-  arqD1: 0,
-  arqD2: 0
-};
-
-function zerarSubtotal(){
-  subtotal = {
-    vagas: 0,
-    inscritos: 0,
-    d1: 0,
-    d2: 0,
-    red: 0,
-    arqD1: 0,
-    arqD2: 0
-  };
-}
-
-function linhaSubtotal(label){
-  const difD1 = Number(subtotal.d1 || 0) - Number(subtotal.arqD1 || 0);
-  const difD2 = Number(subtotal.d2 || 0) - Number(subtotal.arqD2 || 0);
-
-  let linha = `
-    <tr class="subtotal-row">
-      <td colspan="2" class="subtotal-label">Subtotal ${label}</td>
-      <td class="num">${n(subtotal.vagas)}</td>
-      <td class="num">${n(subtotal.inscritos)}</td>
-      <td class="num">${n(subtotal.d1)}</td>
-  `;
-
-  if (config.mostrarDia2) {
-    linha += `<td class="num">${n(subtotal.d2)}</td>`;
-  }
-
-  if (config.mostrarRed) {
-    linha += `<td class="num">${n(subtotal.red)}</td>`;
-  }
-
-  linha += `
-      <td class="num">${n(subtotal.arqD1)}</td>
-      <td class="num">${montarDiff(difD1)}</td>
-  `;
-
-  if (config.mostrarDia2) {
-    linha += `
-      <td class="num">${n(subtotal.arqD2)}</td>
-      <td class="num">${montarDiff(difD2)}</td>
-    `;
-  }
-
-  linha += `<td></td></tr>`;
-
-  return linha;
-}
-
-rows.forEach((r, idx) => {
-  const isCancelada = String(r.status || '').toUpperCase() === 'CANCELADA';
-  const semContagem = !isCancelada
-    && Number(r.total_inscritos || 0) > 0
-    && Number(r.presentes_d1 || 0) === 0;
-  const tipo = String(r.tipo_unidade || 'CONVENIADA').toUpperCase();
-  const grupoLabel = tipo === 'PROPRIA'
-    ? 'UNIDADES PRÓPRIAS'
-    : 'UNIDADES CONVENIADAS';
-
-  if (grupoLabel !== grupoAtual) {
-    if (grupoAtual !== '') {
-      html += linhaSubtotal(grupoAtual);
-      zerarSubtotal();
+      dadosContagemAtuais = data;
+      renderizarContagem(data);
     }
-
-    html += `
-      <tr class="grupo-row">
-        <td colspan="${getColspan(config.mostrarDia2, config.mostrarRed)}">${grupoLabel}</td>
-      </tr>
-      
-    `;
-
-    
-
-    grupoAtual = grupoLabel;
-  }
-
-  subtotal.vagas += Number(r.vagas || 0);
-  subtotal.inscritos += Number(r.total_inscritos || 0);
-  subtotal.d1 += Number(r.presentes_d1 || 0);
-  subtotal.d2 += Number(r.presentes_d2 || 0);
-  subtotal.red += Number(r.presentes_red || 0);
-  subtotal.arqD1 += Number(r.arquivos_d1 || 0);
-  subtotal.arqD2 += Number(r.arquivos_d2 || 0);
-
-  html += `
-  <tr class="${isCancelada ? 'linha-cancelada' : (semContagem ? 'linha-sem-contagem' : '')}">
-    <td>${esc(r.codigo)}</td>
-    <td>${esc(r.unidade)}</td>
-    <td class="num">${n(r.vagas)}</td>
-    <td class="num">${n(r.total_inscritos)}</td>
-
-      <td class="num">
-        ${montarCampoEdicao({
-          valor: r.presentes_d1,
-          campo: 'presentes_d1',
-          codigo: r.codigo,
-          unidade: r.unidade,
-          isFuvestao: config.isFuvestao
-        })}
-      </td>
-
-      ${config.mostrarDia2 ? `
-        <td class="num">
-          ${montarCampoEdicao({
-            valor: r.presentes_d2,
-            campo: 'presentes_d2',
-            codigo: r.codigo,
-            unidade: r.unidade,
-            isFuvestao: config.isFuvestao
-          })}
-        </td>
-      ` : ``}
-
-      ${config.mostrarRed ? `
-        <td class="num">
-          ${montarCampoEdicao({
-            valor: r.presentes_red,
-            campo: 'presentes_red',
-            codigo: r.codigo,
-            unidade: r.unidade,
-            isFuvestao: config.isFuvestao
-          })}
-        </td>
-      ` : ``}
-
-      <td class="num">${n(r.arquivos_d1)}</td>
-      <td class="num">${montarDiff(r.dif_arquivos_d1)}</td>
-
-      ${config.mostrarDia2 ? `<td class="num">${n(r.arquivos_d2)}</td>` : ``}
-      ${config.mostrarDia2 ? `<td class="num">${montarDiff(r.dif_arquivos_d2)}</td>` : ``}
-
-      <td class="num">${montarBotaoDetalhes(r)}</td>
-    </tr>
-  `;
-
-  if (idx === rows.length - 1) {
-    html += linhaSubtotal(grupoAtual);
-  }
-});
-
-tbody.innerHTML = html;
-}
 
     async function gerarLinkPresenca(dia){
       try {
@@ -1734,9 +1823,15 @@ tbody.innerHTML = html;
     });
 
     document.getElementById('btnLimpar').addEventListener('click', () => {
+      filtroSituacao.value = 'TODAS';
+      filtroArquivos.value = 'TODOS';
       evento.value = '';
+      dadosContagemAtuais = null;
       resetTela();
     });
+
+    filtroSituacao.addEventListener('change', aplicarFiltrosLocais);
+    filtroArquivos.addEventListener('change', aplicarFiltrosLocais);
 
     evento.addEventListener('change', () => {
       atualizarBotoesLink();
