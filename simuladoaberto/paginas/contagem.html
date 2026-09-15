@@ -661,8 +661,10 @@
           <option value="TODOS">Todos</option>
           <option value="D1_ZERO">D1 = 0</option>
           <option value="D2_ZERO">D2 = 0</option>
+          <option value="RED_ZERO">Redação = 0</option>
           <option value="COBRANCA_D1">Cobrança D1</option>
           <option value="COBRANCA_D2">Cobrança D2</option>
+          <option value="COBRANCA_RED">Cobrança Redação</option>
         </select>
       </div>
 
@@ -727,18 +729,20 @@
             <th class="th-num">Vagas</th>
             <th class="th-num">Inscritos</th>
             <th class="th-num" id="thD1">Presentes D1</th>
-            <th class="th-num" id="thD2">Presentes D2</th>
-            <th class="th-num" id="thRed">Presentes Red.</th>
             <th class="th-num" id="thArqD1">Arq. D1</th>
             <th class="th-num" id="thDifD1">Dif. D1</th>
+            <th class="th-num" id="thD2">Presentes D2</th>
             <th class="th-num" id="thArqD2">Arq. D2</th>
             <th class="th-num" id="thDifD2">Dif. D2</th>
+            <th class="th-num" id="thRed">Presentes Red.</th>
+            <th class="th-num" id="thArqRed">Arq. Red.</th>
+            <th class="th-num" id="thDifRed">Dif. Red.</th>
             <th class="th-num">Detalhes</th>
           </tr>
         </thead>
         <tbody id="tbody">
           <tr>
-            <td colspan="13" class="vazio">Selecione um evento para carregar a contagem.</td>
+            <td colspan="14" class="vazio">Selecione um evento para carregar a contagem.</td>
           </tr>
         </tbody>
       </table>
@@ -906,6 +910,8 @@
     const thD1 = document.getElementById('thD1');
     const thD2 = document.getElementById('thD2');
     const thRed = document.getElementById('thRed');
+    const thArqRed = document.getElementById('thArqRed');
+    const thDifRed = document.getElementById('thDifRed');
     const thArqD1 = document.getElementById('thArqD1');
     const thDifD1 = document.getElementById('thDifD1');
     const thArqD2 = document.getElementById('thArqD2');
@@ -1102,7 +1108,7 @@
 
       tbody.innerHTML = `
         <tr>
-          <td colspan="13" class="vazio">Selecione um evento para carregar a contagem.</td>
+          <td colspan="14" class="vazio">Selecione um evento para carregar a contagem.</td>
         </tr>
       `;
     }
@@ -1119,6 +1125,8 @@
 
       cardKpiRed.classList.toggle('hidden', !mostrarRed);
       thRed.classList.toggle('hidden', !mostrarRed);
+      thArqRed.classList.toggle('hidden', !mostrarRed);
+      thDifRed.classList.toggle('hidden', !mostrarRed);
 
       if (isFuvestao) {
         lblKpiD1.textContent = 'Presentes';
@@ -1144,7 +1152,7 @@
     function getColspan(mostrarDia2, mostrarRed){
       let base = 8; // código, unidade, vagas, inscritos, D1, arq D1, dif D1, detalhes
       if (mostrarDia2) base += 3; // presentes D2, arq D2, dif D2
-      if (mostrarRed) base += 1;
+      if (mostrarRed) base += 3; // presentes redação, arq redação, dif redação
       return base;
     }
 
@@ -1444,13 +1452,17 @@
 
         const arqD1 = Number(r.arquivos_d1 || 0);
         const arqD2 = Number(r.arquivos_d2 || 0);
+        const arqRed = Number(r.arquivos_red || 0);
         const presD1 = Number(r.presentes_d1 || 0);
         const presD2 = Number(r.presentes_d2 || 0);
+        const presRed = Number(r.presentes_red || 0);
 
         if (arquivos === 'D1_ZERO' && arqD1 !== 0) return false;
         if (arquivos === 'D2_ZERO' && arqD2 !== 0) return false;
+        if (arquivos === 'RED_ZERO' && arqRed !== 0) return false;
         if (arquivos === 'COBRANCA_D1' && !(presD1 > 0 && arqD1 === 0)) return false;
         if (arquivos === 'COBRANCA_D2' && !(presD2 > 0 && arqD2 === 0)) return false;
+        if (arquivos === 'COBRANCA_RED' && !(presRed > 0 && arqRed === 0)) return false;
 
         return true;
       });
@@ -1478,10 +1490,14 @@
 
         const arqD1 = Number(r.arquivos_d1 || 0);
         const arqD2 = Number(r.arquivos_d2 || 0);
-        resumo.total_arquivos += arqD1 + (config.mostrarDia2 ? arqD2 : 0);
+        const arqRed = Number(r.arquivos_red || 0);
+        resumo.total_arquivos += arqD1
+          + (config.mostrarDia2 ? arqD2 : 0)
+          + (config.mostrarRed ? arqRed : 0);
 
         resumo.total_participantes += Number(r.presentes_d1 || 0)
-          + (config.mostrarDia2 ? Number(r.presentes_d2 || 0) : 0);
+          + (config.mostrarDia2 ? Number(r.presentes_d2 || 0) : 0)
+          + (config.mostrarRed ? Number(r.presentes_red || 0) : 0);
       });
 
       return resumo;
@@ -1536,7 +1552,8 @@
         d2: 0,
         red: 0,
         arqD1: 0,
-        arqD2: 0
+        arqD2: 0,
+        arqRed: 0
       };
 
       function zerarSubtotal(){
@@ -1547,13 +1564,15 @@
           d2: 0,
           red: 0,
           arqD1: 0,
-          arqD2: 0
+          arqD2: 0,
+          arqRed: 0
         };
       }
 
       function linhaSubtotal(label){
         const difD1 = Number(subtotal.d1 || 0) - Number(subtotal.arqD1 || 0);
         const difD2 = Number(subtotal.d2 || 0) - Number(subtotal.arqD2 || 0);
+        const difRed = Number(subtotal.red || 0) - Number(subtotal.arqRed || 0);
 
         let linha = `
           <tr class="subtotal-row">
@@ -1561,20 +1580,23 @@
             <td class="num">${n(subtotal.vagas)}</td>
             <td class="num">${n(subtotal.inscritos)}</td>
             <td class="num">${n(subtotal.d1)}</td>
-        `;
-
-        if (config.mostrarDia2) linha += `<td class="num">${n(subtotal.d2)}</td>`;
-        if (config.mostrarRed) linha += `<td class="num">${n(subtotal.red)}</td>`;
-
-        linha += `
             <td class="num">${n(subtotal.arqD1)}</td>
             <td class="num">${montarDiff(difD1)}</td>
         `;
 
         if (config.mostrarDia2) {
           linha += `
+            <td class="num">${n(subtotal.d2)}</td>
             <td class="num">${n(subtotal.arqD2)}</td>
             <td class="num">${montarDiff(difD2)}</td>
+          `;
+        }
+
+        if (config.mostrarRed) {
+          linha += `
+            <td class="num">${n(subtotal.red)}</td>
+            <td class="num">${n(subtotal.arqRed)}</td>
+            <td class="num">${montarDiff(difRed)}</td>
           `;
         }
 
@@ -1615,6 +1637,7 @@
         subtotal.red += Number(r.presentes_red || 0);
         subtotal.arqD1 += Number(r.arquivos_d1 || 0);
         subtotal.arqD2 += Number(r.arquivos_d2 || 0);
+        subtotal.arqRed += Number(r.arquivos_red || 0);
 
         html += `
           <tr class="${isCancelada ? 'linha-cancelada' : (semContagem ? 'linha-sem-contagem' : '')}">
@@ -1632,6 +1655,8 @@
                 isFuvestao: config.isFuvestao
               })}
             </td>
+            <td class="num">${n(r.arquivos_d1)}</td>
+            <td class="num">${montarDiff(r.dif_arquivos_d1)}</td>
 
             ${config.mostrarDia2 ? `
               <td class="num">
@@ -1643,6 +1668,8 @@
                   isFuvestao: config.isFuvestao
                 })}
               </td>
+              <td class="num">${n(r.arquivos_d2)}</td>
+              <td class="num">${montarDiff(r.dif_arquivos_d2)}</td>
             ` : ``}
 
             ${config.mostrarRed ? `
@@ -1655,12 +1682,10 @@
                   isFuvestao: config.isFuvestao
                 })}
               </td>
+              <td class="num">${n(r.arquivos_red)}</td>
+              <td class="num">${montarDiff(r.dif_arquivos_red)}</td>
             ` : ``}
 
-            <td class="num">${n(r.arquivos_d1)}</td>
-            <td class="num">${montarDiff(r.dif_arquivos_d1)}</td>
-            ${config.mostrarDia2 ? `<td class="num">${n(r.arquivos_d2)}</td>` : ``}
-            ${config.mostrarDia2 ? `<td class="num">${montarDiff(r.dif_arquivos_d2)}</td>` : ``}
             <td class="num">${montarBotaoDetalhes(r)}</td>
           </tr>
         `;
@@ -1681,7 +1706,7 @@
 
       if (!silencioso) {
         infoBar.textContent = 'Carregando...';
-        tbody.innerHTML = `<tr><td colspan="13" class="vazio">Carregando...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="14" class="vazio">Carregando...</td></tr>`;
       }
 
       const qs = new URLSearchParams();
@@ -1992,7 +2017,7 @@
         infoBar.textContent = 'Erro ao carregar dados.';
         tbody.innerHTML = `
           <tr>
-            <td colspan="13" class="vazio">Erro ao carregar dados.</td>
+            <td colspan="14" class="vazio">Erro ao carregar dados.</td>
           </tr>
         `;
       }
