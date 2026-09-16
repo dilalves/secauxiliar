@@ -1,68 +1,602 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Verificação OMR</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Revisão OMR</title>
 <style>
-:root{--b:#0b3b78;--bg:#f4f7fb;--ln:#dbe5f1;--ink:#17324d;--bad:#dc2626;--ok:#15803d}
-*{box-sizing:border-box}body{margin:0;font:14px Arial;background:var(--bg);color:var(--ink)}
-.top{height:58px;background:var(--b);color:#fff;padding:17px 22px;font-size:20px;font-weight:bold}
-.toolbar{background:#fff;border-bottom:1px solid var(--ln);padding:12px 20px;display:flex;gap:10px;align-items:end;flex-wrap:wrap}
-label{font-size:12px;font-weight:bold;display:block;margin-bottom:4px}input,select{padding:9px;border:1px solid #cbd8e7;border-radius:6px}
-button{border:0;border-radius:7px;padding:10px 14px;font-weight:bold;cursor:pointer;background:#e8f0fa;color:#123c6c}button.primary{background:var(--b);color:#fff}
-.main{display:grid;grid-template-columns:minmax(600px,1fr) 360px;height:calc(100vh - 166px);gap:10px;padding:10px}
-.viewer,.side{background:#fff;border:1px solid var(--ln);border-radius:10px;overflow:hidden}.scroll{height:100%;overflow:auto;padding:18px}
-#stage{position:relative;display:inline-block;transform-origin:top left}#img{display:block;max-width:none;user-select:none;-webkit-user-drag:none}
-.mask{position:absolute;border:3px solid var(--bad);background:rgba(220,38,38,.12);pointer-events:none;box-shadow:0 0 0 2px #fff}
-.side{padding:16px;overflow:auto}.progress{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:8px 0}.progress>div{height:100%;background:var(--b);width:0}
-.big{font-size:20px;font-weight:bold}.bad{color:#b91c1c}.good{color:var(--ok)}
-.crop{height:155px;border:1px solid var(--ln);background:#fafafa;margin:12px 0;overflow:hidden;position:relative}#cropImg{position:absolute;max-width:none}
-.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}.choices button{font-size:16px}
-.scores{font-family:Consolas,monospace;background:#0f172a;color:#e2e8f0;padding:10px;border-radius:7px;white-space:pre-wrap}
-.nav{display:flex;gap:8px;margin-top:12px}.nav button{flex:1}.help{height:54px;background:#fff;border-top:1px solid var(--ln);padding:10px 18px}
-kbd{background:#eef2f7;border:1px solid #cbd5e1;border-bottom-width:2px;padding:2px 6px;border-radius:4px}.empty{padding:25px;text-align:center;color:#64748b}
-hr{border:0;border-top:1px solid var(--ln);margin:15px 0}@media(max-width:950px){.main{grid-template-columns:1fr;height:auto}.viewer{height:70vh}}
-</style></head><body>
-<div class="top">Simulados Abertos — Estação de Verificação OMR</div>
-<div class="toolbar">
-<div><label>Projeto</label><select id="projeto"><option>Carregando...</option></select></div>
-<div><label>Folha preenchida</label><input id="arquivo" type="file" accept=".jpg,.jpeg,.png"></div>
-<button class="primary" id="processar">Processar OMR</button>
-<div style="margin-left:auto"><label>Zoom</label><button onclick="zoom(-.1)">−</button> <span id="zoomTxt">100%</span> <button onclick="zoom(.1)">+</button></div>
-</div>
-<div class="main">
-<div class="viewer"><div class="scroll" id="scroll"><div id="stage"><img id="img" draggable="false"><div id="mask" class="mask" hidden></div></div></div></div>
-<aside class="side"><div id="inicio" class="empty">Processe uma folha para iniciar a conferência.</div>
-<div id="painel" hidden><small>Documento</small><div class="big" id="docInfo">—</div><div class="progress"><div id="bar"></div></div>
-<div><b id="pct">0%</b> da conferência concluída</div><hr><small>Ocorrência</small><div class="big" id="contador">—</div>
-<h2 id="titulo">—</h2><div id="motivo" class="bad"></div><div class="crop"><img id="cropImg"></div>
-<div><b>Leitura atual:</b> <span id="leitura">—</span></div><div class="choices" id="choices"></div><div class="scores" id="scores"></div>
-<div class="nav"><button onclick="anterior()">← Anterior</button><button onclick="proximo()">Próximo →</button></div></div></aside></div>
-<div class="help"><kbd>F4</kbd> próximo &nbsp; <kbd>Shift+F4</kbd> anterior &nbsp; <kbd>←</kbd>/<kbd>→</kbd> navegar &nbsp; <kbd>A</kbd>–<kbd>E</kbd> corrigir &nbsp; <kbd>0</kbd> branco &nbsp; <kbd>Enter</kbd> aceitar leitura</div>
+:root{
+  --blue:#0b3b78;--blue2:#2563eb;--bg:#eef3f8;--card:#fff;--line:#dbe4ee;
+  --ink:#14283d;--muted:#64748b;--bad:#dc2626;--ok:#15803d;--warn:#b45309
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:14px Arial,sans-serif;background:var(--bg);color:var(--ink);overflow:hidden}
+.topbar{
+  height:58px;background:var(--blue);color:#fff;display:flex;align-items:center;
+  padding:0 18px;gap:18px
+}
+.brand{font-size:18px;font-weight:700;white-space:nowrap}
+.top-status{margin-left:auto;font-size:13px;opacity:.95}
+.toolbar{
+  height:66px;background:#fff;border-bottom:1px solid var(--line);display:flex;
+  align-items:center;gap:12px;padding:8px 16px
+}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:3px}
+select,input[type=file]{
+  height:36px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;padding:0 9px
+}
+button{
+  border:0;border-radius:7px;background:#e8eef6;color:#173b63;font-weight:700;
+  padding:10px 13px;cursor:pointer
+}
+button:hover{filter:brightness(.97)}
+button.primary{background:var(--blue);color:#fff}
+button:disabled{opacity:.5;cursor:not-allowed}
+.zoom{margin-left:auto;display:flex;align-items:center;gap:6px}
+.workspace{
+  height:calc(100vh - 178px);display:grid;grid-template-columns:minmax(0,1fr) 380px;
+  gap:8px;padding:8px
+}
+.viewer{
+  background:#dfe7f0;border:1px solid #cbd6e2;border-radius:8px;overflow:auto;
+  position:relative
+}
+.sheet-wrap{
+  min-height:100%;display:flex;align-items:flex-start;justify-content:center;padding:8px
+}
+#stage{position:relative;display:inline-block;transform-origin:top center}
+#sheet{display:block;max-height:calc(100vh - 202px);max-width:100%;width:auto;height:auto;background:#fff}
+.mask{
+  position:absolute;border:3px solid #f00052;background:rgba(240,0,82,.10);
+  box-shadow:0 0 0 2px rgba(255,255,255,.85);pointer-events:none;z-index:5
+}
+.side{
+  background:#fff;border:1px solid var(--line);border-radius:8px;overflow:auto;padding:14px
+}
+.placeholder{height:100%;display:grid;place-items:center;text-align:center;color:var(--muted);padding:30px}
+.summary{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px
+}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:9px;background:#f8fafc}
+.kpi small{display:block;color:var(--muted);font-size:11px}.kpi strong{display:block;font-size:17px;margin-top:3px}
+.progress-head{display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-top:6px}
+.progress{height:9px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:6px 0 12px}
+.progress div{height:100%;background:var(--blue2);width:0}
+.state{
+  padding:10px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;
+  margin-bottom:10px
+}
+.state.ok{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+.issue-title{font-size:20px;font-weight:700;margin:8px 0 3px}
+.issue-sub{color:var(--bad);font-weight:700;margin-bottom:8px}
+.crop{
+  height:145px;border:1px solid var(--line);border-radius:7px;background:#f8fafc;
+  overflow:hidden;position:relative;margin:10px 0
+}
+#crop{position:absolute;max-width:none}
+.current{font-size:14px;margin:8px 0}
+.current b{font-size:18px}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0}
+.choices button{font-size:16px;padding:11px 8px}
+.choices button.blank{grid-column:span 2}
+.scores{
+  background:#0f172a;color:#e2e8f0;border-radius:7px;padding:9px;
+  font:12px Consolas,monospace;white-space:pre-wrap;max-height:120px;overflow:auto
+}
+.nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.done{color:var(--ok);font-weight:700}
+.footer{
+  height:54px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;
+  padding:0 16px;gap:15px;font-size:12px;color:#475569
+}
+kbd{
+  border:1px solid #cbd5e1;border-bottom-width:2px;border-radius:4px;background:#f8fafc;
+  padding:2px 6px;color:#1e293b
+}
+@media(max-width:980px){
+ body{overflow:auto}.workspace{height:auto;grid-template-columns:1fr}.viewer{height:70vh}
+ #sheet{max-height:none}.footer{height:auto;min-height:54px;flex-wrap:wrap;padding:10px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">Simulados Abertos — Verificação OMR</div>
+  <div class="top-status" id="topStatus">Aguardando documento</div>
+</header>
+
+<section class="toolbar">
+  <div class="field">
+    <label>PROJETO</label>
+    <select id="projeto"><option value="">Carregando...</option></select>
+  </div>
+  <div class="field">
+    <label>FOLHA PREENCHIDA</label>
+    <input id="arquivo" type="file" accept=".jpg,.jpeg,.png">
+  </div>
+  <button class="primary" id="btnProcessar">Processar OMR</button>
+
+  <div class="zoom">
+    <button type="button" id="menos">−</button>
+    <strong id="zoomTxt">100%</strong>
+    <button type="button" id="mais">+</button>
+    <button type="button" id="ajustar">Ajustar</button>
+  </div>
+</section>
+
+<main class="workspace">
+  <section class="viewer" id="viewer">
+    <div class="sheet-wrap">
+      <div id="stage">
+        <img id="sheet" alt="">
+        <div id="mask" class="mask" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div id="placeholder" class="placeholder">
+      <div>
+        <h3>Estação de verificação</h3>
+        <p>Selecione o projeto e uma folha preenchida.<br>As pendências aparecerão aqui.</p>
+      </div>
+    </div>
+
+    <div id="panel" hidden>
+      <div class="summary">
+        <div class="kpi"><small>INSCRIÇÃO</small><strong id="inscricao">—</strong></div>
+        <div class="kpi"><small>VERSÃO</small><strong id="versao">—</strong></div>
+        <div class="kpi"><small>QUESTÕES</small><strong id="questoes">0</strong></div>
+        <div class="kpi"><small>PENDÊNCIAS</small><strong id="pendencias">0</strong></div>
+      </div>
+
+      <div class="progress-head">
+        <span id="progText">Conferidas 0/0</span>
+        <b id="pct">0%</b>
+      </div>
+      <div class="progress"><div id="bar"></div></div>
+
+      <div id="state" class="state">—</div>
+
+      <div id="issueBox">
+        <div id="contador" style="color:var(--muted);font-size:12px">Pendência —</div>
+        <div class="issue-title" id="titulo">—</div>
+        <div class="issue-sub" id="motivo">—</div>
+
+        <div class="crop"><img id="crop" alt=""></div>
+
+        <div class="current">Leitura atual: <b id="leitura">—</b></div>
+        <div class="choices" id="choices"></div>
+        <div class="scores" id="scores"></div>
+
+        <div class="nav">
+          <button type="button" id="anterior">← Anterior</button>
+          <button type="button" id="proximo">Próxima →</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer class="footer">
+  <span><kbd>F4</kbd> próxima pendência</span>
+  <span><kbd>Shift</kbd>+<kbd>F4</kbd> anterior</span>
+  <span><kbd>←</kbd> <kbd>→</kbd> navegar</span>
+  <span><kbd>A</kbd>–<kbd>E</kbd> confirmar</span>
+  <span><kbd>0</kbd> branco</span>
+  <span><kbd>Enter</kbd> aceitar leitura</span>
+</footer>
+
 <script>
-const API='https://apisec.secauxiliar.com.br/sim_adm/omr_projetos.php';
-const PROCESSAR='https://apisec.secauxiliar.com.br/sim_adm/omr_processar.php';
-let resultado=null,fila=[],atual=0,resolvidos=new Set(),z=1,objectUrl='';
-async function carregarProjetos(){try{const j=await(await fetch(API+'?acao=listar')).json();projeto.innerHTML=(j.projetos||[]).map(p=>`<option value="${p.id}">${esc(p.nome)} — ${esc(p.evento||'')} (${p.qtd_campos} campos)</option>`).join('')}catch(e){projeto.innerHTML='<option value="">Erro ao carregar projetos</option>'}}
-processar.onclick=async()=>{const f=arquivo.files[0];if(!f)return alert('Escolha uma folha preenchida.');if(!projeto.value)return alert('Escolha o projeto.');
-processar.disabled=true;processar.textContent='Processando...';try{const fd=new FormData();fd.append('projeto_id',projeto.value);fd.append('arquivo',f);
-const j=await(await fetch(PROCESSAR,{method:'POST',body:fd})).json();if(!j.ok)throw new Error(j.erro||'Erro no OMR');resultado=j;fila=j.revisao||[];atual=0;resolvidos=new Set();
-if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(f);img.src=objectUrl;cropImg.src=objectUrl;img.onload=()=>{inicio.hidden=true;painel.hidden=false;render()}}
-catch(e){alert(e.message)}finally{processar.disabled=false;processar.textContent='Processar OMR'}};
-function render(){docInfo.textContent=`Inscrição ${resultado.inscricao||'?'} · ${resultado.versao||'sem versão'} · ${Object.keys(resultado.respostas||{}).length} questões`;
-const total=fila.length,done=resolvidos.size,p=total?Math.round(done/total*100):100;bar.style.width=p+'%';pct.textContent=p+'%';
-if(!total){contador.textContent='0 de 0';titulo.textContent='Nenhuma ocorrência';motivo.textContent='OMR sem pendências para revisão.';motivo.className='good';mask.hidden=true;choices.innerHTML='';scores.textContent='';return}
-const o=fila[atual];contador.textContent=`${atual+1} de ${total}`;titulo.textContent=o.tipo==='questao'?`Questão ${o.questao}`:o.tipo==='versao'?'Versão':`Inscrição — posição ${o.item}`;
-motivo.className='bad';motivo.textContent=o.status==='vazio'?'Sem marcação detectada':'Leitura duvidosa / mais de uma marcação possível';leitura.textContent=o.valor===''?'BRANCO':o.valor;desenharMask(o.regiao);montarBotoes(o);mostrarScores(o.scores||{})}
-function desenharMask(r){if(!r){mask.hidden=true;return}mask.hidden=false;mask.style.left=(r.x*img.naturalWidth)+'px';mask.style.top=(r.y*img.naturalHeight)+'px';mask.style.width=(r.w*img.naturalWidth)+'px';mask.style.height=(r.h*img.naturalHeight)+'px';
-const left=r.x*img.naturalWidth*z,top=r.y*img.naturalHeight*z;scroll.scrollTo({left:Math.max(0,left-scroll.clientWidth*.35),top:Math.max(0,top-scroll.clientHeight*.35),behavior:'smooth'});
-const cw=r.w*img.naturalWidth,ch=r.h*img.naturalHeight,scale=Math.min(330/Math.max(cw,1),135/Math.max(ch,1));cropImg.style.width=(img.naturalWidth*scale)+'px';cropImg.style.left=(-r.x*img.naturalWidth*scale+10)+'px';cropImg.style.top=(-r.y*img.naturalHeight*scale+10)+'px'}
-function montarBotoes(o){let vs=o.tipo==='versao'?['V1','V2','V3','V4']:o.tipo==='questao'?['A','B','C','D','E']:['0','1','2','3','4','5','6','7','8','9'];choices.innerHTML=vs.map(v=>`<button onclick="corrigir('${v}')">${v}</button>`).join('')+`<button onclick="corrigir('')">Branco</button>`}
-function mostrarScores(sc){scores.textContent=Object.entries(sc).map(([k,v])=>`${k}: ${Number(v).toFixed(4)}`).join('\n')}
-function corrigir(v){if(!fila.length)return;const o=fila[atual];o.corrigido=v;o.resolvido=true;resolvidos.add(atual);if(o.tipo==='questao')resultado.respostas[o.questao]=v;else if(o.tipo==='versao')resultado.versao=v;render();if(atual<fila.length-1){atual++;render()}}
-function aceitar(){if(!fila.length)return;const o=fila[atual];if(o.valor==='?'||o.valor==='')return;corrigir(o.valor)}
-function proximo(){if(fila.length){atual=Math.min(fila.length-1,atual+1);render()}}function anterior(){if(fila.length){atual=Math.max(0,atual-1);render()}}
-function zoom(d){z=Math.max(.4,Math.min(2,z+d));stage.style.transform=`scale(${z})`;zoomTxt.textContent=Math.round(z*100)+'%';render()}
-document.addEventListener('keydown',e=>{if(e.key==='F4'){e.preventDefault();e.shiftKey?anterior():proximo();return}if(e.key==='ArrowRight'){e.preventDefault();proximo();return}if(e.key==='ArrowLeft'){e.preventDefault();anterior();return}if(e.key==='Enter'){e.preventDefault();aceitar();return}const k=e.key.toUpperCase();if(['A','B','C','D','E'].includes(k)&&fila[atual]?.tipo==='questao'){e.preventDefault();corrigir(k)}if(e.key==='0'&&fila.length){e.preventDefault();corrigir('')}})
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}carregarProjetos();
-</script></body></html>
+/*
+ * Mesmos endpoints usados no laboratório atual.
+ */
+const API_PROJETOS = 'https://apisec.secauxiliar.com.br/sim_adm/omr_projetos.php';
+const API_PROCESSAR = 'https://apisec.secauxiliar.com.br/sim_adm/omr_processar.php';
+
+const $ = id => document.getElementById(id);
+
+let resultado = null;
+let fila = [];
+let atual = 0;
+let resolvidos = new Set();
+let objectURL = '';
+let zoomAtual = 1;
+
+/* ---------- PROJETOS ---------- */
+async function carregarProjetos(){
+  try{
+    const r = await fetch(API_PROJETOS + '?acao=listar', {cache:'no-store'});
+    const j = await r.json();
+
+    const lista = Array.isArray(j) ? j : (j.projetos || j.data || []);
+
+    $('projeto').innerHTML = '<option value="">Selecione...</option>' +
+      lista.map(p => {
+        const id = p.id ?? p.projeto_id;
+        const nome = p.nome ?? p.projeto ?? ('Projeto ' + id);
+        const evento = p.evento ? ' — ' + p.evento : '';
+        return `<option value="${esc(id)}">${esc(nome + evento)}</option>`;
+      }).join('');
+
+    if(!lista.length){
+      $('projeto').innerHTML = '<option value="">Nenhum projeto encontrado</option>';
+    }
+  }catch(e){
+    console.error(e);
+    $('projeto').innerHTML = '<option value="">Erro ao carregar projetos</option>';
+  }
+}
+
+/* ---------- PROCESSAMENTO ---------- */
+$('btnProcessar').addEventListener('click', async () => {
+  const projetoId = $('projeto').value;
+  const file = $('arquivo').files[0];
+
+  if(!projetoId) return alert('Selecione o projeto.');
+  if(!file) return alert('Escolha uma folha preenchida.');
+
+  const btn = $('btnProcessar');
+  btn.disabled = true;
+  btn.textContent = 'Processando...';
+  $('topStatus').textContent = 'Processando OMR...';
+
+  try{
+    const fd = new FormData();
+    fd.append('projeto_id', projetoId);
+    fd.append('arquivo', file);
+
+    const r = await fetch(API_PROCESSAR, {
+      method:'POST',
+      body:fd,
+      cache:'no-store'
+    });
+
+    const texto = await r.text();
+    let j;
+
+    try{
+      j = JSON.parse(texto);
+    }catch{
+      throw new Error('A API não devolveu JSON válido.');
+    }
+
+    if(!j.ok) throw new Error(j.erro || 'Falha ao processar OMR.');
+
+    resultado = j;
+    fila = Array.isArray(j.revisao) ? j.revisao : [];
+    atual = 0;
+    resolvidos = new Set();
+
+    if(objectURL) URL.revokeObjectURL(objectURL);
+    objectURL = URL.createObjectURL(file);
+
+    $('sheet').src = objectURL;
+    $('crop').src = objectURL;
+
+    $('sheet').onload = () => {
+      $('placeholder').hidden = true;
+      $('panel').hidden = false;
+      ajustarImagem();
+      render();
+    };
+
+  }catch(e){
+    console.error(e);
+    $('topStatus').textContent = 'Erro no processamento';
+    alert(e.message);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'Processar OMR';
+  }
+});
+
+/* ---------- RENDER ---------- */
+function render(){
+  if(!resultado) return;
+
+  $('inscricao').textContent = resultado.inscricao || '—';
+  $('versao').textContent = resultado.versao || '—';
+  $('questoes').textContent = Object.keys(resultado.respostas || {}).length;
+  $('pendencias').textContent = fila.length;
+
+  const total = fila.length;
+  const concluidas = resolvidos.size;
+  const percentual = total ? Math.round((concluidas / total) * 100) : 100;
+
+  $('progText').textContent = `Conferidas ${concluidas}/${total}`;
+  $('pct').textContent = percentual + '%';
+  $('bar').style.width = percentual + '%';
+
+  if(total === 0){
+    $('state').className = 'state ok';
+    $('state').innerHTML = '<b>OMR OK</b> — nenhuma conferência necessária.';
+    $('issueBox').hidden = true;
+    $('mask').hidden = true;
+    $('topStatus').textContent =
+      `OMR OK · Inscrição ${resultado.inscricao || '—'} · ${Object.keys(resultado.respostas || {}).length} questões`;
+    return;
+  }
+
+  $('issueBox').hidden = false;
+
+  if(concluidas === total){
+    $('state').className = 'state ok';
+    $('state').innerHTML = '<b>DOCUMENTO CONFERIDO</b> — todas as pendências foram tratadas.';
+    $('topStatus').textContent = 'Documento conferido — 100%';
+  }else{
+    $('state').className = 'state';
+    $('state').innerHTML = `<b>${total - concluidas} pendência(s)</b> aguardando conferência.`;
+    $('topStatus').textContent = `Pendência ${atual + 1}/${total} · ${percentual}% conferido`;
+  }
+
+  const o = fila[atual];
+  if(!o) return;
+
+  $('contador').textContent = `Pendência ${atual + 1} de ${total}`;
+
+  if(o.tipo === 'questao'){
+    $('titulo').textContent = 'Questão ' + o.questao;
+  }else if(o.tipo === 'versao'){
+    $('titulo').textContent = 'Versão da prova';
+  }else{
+    $('titulo').textContent = 'Inscrição — posição ' + o.item;
+  }
+
+  if(o.status === 'vazio'){
+    $('motivo').textContent = 'Sem marcação detectada';
+  }else if(o.status === 'duvida'){
+    $('motivo').textContent = 'Leitura duvidosa / marcações próximas';
+  }else{
+    $('motivo').textContent = 'Conferência necessária';
+  }
+
+  $('leitura').textContent =
+    o.valor === '' ? 'BRANCO' :
+    o.valor === '?' ? 'DÚVIDA' : o.valor;
+
+  montarBotoes(o);
+  mostrarScores(o.scores || {});
+  posicionarMask(o.regiao);
+
+  if(resolvidos.has(atual)){
+    $('contador').innerHTML += ' <span class="done">✓ conferida</span>';
+  }
+}
+
+/* ---------- MÁSCARA / RECORTE ---------- */
+function posicionarMask(r){
+  if(!r || !$('sheet').naturalWidth){
+    $('mask').hidden = true;
+    return;
+  }
+
+  const img = $('sheet');
+  const mask = $('mask');
+
+  /*
+   * A imagem é exibida redimensionada pelo navegador.
+   * Usamos clientWidth/clientHeight para manter a máscara casada
+   * com o tamanho visual, como no laboratório.
+   */
+  const w = img.clientWidth;
+  const h = img.clientHeight;
+
+  mask.hidden = false;
+  mask.style.left = (r.x * w) + 'px';
+  mask.style.top = (r.y * h) + 'px';
+  mask.style.width = (r.w * w) + 'px';
+  mask.style.height = (r.h * h) + 'px';
+
+  /*
+   * Recorte ampliado da ocorrência.
+   */
+  const naturalW = img.naturalWidth;
+  const naturalH = img.naturalHeight;
+  const regionW = Math.max(1, r.w * naturalW);
+  const regionH = Math.max(1, r.h * naturalH);
+
+  const escala = Math.min(350 / regionW, 125 / regionH);
+
+  $('crop').style.width = (naturalW * escala) + 'px';
+  $('crop').style.height = (naturalH * escala) + 'px';
+  $('crop').style.left = (-(r.x * naturalW) * escala + 10) + 'px';
+  $('crop').style.top = (-(r.y * naturalH) * escala + 10) + 'px';
+
+  /*
+   * Leva a pendência para a região visível.
+   */
+  requestAnimationFrame(() => {
+    const viewer = $('viewer');
+    const stageRect = $('stage').getBoundingClientRect();
+    const viewerRect = viewer.getBoundingClientRect();
+    const maskRect = mask.getBoundingClientRect();
+
+    const dx = maskRect.left - viewerRect.left - viewer.clientWidth * .42;
+    const dy = maskRect.top - viewerRect.top - viewer.clientHeight * .40;
+
+    viewer.scrollBy({left:dx, top:dy, behavior:'smooth'});
+  });
+}
+
+/* ---------- BOTÕES ---------- */
+function montarBotoes(o){
+  let valores;
+
+  if(o.tipo === 'questao'){
+    valores = ['A','B','C','D','E'];
+  }else if(o.tipo === 'versao'){
+    valores = ['V1','V2','V3','V4'];
+  }else{
+    valores = ['0','1','2','3','4','5','6','7','8','9'];
+  }
+
+  $('choices').innerHTML =
+    valores.map(v =>
+      `<button type="button" onclick="corrigir('${v}')">${v}</button>`
+    ).join('') +
+    `<button type="button" class="blank" onclick="corrigir('')">Confirmar branco</button>`;
+}
+
+function mostrarScores(scores){
+  $('scores').textContent = Object.entries(scores)
+    .map(([k,v]) => `${k}: ${Number(v).toFixed(4)}`)
+    .join('\n');
+}
+
+/* ---------- REVISÃO ---------- */
+function corrigir(valor){
+  if(!fila.length) return;
+
+  const o = fila[atual];
+
+  o.corrigido = valor;
+  o.resolvido = true;
+  resolvidos.add(atual);
+
+  if(o.tipo === 'questao'){
+    resultado.respostas[o.questao] = valor;
+  }else if(o.tipo === 'versao'){
+    resultado.versao = valor;
+  }
+
+  const total = fila.length;
+
+  if(resolvidos.size < total){
+    let prox = atual;
+
+    for(let i=1;i<=total;i++){
+      const candidato = (atual + i) % total;
+      if(!resolvidos.has(candidato)){
+        prox = candidato;
+        break;
+      }
+    }
+
+    atual = prox;
+  }
+
+  render();
+}
+
+function aceitarAtual(){
+  if(!fila.length) return;
+
+  const o = fila[atual];
+
+  /*
+   * Enter só aceita quando existe uma sugestão concreta.
+   * Para branco/dúvida, o operador precisa escolher.
+   */
+  if(o.valor === '' || o.valor === '?') return;
+
+  corrigir(o.valor);
+}
+
+function proxima(){
+  if(!fila.length) return;
+  atual = (atual + 1) % fila.length;
+  render();
+}
+
+function anterior(){
+  if(!fila.length) return;
+  atual = (atual - 1 + fila.length) % fila.length;
+  render();
+}
+
+$('proximo').addEventListener('click', proxima);
+$('anterior').addEventListener('click', anterior);
+
+/* ---------- ZOOM ---------- */
+function aplicarZoom(){
+  $('stage').style.transform = `scale(${zoomAtual})`;
+  $('zoomTxt').textContent = Math.round(zoomAtual * 100) + '%';
+
+  /*
+   * Compensa o espaço ocupado pelo transform.
+   */
+  $('stage').style.marginBottom =
+    (($('stage').offsetHeight * zoomAtual) - $('stage').offsetHeight) + 'px';
+
+  render();
+}
+
+function ajustarImagem(){
+  zoomAtual = 1;
+  $('stage').style.transform = 'scale(1)';
+  $('stage').style.marginBottom = '0';
+  $('zoomTxt').textContent = '100%';
+}
+
+$('mais').addEventListener('click', () => {
+  zoomAtual = Math.min(2, zoomAtual + .1);
+  aplicarZoom();
+});
+
+$('menos').addEventListener('click', () => {
+  zoomAtual = Math.max(.5, zoomAtual - .1);
+  aplicarZoom();
+});
+
+$('ajustar').addEventListener('click', () => {
+  ajustarImagem();
+  render();
+});
+
+/* ---------- TECLADO ---------- */
+document.addEventListener('keydown', e => {
+  if(!resultado || !fila.length) return;
+
+  if(e.key === 'F4'){
+    e.preventDefault();
+    e.shiftKey ? anterior() : proxima();
+    return;
+  }
+
+  if(e.key === 'ArrowRight'){
+    e.preventDefault();
+    proxima();
+    return;
+  }
+
+  if(e.key === 'ArrowLeft'){
+    e.preventDefault();
+    anterior();
+    return;
+  }
+
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    aceitarAtual();
+    return;
+  }
+
+  const o = fila[atual];
+  const k = e.key.toUpperCase();
+
+  if(o?.tipo === 'questao' && ['A','B','C','D','E'].includes(k)){
+    e.preventDefault();
+    corrigir(k);
+    return;
+  }
+
+  if(e.key === '0'){
+    e.preventDefault();
+    corrigir('');
+  }
+});
+
+/* ---------- UTIL ---------- */
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+  }[c]));
+}
+
+carregarProjetos();
+</script>
+</body>
+</html>
