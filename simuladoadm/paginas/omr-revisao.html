@@ -137,14 +137,14 @@ kbd{
   </section>
 
   <aside class="side">
-    <div id="placeholder" class="placeholder">
+    <div id="placeholder" class="placeholder" style="display:grid">
       <div>
         <h3>Estação de verificação</h3>
         <p>Selecione o projeto e uma folha preenchida.<br>As pendências aparecerão aqui.</p>
       </div>
     </div>
 
-    <div id="panel" hidden>
+    <div id="panel" style="display:none">
       <div class="summary">
         <div class="kpi"><small>INSCRIÇÃO</small><strong id="inscricao">—</strong></div>
         <div class="kpi"><small>VERSÃO</small><strong id="versao">—</strong></div>
@@ -277,8 +277,8 @@ $('btnProcessar').addEventListener('click', async () => {
     $('crop').src = objectURL;
 
     $('sheet').onload = () => {
-      $('placeholder').hidden = true;
-      $('panel').hidden = false;
+      $('placeholder').style.display = 'none';
+      $('panel').style.display = 'block';
       ajustarImagem();
       render();
     };
@@ -296,6 +296,9 @@ $('btnProcessar').addEventListener('click', async () => {
 /* ---------- RENDER ---------- */
 function render(){
   if(!resultado) return;
+
+  $('placeholder').style.display = 'none';
+  $('panel').style.display = 'block';
 
   $('inscricao').textContent = resultado.inscricao || '—';
   $('versao').textContent = resultado.versao || '—';
