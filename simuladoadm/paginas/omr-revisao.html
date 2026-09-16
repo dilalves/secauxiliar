@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verificação OMR</title>
+<style>
+:root{--b:#0b3b78;--bg:#f4f7fb;--ln:#dbe5f1;--ink:#17324d;--bad:#dc2626;--ok:#15803d}
+*{box-sizing:border-box}body{margin:0;font:14px Arial;background:var(--bg);color:var(--ink)}
+.top{height:58px;background:var(--b);color:#fff;padding:17px 22px;font-size:20px;font-weight:bold}
+.toolbar{background:#fff;border-bottom:1px solid var(--ln);padding:12px 20px;display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+label{font-size:12px;font-weight:bold;display:block;margin-bottom:4px}input,select{padding:9px;border:1px solid #cbd8e7;border-radius:6px}
+button{border:0;border-radius:7px;padding:10px 14px;font-weight:bold;cursor:pointer;background:#e8f0fa;color:#123c6c}button.primary{background:var(--b);color:#fff}
+.main{display:grid;grid-template-columns:minmax(600px,1fr) 360px;height:calc(100vh - 166px);gap:10px;padding:10px}
+.viewer,.side{background:#fff;border:1px solid var(--ln);border-radius:10px;overflow:hidden}.scroll{height:100%;overflow:auto;padding:18px}
+#stage{position:relative;display:inline-block;transform-origin:top left}#img{display:block;max-width:none;user-select:none;-webkit-user-drag:none}
+.mask{position:absolute;border:3px solid var(--bad);background:rgba(220,38,38,.12);pointer-events:none;box-shadow:0 0 0 2px #fff}
+.side{padding:16px;overflow:auto}.progress{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:8px 0}.progress>div{height:100%;background:var(--b);width:0}
+.big{font-size:20px;font-weight:bold}.bad{color:#b91c1c}.good{color:var(--ok)}
+.crop{height:155px;border:1px solid var(--ln);background:#fafafa;margin:12px 0;overflow:hidden;position:relative}#cropImg{position:absolute;max-width:none}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}.choices button{font-size:16px}
+.scores{font-family:Consolas,monospace;background:#0f172a;color:#e2e8f0;padding:10px;border-radius:7px;white-space:pre-wrap}
+.nav{display:flex;gap:8px;margin-top:12px}.nav button{flex:1}.help{height:54px;background:#fff;border-top:1px solid var(--ln);padding:10px 18px}
+kbd{background:#eef2f7;border:1px solid #cbd5e1;border-bottom-width:2px;padding:2px 6px;border-radius:4px}.empty{padding:25px;text-align:center;color:#64748b}
+hr{border:0;border-top:1px solid var(--ln);margin:15px 0}@media(max-width:950px){.main{grid-template-columns:1fr;height:auto}.viewer{height:70vh}}
+</style></head><body>
+<div class="top">Simulados Abertos — Estação de Verificação OMR</div>
+<div class="toolbar">
+<div><label>Projeto</label><select id="projeto"><option>Carregando...</option></select></div>
+<div><label>Folha preenchida</label><input id="arquivo" type="file" accept=".jpg,.jpeg,.png"></div>
+<button class="primary" id="processar">Processar OMR</button>
+<div style="margin-left:auto"><label>Zoom</label><button onclick="zoom(-.1)">−</button> <span id="zoomTxt">100%</span> <button onclick="zoom(.1)">+</button></div>
+</div>
+<div class="main">
+<div class="viewer"><div class="scroll" id="scroll"><div id="stage"><img id="img" draggable="false"><div id="mask" class="mask" hidden></div></div></div></div>
+<aside class="side"><div id="inicio" class="empty">Processe uma folha para iniciar a conferência.</div>
+<div id="painel" hidden><small>Documento</small><div class="big" id="docInfo">—</div><div class="progress"><div id="bar"></div></div>
+<div><b id="pct">0%</b> da conferência concluída</div><hr><small>Ocorrência</small><div class="big" id="contador">—</div>
+<h2 id="titulo">—</h2><div id="motivo" class="bad"></div><div class="crop"><img id="cropImg"></div>
+<div><b>Leitura atual:</b> <span id="leitura">—</span></div><div class="choices" id="choices"></div><div class="scores" id="scores"></div>
+<div class="nav"><button onclick="anterior()">← Anterior</button><button onclick="proximo()">Próximo →</button></div></div></aside></div>
+<div class="help"><kbd>F4</kbd> próximo &nbsp; <kbd>Shift+F4</kbd> anterior &nbsp; <kbd>←</kbd>/<kbd>→</kbd> navegar &nbsp; <kbd>A</kbd>–<kbd>E</kbd> corrigir &nbsp; <kbd>0</kbd> branco &nbsp; <kbd>Enter</kbd> aceitar leitura</div>
+<script>
+const API='https://apisec.secauxiliar.com.br/sim_adm/omr_projetos.php';
+const PROCESSAR='https://apisec.secauxiliar.com.br/sim_adm/omr_processar.php';
+let resultado=null,fila=[],atual=0,resolvidos=new Set(),z=1,objectUrl='';
+async function carregarProjetos(){try{const j=await(await fetch(API+'?acao=listar')).json();projeto.innerHTML=(j.projetos||[]).map(p=>`<option value="${p.id}">${esc(p.nome)} — ${esc(p.evento||'')} (${p.qtd_campos} campos)</option>`).join('')}catch(e){projeto.innerHTML='<option value="">Erro ao carregar projetos</option>'}}
+processar.onclick=async()=>{const f=arquivo.files[0];if(!f)return alert('Escolha uma folha preenchida.');if(!projeto.value)return alert('Escolha o projeto.');
+processar.disabled=true;processar.textContent='Processando...';try{const fd=new FormData();fd.append('projeto_id',projeto.value);fd.append('arquivo',f);
+const j=await(await fetch(PROCESSAR,{method:'POST',body:fd})).json();if(!j.ok)throw new Error(j.erro||'Erro no OMR');resultado=j;fila=j.revisao||[];atual=0;resolvidos=new Set();
+if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(f);img.src=objectUrl;cropImg.src=objectUrl;img.onload=()=>{inicio.hidden=true;painel.hidden=false;render()}}
+catch(e){alert(e.message)}finally{processar.disabled=false;processar.textContent='Processar OMR'}};
+function render(){docInfo.textContent=`Inscrição ${resultado.inscricao||'?'} · ${resultado.versao||'sem versão'} · ${Object.keys(resultado.respostas||{}).length} questões`;
+const total=fila.length,done=resolvidos.size,p=total?Math.round(done/total*100):100;bar.style.width=p+'%';pct.textContent=p+'%';
+if(!total){contador.textContent='0 de 0';titulo.textContent='Nenhuma ocorrência';motivo.textContent='OMR sem pendências para revisão.';motivo.className='good';mask.hidden=true;choices.innerHTML='';scores.textContent='';return}
+const o=fila[atual];contador.textContent=`${atual+1} de ${total}`;titulo.textContent=o.tipo==='questao'?`Questão ${o.questao}`:o.tipo==='versao'?'Versão':`Inscrição — posição ${o.item}`;
+motivo.className='bad';motivo.textContent=o.status==='vazio'?'Sem marcação detectada':'Leitura duvidosa / mais de uma marcação possível';leitura.textContent=o.valor===''?'BRANCO':o.valor;desenharMask(o.regiao);montarBotoes(o);mostrarScores(o.scores||{})}
+function desenharMask(r){if(!r){mask.hidden=true;return}mask.hidden=false;mask.style.left=(r.x*img.naturalWidth)+'px';mask.style.top=(r.y*img.naturalHeight)+'px';mask.style.width=(r.w*img.naturalWidth)+'px';mask.style.height=(r.h*img.naturalHeight)+'px';
+const left=r.x*img.naturalWidth*z,top=r.y*img.naturalHeight*z;scroll.scrollTo({left:Math.max(0,left-scroll.clientWidth*.35),top:Math.max(0,top-scroll.clientHeight*.35),behavior:'smooth'});
+const cw=r.w*img.naturalWidth,ch=r.h*img.naturalHeight,scale=Math.min(330/Math.max(cw,1),135/Math.max(ch,1));cropImg.style.width=(img.naturalWidth*scale)+'px';cropImg.style.left=(-r.x*img.naturalWidth*scale+10)+'px';cropImg.style.top=(-r.y*img.naturalHeight*scale+10)+'px'}
+function montarBotoes(o){let vs=o.tipo==='versao'?['V1','V2','V3','V4']:o.tipo==='questao'?['A','B','C','D','E']:['0','1','2','3','4','5','6','7','8','9'];choices.innerHTML=vs.map(v=>`<button onclick="corrigir('${v}')">${v}</button>`).join('')+`<button onclick="corrigir('')">Branco</button>`}
+function mostrarScores(sc){scores.textContent=Object.entries(sc).map(([k,v])=>`${k}: ${Number(v).toFixed(4)}`).join('\n')}
+function corrigir(v){if(!fila.length)return;const o=fila[atual];o.corrigido=v;o.resolvido=true;resolvidos.add(atual);if(o.tipo==='questao')resultado.respostas[o.questao]=v;else if(o.tipo==='versao')resultado.versao=v;render();if(atual<fila.length-1){atual++;render()}}
+function aceitar(){if(!fila.length)return;const o=fila[atual];if(o.valor==='?'||o.valor==='')return;corrigir(o.valor)}
+function proximo(){if(fila.length){atual=Math.min(fila.length-1,atual+1);render()}}function anterior(){if(fila.length){atual=Math.max(0,atual-1);render()}}
+function zoom(d){z=Math.max(.4,Math.min(2,z+d));stage.style.transform=`scale(${z})`;zoomTxt.textContent=Math.round(z*100)+'%';render()}
+document.addEventListener('keydown',e=>{if(e.key==='F4'){e.preventDefault();e.shiftKey?anterior():proximo();return}if(e.key==='ArrowRight'){e.preventDefault();proximo();return}if(e.key==='ArrowLeft'){e.preventDefault();anterior();return}if(e.key==='Enter'){e.preventDefault();aceitar();return}const k=e.key.toUpperCase();if(['A','B','C','D','E'].includes(k)&&fila[atual]?.tipo==='questao'){e.preventDefault();corrigir(k)}if(e.key==='0'&&fila.length){e.preventDefault();corrigir('')}})
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}carregarProjetos();
+</script></body></html>
