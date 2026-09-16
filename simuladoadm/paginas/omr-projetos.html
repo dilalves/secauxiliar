@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Projetos OMR</title>
+<style>
+:root{--azul:#0b3b78;--fundo:#f4f7fb;--linha:#dbe5f1;--txt:#17324d}
+*{box-sizing:border-box}body{margin:0;font:14px Arial;background:var(--fundo);color:var(--txt)}
+.top{background:var(--azul);color:white;padding:18px 24px;font-size:20px;font-weight:bold}
+.wrap{padding:20px;display:grid;grid-template-columns:300px 1fr;gap:18px}
+.card{background:white;border:1px solid var(--linha);border-radius:12px;padding:16px}
+button{border:0;border-radius:7px;padding:10px 13px;cursor:pointer;background:#e9f1fb;color:#123c6c;font-weight:bold}
+button.primary{background:var(--azul);color:white}button.danger{background:#fee2e2;color:#991b1b}
+input,select{width:100%;padding:9px;border:1px solid #ccd8e6;border-radius:6px;margin:4px 0 10px}
+#stage{position:relative;display:inline-block;max-width:100%;user-select:none}
+#base{display:block;max-width:100%;height:auto}
+.box{position:absolute;border:2px solid #e11d48;background:#e11d4820;cursor:pointer}
+.box span{position:absolute;top:-22px;left:-2px;background:#e11d48;color:white;padding:3px 6px;font-size:11px;white-space:nowrap}
+.item{padding:10px;border-bottom:1px solid #edf1f5;cursor:pointer}.item:hover{background:#f6f9fd}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.editor{display:grid;grid-template-columns:1fr 290px;gap:14px}
+small{color:#64748b}.muted{color:#64748b}
+@media(max-width:900px){.wrap,.editor{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">Simulados Abertos — Projetos OMR</div>
+<div class="wrap">
+ <div class="card">
+  <button class="primary" onclick="novo()">+ Novo projeto</button>
+  <h3>Projetos</h3><div id="lista"></div>
+ </div>
+ <div class="card">
+  <div class="toolbar">
+   <input id="nome" placeholder="Nome do projeto" style="max-width:280px">
+   <input id="evento" placeholder="Evento, ex.: FUVESTAO0926" style="max-width:190px">
+   <select id="tipo" style="max-width:160px"><option>D1</option><option>D2</option><option>R1</option><option>OUTRO</option></select>
+   <input id="file" type="file" accept=".jpg,.jpeg,.png" style="max-width:250px">
+   <button onclick="upload()">Carregar folha</button>
+   <button class="primary" onclick="salvar()">Salvar projeto</button>
+  </div>
+  <small>Carregue a folha padrão e arraste o mouse sobre a imagem para criar uma região.</small>
+  <div class="editor">
+   <div style="overflow:auto;margin-top:18px"><div id="stage"><img id="base"></div></div>
+   <div>
+    <h3>Campo selecionado</h3>
+    <div id="sem">Desenhe ou selecione uma região.</div>
+    <div id="form" style="display:none">
+      <label>Nome</label><input id="cnome">
+      <label>Código</label><input id="ccodigo">
+      <label>Tipo</label><select id="ctipo"><option value="grade">Grade</option><option value="alternativas">Alternativas</option><option value="versao">Versão</option><option value="numero">Número</option><option value="area">Área</option></select>
+      <label>Linhas</label><input id="linhas" type="number" min="1" value="1">
+      <label>Colunas</label><input id="colunas" type="number" min="1" value="1">
+      <label>Valores (ex.: 0,1,2,3... ou A,B,C,D,E)</label><input id="valores">
+      <label>BUBBLE_H</label><input id="bh" type="number" step=".01" value=".75">
+      <label>BUBBLE_W</label><input id="bw" type="number" step=".01" value=".80">
+      <label>MIN_FILL</label><input id="mf" type="number" step=".01" value=".12">
+      <label>MARGIN_DELTA</label><input id="md" type="number" step=".01" value=".06">
+      <button onclick="aplicarCampo()">Aplicar</button>
+      <button class="danger" onclick="removerCampo()">Excluir campo</button>
+    </div>
+    <h3>Campos</h3><div id="campos"></div>
+   </div>
+  </div>
+ </div>
+</div>
+<script>
+// TROQUE pela URL REAL da sua API:
+const API='https://SEU-DOMINIO-API/omr_projetos.php';
+const UP='https://SEU-DOMINIO-API/omr_upload_base.php';
+let projeto={id:0,nome:'',evento:'',tipo_folha:'D1',arquivo_base:'',largura_base:0,altura_base:0,campos:[]};
+let sel=-1,start=null;
+
+async function listar(){
+ try{let r=await fetch(API+'?acao=listar');let j=await r.json();
+ lista.innerHTML=(j.projetos||[]).map(p=>`<div class="item" onclick="abrir(${p.id})"><b>${esc(p.nome)}</b><br><small>${esc(p.evento||'')} · ${p.qtd_campos} campo(s)</small></div>`).join('');
+ }catch(e){lista.innerHTML='<span class="muted">Configure a URL da API.</span>'}
+}
+function novo(){projeto={id:0,nome:'',evento:'',tipo_folha:'D1',arquivo_base:'',largura_base:0,altura_base:0,campos:[]};sel=-1;nome.value='';evento.value='';tipo.value='D1';base.removeAttribute('src');render()}
+async function abrir(id){let j=await (await fetch(API+'?acao=obter&id='+id)).json();projeto=j.projeto;projeto.campos=projeto.campos||[];nome.value=projeto.nome;evento.value=projeto.evento||'';tipo.value=projeto.tipo_folha||'D1';base.src=projeto.arquivo_base||'';sel=-1;render()}
+async function upload(){
+ let f=file.files[0]; if(!f)return alert('Escolha uma imagem.');
+ let fd=new FormData();fd.append('arquivo',f);
+ let j=await (await fetch(UP,{method:'POST',body:fd})).json();if(!j.ok)return alert(j.erro);
+ projeto.arquivo_base=j.url;projeto.largura_base=j.largura;projeto.altura_base=j.altura;base.src=j.url;
+}
+stage.addEventListener('mousedown',e=>{if(e.target.classList.contains('box'))return;let r=base.getBoundingClientRect();if(!base.src)return;start={x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height}})
+stage.addEventListener('mouseup',e=>{if(!start)return;let r=base.getBoundingClientRect(),x2=(e.clientX-r.left)/r.width,y2=(e.clientY-r.top)/r.height;
+ let x=Math.min(start.x,x2),y=Math.min(start.y,y2),w=Math.abs(x2-start.x),h=Math.abs(y2-start.y);start=null;if(w<.005||h<.005)return;
+ projeto.campos.push({nome:'NOVO CAMPO',codigo:'CAMPO_'+(projeto.campos.length+1),tipo:'grade',x,y,w,h,linhas:1,colunas:1,valores:'',bubble_h:.75,bubble_w:.80,min_fill:.12,margin_delta:.06});sel=projeto.campos.length-1;render();loadForm()})
+function render(){
+ stage.querySelectorAll('.box').forEach(x=>x.remove());
+ projeto.campos.forEach((c,i)=>{let d=document.createElement('div');d.className='box';d.style.cssText=`left:${c.x*100}%;top:${c.y*100}%;width:${c.w*100}%;height:${c.h*100}%`;d.innerHTML=`<span>${esc(c.nome)}</span>`;d.onclick=()=>{sel=i;loadForm();render()};if(i===sel)d.style.borderWidth='4px';stage.appendChild(d)});
+ campos.innerHTML=projeto.campos.map((c,i)=>`<div class="item" onclick="sel=${i};loadForm();render()"><b>${esc(c.nome)}</b><br><small>${esc(c.codigo)} · ${c.linhas}×${c.colunas}</small></div>`).join('');
+}
+function loadForm(){let c=projeto.campos[sel];sem.style.display=c?'none':'block';form.style.display=c?'block':'none';if(!c)return;
+ cnome.value=c.nome;ccodigo.value=c.codigo;ctipo.value=c.tipo;linhas.value=c.linhas;colunas.value=c.colunas;valores.value=c.valores||'';bh.value=c.bubble_h;bw.value=c.bubble_w;mf.value=c.min_fill;md.value=c.margin_delta}
+function aplicarCampo(){let c=projeto.campos[sel];if(!c)return;c.nome=cnome.value;c.codigo=ccodigo.value.trim().toUpperCase().replace(/[^A-Z0-9_]/g,'_');c.tipo=ctipo.value;c.linhas=+linhas.value;c.colunas=+colunas.value;c.valores=valores.value;c.bubble_h=+bh.value;c.bubble_w=+bw.value;c.min_fill=+mf.value;c.margin_delta=+md.value;render()}
+function removerCampo(){if(sel<0)return;projeto.campos.splice(sel,1);sel=-1;loadForm();render()}
+async function salvar(){aplicarCampo();projeto.nome=nome.value.trim();projeto.evento=evento.value.trim();projeto.tipo_folha=tipo.value;if(!projeto.nome)return alert('Informe o nome do projeto.');
+ let j=await (await fetch(API+'?acao=salvar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(projeto)})).json();if(!j.ok)return alert(j.erro||'Erro');projeto.id=j.id;alert('Projeto salvo.');listar()}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+listar();
+</script>
+</body></html>
