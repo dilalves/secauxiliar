@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Objetivo — Evolução de Inscrições</title>
+  <style>
+    :root{
+      --azul:#0b3b78;--azul-2:#164f94;--azul-vivo:#2563eb;--fundo:#eef5fb;
+      --card:#fff;--linha:#d9e5f2;--texto:#10233f;--muted:#64748b;
+      --laranja:#f59e0b;--verde:#15803d;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;overflow:hidden}
+    body{margin:0;background:var(--fundo);color:var(--texto);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;display:flex;flex-direction:column}
+    .header{background:linear-gradient(135deg,var(--azul),var(--azul-2));color:#fff;box-shadow:0 5px 18px rgba(11,59,120,.2)}
+    .header-inner{max-width:1880px;min-height:64px;margin:auto;padding:7px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .marca{display:flex;align-items:center;gap:13px;min-width:0}
+    .logo{width:156px;height:38px;object-fit:contain;filter:brightness(0) invert(1)}
+    .marca-titulo{font-size:17px;font-weight:850;line-height:1.15}.marca-sub{font-size:11px;opacity:.82;margin-top:2px}
+    .header-right{display:flex;align-items:center;justify-content:flex-end;gap:9px;min-width:0}.usuario{font-size:11px;text-align:right;line-height:1.2;margin-left:3px}.usuario strong{display:block;font-size:12px}
+    .btn-header{height:32px;padding:0 12px;border-radius:8px;border:1px solid rgba(255,255,255,.44);background:rgba(255,255,255,.12);color:#fff;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+    .btn-header:hover{background:rgba(255,255,255,.2)}
+    .pagina{width:100%;max-width:1880px;margin:auto;padding:9px 18px 10px;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+    .controles{display:flex;align-items:flex-end;gap:8px}.campo{display:flex;flex-direction:column;gap:2px}.campo label{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.82);font-weight:850}
+    select{height:32px;min-width:155px;border:1px solid rgba(255,255,255,.48);border-radius:8px;background:#fff;color:var(--azul);padding:0 30px 0 10px;font-weight:850}
+    .btn{height:32px;border:1px solid rgba(255,255,255,.44);border-radius:8px;padding:0 12px;background:rgba(255,255,255,.14);color:#fff;font-weight:800;cursor:pointer}.btn:hover{background:rgba(255,255,255,.22)}.btn:disabled{opacity:.65;cursor:wait}
+    .status-atualizacao{display:flex;align-items:center;gap:7px;height:32px;padding:0 10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.36);border-radius:8px;color:#fff;font-size:11px;white-space:nowrap;align-self:flex-end}
+    .status-ponto{width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.14)}
+    .status-ponto.carregando{background:var(--laranja);box-shadow:0 0 0 4px rgba(245,158,11,.14)}
+    .kpis{display:grid;grid-template-columns:repeat(4,minmax(170px,1fr));gap:9px;margin-bottom:8px;flex:0 0 auto}
+    .kpi{background:#fff;border:1px solid var(--linha);border-radius:12px;padding:7px 12px;min-height:53px;box-shadow:0 5px 16px rgba(11,59,120,.055)}
+    .kpi-label{font-size:9px;text-transform:uppercase;letter-spacing:.045em;color:var(--muted);font-weight:850}.kpi-valor{font-size:21px;line-height:1.05;color:var(--azul);font-weight:900;margin-top:3px;font-variant-numeric:tabular-nums}
+    .card{background:var(--card);border:1px solid var(--linha);border-radius:13px;box-shadow:0 6px 20px rgba(11,59,120,.065)}
+    .grafico-card{padding:8px 11px 7px;margin-bottom:8px;flex:0 0 auto}.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:5px}.card-titulo{font-size:14px;color:var(--azul);font-weight:850}.card-sub{font-size:10px;color:var(--muted);margin-top:1px}
+    .legenda{display:flex;align-items:center;gap:15px;color:var(--muted);font-size:11px;font-weight:750}.legenda span{display:flex;align-items:center;gap:6px}.cor{width:11px;height:11px;border-radius:3px}.cor-site{background:var(--azul-vivo)}.cor-avulsa{background:var(--laranja)}
+    .grafico-scroll{overflow-x:auto;overflow-y:hidden;border:1px solid var(--linha);border-radius:10px;background:#fbfdff;padding:5px 10px 3px}
+    .grafico-barras{height:200px;min-width:100%;width:max-content;display:flex;align-items:flex-end;gap:9px;padding:0 7px;border-bottom:2px solid #cbd5e1;background:repeating-linear-gradient(to top,transparent 0,transparent 39px,#e8eef6 40px)}
+    .grafico-coluna{width:50px;height:192px;display:grid;grid-template-rows:19px 148px 25px;align-items:end;justify-items:center;flex:1 0 50px;max-width:82px}.grafico-total{font-size:10px;color:var(--azul);font-weight:900}.grafico-pista{height:148px;width:100%;display:flex;align-items:flex-end;justify-content:center}.grafico-barra{width:31px;max-height:148px;display:flex;flex-direction:column-reverse;justify-content:flex-start;border-radius:4px 4px 0 0;overflow:hidden;box-shadow:0 1px 4px rgba(11,59,120,.16)}
+    .segmento{width:100%;min-height:0}.site{background:var(--azul-vivo)}.avulsa{background:var(--laranja)}.grafico-data{font-size:9px;color:#475569;font-weight:800;align-self:start;padding-top:5px;white-space:nowrap}.vazio{text-align:center;color:var(--muted);padding:32px 20px}
+    .feed-card{overflow:hidden;flex:1 1 auto;min-height:0}.feed-head{padding:7px 13px;border-bottom:1px solid var(--linha);display:flex;align-items:center;justify-content:space-between;gap:12px}.ao-vivo{display:inline-flex;align-items:center;gap:6px;color:var(--verde);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}.ao-vivo:before{content:"";width:7px;height:7px;background:#22c55e;border-radius:50%;box-shadow:0 0 0 3px rgba(34,197,94,.13)}
+    .feed-cabecalho,.feed-linha{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.feed-cabecalho{background:#f2f7fd;color:#17345d;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}.feed-cabecalho>div{padding:6px 13px}.feed-cabecalho>div+div,.feed-linha>div+div{border-left:1px solid var(--linha)}
+    .feed-linha{border-top:1px solid #edf2f7;transition:background .35s ease}.feed-linha:hover{background:#f7faff}.feed-celula{min-width:0;padding:6px 13px;display:flex;align-items:center;gap:9px}.posicao{width:23px;height:23px;flex:0 0 23px;border-radius:7px;background:#e8f0fb;color:var(--azul);display:grid;place-items:center;font-size:10px;font-weight:900}.principal{min-width:0;font-size:11px;line-height:1.15;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase}.secundario{font-size:9px;line-height:1.15;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.origem{margin-left:auto;flex:0 0 auto;padding:2px 6px;border-radius:999px;font-size:8px;font-weight:900;background:#eef4ff;color:#17345d;border:1px solid #d8e6ff}.origem.avulso{background:#fff7ed;color:#92400e;border-color:#fed7aa}
+    .feed-linha.nova{animation:novaInscricao 2.8s ease}@keyframes novaInscricao{0%,35%{background:#dcfce7}100%{background:#fff}}
+    .erro{display:none;padding:9px 13px;margin-bottom:8px;border:1px solid #fecaca;border-radius:10px;background:#fff5f5;color:#991b1b;font-size:12px}.erro.show{display:block}
+    @media(max-width:1100px){.marca-sub,.usuario,.status-atualizacao{display:none}.header-inner{gap:9px}.header-right{gap:6px}.controles{gap:6px}select{min-width:135px}}
+    @media(max-width:760px){html,body{height:auto;min-height:100%;overflow:auto}.header-inner{padding:8px 11px;flex-wrap:wrap}.header-right{width:100%;justify-content:flex-start}.logo{width:126px}.marca-titulo{font-size:14px}.pagina{padding:9px;display:block}.kpis{grid-template-columns:1fr 1fr}.grafico-card{margin-bottom:8px}.feed-cabecalho{display:none}.feed-linha{grid-template-columns:1fr}.feed-linha>div+div{border-left:0;border-top:1px dashed var(--linha)}.campo{flex:1}.campo select{width:100%}}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="marca">
+        <img class="logo" src="logo_objetivo.png" alt="Objetivo — Sistema de Ensino">
+        <div><div class="marca-titulo">Simulados Abertos — Evolução ao Vivo</div><div class="marca-sub">Acompanhamento dinâmico das inscrições</div></div>
+      </div>
+      <div class="header-right">
+        <div class="controles">
+          <div class="status-atualizacao"><span class="status-ponto" id="statusPonto"></span><span id="statusTexto">Validando acesso...</span></div>
+          <div class="campo"><label for="evento">Evento</label><select id="evento"><option value="">Carregando...</option></select></div>
+          <button type="button" class="btn" id="btnAtualizar">Atualizar agora</button>
+        </div>
+        <div class="usuario"><strong id="usuarioNome">Usuário</strong><span id="usuarioNivel">Marketing</span></div>
+        <a class="btn-header" id="btnVoltar" href="marketing.html">Voltar</a>
+        <button type="button" class="btn-header" id="btnSair">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="pagina">
+    <div class="erro" id="erro"></div>
+
+    <section class="kpis">
+      <div class="kpi"><div class="kpi-label">Total de inscritos</div><div class="kpi-valor" id="kTotal">0</div></div>
+      <div class="kpi"><div class="kpi-label">Internet</div><div class="kpi-valor" id="kSite">0</div></div>
+      <div class="kpi"><div class="kpi-label">Avulsos</div><div class="kpi-valor" id="kAvulsa">0</div></div>
+      <div class="kpi"><div class="kpi-label">Melhor dia</div><div class="kpi-valor" id="kMelhor">-</div></div>
+    </section>
+
+    <section class="card grafico-card">
+      <div class="card-head">
+        <div><div class="card-titulo">Evolução diária</div><div class="card-sub">O número acima da barra representa o total do dia.</div></div>
+        <div class="legenda"><span><i class="cor cor-site"></i>Internet</span><span><i class="cor cor-avulsa"></i>Avulso</span></div>
+      </div>
+      <div class="grafico-scroll" id="graficoScroll"><div class="vazio" id="grafico">Carregando evolução...</div></div>
+    </section>
+
+    <section class="card feed-card">
+      <div class="feed-head"><div><div class="card-titulo">Últimas inscrições</div><div class="card-sub">As 15 inscrições mais recentes do evento, ordenadas pela data e hora.</div></div><span class="ao-vivo">Ao vivo</span></div>
+      <div class="feed-cabecalho"><div>Unidade da inscrição</div><div>Candidato inscrito</div></div>
+      <div id="feed"><div class="vazio">Carregando as últimas inscrições...</div></div>
+    </section>
+  </main>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
+    const $ = id => document.getElementById(id);
+    const esc = v => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+    const n = v => Number(v || 0).toLocaleString('pt-BR');
+    let timer = null, carregando = false, primeiraCarga = true, idsConhecidos = new Set();
+
+    function dataCurta(valor){
+      const p = String(valor || '').split('-');
+      return p.length === 3 ? `${p[2]}/${p[1]}` : String(valor || '-');
+    }
+
+    function dataHora(valor){
+      if (!valor) return '-';
+      const d = new Date(String(valor).replace(' ', 'T'));
+      return Number.isNaN(d.getTime()) ? String(valor) : d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    }
+
+    function chave(r){ return [r.origem,r.inscricao,r.data_inscricao].join('|'); }
+
+    function renderGrafico(rows){
+      const destino = $('grafico');
+      if (!rows.length){ destino.className='vazio'; destino.textContent='Nenhuma inscrição encontrada para este evento.'; return; }
+      const maximo = Math.max(...rows.map(r=>Number(r.total||0)),1), alturaMaxima=140;
+      destino.className='grafico-barras';
+      destino.innerHTML=rows.map(r=>{
+        const site=Number(r.site||0), avulsa=Number(r.avulsa||0), total=Number(r.total||0);
+        const hs=site>0?Math.max(2,Math.round(site/maximo*alturaMaxima)):0;
+        const ha=avulsa>0?Math.max(2,Math.round(avulsa/maximo*alturaMaxima)):0;
+        const titulo=`${dataCurta(r.data)}: ${n(total)} inscrito(s) — Internet ${n(site)} | Avulso ${n(avulsa)}`;
+        return `<div class="grafico-coluna" title="${esc(titulo)}"><div class="grafico-total">${n(total)}</div><div class="grafico-pista"><div class="grafico-barra"><div class="segmento site" style="height:${hs}px"></div><div class="segmento avulsa" style="height:${ha}px"></div></div></div><div class="grafico-data">${esc(dataCurta(r.data))}</div></div>`;
+      }).join('');
+      requestAnimationFrame(()=>$('graficoScroll').scrollLeft=$('graficoScroll').scrollWidth);
+    }
+
+    function renderFeed(rows){
+      if (!rows.length){ $('feed').innerHTML='<div class="vazio">Nenhuma inscrição recente encontrada.</div>'; idsConhecidos=new Set(); return; }
+      const novos = new Set(rows.filter(r=>!primeiraCarga&&!idsConhecidos.has(chave(r))).map(chave));
+      $('feed').innerHTML=rows.map((r,i)=>{
+        const unidade=String(r.unidade||r.codigo||'Unidade não identificada').trim();
+        const codigo=String(r.codigo||'').trim();
+        const origem=String(r.origem||'').toUpperCase();
+        return `<div class="feed-linha ${novos.has(chave(r))?'nova':''}"><div class="feed-celula"><span class="posicao">${i+1}</span><div style="min-width:0"><div class="principal">${esc(unidade)}</div><div class="secundario">${codigo?'Unidade '+esc(codigo):'Código não informado'}</div></div></div><div class="feed-celula"><div style="min-width:0"><div class="principal">${esc(r.nome||'Nome não informado')}</div><div class="secundario">${esc(dataHora(r.data_inscricao))}${r.inscricao?' • Inscrição '+esc(r.inscricao):''}</div></div><span class="origem ${origem==='AVULSA'?'avulso':''}">${esc(origem==='AVULSA'?'AVULSO':'INTERNET')}</span></div></div>`;
+      }).join('');
+      idsConhecidos=new Set(rows.map(chave)); primeiraCarga=false;
+    }
+
+    async function carregar(silencioso=false){
+      const evento=String($('evento').value||'').trim();
+      if (!evento||carregando) return;
+      carregando=true; $('btnAtualizar').disabled=true; $('statusPonto').classList.add('carregando');
+      if(!silencioso) $('statusTexto').textContent='Atualizando...';
+      try{
+        const r=await fetch(API+'api_marketing_evolucao.php?'+new URLSearchParams({evento}),{credentials:'include',cache:'no-store'});
+        const data=await r.json();
+        if(r.status===401||r.status===403){location.replace('../index.html');return;}
+        if(!r.ok||!data.ok) throw new Error(data.error||data.msg||'Falha ao carregar a evolução.');
+        const z=data.resumo||{}, melhor=z.melhor_dia||null;
+        $('kTotal').textContent=n(z.total); $('kSite').textContent=n(z.site); $('kAvulsa').textContent=n(z.avulsa);
+        $('kMelhor').textContent=melhor?`${dataCurta(melhor.data)} • ${n(melhor.total)}`:'-';
+        document.title=`Objetivo — Evolução ${evento}`;
+        renderGrafico(data.rows||[]); renderFeed(data.recentes||[]);
+        $('erro').classList.remove('show');
+        $('statusTexto').textContent='Atualizado às '+new Date().toLocaleTimeString('pt-BR');
+        history.replaceState(null,'','?evento='+encodeURIComponent(evento));
+        $('btnVoltar').href='marketing.html?evento='+encodeURIComponent(evento);
+      }catch(e){
+        $('erro').textContent=e.message||'Erro ao atualizar os dados.'; $('erro').classList.add('show'); $('statusTexto').textContent='Falha na atualização';
+      }finally{carregando=false;$('btnAtualizar').disabled=false;$('statusPonto').classList.remove('carregando');}
+    }
+
+    async function validarSessao(){
+      const r=await fetch(API+'auth_me.php',{credentials:'include',cache:'no-store'}),data=await r.json();
+      if(!r.ok||!data.ok){location.replace('../index.html');return false;}
+      const user=data.user||{},nivel=String(user.nivel||'').trim().toLowerCase();
+      if(!['marketing','admin'].includes(nivel)){location.replace('../index.html');return false;}
+      $('usuarioNome').textContent=user.nome||user.login||'Usuário'; $('usuarioNivel').textContent=nivel==='admin'?'Administrador':'Marketing'; return true;
+    }
+
+    async function carregarEventos(){
+      const r=await fetch(API+'api_marketing_eventos.php',{credentials:'include',cache:'no-store'}),data=await r.json();
+      if(r.status===401||r.status===403){location.replace('../index.html');return false;}
+      if(!r.ok||!data.ok) throw new Error(data.error||data.msg||'Falha ao carregar eventos.');
+      $('evento').innerHTML='';
+      (data.eventos||[]).forEach(ev=>{const o=document.createElement('option');o.value=ev;o.textContent=ev;$('evento').appendChild(o);});
+      const solicitado=new URLSearchParams(location.search).get('evento')||'';
+      if(solicitado&&Array.from($('evento').options).some(o=>o.value===solicitado)) $('evento').value=solicitado;
+      return !!$('evento').options.length;
+    }
+
+    async function sair(){
+      $('btnSair').disabled=true;try{await fetch(API+'auth_logout.php',{method:'POST',credentials:'include',cache:'no-store'});}catch(_){}
+      localStorage.removeItem('PRESENCA_token');location.replace('../index.html');
+    }
+
+    $('btnAtualizar').addEventListener('click',()=>carregar(false));
+    $('btnSair').addEventListener('click',sair);
+    $('evento').addEventListener('change',()=>{primeiraCarga=true;idsConhecidos.clear();carregar(false);});
+    document.addEventListener('visibilitychange',()=>{clearInterval(timer);if(!document.hidden){carregar(true);timer=setInterval(()=>carregar(true),15000);}});
+
+    (async function init(){
+      try{
+        if(!await validarSessao())return;
+        if(!await carregarEventos())throw new Error('Nenhum evento encontrado.');
+        await carregar(false);timer=setInterval(()=>carregar(true),15000);
+      }catch(e){$('erro').textContent=e.message||'Falha ao iniciar o painel.';$('erro').classList.add('show');$('statusTexto').textContent='Erro ao carregar';}
+    })();
+  </script>
+</body>
+</html>

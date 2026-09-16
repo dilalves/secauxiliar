@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+<style>
+  body{
+    margin:0;
+    min-height:80vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    color:#0f172a;
+    background:transparent;
+    font-family:Arial, sans-serif;
+  }
+
+  .card{
+    background:#fff;
+    border:1px solid #e6e9f0;
+    border-radius:12px;
+    padding:24px;
+    box-shadow:0 5px 20px rgba(0,0,0,.04);
+    text-align:center;
+    width:min(100%, 700px);
+  }
+
+  h2{
+    margin-top:0;
+  }
+
+  .email-alerta{
+    display:none;
+    margin-top:22px;
+    padding:14px 16px;
+    border-radius:12px;
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+    font-weight:700;
+  }
+
+  .email-alerta.ok{
+    display:block;
+  }
+
+  .email-alerta a{
+    color:#9a3412;
+    text-decoration:none;
+  }
+
+  .email-alerta a:hover{
+    text-decoration:underline;
+  }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:24px;
+    height:24px;
+    padding:0 8px;
+    border-radius:999px;
+    background:#dc2626;
+    color:#fff;
+    font-size:13px;
+    margin-left:6px;
+  }
+</style>
+</head>
+
+<body>
+
+  <div class="card">
+    <h2>Tela inicial</h2>
+    <p>Bem-vindo ao painel administrativo dos Simulados Abertos.</p>
+    <p>Selecione uma opção no menu para continuar.</p>
+
+    <div id="emailAlerta" class="email-alerta">
+      <a href="#" onclick="abrirEmail(); return false;">
+        Existem solicitações de troca de e-mail pendentes
+        <span id="emailQtd" class="pill">0</span>
+      </a>
+    </div>
+  </div>
+
+<script>
+const API_BASE = 'https://apisec.secauxiliar.com.br/sim_adm';
+
+async function atualizarPendenciasEmail(){
+  try{
+    const resp = await fetch(`${API_BASE}/api_email_pendencias_count.php`, {
+      credentials:'include',
+      cache:'no-store'
+    });
+
+    const json = await resp.json();
+
+    const alerta = document.getElementById('emailAlerta');
+    const qtd = document.getElementById('emailQtd');
+
+    const total = Number(json.pendentes || 0);
+
+    if(json.ok && total > 0){
+      qtd.textContent = total;
+      alerta.classList.add('ok');
+    }else{
+      alerta.classList.remove('ok');
+    }
+
+  }catch(e){
+    console.error('Erro ao verificar pendências de e-mail:', e);
+  }
+}
+
+function abrirEmail(){
+  if(window.parent && window.parent !== window){
+    const btnEmail = window.parent.document.querySelector(
+      'button[data-page="paginas/trocar_email.html"]'
+    );
+
+    if(btnEmail && typeof window.parent.abrir === 'function'){
+      window.parent.abrir('paginas/trocar_email.html', btnEmail);
+      return;
+    }
+  }
+
+  window.location.href = 'trocar_email.html';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  atualizarPendenciasEmail();
+  setInterval(atualizarPendenciasEmail, 30000);
+});
+</script>
+
+</body>
+</html>

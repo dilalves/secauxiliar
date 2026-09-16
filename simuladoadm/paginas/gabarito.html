@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastramento de Gabaritos - Canônico</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <style>
+    body { background: #f6f8fb; }
+
+    header.page {
+      background: #0b3b78;
+      color: white;
+      padding: 16px 24px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .fixed-header {
+      position: sticky;
+      top: 0;
+      z-index: 99;
+    }
+
+    .card-form {
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    .input-field input[type="file"] {
+      margin-top: 10px;
+    }
+
+    .table-wrap {
+      max-height: 65vh;
+      overflow: auto;
+      margin-top: 24px;
+    }
+
+    table td,
+    table th {
+      padding: 8px;
+    }
+
+    .status-cell a {
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .acoes-topo {
+      display: flex;
+      gap: 10px;
+      align-items: end;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .btn-small-custom {
+      height: 44px;
+      line-height: 44px;
+      padding: 0 16px;
+    }
+
+    .status-ok {
+      color: #2e7d32;
+      font-weight: 600;
+    }
+
+    .status-warn {
+      color: #777;
+    }
+
+    .status-erro {
+      color: #c62828;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="page fixed-header">
+  Administrativo → Cadastramento / Edição da Versão Canônica
+</header>
+
+<div class="container">
+  <div class="card white card-form">
+    <form id="formCadastro" enctype="multipart/form-data">
+      <div class="row">
+        <div class="input-field col s12 m3">
+          <input id="evento" name="evento" type="text" required>
+          <label for="evento">Evento (ex: ENEM0526)</label>
+        </div>
+
+        <div class="input-field col s12 m3">
+          <input id="codigo" name="codigo" type="text" required>
+          <label for="codigo">Código da Versão Canônica (ex: 26527)</label>
+        </div>
+
+        <div class="input-field col s12 m2">
+          <input id="quantidadeQuestoes" name="quantidade_questoes" type="number" min="1" max="200" value="90" required>
+          <label for="quantidadeQuestoes" class="active">Qtd. de testes</label>
+        </div>
+
+        <div class="input-field col s12 m2">
+          <select id="inicioNumeracao" name="inicio_numeracao">
+            <option value="1" selected>Iniciar em 1</option>
+            <option value="91">Iniciar em 91</option>
+          </select>
+          <label for="inicioNumeracao">Início da numeração</label>
+        </div>
+
+        <div class="col s12 m2">
+          <div class="acoes-topo">
+            <button id="btnMontarTabela" class="btn blue darken-3 waves-effect waves-light btn-small-custom" type="button">
+              Montar / carregar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="highlight striped">
+          <thead>
+            <tr>
+              <th>Questão</th>
+              <th>Disciplina</th>
+              <th>Gabarito</th>
+              <th>Imagem (resolução)</th>
+              <th>Status / Link</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaQuestoes">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="center-align" style="margin-top: 24px;">
+        <button class="btn blue darken-3 waves-effect waves-light" type="submit">
+          Salvar Gabarito
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const API_BASE = "https://apisec.secauxiliar.com.br/sim_adm";
+
+  const tabela = document.getElementById('tabelaQuestoes');
+  const inputQtd = document.getElementById('quantidadeQuestoes');
+  const inputInicio = document.getElementById('inicioNumeracao');
+  const btnMontarTabela = document.getElementById('btnMontarTabela');
+
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function criarLinhaQuestao(numeroQuestao, dados = null) {
+    const row = document.createElement('tr');
+
+    const disciplina = dados?.disciplina || dados?.DISCIPLINA || '';
+    const gabarito = dados?.gabarito || dados?.GABARITO || '';
+    const imagem = dados?.imagem || dados?.IMAGEM || '';
+    const nomeImagem = dados?.nome_arquivo || dados?.NOME_ARQUIVO || imagem.split('/').pop() || 'ver imagem';
+
+    row.innerHTML = `
+      <td>
+        ${escapeHtml(numeroQuestao)}
+        <input type="hidden" name="questao[]" value="${escapeHtml(numeroQuestao)}">
+      </td>
+
+      <td>
+        <input type="text" name="disciplina[]" value="${escapeHtml(disciplina)}">
+      </td>
+
+      <td>
+        <input type="text" name="gabarito[]" maxlength="1" value="${escapeHtml(gabarito)}">
+      </td>
+
+      <td>
+        <input type="file" name="imagem[]" accept="image/*,.tif,.tiff,.pdf" data-q="${escapeHtml(numeroQuestao)}">
+        <input type="hidden" name="imagem_link[]" value="${escapeHtml(imagem)}">
+      </td>
+
+      <td class="status-cell ${imagem ? 'status-ok' : 'status-warn'}">
+        ${
+          imagem
+            ? `<a href="${escapeHtml(imagem)}" target="_blank" rel="noopener noreferrer">🔗 ${escapeHtml(nomeImagem)}</a>`
+            : 'sem imagem'
+        }
+      </td>
+    `;
+
+    return row;
+  }
+
+  function montarTabela(quantidade, inicio = 1) {
+    tabela.innerHTML = '';
+
+    for (let i = 0; i < quantidade; i++) {
+      const numeroQuestao = inicio + i;
+      tabela.appendChild(criarLinhaQuestao(numeroQuestao));
+    }
+  }
+
+  function montarTabelaPreenchida(questoes) {
+    tabela.innerHTML = '';
+
+    questoes.forEach(q => {
+      const numeroQuestao = q.QUESTAO || q.questao;
+      tabela.appendChild(criarLinhaQuestao(numeroQuestao, q));
+    });
+  }
+
+  function getQuantidadeValida() {
+    const qtd = parseInt(inputQtd.value, 10);
+
+    if (isNaN(qtd) || qtd <= 0) {
+      M.toast({ html: 'Informe uma quantidade válida de testes.', classes: 'red' });
+      inputQtd.focus();
+      return null;
+    }
+
+    if (qtd > 200) {
+      M.toast({ html: 'Quantidade muito alta. Limite máximo: 200.', classes: 'red' });
+      inputQtd.focus();
+      return null;
+    }
+
+    return qtd;
+  }
+
+  function getInicioValido() {
+    const inicio = parseInt(inputInicio.value, 10);
+
+    if (isNaN(inicio) || inicio <= 0) {
+      M.toast({ html: 'Informe um início de numeração válido.', classes: 'red' });
+      return null;
+    }
+
+    return inicio;
+  }
+
+  function remontarTabela() {
+    const qtd = getQuantidadeValida();
+    const inicio = getInicioValido();
+
+    if (!qtd || !inicio) return;
+
+    montarTabela(qtd, inicio);
+  }
+
+  async function carregarOuMontarTabela() {
+    const evento = document.getElementById('evento').value.trim();
+    const codigo = document.getElementById('codigo').value.trim();
+
+    if (!evento || !codigo) {
+      M.toast({ html: 'Informe evento e código canônico.', classes: 'red' });
+      return;
+    }
+
+    btnMontarTabela.disabled = true;
+    const textoOriginal = btnMontarTabela.textContent;
+    btnMontarTabela.textContent = 'Carregando...';
+
+    try {
+      const url = `${API_BASE}/buscar_gabarito_canonico.php?evento=${encodeURIComponent(evento)}&codigo=${encodeURIComponent(codigo)}`;
+
+      const resp = await fetch(url, {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      const raw = await resp.text();
+      console.log('BUSCAR GABARITO RAW:', raw);
+
+      let json;
+
+      try {
+        json = JSON.parse(raw);
+      } catch (e) {
+        throw new Error('Resposta inválida do servidor: ' + raw);
+      }
+
+      if (!resp.ok || !json.ok) {
+        throw new Error(json.msg || json.message || json.error || `HTTP ${resp.status}`);
+      }
+
+      if (json.exists && Array.isArray(json.questoes) && json.questoes.length) {
+        montarTabelaPreenchida(json.questoes);
+
+        inputQtd.value = json.questoes.length;
+
+        const primeira = Number(json.questoes[0].QUESTAO || json.questoes[0].questao || 1);
+        inputInicio.value = String(primeira);
+
+        M.updateTextFields();
+        M.FormSelect.init(document.querySelectorAll('select'));
+
+        M.toast({ html: 'Gabarito carregado para edição.', classes: 'blue' });
+      } else {
+        remontarTabela();
+        M.toast({ html: 'Nenhum gabarito encontrado. Tabela nova montada.', classes: 'grey darken-1' });
+      }
+
+    } catch (err) {
+      console.error(err);
+      M.toast({ html: 'Erro ao carregar gabarito: ' + err.message, classes: 'red' });
+    } finally {
+      btnMontarTabela.disabled = false;
+      btnMontarTabela.textContent = textoOriginal;
+    }
+  }
+
+  btnMontarTabela.addEventListener('click', carregarOuMontarTabela);
+
+  inputQtd.addEventListener('change', () => {
+    remontarTabela();
+  });
+
+  inputInicio.addEventListener('change', () => {
+    remontarTabela();
+  });
+
+  montarTabela(parseInt(inputQtd.value, 10) || 90, parseInt(inputInicio.value, 10) || 1);
+
+  tabela.addEventListener('change', async (ev) => {
+    const input = ev.target;
+
+    if (input.type !== 'file') return;
+
+    const file = input.files && input.files[0];
+
+    if (!file) return;
+
+    const tr = input.closest('tr');
+    const status = tr.querySelector('.status-cell');
+    const questao = tr.querySelector('input[name="questao[]"]').value.trim();
+    const evento = document.getElementById('evento').value.trim();
+    const codigo = document.getElementById('codigo').value.trim();
+    const hiddenLink = tr.querySelector('input[name="imagem_link[]"]');
+
+    if (!evento || !codigo || !questao) {
+      status.textContent = 'preencha evento/código/questão';
+      status.className = 'status-cell status-erro';
+      input.value = '';
+      return;
+    }
+
+    status.textContent = 'enviando...';
+    status.className = 'status-cell grey-text text-darken-1';
+
+    const fd = new FormData();
+    fd.append('evento', evento);
+    fd.append('codigo', codigo);
+    fd.append('questao', questao);
+    fd.append('imagem', file, file.name);
+
+    try {
+      const resp = await fetch(`${API_BASE}/upload_imagem_gabarito.php?debug=1`, {
+        method: 'POST',
+        body: fd,
+        credentials: 'include'
+      });
+
+      const raw = await resp.text();
+      console.log('UPLOAD RAW:', raw);
+
+      let json;
+
+      try {
+        json = JSON.parse(raw);
+      } catch (e) {
+        throw new Error('Resposta inválida do servidor: ' + raw);
+      }
+
+      if (!resp.ok || !json.ok) {
+        throw new Error(json.message || json.error || `HTTP ${resp.status}`);
+      }
+
+      const key =
+        json?.data?.key ||
+        json?.data?.id ||
+        json?.key ||
+        json?.id ||
+        '';
+
+      const link = key
+        ? `${API_BASE}/ver_imagem_gabarito.php?key=${encodeURIComponent(key)}&evento=${encodeURIComponent(evento)}`
+        : '';
+
+      hiddenLink.value = link;
+
+      if (link && link.trim() !== '') {
+        status.innerHTML = `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">🔗 ${escapeHtml(file.name)}</a>`;
+      } else {
+        status.textContent = 'link não retornado';
+      }
+
+      status.className = 'status-cell status-ok';
+
+      // limpa o input file depois do upload para não manter o binário preso no formulário
+      input.value = '';
+
+    } catch (err) {
+      status.textContent = 'erro no upload';
+      status.className = 'status-cell status-erro';
+      console.error(err);
+    }
+  });
+
+  document.getElementById('formCadastro').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const btn = form.querySelector('button[type="submit"]');
+
+    btn.disabled = true;
+
+    const evento = document.getElementById('evento').value.trim();
+    const codigo = document.getElementById('codigo').value.trim();
+    const qtd = getQuantidadeValida();
+    const inicio = getInicioValido();
+
+    if (!evento || !codigo || !qtd || !inicio) {
+      M.toast({
+        html: 'Preencha evento, código, quantidade de testes e início da numeração.',
+        classes: 'red'
+      });
+
+      btn.disabled = false;
+      return;
+    }
+
+    const arquivos = form.querySelectorAll('input[type="file"]');
+
+    // MUITO IMPORTANTE:
+    // desabilita os arquivos ANTES de montar o FormData.
+    // Assim o salvar final envia apenas imagem_link[] e não reenvia os binários.
+    for (const input of arquivos) {
+      input.disabled = true;
+    }
+
+    const fd = new FormData(form);
+
+    try {
+      const resp = await fetch(`${API_BASE}/cadastrar_gabarito.php`, {
+        method: 'POST',
+        body: fd,
+        credentials: 'include'
+      });
+
+      const raw = await resp.text();
+      console.log('CADASTRO RAW:', raw);
+
+      let json;
+
+      try {
+        json = JSON.parse(raw);
+      } catch (e) {
+        throw new Error('Resposta inválida do cadastro: ' + raw);
+      }
+
+      if (!resp.ok || !json.ok) {
+        throw new Error(json.message || json.error || `HTTP ${resp.status}`);
+      }
+
+      M.toast({ html: 'Gabarito salvo com sucesso!', classes: 'green' });
+
+    } catch (err) {
+      M.toast({ html: 'Erro ao salvar: ' + err.message, classes: 'red' });
+      console.error(err);
+    } finally {
+      for (const input of arquivos) {
+        input.disabled = false;
+      }
+
+      btn.disabled = false;
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    M.FormSelect.init(document.querySelectorAll('select'));
+    M.updateTextFields();
+  });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Reprocessar Ensalamento</title>
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+  :root{
+    --azul:#0d3f82;
+    --azul2:#1453ab;
+    --fundo:#f4f6f9;
+    --texto:#263238;
+    --muted:#6b7280;
+    --borda:#e5e7eb;
+  }
+
+  body{ background:var(--fundo); color:var(--texto); }
+
+    .wrap{
+    max-width:1180px;
+    margin:12px auto;
+    padding:0 14px;
+    }
+
+  .card-main{
+    border-radius:18px;
+    overflow:hidden;
+  }
+
+  .card-content{ padding:28px !important; }
+
+  .titulo{
+    font-size:25px;
+    font-weight:700;
+    margin-bottom:6px;
+  }
+
+  .subtitulo{
+    color:var(--muted);
+    margin-bottom:22px;
+    font-size:15px;
+  }
+
+  .alerta{
+    background:#fff8e1;
+    border:1px solid #ffe082;
+    border-left:5px solid #f9a825;
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:24px;
+    color:#5d4037;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+
+  .alerta i{ color:#f9a825; }
+
+  .input-field input:focus{
+    border-bottom:1px solid var(--azul) !important;
+    box-shadow:0 1px 0 0 var(--azul) !important;
+  }
+
+  .dropdown-content li > span{ color:var(--azul); }
+
+  .btn-processar{
+    background:var(--azul);
+    width:100%;
+    border-radius:8px;
+    height:44px;
+    line-height:44px;
+    font-weight:600;
+  }
+
+  .btn-processar:hover{ background:var(--azul2); }
+  .btn-processar:disabled{ background:#9ca3af !important; }
+
+  .loader{
+    display:none;
+    margin-top:12px;
+    text-align:center;
+  }
+
+  .painel-info{
+    border:1px solid var(--borda);
+    border-radius:14px;
+    padding:16px;
+    background:#fafafa;
+    margin-bottom:18px;
+  }
+
+  .painel-info-titulo{
+    font-weight:700;
+    margin-bottom:8px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .painel-info p{
+    margin:4px 0;
+    color:var(--muted);
+  }
+
+  .box-unidade{
+    display:none;
+    border-radius:12px;
+    padding:14px 16px;
+    margin:-6px 0 18px 0;
+    border:1px solid #bbdefb;
+    background:#e3f2fd;
+    color:#0d47a1;
+  }
+
+  .box-unidade.erro{
+    border-color:#ffcdd2;
+    background:#ffebee;
+    color:#b71c1c;
+  }
+
+  .box-unidade .linha1{
+    font-weight:800;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:4px;
+  }
+
+  .box-unidade .linha2{
+    font-size:13px;
+    color:inherit;
+    opacity:.9;
+  }
+
+  .terminal-top{
+    margin-top:20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .terminal-label{
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .btn-limpar{
+    background:#607d8b;
+    border-radius:8px;
+    box-shadow:none;
+  }
+
+  .btn-limpar:hover{ background:#546e7a; }
+
+  .terminal{
+    margin-top:10px;
+    background:#101418;
+    color:#00ff66;
+    padding:18px;
+    border-radius:14px;
+    font-family:Consolas, "Courier New", monospace;
+    min-height:300px;
+    max-height:480px;
+    overflow:auto;
+    white-space:pre-wrap;
+    font-size:13px;
+    line-height:1.55;
+    border:1px solid #263238;
+  }
+
+  .status-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    background:#e3f2fd;
+    color:#0d47a1;
+    margin-bottom:14px;
+  }
+
+  @media(max-width:700px){
+    .topo-inner{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+
+    .topo-titulo{ font-size:18px; }
+    .card-content{ padding:20px !important; }
+    .titulo{ font-size:22px; }
+
+    .terminal-top{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<main class="wrap">
+
+  <div class="card card-main">
+    <div class="card-content">
+
+      <div class="titulo">Reprocessar ensalamento</div>
+
+      <div class="subtitulo">
+        Selecione o evento, informe o código da unidade e execute o reprocessamento apenas para ela.
+      </div>
+
+      <div class="alerta">
+        <i class="material-icons">warning</i>
+        <div>
+          <b>Atenção:</b> esta ação apaga e recria o ensalamento somente da unidade informada.
+          As demais unidades do evento não serão alteradas.
+        </div>
+      </div>
+
+      <div class="row">
+
+        <div class="input-field col s12 m5">
+          <select id="evento">
+            <option value="" disabled selected>Carregando eventos...</option>
+          </select>
+          <label>Evento</label>
+        </div>
+
+        <div class="input-field col s12 m3">
+          <input
+            type="text"
+            id="unidade"
+            maxlength="4"
+            placeholder="0704"
+            autocomplete="off"
+            oninput="aoDigitarUnidade()"
+            onblur="buscarUnidade()"
+          >
+          <label class="active" for="unidade">Código da Unidade</label>
+        </div>
+
+        <div class="col s12 m4" style="margin-top:18px;">
+          <button
+            id="btnProcessar"
+            class="btn waves-effect waves-light btn-processar"
+            onclick="processar()">
+            <i class="material-icons left">autorenew</i>
+            Reprocessar Unidade
+          </button>
+
+          <div class="loader" id="loader">
+            <div class="preloader-wrapper small active">
+              <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left"><div class="circle"></div></div>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right"><div class="circle"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="boxUnidade" class="box-unidade">
+        <div class="linha1">
+          <i class="material-icons">business</i>
+          <span id="unidadeTitulo">Unidade localizada</span>
+        </div>
+        <div class="linha2" id="unidadeDetalhe"></div>
+      </div>
+
+      <div class="terminal-top">
+        <div class="terminal-label">
+          <i class="material-icons">terminal</i>
+          Resultado do processamento
+        </div>
+
+        <button class="btn btn-small btn-limpar waves-effect" onclick="limparResultado()">
+          <i class="material-icons left">delete_sweep</i>
+          Limpar
+        </button>
+      </div>
+
+      <div class="terminal" id="resultado">Aguardando processamento...</div>
+
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API_BASE = 'https://apisec.secauxiliar.com.br/sim_adm';
+let unidadeAtual = null;
+let timerBuscaUnidade = null;
+
+document.addEventListener('DOMContentLoaded', function(){
+  carregarEventos();
+});
+
+async function carregarEventos(){
+  const select = document.getElementById('evento');
+
+  try{
+    const resp = await fetch(`${API_BASE}/api_adesoes_eventos.php`, {
+      credentials: 'include'
+    });
+
+    const json = await resp.json();
+
+    if(!json.ok){
+      throw new Error(json.message || 'Falha ao carregar eventos');
+    }
+
+    select.innerHTML = '<option value="" disabled selected>Selecione o evento</option>';
+
+    (json.eventos || []).forEach(ev => {
+      const opt = document.createElement('option');
+      opt.value = ev;
+      opt.textContent = ev;
+      select.appendChild(opt);
+    });
+
+    M.FormSelect.init(select);
+
+  }catch(err){
+    select.innerHTML = '<option value="FUVESTAO0526" selected>FUVESTAO0526</option>';
+    M.FormSelect.init(select);
+
+    M.toast({
+      html:'Não foi possível carregar eventos. Usando FUVESTAO0526 como padrão.'
+    });
+  }
+}
+
+function aoDigitarUnidade(){
+  unidadeAtual = null;
+  esconderBoxUnidade();
+
+  clearTimeout(timerBuscaUnidade);
+
+  const unidade = document.getElementById('unidade').value.trim();
+
+  if(unidade.length >= 4){
+    timerBuscaUnidade = setTimeout(buscarUnidade, 350);
+  }
+}
+
+async function buscarUnidade(){
+
+  let codigo = document.getElementById('unidade').value.trim();
+  const evento = document.getElementById('evento').value.trim();
+
+  unidadeAtual = null;
+  esconderBoxUnidade();
+
+  if(!codigo){
+    return;
+  }
+
+  if(!evento){
+    mostrarBoxUnidade(
+      'erro',
+      'Selecione o evento',
+      'Escolha primeiro o evento para validar a unidade.'
+    );
+    return;
+  }
+
+  if(/^\d+$/.test(codigo)){
+    codigo = codigo.padStart(4, '0');
+    document.getElementById('unidade').value = codigo;
+  }
+
+  mostrarBoxUnidade(
+    'buscando',
+    'Validando ensalamento...',
+    'Consultando inscritos, necessidades especiais, salas e capacidade.'
+  );
+
+  try{
+
+    const resp = await fetch(
+      `${API_BASE}/validar_ensalamento_unidade.php?evento=${encodeURIComponent(evento)}&codigo=${encodeURIComponent(codigo)}`,
+      {
+        credentials: 'include'
+      }
+    );
+
+    const json = await resp.json();
+
+    if(!resp.ok || !json.ok){
+
+      unidadeAtual = null;
+
+      document.getElementById('btnProcessar').disabled = true;
+
+      mostrarBoxUnidade(
+        'erro',
+        'Unidade não localizada',
+        json.msg || `Código consultado: ${escapeHtml(codigo)}`
+      );
+
+      return;
+    }
+
+    unidadeAtual = json.unidade || {};
+
+    const nome =
+      unidadeAtual.nome_internet ||
+      unidadeAtual.nome ||
+      '';
+
+    const cidadeUf = [
+      unidadeAtual.cidade || '',
+      unidadeAtual.uf || ''
+    ].filter(Boolean).join(' / ');
+
+    const inscritos = json.inscritos || {};
+    const salas     = json.salas || {};
+    const validacao = json.validacao || {};
+
+    const podeProcessar = !!validacao.pode_processar;
+
+    document.getElementById('btnProcessar').disabled = !podeProcessar;
+
+    let detalhe = `
+      <div style="margin-top:8px;">
+        <b>Inscritos:</b> ${inscritos.total_unico || 0}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        <b>Para ensalar:</b> ${inscritos.normais || 0}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        <b>Sabatistas:</b> ${inscritos.sabatistas || 0}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        <b>Nec. especiais:</b> ${inscritos.necessidades_especiais || 0}
+      </div>
+
+      <div style="margin-top:6px;">
+        <b>Salas ativas:</b> ${salas.ativas || 0}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        <b>Capacidade das salas:</b> ${salas.capacidade_total || 0}
+      </div>
+    `;
+
+    if((salas.faltam_vagas || 0) > 0){
+      detalhe += `
+        <div style="margin-top:6px; color:#c62828;">
+          <b>Faltam vagas:</b> ${salas.faltam_vagas}
+        </div>
+      `;
+    }
+
+    if((salas.sobra_vagas || 0) > 0){
+      detalhe += `
+        <div style="margin-top:6px;">
+          <b>Sobra de vagas:</b> ${salas.sobra_vagas}
+        </div>
+      `;
+    }
+
+    detalhe += `
+      <div style="margin-top:8px;">
+        <b>Status:</b> ${escapeHtml(validacao.status_label || 'OK')}
+      </div>
+
+      <div style="margin-top:4px;">
+        ${escapeHtml(validacao.msg || '')}
+      </div>
+    `;
+
+    mostrarBoxUnidade(
+      podeProcessar ? 'ok' : 'erro',
+      `${unidadeAtual.codigo} - ${nome}`,
+      `
+        ${cidadeUf ? `<div>Cidade/UF: ${cidadeUf}</div>` : ''}
+        ${detalhe}
+      `
+    );
+
+  }catch(err){
+
+    unidadeAtual = null;
+
+    document.getElementById('btnProcessar').disabled = true;
+
+    mostrarBoxUnidade(
+      'erro',
+      'Erro ao validar unidade',
+      'Não foi possível consultar o ensalamento da unidade.'
+    );
+  }
+}
+
+function mostrarBoxUnidade(tipo, titulo, detalhe){
+  const box = document.getElementById('boxUnidade');
+  const unidadeTitulo = document.getElementById('unidadeTitulo');
+  const unidadeDetalhe = document.getElementById('unidadeDetalhe');
+
+  box.classList.remove('erro');
+
+  if(tipo === 'erro'){
+    box.classList.add('erro');
+  }
+
+  unidadeTitulo.innerHTML = titulo;
+  unidadeDetalhe.innerHTML = detalhe || '';
+  box.style.display = 'block';
+}
+
+function esconderBoxUnidade(){
+  const box = document.getElementById('boxUnidade');
+  box.style.display = 'none';
+}
+
+async function processar(){
+
+  const evento  = document.getElementById('evento').value.trim();
+  let unidade   = document.getElementById('unidade').value.trim();
+
+  if(!evento){
+    M.toast({html:'Selecione o evento'});
+    return;
+  }
+
+  if(!unidade){
+    M.toast({html:'Informe a unidade'});
+    return;
+  }
+
+  if(/^\d+$/.test(unidade)){
+    unidade = unidade.padStart(4, '0');
+    document.getElementById('unidade').value = unidade;
+  }
+
+  if(!unidadeAtual || String(unidadeAtual.codigo) !== unidade){
+    await buscarUnidade();
+  }
+
+  const nomeUnidade = unidadeAtual
+  ? `${unidadeAtual.codigo} - ${unidadeAtual.nome_internet || unidadeAtual.nome || ''}`
+  : unidade;
+
+  const ok = await Swal.fire({
+    title: 'Confirmar reprocessamento?',
+    html: `
+      <div style="text-align:left;">
+        <b>Evento:</b> ${escapeHtml(evento)}<br>
+        <b>Unidade:</b> ${escapeHtml(nomeUnidade)}<br><br>
+
+        O ensalamento atual desta unidade será apagado e recriado.<br>
+        <b>As demais unidades NÃO serão alteradas.</b>
+      </div>
+    `,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#0d3f82',
+    cancelButtonColor: '#607d8b',
+    confirmButtonText: 'Sim, reprocessar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if(!ok.isConfirmed){
+    return;
+  }
+
+  const resultado = document.getElementById('resultado');
+  const loader    = document.getElementById('loader');
+  const btn       = document.getElementById('btnProcessar');
+
+  resultado.textContent =
+    `[${new Date().toLocaleString('pt-BR')}] Processando ensalamento...\n\n` +
+    `Evento: ${evento}\n` +
+    `Unidade: ${nomeUnidade}\n\n` +
+    `Aguarde o retorno do servidor...\n`;
+
+  loader.style.display = 'block';
+  btn.disabled = true;
+
+  try{
+    const url =
+      `${API_BASE}/ensalamento_unidade.php?evento=${encodeURIComponent(evento)}&unidade=${encodeURIComponent(unidade)}`;
+
+    const resp = await fetch(url, {
+      credentials: 'include'
+    });
+
+    const texto = await resp.text();
+
+    resultado.textContent = texto || 'Processamento finalizado sem retorno do servidor.';
+
+    if(resp.ok){
+      Swal.fire({
+        icon:'success',
+        title:'Processamento concluído',
+        text:'O ensalamento da unidade foi reprocessado.'
+      });
+    }else{
+      Swal.fire({
+        icon:'error',
+        title:'Erro ao processar',
+        text:'Verifique o retorno exibido na tela.'
+      });
+    }
+
+  }catch(err){
+    resultado.textContent =
+      'Erro ao executar processamento.\n\n' + err;
+
+    Swal.fire({
+      icon:'error',
+      title:'Erro de conexão',
+      text:'Não foi possível chamar o PHP de reprocessamento.'
+    });
+
+  }finally{
+    loader.style.display = 'none';
+    btn.disabled = false;
+  }
+}
+
+function limparResultado(){
+  document.getElementById('resultado').textContent = 'Aguardando processamento...';
+}
+
+function escapeHtml(str){
+  return String(str ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+</script>
+
+</body>
+</html>

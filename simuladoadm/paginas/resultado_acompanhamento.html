@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Direção | Alunos de Interesse</title>
+
+  <style>
+    :root {
+      --azul: #0b4ea2;
+      --azul2: #083b7a;
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --texto: #1f2937;
+      --muted: #6b7280;
+      --borda: #d9e2ef;
+      --ok: #15803d;
+      --warn: #b45309;
+      --erro: #b91c1c;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--texto);
+      overflow-x: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--azul), var(--azul2));
+      color: white;
+      padding: 18px 24px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    header p {
+      margin: 5px 0 0;
+      opacity: .9;
+      font-size: 13px;
+    }
+
+    main {
+      width: 100%;
+      max-width: none;
+      margin: 18px auto;
+      padding: 0 18px 36px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.06);
+      margin-bottom: 16px;
+      width: 100%;
+    }
+
+    .filtros {
+      display: grid;
+      grid-template-columns: 150px minmax(260px, 1fr) 180px 130px;
+      gap: 12px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #374151;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      font-size: 14px;
+      background: white;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 14px;
+      background: var(--azul);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover { background: var(--azul2); }
+
+    .abas {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .aba {
+      background: #e8eef8;
+      color: var(--azul);
+    }
+
+    .aba.ativa {
+      background: var(--azul);
+      color: white;
+    }
+
+    .resumo {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .kpi {
+      background: #f8fafc;
+      border: 1px solid var(--borda);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+
+    .kpi .num {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--azul);
+    }
+
+    .kpi .txt {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th, td {
+      padding: 8px 6px;
+      border-bottom: 1px solid #edf1f7;
+      font-size: 11px;
+      text-align: left;
+      vertical-align: middle;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.2;
+    }
+
+    th {
+      background: #f1f5fb;
+      color: #374151;
+      font-size: 10px;
+      text-transform: uppercase;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    tr:hover td {
+      background: #fafcff;
+    }
+
+    .status-ok {
+      color: var(--ok);
+      font-weight: bold;
+    }
+
+    .status-sem {
+      color: var(--warn);
+      font-weight: bold;
+    }
+
+    .status-erro {
+      color: var(--erro);
+      font-weight: bold;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .loading {
+      display: none;
+      color: var(--azul);
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .erro-box {
+      display: none;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .num-cell {
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .total-cell {
+      font-weight: bold;
+      color: var(--azul2);
+    }
+
+    .col-status { width: 9%; }
+    .col-cpf { width: 8%; }
+    .col-aluno { width: 18%; }
+    .col-unidade-cad { width: 8%; }
+    .col-unidade-insc { width: 14%; }
+    .col-inscricao { width: 7%; }
+    .col-nota { width: 5.1%; }
+
+    @media (max-width: 1100px) {
+      main { padding: 0 10px 30px; }
+
+      th, td {
+        font-size: 10px;
+        padding: 7px 4px;
+      }
+
+      th { font-size: 9px; }
+
+      .col-aluno { width: 16%; }
+      .col-unidade-insc { width: 12%; }
+      .col-nota { width: 5%; }
+    }
+
+    @media (max-width: 900px) {
+      body { overflow-x: auto; }
+
+      .filtros {
+        grid-template-columns: 1fr;
+      }
+
+      .resumo {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        min-width: 980px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Alunos de Interesse</h1>
+    <p>Consulta de resultados por aluno ou por evento</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="abas">
+        <button class="aba ativa" id="btnModoEvento" onclick="setModo('evento')">Por evento</button>
+        <button class="aba" id="btnModoAluno" onclick="setModo('aluno')">Por aluno</button>
+      </div>
+
+      <div class="filtros">
+        <div>
+          <label for="anoLetivo">Ano letivo</label>
+          <input id="anoLetivo" type="number" value="2026" />
+        </div>
+
+        <div>
+          <label for="evento">Evento</label>
+          <select id="evento">
+            <option value="">Carregando eventos...</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="cpfAluno">CPF / aluno</label>
+          <input id="cpfAluno" type="text" placeholder="opcional" />
+        </div>
+
+        <div>
+          <button onclick="carregarResultados()">Buscar</button>
+        </div>
+      </div>
+
+      <div id="loading" class="loading">Carregando...</div>
+      <div id="erroBox" class="erro-box"></div>
+    </section>
+
+    <section class="card">
+      <div class="resumo">
+        <div class="kpi">
+          <div class="num" id="kpiTotal">0</div>
+          <div class="txt">Alunos monitorados</div>
+        </div>
+        <div class="kpi">
+          <div class="num" id="kpiComResultado">0</div>
+          <div class="txt">Com resultado</div>
+        </div>
+        <div class="kpi">
+          <div class="num" id="kpiSemInscricao">0</div>
+          <div class="txt">Sem inscrição</div>
+        </div>
+        <div class="kpi">
+          <div class="num" id="kpiMedia">-</div>
+          <div class="txt">Média dos monitorados</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="table-wrap">
+        <table>
+          <thead id="theadResultados"></thead>
+          <tbody id="tbodyResultados">
+            <tr>
+              <td colspan="18" class="muted">Faça uma busca para carregar os dados.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
+
+    let modoAtual = 'evento';
+
+    function getTokenUrl() {
+      return new URLSearchParams(window.location.search).get('token') || '';
+    }
+
+    function isEnemEvento(ev) {
+      return /^ENEM/i.test(String(ev || ''));
+    }
+
+    function endpointResultados(ev) {
+      return isEnemEvento(ev)
+        ? API + 'direcao_resultados_enem.php'
+        : API + 'direcao_resultados_fuvestao.php';
+    }
+
+    function colspanAtual() {
+      const evento = document.getElementById('evento').value.trim();
+      return isEnemEvento(evento) ? 13 : 18;
+    }
+
+    function setModo(modo) {
+      modoAtual = modo;
+
+      document.getElementById('btnModoEvento').classList.toggle('ativa', modo === 'evento');
+      document.getElementById('btnModoAluno').classList.toggle('ativa', modo === 'aluno');
+
+      const cpf = document.getElementById('cpfAluno');
+
+      if (modo === 'aluno') {
+        cpf.placeholder = 'digite CPF do aluno';
+        cpf.focus();
+      } else {
+        cpf.placeholder = 'opcional';
+      }
+    }
+
+    function escapeHtml(v) {
+      return String(v ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function limparCpf(v) {
+      return String(v ?? '').replace(/\D/g, '');
+    }
+
+    function formatarNota(v) {
+      if (v === null || v === undefined || v === '') return '-';
+
+      const n = Number(v);
+      if (!Number.isFinite(n)) return escapeHtml(v);
+
+      return n.toLocaleString('pt-BR', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+      });
+    }
+
+    function getNota(item, campo) {
+      return item?.notas?.[campo] ?? '';
+    }
+
+    function getNotaFormatada(item, campo) {
+      return formatarNota(getNota(item, campo));
+    }
+
+    function setLoading(on) {
+      document.getElementById('loading').style.display = on ? 'block' : 'none';
+    }
+
+    function mostrarErro(msg) {
+      const box = document.getElementById('erroBox');
+      box.textContent = msg;
+      box.style.display = msg ? 'block' : 'none';
+    }
+
+    function renderCabecalho() {
+      const evento = document.getElementById('evento').value.trim();
+      const enem = isEnemEvento(evento);
+      const thead = document.getElementById('theadResultados');
+
+      if (enem) {
+        thead.innerHTML = `
+          <tr>
+            <th class="col-status">Status</th>
+            <th class="col-cpf">CPF</th>
+            <th class="col-aluno">Aluno</th>
+            <th class="col-unidade-cad">Unid. cadastro</th>
+            <th class="col-unidade-insc">Unid. inscrição</th>
+            <th class="col-inscricao">Inscrição</th>
+            <th class="col-nota">Total TRI</th>
+            <th class="col-nota">Class.</th>
+            <th class="col-nota">Linguagens</th>
+            <th class="col-nota">Humanas</th>
+            <th class="col-nota">Natureza</th>
+            <th class="col-nota">Matemática</th>
+            <th class="col-nota">Redação</th>
+          </tr>
+        `;
+      } else {
+        thead.innerHTML = `
+          <tr>
+            <th class="col-status">Status</th>
+            <th class="col-cpf">CPF</th>
+            <th class="col-aluno">Aluno</th>
+            <th class="col-unidade-cad">Unid. cadastro</th>
+            <th class="col-unidade-insc">Unid. inscrição</th>
+            <th class="col-inscricao">Inscrição</th>
+            <th class="col-nota">Total</th>
+            <th class="col-nota">Class.</th>
+            <th class="col-nota">POR</th>
+            <th class="col-nota">HIS</th>
+            <th class="col-nota">ING</th>
+            <th class="col-nota">SOC</th>
+            <th class="col-nota">BIO</th>
+            <th class="col-nota">QUI</th>
+            <th class="col-nota">FIL</th>
+            <th class="col-nota">FIS</th>
+            <th class="col-nota">MAT</th>
+            <th class="col-nota">GEO</th>
+          </tr>
+        `;
+      }
+    }
+
+    async function carregarEventos() {
+      const select = document.getElementById('evento');
+
+      try {
+        const resp = await fetch(API + 'api_adesoes_eventos.php', {
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok || !data.ok) {
+          throw new Error(data.error || 'Falha ao carregar eventos.');
+        }
+
+        select.innerHTML = '<option value="">Selecione</option>';
+
+        (data.eventos || []).forEach(ev => {
+          const opt = document.createElement('option');
+          opt.value = ev;
+          opt.textContent = ev;
+          select.appendChild(opt);
+        });
+
+        if ([...select.options].some(o => o.value === 'FUVESTAO0526')) {
+          select.value = 'FUVESTAO0526';
+        }
+
+        renderCabecalho();
+
+      } catch (e) {
+        select.innerHTML = '<option value="">Erro ao carregar</option>';
+        mostrarErro(e.message || 'Erro ao carregar eventos.');
+      }
+    }
+
+    async function carregarResultados() {
+      mostrarErro('');
+      setLoading(true);
+
+      const token = getTokenUrl();
+      const anoLetivo = document.getElementById('anoLetivo').value.trim();
+      const evento = document.getElementById('evento').value.trim();
+      const cpf = limparCpf(document.getElementById('cpfAluno').value);
+
+      renderCabecalho();
+
+      if (!token) {
+        setLoading(false);
+        mostrarErro('Token de acesso não informado.');
+        return;
+      }
+
+      if (!anoLetivo || !evento) {
+        setLoading(false);
+        mostrarErro('Informe o ano letivo e o evento.');
+        return;
+      }
+
+      if (modoAtual === 'aluno' && !cpf) {
+        setLoading(false);
+        mostrarErro('No modo por aluno, informe o CPF.');
+        return;
+      }
+
+      const params = new URLSearchParams();
+      params.set('evento', evento);
+      params.set('ano_letivo', anoLetivo);
+      params.set('token', token);
+
+      if (cpf) params.set('cpf', cpf);
+
+      try {
+        const resp = await fetch(`${endpointResultados(evento)}?${params.toString()}`, {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        const data = await resp.json();
+
+        if (!data.ok) {
+          throw new Error(data.msg || data.error || 'Erro ao carregar resultados.');
+        }
+
+        montarTela(data.itens || []);
+      } catch (e) {
+        montarTela([]);
+        mostrarErro(e.message || 'Erro inesperado.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function ordenarItens(itens) {
+      itens.sort((a, b) => {
+        const pesoStatus = {
+          COM_RESULTADO: 1,
+          SEM_RESULTADO: 2,
+          SEM_INSCRICAO: 3
+        };
+
+        const pa = pesoStatus[a.status] || 9;
+        const pb = pesoStatus[b.status] || 9;
+
+        if (pa !== pb) return pa - pb;
+
+        const ca = Number(a?.notas?.CLS_G);
+        const cb = Number(b?.notas?.CLS_G);
+
+        const temCa = Number.isFinite(ca) && ca > 0;
+        const temCb = Number.isFinite(cb) && cb > 0;
+
+        if (temCa && temCb && ca !== cb) return ca - cb;
+        if (temCa && !temCb) return -1;
+        if (!temCa && temCb) return 1;
+
+        const ta = Number(a?.notas?.TOTAL);
+        const tb = Number(b?.notas?.TOTAL);
+
+        if (Number.isFinite(ta) && Number.isFinite(tb) && ta !== tb) {
+          return tb - ta;
+        }
+
+        const na = String(a.nome_aluno || '').localeCompare(String(b.nome_aluno || ''), 'pt-BR');
+        if (na !== 0) return na;
+
+        return String(a.cpf || '').localeCompare(String(b.cpf || ''));
+      });
+    }
+
+    function montarTela(itens) {
+      const tbody = document.getElementById('tbodyResultados');
+      const evento = document.getElementById('evento').value.trim();
+      const enem = isEnemEvento(evento);
+
+      renderCabecalho();
+
+      if (!itens.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="${colspanAtual()}" class="muted">Nenhum aluno encontrado.</td>
+          </tr>
+        `;
+        atualizarKpis([]);
+        return;
+      }
+
+      ordenarItens(itens);
+
+      tbody.innerHTML = itens.map(item => {
+        const status = item.status || '';
+        const temResultado = status === 'COM_RESULTADO';
+        const semInscricao = status === 'SEM_INSCRICAO';
+
+        const statusLabel = temResultado
+          ? '<span class="status-ok">COM RESULTADO</span>'
+          : semInscricao
+            ? '<span class="status-sem">SEM INSCRIÇÃO</span>'
+            : `<span class="status-erro">${escapeHtml(status || 'SEM RESULTADO')}</span>`;
+
+        const nome = String(
+          item.nome_aluno || item.nome_monitorado || ''
+        ).toUpperCase();
+
+        const colunasNotas = enem ? `
+          <td class="num-cell total-cell">${escapeHtml(getNotaFormatada(item, 'TOTAL'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'CLS_G'))}</td>
+          <td class="num-cell">${escapeHtml(getNotaFormatada(item, 'NOTA_LINGUAGENS'))}</td>
+          <td class="num-cell">${escapeHtml(getNotaFormatada(item, 'NOTA_HUMANAS'))}</td>
+          <td class="num-cell">${escapeHtml(getNotaFormatada(item, 'NOTA_NATUREZA'))}</td>
+          <td class="num-cell">${escapeHtml(getNotaFormatada(item, 'NOTA_MATEMATICA'))}</td>
+          <td class="num-cell">${escapeHtml(getNotaFormatada(item, 'NOTA_REDACAO'))}</td>
+        ` : `
+          <td class="num-cell total-cell">${escapeHtml(getNota(item, 'TOTAL'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'CLS_G'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'POR'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'HIS'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'ING'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'SOC'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'BIO'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'QUI'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'FIL'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'FIS'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'MAT'))}</td>
+          <td class="num-cell">${escapeHtml(getNota(item, 'GEO'))}</td>
+        `;
+
+        return `
+          <tr>
+            <td class="col-status">${statusLabel}</td>
+            <td class="col-cpf">${escapeHtml(item.cpf)}</td>
+            <td class="col-aluno">${escapeHtml(nome)}</td>
+            <td class="col-unidade-cad">${escapeHtml(
+              String(item.unidade_monitorada || item.unidade_cadastro || item.unidade || '').toUpperCase()
+            )}</td>
+            <td class="col-unidade-insc">${escapeHtml(
+              String(item.unidade_inscricao || '').toUpperCase()
+            )}</td>
+            <td class="col-inscricao">${escapeHtml(item.inscricao || '')}</td>
+            ${colunasNotas}
+          </tr>
+        `;
+      }).join('');
+
+      atualizarKpis(itens);
+    }
+
+    function atualizarKpis(itens) {
+      const total = itens.length;
+      const comResultado = itens.filter(i => i.status === 'COM_RESULTADO').length;
+      const semInscricao = itens.filter(i => i.status === 'SEM_INSCRICAO').length;
+
+      const totais = itens
+        .map(i => Number(i?.notas?.TOTAL))
+        .filter(n => Number.isFinite(n));
+
+      const media = totais.length
+        ? (totais.reduce((a, b) => a + b, 0) / totais.length).toLocaleString('pt-BR', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+          })
+        : '-';
+
+      document.getElementById('kpiTotal').textContent = total;
+      document.getElementById('kpiComResultado').textContent = comResultado;
+      document.getElementById('kpiSemInscricao').textContent = semInscricao;
+      document.getElementById('kpiMedia').textContent = media;
+    }
+
+    document.getElementById('evento').addEventListener('change', () => {
+      renderCabecalho();
+      document.getElementById('tbodyResultados').innerHTML = `
+        <tr>
+          <td colspan="${colspanAtual()}" class="muted">Clique em Buscar para carregar os dados.</td>
+        </tr>
+      `;
+    });
+
+    (async function init(){
+      await carregarEventos();
+      renderCabecalho();
+
+      if (document.getElementById('evento').value) {
+        carregarResultados();
+      }
+    })();
+  </script>
+</body>
+</html>
