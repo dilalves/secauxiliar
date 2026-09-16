@@ -1,105 +1,1462 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Projetos OMR</title>
+
 <style>
-:root{--azul:#0b3b78;--fundo:#f4f7fb;--linha:#dbe5f1;--txt:#17324d}
-*{box-sizing:border-box}body{margin:0;font:14px Arial;background:var(--fundo);color:var(--txt)}
-.top{background:var(--azul);color:white;padding:18px 24px;font-size:20px;font-weight:bold}
-.wrap{padding:20px;display:grid;grid-template-columns:300px 1fr;gap:18px}
-.card{background:white;border:1px solid var(--linha);border-radius:12px;padding:16px}
-button{border:0;border-radius:7px;padding:10px 13px;cursor:pointer;background:#e9f1fb;color:#123c6c;font-weight:bold}
-button.primary{background:var(--azul);color:white}button.danger{background:#fee2e2;color:#991b1b}
-input,select{width:100%;padding:9px;border:1px solid #ccd8e6;border-radius:6px;margin:4px 0 10px}
-#stage{position:relative;display:inline-block;max-width:100%;user-select:none}
-#base{display:block;max-width:100%;height:auto}
-.box{position:absolute;border:2px solid #e11d48;background:#e11d4820;cursor:pointer}
-.box span{position:absolute;top:-22px;left:-2px;background:#e11d48;color:white;padding:3px 6px;font-size:11px;white-space:nowrap}
-.item{padding:10px;border-bottom:1px solid #edf1f5;cursor:pointer}.item:hover{background:#f6f9fd}
-.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-.editor{display:grid;grid-template-columns:1fr 290px;gap:14px}
-small{color:#64748b}.muted{color:#64748b}
-@media(max-width:900px){.wrap,.editor{grid-template-columns:1fr}}
+:root{
+  --azul:#0b3b78;
+  --fundo:#f4f7fb;
+  --linha:#dbe5f1;
+  --txt:#17324d;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font:14px Arial;
+  background:var(--fundo);
+  color:var(--txt);
+}
+
+.top{
+  background:var(--azul);
+  color:white;
+  padding:18px 24px;
+  font-size:20px;
+  font-weight:bold;
+}
+
+.wrap{
+  padding:20px;
+  display:grid;
+  grid-template-columns:300px 1fr;
+  gap:18px;
+}
+
+.card{
+  background:white;
+  border:1px solid var(--linha);
+  border-radius:12px;
+  padding:16px;
+}
+
+button{
+  border:0;
+  border-radius:7px;
+  padding:10px 13px;
+  cursor:pointer;
+  background:#e9f1fb;
+  color:#123c6c;
+  font-weight:bold;
+}
+
+button.primary{
+  background:var(--azul);
+  color:white;
+}
+
+button.danger{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+input,select{
+  width:100%;
+  padding:9px;
+  border:1px solid #ccd8e6;
+  border-radius:6px;
+  margin:4px 0 10px;
+}
+
+/* =========================================================
+   ÁREA DA IMAGEM / MÁSCARA
+   ========================================================= */
+
+#stage{
+  position:relative;
+  display:inline-block;
+  max-width:100%;
+  user-select:none;
+
+  /*
+    O cursor indica que o botão esquerdo pode desenhar
+    uma nova região.
+  */
+  cursor:crosshair;
+}
+
+/*
+  IMPORTANTE:
+  A imagem não pode ser arrastada pelo navegador.
+*/
+#base{
+  display:block;
+  max-width:100%;
+  height:auto;
+
+  -webkit-user-drag:none;
+  user-select:none;
+  -webkit-user-select:none;
+
+  pointer-events:auto;
+}
+
+/* Região criada */
+.box{
+  position:absolute;
+  border:2px solid #e11d48;
+  background:#e11d4820;
+  cursor:pointer;
+}
+
+/* Região selecionada */
+.box.selected{
+  border:4px solid #0b3b78;
+  background:#2563eb20;
+  z-index:5;
+}
+
+.box span{
+  position:absolute;
+  top:-22px;
+  left:-2px;
+  background:#e11d48;
+  color:white;
+  padding:3px 6px;
+  font-size:11px;
+  white-space:nowrap;
+}
+
+.box.selected span{
+  background:#0b3b78;
+}
+
+/* Retângulo temporário enquanto desenha */
+#drawingBox{
+  position:absolute;
+  border:2px dashed #2563eb;
+  background:#2563eb18;
+  pointer-events:none;
+  z-index:10;
+}
+
+.item{
+  padding:10px;
+  border-bottom:1px solid #edf1f5;
+  cursor:pointer;
+}
+
+.item:hover{
+  background:#f6f9fd;
+}
+
+.item.selected-item{
+  background:#eaf2ff;
+  border-left:4px solid var(--azul);
+}
+
+.toolbar{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+
+.editor{
+  display:grid;
+  grid-template-columns:1fr 290px;
+  gap:14px;
+}
+
+small{
+  color:#64748b;
+}
+
+.muted{
+  color:#64748b;
+}
+
+.ajuda{
+  margin-top:7px;
+  line-height:1.6;
+}
+
+.acoes-campo{
+  display:flex;
+  gap:8px;
+  margin-top:5px;
+}
+
+.acoes-campo button{
+  flex:1;
+}
+
+@media(max-width:900px){
+  .wrap,.editor{
+    grid-template-columns:1fr;
+  }
+}
 </style>
 </head>
+
 <body>
-<div class="top">Simulados Abertos — Projetos OMR</div>
-<div class="wrap">
- <div class="card">
-  <button class="primary" onclick="novo()">+ Novo projeto</button>
-  <h3>Projetos</h3><div id="lista"></div>
- </div>
- <div class="card">
-  <div class="toolbar">
-   <input id="nome" placeholder="Nome do projeto" style="max-width:280px">
-   <input id="evento" placeholder="Evento, ex.: FUVESTAO0926" style="max-width:190px">
-   <select id="tipo" style="max-width:160px"><option>D1</option><option>D2</option><option>R1</option><option>OUTRO</option></select>
-   <input id="file" type="file" accept=".jpg,.jpeg,.png" style="max-width:250px">
-   <button onclick="upload()">Carregar folha</button>
-   <button class="primary" onclick="salvar()">Salvar projeto</button>
-  </div>
-  <small>Carregue a folha padrão e arraste o mouse sobre a imagem para criar uma região.</small>
-  <div class="editor">
-   <div style="overflow:auto;margin-top:18px"><div id="stage"><img id="base"></div></div>
-   <div>
-    <h3>Campo selecionado</h3>
-    <div id="sem">Desenhe ou selecione uma região.</div>
-    <div id="form" style="display:none">
-      <label>Nome</label><input id="cnome">
-      <label>Código</label><input id="ccodigo">
-      <label>Tipo</label><select id="ctipo"><option value="grade">Grade</option><option value="alternativas">Alternativas</option><option value="versao">Versão</option><option value="numero">Número</option><option value="area">Área</option></select>
-      <label>Linhas</label><input id="linhas" type="number" min="1" value="1">
-      <label>Colunas</label><input id="colunas" type="number" min="1" value="1">
-      <label>Valores (ex.: 0,1,2,3... ou A,B,C,D,E)</label><input id="valores">
-      <label>BUBBLE_H</label><input id="bh" type="number" step=".01" value=".75">
-      <label>BUBBLE_W</label><input id="bw" type="number" step=".01" value=".80">
-      <label>MIN_FILL</label><input id="mf" type="number" step=".01" value=".12">
-      <label>MARGIN_DELTA</label><input id="md" type="number" step=".01" value=".06">
-      <button onclick="aplicarCampo()">Aplicar</button>
-      <button class="danger" onclick="removerCampo()">Excluir campo</button>
-    </div>
-    <h3>Campos</h3><div id="campos"></div>
-   </div>
-  </div>
- </div>
+
+<div class="top">
+  Simulados Abertos — Projetos OMR
 </div>
+
+<div class="wrap">
+
+  <!-- =====================================================
+       LISTA DE PROJETOS
+       ===================================================== -->
+  <div class="card">
+
+    <button class="primary" onclick="novo()">
+      + Novo projeto
+    </button>
+
+    <h3>Projetos</h3>
+
+    <div id="lista"></div>
+
+  </div>
+
+
+  <!-- =====================================================
+       EDITOR
+       ===================================================== -->
+  <div class="card">
+
+    <div class="toolbar">
+
+      <input
+        id="nome"
+        placeholder="Nome do projeto"
+        style="max-width:280px"
+      >
+
+      <input
+        id="evento"
+        placeholder="Evento, ex.: FUVESTAO0926"
+        style="max-width:190px"
+      >
+
+      <select id="tipo" style="max-width:160px">
+        <option>D1</option>
+        <option>D2</option>
+        <option>R1</option>
+        <option>OUTRO</option>
+      </select>
+
+      <input
+        id="file"
+        type="file"
+        accept=".jpg,.jpeg,.png"
+        style="max-width:250px"
+      >
+
+      <button onclick="upload()">
+        Carregar folha
+      </button>
+
+      <button class="primary" onclick="salvar()">
+        Salvar projeto
+      </button>
+
+    </div>
+
+    <div class="ajuda">
+      <small>
+        <b>Botão esquerdo + arrastar:</b> criar região ·
+        <b>Clique esquerdo:</b> selecionar região ·
+        <b>Delete:</b> excluir região selecionada ·
+        <b>Esc:</b> cancelar desenho
+      </small>
+    </div>
+
+
+    <div class="editor">
+
+      <!-- =================================================
+           IMAGEM
+           ================================================= -->
+      <div style="overflow:auto;margin-top:18px">
+
+        <div id="stage">
+
+          <img
+            id="base"
+            draggable="false"
+            alt=""
+          >
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           PROPRIEDADES DO CAMPO
+           ================================================= -->
+      <div>
+
+        <h3>Campo selecionado</h3>
+
+        <div id="sem">
+          Desenhe ou selecione uma região.
+        </div>
+
+        <div id="form" style="display:none">
+
+          <label>Nome</label>
+          <input id="cnome">
+
+          <label>Código</label>
+          <input id="ccodigo">
+
+          <label>Tipo</label>
+
+          <select id="ctipo">
+            <option value="grade">Grade</option>
+            <option value="alternativas">Alternativas</option>
+            <option value="versao">Versão</option>
+            <option value="numero">Número</option>
+            <option value="area">Área</option>
+          </select>
+
+          <label>Linhas</label>
+          <input
+            id="linhas"
+            type="number"
+            min="1"
+            value="1"
+          >
+
+          <label>Colunas</label>
+          <input
+            id="colunas"
+            type="number"
+            min="1"
+            value="1"
+          >
+
+          <label>
+            Valores (ex.: 0,1,2,3... ou A,B,C,D,E)
+          </label>
+
+          <input id="valores">
+
+          <label>BUBBLE_H</label>
+
+          <input
+            id="bh"
+            type="number"
+            step=".01"
+            value=".75"
+          >
+
+          <label>BUBBLE_W</label>
+
+          <input
+            id="bw"
+            type="number"
+            step=".01"
+            value=".80"
+          >
+
+          <label>MIN_FILL</label>
+
+          <input
+            id="mf"
+            type="number"
+            step=".01"
+            value=".12"
+          >
+
+          <label>MARGIN_DELTA</label>
+
+          <input
+            id="md"
+            type="number"
+            step=".01"
+            value=".06"
+          >
+
+          <div class="acoes-campo">
+
+            <button onclick="aplicarCampo()">
+              Aplicar
+            </button>
+
+            <button
+              class="danger"
+              onclick="removerCampo()"
+            >
+              Excluir campo
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <h3>Campos</h3>
+
+        <div id="campos"></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
 <script>
-// TROQUE pela URL REAL da sua API:
-const API='https://apisec.secauxiliar.com.br/sim_adm/omr_projetos.php';
-const UP='https://apisec.secauxiliar.com.br/sim_adm/omr_upload_base.php';
-let projeto={id:0,nome:'',evento:'',tipo_folha:'D1',arquivo_base:'',largura_base:0,altura_base:0,campos:[]};
-let sel=-1,start=null;
+
+/* =========================================================
+   CONFIGURAÇÃO
+   ========================================================= */
+
+const API =
+'https://apisec.secauxiliar.com.br/sim_adm/omr_projetos.php';
+
+const UP =
+'https://apisec.secauxiliar.com.br/sim_adm/omr_upload_base.php';
+
+
+let projeto = {
+  id:0,
+  nome:'',
+  evento:'',
+  tipo_folha:'D1',
+  arquivo_base:'',
+  largura_base:0,
+  altura_base:0,
+  campos:[]
+};
+
+let sel = -1;
+
+/*
+  Dados utilizados enquanto o usuário está desenhando.
+*/
+let start = null;
+let drawingBox = null;
+
+
+/* =========================================================
+   LISTAR PROJETOS
+   ========================================================= */
 
 async function listar(){
- try{let r=await fetch(API+'?acao=listar');let j=await r.json();
- lista.innerHTML=(j.projetos||[]).map(p=>`<div class="item" onclick="abrir(${p.id})"><b>${esc(p.nome)}</b><br><small>${esc(p.evento||'')} · ${p.qtd_campos} campo(s)</small></div>`).join('');
- }catch(e){lista.innerHTML='<span class="muted">Configure a URL da API.</span>'}
+
+  try{
+
+    let r = await fetch(API + '?acao=listar');
+
+    let j = await r.json();
+
+    lista.innerHTML =
+      (j.projetos || []).map(p => `
+
+        <div
+          class="item"
+          onclick="abrir(${p.id})"
+        >
+
+          <b>${esc(p.nome)}</b>
+
+          <br>
+
+          <small>
+            ${esc(p.evento || '')}
+            ·
+            ${p.qtd_campos} campo(s)
+          </small>
+
+        </div>
+
+      `).join('');
+
+  }
+  catch(e){
+
+    lista.innerHTML =
+      '<span class="muted">Erro ao acessar a API.</span>';
+
+  }
+
 }
-function novo(){projeto={id:0,nome:'',evento:'',tipo_folha:'D1',arquivo_base:'',largura_base:0,altura_base:0,campos:[]};sel=-1;nome.value='';evento.value='';tipo.value='D1';base.removeAttribute('src');render()}
-async function abrir(id){let j=await (await fetch(API+'?acao=obter&id='+id)).json();projeto=j.projeto;projeto.campos=projeto.campos||[];nome.value=projeto.nome;evento.value=projeto.evento||'';tipo.value=projeto.tipo_folha||'D1';base.src=projeto.arquivo_base||'';sel=-1;render()}
+
+
+/* =========================================================
+   NOVO PROJETO
+   ========================================================= */
+
+function novo(){
+
+  projeto = {
+    id:0,
+    nome:'',
+    evento:'',
+    tipo_folha:'D1',
+    arquivo_base:'',
+    largura_base:0,
+    altura_base:0,
+    campos:[]
+  };
+
+  sel = -1;
+
+  cancelarDesenho();
+
+  nome.value = '';
+  evento.value = '';
+  tipo.value = 'D1';
+
+  base.removeAttribute('src');
+
+  loadForm();
+  render();
+
+}
+
+
+/* =========================================================
+   ABRIR PROJETO
+   ========================================================= */
+
+async function abrir(id){
+
+  let j =
+    await (
+      await fetch(API + '?acao=obter&id=' + id)
+    ).json();
+
+  if(!j.ok){
+    alert(j.erro || 'Erro ao abrir projeto.');
+    return;
+  }
+
+  projeto = j.projeto;
+
+  projeto.campos =
+    projeto.campos || [];
+
+  nome.value =
+    projeto.nome || '';
+
+  evento.value =
+    projeto.evento || '';
+
+  tipo.value =
+    projeto.tipo_folha || 'D1';
+
+  base.src =
+    projeto.arquivo_base || '';
+
+  sel = -1;
+
+  cancelarDesenho();
+
+  loadForm();
+  render();
+
+}
+
+
+/* =========================================================
+   UPLOAD DA FOLHA BASE
+   ========================================================= */
+
 async function upload(){
- let f=file.files[0]; if(!f)return alert('Escolha uma imagem.');
- let fd=new FormData();fd.append('arquivo',f);
- let j=await (await fetch(UP,{method:'POST',body:fd})).json();if(!j.ok)return alert(j.erro);
- projeto.arquivo_base=j.url;projeto.largura_base=j.largura;projeto.altura_base=j.altura;base.src=j.url;
+
+  let f = file.files[0];
+
+  if(!f){
+    alert('Escolha uma imagem.');
+    return;
+  }
+
+  let fd = new FormData();
+
+  fd.append('arquivo', f);
+
+  try{
+
+    let r =
+      await fetch(
+        UP,
+        {
+          method:'POST',
+          body:fd
+        }
+      );
+
+    let j =
+      await r.json();
+
+    if(!j.ok){
+      alert(j.erro || 'Erro no upload.');
+      return;
+    }
+
+    projeto.arquivo_base = j.url;
+    projeto.largura_base = j.largura;
+    projeto.altura_base = j.altura;
+
+    base.src = j.url;
+
+  }
+  catch(e){
+
+    console.error(e);
+
+    alert(
+      'Erro ao enviar/carregar a imagem.'
+    );
+
+  }
+
 }
-stage.addEventListener('mousedown',e=>{if(e.target.classList.contains('box'))return;let r=base.getBoundingClientRect();if(!base.src)return;start={x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height}})
-stage.addEventListener('mouseup',e=>{if(!start)return;let r=base.getBoundingClientRect(),x2=(e.clientX-r.left)/r.width,y2=(e.clientY-r.top)/r.height;
- let x=Math.min(start.x,x2),y=Math.min(start.y,y2),w=Math.abs(x2-start.x),h=Math.abs(y2-start.y);start=null;if(w<.005||h<.005)return;
- projeto.campos.push({nome:'NOVO CAMPO',codigo:'CAMPO_'+(projeto.campos.length+1),tipo:'grade',x,y,w,h,linhas:1,colunas:1,valores:'',bubble_h:.75,bubble_w:.80,min_fill:.12,margin_delta:.06});sel=projeto.campos.length-1;render();loadForm()})
+
+
+/* =========================================================
+   BLOQUEAR ARRASTE NATIVO DA IMAGEM
+   ========================================================= */
+
+/*
+  Isso elimina aquele comportamento de "pegar" a imagem
+  e arrastá-la pela tela.
+*/
+
+base.addEventListener(
+  'dragstart',
+  function(e){
+    e.preventDefault();
+    return false;
+  }
+);
+
+
+/*
+  Também bloqueamos dragstart no stage inteiro.
+*/
+
+stage.addEventListener(
+  'dragstart',
+  function(e){
+    e.preventDefault();
+    return false;
+  }
+);
+
+
+/* =========================================================
+   DESENHO DE NOVO CAMPO
+   ========================================================= */
+
+/*
+  MOUSEDOWN
+
+  SOMENTE botão esquerdo (button === 0)
+  pode iniciar uma região.
+*/
+
+stage.addEventListener(
+  'mousedown',
+  function(e){
+
+    /*
+      0 = esquerdo
+      1 = meio
+      2 = direito
+    */
+
+    if(e.button !== 0){
+      return;
+    }
+
+    /*
+      Se clicou em uma região existente,
+      apenas selecionamos.
+    */
+
+    const box =
+      e.target.closest('.box');
+
+    if(box){
+      return;
+    }
+
+    /*
+      Sem imagem, não existe área para desenhar.
+    */
+
+    if(
+      !base.src ||
+      !base.complete ||
+      !base.naturalWidth
+    ){
+      return;
+    }
+
+    e.preventDefault();
+
+    let r =
+      base.getBoundingClientRect();
+
+    let x =
+      (e.clientX - r.left) / r.width;
+
+    let y =
+      (e.clientY - r.top) / r.height;
+
+    /*
+      Não deixa iniciar fora da imagem.
+    */
+
+    if(
+      x < 0 ||
+      x > 1 ||
+      y < 0 ||
+      y > 1
+    ){
+      return;
+    }
+
+    start = {
+      x:x,
+      y:y
+    };
+
+    /*
+      Cria a caixa visual temporária.
+    */
+
+    drawingBox =
+      document.createElement('div');
+
+    drawingBox.id =
+      'drawingBox';
+
+    stage.appendChild(
+      drawingBox
+    );
+
+  }
+);
+
+
+/* =========================================================
+   MOSTRAR RETÂNGULO ENQUANTO ARRASTA
+   ========================================================= */
+
+stage.addEventListener(
+  'mousemove',
+  function(e){
+
+    if(!start || !drawingBox){
+      return;
+    }
+
+    let r =
+      base.getBoundingClientRect();
+
+    let x2 =
+      (e.clientX - r.left) / r.width;
+
+    let y2 =
+      (e.clientY - r.top) / r.height;
+
+    /*
+      Limita o desenho à imagem.
+    */
+
+    x2 =
+      Math.max(
+        0,
+        Math.min(1, x2)
+      );
+
+    y2 =
+      Math.max(
+        0,
+        Math.min(1, y2)
+      );
+
+    let x =
+      Math.min(
+        start.x,
+        x2
+      );
+
+    let y =
+      Math.min(
+        start.y,
+        y2
+      );
+
+    let w =
+      Math.abs(
+        x2 - start.x
+      );
+
+    let h =
+      Math.abs(
+        y2 - start.y
+      );
+
+    drawingBox.style.left =
+      (x * 100) + '%';
+
+    drawingBox.style.top =
+      (y * 100) + '%';
+
+    drawingBox.style.width =
+      (w * 100) + '%';
+
+    drawingBox.style.height =
+      (h * 100) + '%';
+
+  }
+);
+
+
+/* =========================================================
+   FINALIZAR DESENHO
+   ========================================================= */
+
+stage.addEventListener(
+  'mouseup',
+  function(e){
+
+    /*
+      SOMENTE botão esquerdo pode finalizar.
+    */
+
+    if(e.button !== 0){
+      return;
+    }
+
+    if(!start){
+      return;
+    }
+
+    let r =
+      base.getBoundingClientRect();
+
+    let x2 =
+      (e.clientX - r.left) / r.width;
+
+    let y2 =
+      (e.clientY - r.top) / r.height;
+
+    x2 =
+      Math.max(
+        0,
+        Math.min(1, x2)
+      );
+
+    y2 =
+      Math.max(
+        0,
+        Math.min(1, y2)
+      );
+
+    let x =
+      Math.min(
+        start.x,
+        x2
+      );
+
+    let y =
+      Math.min(
+        start.y,
+        y2
+      );
+
+    let w =
+      Math.abs(
+        x2 - start.x
+      );
+
+    let h =
+      Math.abs(
+        y2 - start.y
+      );
+
+    cancelarDesenho();
+
+    /*
+      Ignora cliques ou movimentos mínimos.
+      Isso evita criar campo por acidente.
+    */
+
+    if(
+      w < .005 ||
+      h < .005
+    ){
+      return;
+    }
+
+    projeto.campos.push({
+
+      nome:
+        'NOVO CAMPO',
+
+      codigo:
+        'CAMPO_' +
+        (projeto.campos.length + 1),
+
+      tipo:
+        'grade',
+
+      x:x,
+      y:y,
+      w:w,
+      h:h,
+
+      linhas:1,
+      colunas:1,
+
+      valores:'',
+
+      bubble_h:.75,
+      bubble_w:.80,
+
+      min_fill:.12,
+      margin_delta:.06
+
+    });
+
+    sel =
+      projeto.campos.length - 1;
+
+    render();
+    loadForm();
+
+  }
+);
+
+
+/* =========================================================
+   CANCELAR DESENHO
+   ========================================================= */
+
+function cancelarDesenho(){
+
+  start = null;
+
+  if(drawingBox){
+
+    drawingBox.remove();
+
+    drawingBox = null;
+
+  }
+
+}
+
+
+/* =========================================================
+   RENDERIZAR REGIÕES
+   ========================================================= */
+
 function render(){
- stage.querySelectorAll('.box').forEach(x=>x.remove());
- projeto.campos.forEach((c,i)=>{let d=document.createElement('div');d.className='box';d.style.cssText=`left:${c.x*100}%;top:${c.y*100}%;width:${c.w*100}%;height:${c.h*100}%`;d.innerHTML=`<span>${esc(c.nome)}</span>`;d.onclick=()=>{sel=i;loadForm();render()};if(i===sel)d.style.borderWidth='4px';stage.appendChild(d)});
- campos.innerHTML=projeto.campos.map((c,i)=>`<div class="item" onclick="sel=${i};loadForm();render()"><b>${esc(c.nome)}</b><br><small>${esc(c.codigo)} · ${c.linhas}×${c.colunas}</small></div>`).join('');
+
+  stage
+    .querySelectorAll('.box')
+    .forEach(x => x.remove());
+
+
+  projeto.campos.forEach(
+    (c,i) => {
+
+      let d =
+        document.createElement('div');
+
+      d.className =
+        'box' +
+        (i === sel ? ' selected' : '');
+
+      d.dataset.index =
+        i;
+
+      d.style.left =
+        (c.x * 100) + '%';
+
+      d.style.top =
+        (c.y * 100) + '%';
+
+      d.style.width =
+        (c.w * 100) + '%';
+
+      d.style.height =
+        (c.h * 100) + '%';
+
+
+      d.innerHTML =
+        `<span>${esc(c.nome)}</span>`;
+
+
+      /*
+        Seleciona a região.
+      */
+
+      d.addEventListener(
+        'mousedown',
+        function(e){
+
+          /*
+            SOMENTE botão esquerdo.
+          */
+
+          if(e.button !== 0){
+            return;
+          }
+
+          e.stopPropagation();
+
+          sel = i;
+
+          loadForm();
+          render();
+
+        }
+      );
+
+
+      stage.appendChild(d);
+
+    }
+  );
+
+
+  campos.innerHTML =
+    projeto.campos.map(
+      (c,i) => `
+
+        <div
+          class="item ${i === sel ? 'selected-item' : ''}"
+          onclick="selecionarCampo(${i})"
+        >
+
+          <b>
+            ${esc(c.nome)}
+          </b>
+
+          <br>
+
+          <small>
+            ${esc(c.codigo)}
+            ·
+            ${c.linhas}×${c.colunas}
+          </small>
+
+        </div>
+
+      `
+    ).join('');
+
 }
-function loadForm(){let c=projeto.campos[sel];sem.style.display=c?'none':'block';form.style.display=c?'block':'none';if(!c)return;
- cnome.value=c.nome;ccodigo.value=c.codigo;ctipo.value=c.tipo;linhas.value=c.linhas;colunas.value=c.colunas;valores.value=c.valores||'';bh.value=c.bubble_h;bw.value=c.bubble_w;mf.value=c.min_fill;md.value=c.margin_delta}
-function aplicarCampo(){let c=projeto.campos[sel];if(!c)return;c.nome=cnome.value;c.codigo=ccodigo.value.trim().toUpperCase().replace(/[^A-Z0-9_]/g,'_');c.tipo=ctipo.value;c.linhas=+linhas.value;c.colunas=+colunas.value;c.valores=valores.value;c.bubble_h=+bh.value;c.bubble_w=+bw.value;c.min_fill=+mf.value;c.margin_delta=+md.value;render()}
-function removerCampo(){if(sel<0)return;projeto.campos.splice(sel,1);sel=-1;loadForm();render()}
-async function salvar(){aplicarCampo();projeto.nome=nome.value.trim();projeto.evento=evento.value.trim();projeto.tipo_folha=tipo.value;if(!projeto.nome)return alert('Informe o nome do projeto.');
- let j=await (await fetch(API+'?acao=salvar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(projeto)})).json();if(!j.ok)return alert(j.erro||'Erro');projeto.id=j.id;alert('Projeto salvo.');listar()}
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+
+/* =========================================================
+   SELECIONAR CAMPO
+   ========================================================= */
+
+function selecionarCampo(i){
+
+  sel = i;
+
+  loadForm();
+  render();
+
+}
+
+
+/* =========================================================
+   CARREGAR FORMULÁRIO
+   ========================================================= */
+
+function loadForm(){
+
+  let c =
+    projeto.campos[sel];
+
+  sem.style.display =
+    c ? 'none' : 'block';
+
+  form.style.display =
+    c ? 'block' : 'none';
+
+  if(!c){
+    return;
+  }
+
+  cnome.value =
+    c.nome || '';
+
+  ccodigo.value =
+    c.codigo || '';
+
+  ctipo.value =
+    c.tipo || 'grade';
+
+  linhas.value =
+    c.linhas || 1;
+
+  colunas.value =
+    c.colunas || 1;
+
+  valores.value =
+    c.valores || '';
+
+  bh.value =
+    c.bubble_h ?? .75;
+
+  bw.value =
+    c.bubble_w ?? .80;
+
+  mf.value =
+    c.min_fill ?? .12;
+
+  md.value =
+    c.margin_delta ?? .06;
+
+}
+
+
+/* =========================================================
+   APLICAR CAMPO
+   ========================================================= */
+
+function aplicarCampo(){
+
+  let c =
+    projeto.campos[sel];
+
+  if(!c){
+    return;
+  }
+
+  c.nome =
+    cnome.value.trim();
+
+  c.codigo =
+    ccodigo.value
+      .trim()
+      .toUpperCase()
+      .replace(
+        /[^A-Z0-9_]/g,
+        '_'
+      );
+
+  c.tipo =
+    ctipo.value;
+
+  c.linhas =
+    Math.max(
+      1,
+      +linhas.value || 1
+    );
+
+  c.colunas =
+    Math.max(
+      1,
+      +colunas.value || 1
+    );
+
+  c.valores =
+    valores.value;
+
+  c.bubble_h =
+    +bh.value;
+
+  c.bubble_w =
+    +bw.value;
+
+  c.min_fill =
+    +mf.value;
+
+  c.margin_delta =
+    +md.value;
+
+  render();
+
+}
+
+
+/* =========================================================
+   EXCLUIR CAMPO
+   ========================================================= */
+
+function removerCampo(){
+
+  if(
+    sel < 0 ||
+    !projeto.campos[sel]
+  ){
+    return;
+  }
+
+  let c =
+    projeto.campos[sel];
+
+  /*
+    Confirma para evitar apagar uma região boa
+    por acidente.
+  */
+
+  if(
+    !confirm(
+      'Excluir o campo "' +
+      c.nome +
+      '"?'
+    )
+  ){
+    return;
+  }
+
+  projeto.campos.splice(
+    sel,
+    1
+  );
+
+  sel = -1;
+
+  loadForm();
+  render();
+
+}
+
+
+/* =========================================================
+   TECLADO
+   ========================================================= */
+
+document.addEventListener(
+  'keydown',
+  function(e){
+
+    /*
+      ESC cancela desenho atual.
+    */
+
+    if(e.key === 'Escape'){
+
+      cancelarDesenho();
+
+      return;
+
+    }
+
+
+    /*
+      Não executa Delete se o usuário estiver
+      digitando dentro de input/select/textarea.
+    */
+
+    let tag =
+      document.activeElement
+        ?.tagName
+        ?.toLowerCase();
+
+    let digitando =
+      tag === 'input' ||
+      tag === 'textarea' ||
+      tag === 'select';
+
+
+    if(
+      (
+        e.key === 'Delete' ||
+        e.key === 'Backspace'
+      )
+      &&
+      !digitando
+      &&
+      sel >= 0
+    ){
+
+      e.preventDefault();
+
+      removerCampo();
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   BLOQUEAR BOTÃO DIREITO SOBRE A ÁREA DA IMAGEM
+   ========================================================= */
+
+/*
+  Não queremos botão direito fazendo qualquer operação
+  no editor.
+
+  Ele NÃO cria campo e NÃO arrasta imagem.
+*/
+
+stage.addEventListener(
+  'contextmenu',
+  function(e){
+
+    e.preventDefault();
+
+  }
+);
+
+
+/* =========================================================
+   SALVAR PROJETO
+   ========================================================= */
+
+async function salvar(){
+
+  /*
+    Se existe um campo selecionado,
+    aplica eventuais alterações antes de salvar.
+  */
+
+  if(sel >= 0){
+    aplicarCampo();
+  }
+
+
+  projeto.nome =
+    nome.value.trim();
+
+  projeto.evento =
+    evento.value.trim();
+
+  projeto.tipo_folha =
+    tipo.value;
+
+
+  if(!projeto.nome){
+
+    alert(
+      'Informe o nome do projeto.'
+    );
+
+    return;
+
+  }
+
+
+  if(!projeto.arquivo_base){
+
+    alert(
+      'Carregue a folha base antes de salvar.'
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    let r =
+      await fetch(
+        API + '?acao=salvar',
+        {
+          method:'POST',
+
+          headers:{
+            'Content-Type':
+              'application/json'
+          },
+
+          body:
+            JSON.stringify(projeto)
+        }
+      );
+
+
+    let j =
+      await r.json();
+
+
+    if(!j.ok){
+
+      alert(
+        j.erro ||
+        'Erro ao salvar projeto.'
+      );
+
+      return;
+
+    }
+
+
+    projeto.id =
+      j.id;
+
+
+    alert(
+      'Projeto salvo.'
+    );
+
+
+    listar();
+
+  }
+  catch(e){
+
+    console.error(e);
+
+    alert(
+      'Erro ao salvar projeto.'
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function esc(s){
+
+  return String(
+    s ?? ''
+  ).replace(
+    /[&<>"']/g,
+    m => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#039;'
+    }[m])
+  );
+
+}
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+   ========================================================= */
+
 listar();
+
 </script>
-</body></html>
+
+</body>
+</html>
