@@ -59,6 +59,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
   display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px
 }
 .kpi{border:1px solid var(--line);border-radius:8px;padding:9px;background:#f8fafc}
+.kpi.problem{border-color:#f59e0b;background:#fff7ed;box-shadow:inset 0 0 0 1px rgba(245,158,11,.12)}
+.kpi.problem small{color:#b45309}.kpi.problem strong{color:#9a3412}
+.kpi.resolved{border-color:#86efac;background:#f0fdf4}
+.kpi.resolved small,.kpi.resolved strong{color:#166534}
 .kpi small{display:block;color:var(--muted);font-size:11px}.kpi strong{display:block;font-size:17px;margin-top:3px}
 .progress-head{display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-top:6px}
 .progress{height:9px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:6px 0 12px}
@@ -146,10 +150,10 @@ kbd{
 
     <div id="panel" style="display:none">
       <div class="summary">
-        <div class="kpi"><small>INSCRIÇÃO</small><strong id="inscricao">—</strong></div>
-        <div class="kpi"><small>VERSÃO</small><strong id="versao">—</strong></div>
+        <div class="kpi" id="kpiInscricao"><small>INSCRIÇÃO</small><strong id="inscricao">—</strong></div>
+        <div class="kpi" id="kpiVersao"><small>VERSÃO</small><strong id="versao">—</strong></div>
         <div class="kpi"><small>QUESTÕES</small><strong id="questoes">0</strong></div>
-        <div class="kpi"><small>PENDÊNCIAS</small><strong id="pendencias">0</strong></div>
+        <div class="kpi" id="kpiPendencias"><small>PENDÊNCIAS</small><strong id="pendencias">0</strong></div>
       </div>
 
       <div class="progress-head">
@@ -204,6 +208,7 @@ let atual = 0;
 let resolvidos = new Set();
 let objectURL = '';
 let zoomAtual = 1;
+let tiposPendenciaOriginais = new Set();
 
 /* ---------- PROJETOS ---------- */
 async function carregarProjetos(){
@@ -269,6 +274,9 @@ $('btnProcessar').addEventListener('click', async () => {
     fila = Array.isArray(j.revisao) ? j.revisao : [];
     atual = 0;
     resolvidos = new Set();
+    tiposPendenciaOriginais = new Set(
+      fila.map(o => o.tipo).filter(tipo => ['inscricao','versao'].includes(tipo))
+    );
 
     if(objectURL) URL.revokeObjectURL(objectURL);
     objectURL = URL.createObjectURL(file);
@@ -303,10 +311,13 @@ function render(){
   $('inscricao').textContent = resultado.inscricao || '—';
   $('versao').textContent = resultado.versao || '—';
   $('questoes').textContent = Object.keys(resultado.respostas || {}).length;
-  $('pendencias').textContent = fila.length;
 
   const total = fila.length;
   const concluidas = resolvidos.size;
+  const restantes = Math.max(0, total - concluidas);
+  $('pendencias').textContent = restantes;
+  atualizarEstadoKpis();
+
   const percentual = total ? Math.round((concluidas / total) * 100) : 100;
 
   $('progText').textContent = `Conferidas ${concluidas}/${total}`;
@@ -367,6 +378,39 @@ function render(){
   if(resolvidos.has(atual)){
     $('contador').innerHTML += ' <span class="done">✓ conferida</span>';
   }
+}
+
+
+function temPendenciaAberta(tipo){
+  return fila.some((o, idx) => o.tipo === tipo && !resolvidos.has(idx));
+}
+
+function atualizarEstadoKpis(){
+  [['inscricao', $('kpiInscricao')], ['versao', $('kpiVersao')]].forEach(([tipo, el]) => {
+    if(!el) return;
+    el.classList.remove('problem','resolved');
+    if(temPendenciaAberta(tipo)) el.classList.add('problem');
+    else if(tiposPendenciaOriginais.has(tipo)) el.classList.add('resolved');
+  });
+
+  const kp = $('kpiPendencias');
+  if(kp){
+    kp.classList.toggle('problem', fila.length > resolvidos.size);
+    kp.classList.toggle('resolved', fila.length > 0 && fila.length === resolvidos.size);
+  }
+}
+
+function atualizarInscricaoCorrigida(o, valor){
+  const pos = Number(o.item);
+  if(!Number.isInteger(pos) || pos < 1) return;
+
+  let chars = String(resultado.inscricao ?? '').split('');
+  const posicoes = fila.filter(x => x.tipo === 'inscricao').map(x => Number(x.item) || 0);
+  const tamanhoMinimo = Math.max(pos, ...posicoes, chars.length);
+
+  while(chars.length < tamanhoMinimo) chars.push('?');
+  chars[pos - 1] = String(valor ?? '');
+  resultado.inscricao = chars.join('');
 }
 
 /* ---------- MÁSCARA / RECORTE ---------- */
@@ -463,6 +507,8 @@ function corrigir(valor){
     resultado.respostas[o.questao] = valor;
   }else if(o.tipo === 'versao'){
     resultado.versao = valor;
+  }else if(o.tipo === 'inscricao'){
+    atualizarInscricaoCorrigida(o, valor);
   }
 
   const total = fila.length;
