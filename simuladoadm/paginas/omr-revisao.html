@@ -51,6 +51,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
   position:absolute;border:3px solid #f00052;background:rgba(240,0,82,.10);
   box-shadow:0 0 0 2px rgba(255,255,255,.85);pointer-events:none;z-index:5
 }
+.mask.current{border-color:#f59e0b;background:rgba(245,158,11,.15);z-index:6}
+.mask .tag{
+  position:absolute;left:-3px;top:-24px;background:#dc2626;color:#fff;
+  min-width:22px;height:22px;padding:0 6px;border-radius:5px;display:flex;
+  align-items:center;justify-content:center;font-size:11px;font-weight:700;white-space:nowrap
+}
+.mask.current .tag{background:#f59e0b}
 .side{
   background:#fff;border:1px solid var(--line);border-radius:8px;overflow:auto;padding:14px
 }
@@ -90,21 +97,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
 }
 .nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .done{color:var(--ok);font-weight:700}
-.attention{
-  margin:10px 0 12px;border:1px solid var(--line);border-radius:8px;background:#f8fafc;padding:10px
-}
-.attention-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
-.attention-head b{font-size:13px}.attention-head span{font-size:11px;color:var(--muted)}
-.attention-list{display:grid;gap:6px;max-height:190px;overflow:auto}
-.attention-item{
-  width:100%;display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;
-  text-align:left;border:1px solid #fca5a5;background:#fff1f2;color:var(--ink);padding:8px 9px
-}
-.attention-item:hover{background:#ffe4e6}
-.attention-item.active{border:2px solid var(--bad);padding:7px 8px;box-shadow:0 0 0 2px rgba(220,38,38,.10)}
-.attention-name{display:block;font-weight:700;color:#991b1b}
-.attention-why{display:block;font-size:11px;color:#b91c1c;margin-top:2px;font-weight:400}
-.attention-value{font-weight:700;color:#991b1b;white-space:nowrap}
 .footer{
   height:54px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;
   padding:0 16px;gap:15px;font-size:12px;color:#475569
@@ -150,7 +142,7 @@ kbd{
     <div class="sheet-wrap">
       <div id="stage">
         <img id="sheet" alt="">
-        <div id="mask" class="mask" hidden></div>
+        <div id="masks"></div>
       </div>
     </div>
   </section>
@@ -179,14 +171,6 @@ kbd{
 
       <div id="state" class="state">—</div>
 
-      <div id="attentionBox" class="attention" hidden>
-        <div class="attention-head">
-          <b>Campos que precisam de atenção</b>
-          <span>Corrigiu? O item desaparece.</span>
-        </div>
-        <div id="attentionList" class="attention-list"></div>
-      </div>
-
       <div id="issueBox">
         <div id="contador" style="color:var(--muted);font-size:12px">Pendência —</div>
         <div class="issue-title" id="titulo">—</div>
@@ -212,7 +196,7 @@ kbd{
   <span><kbd>Shift</kbd>+<kbd>F4</kbd> anterior</span>
   <span><kbd>←</kbd> <kbd>→</kbd> navegar</span>
   <span><kbd>A</kbd>–<kbd>E</kbd> confirmar</span>
-  <span><kbd>0</kbd> branco (questão)</span>
+  <span><kbd>0</kbd> branco</span>
   <span><kbd>Enter</kbd> aceitar leitura</span>
 </footer>
 
@@ -295,13 +279,13 @@ $('btnProcessar').addEventListener('click', async () => {
 
     resultado = j;
 
-    /*
-     * Questão sem alternativa marcada é uma resposta EM BRANCO válida.
-     * Portanto, "questao + vazio" não entra na fila de revisão.
-     * Inscrição/versão vazias continuam sendo pendências normalmente.
-     */
     const revisaoApi = Array.isArray(j.revisao) ? j.revisao : [];
 
+    /*
+     * Questão sem alternativa marcada é válida: o aluno deixou em branco.
+     * Só removemos "vazio" quando o tipo é QUESTÃO.
+     * Inscrição e versão vazias/duvidosas continuam exigindo conferência.
+     */
     revisaoApi.forEach(o => {
       if(o?.tipo === 'questao' && o?.status === 'vazio' && o?.questao != null){
         resultado.respostas = resultado.respostas || {};
@@ -312,6 +296,32 @@ $('btnProcessar').addEventListener('click', async () => {
     fila = revisaoApi.filter(o =>
       !(o?.tipo === 'questao' && o?.status === 'vazio')
     );
+
+    /*
+     * Compatibilidade com respostas da API que sinalizem a inscrição
+     * fora do array "revisao".
+     */
+    const stIns = String(
+      j.inscricao_status ?? j.status_inscricao ?? j.inscricaoStatus ?? ''
+    ).toLowerCase();
+
+    const inscricaoDuvidosa =
+      String(j.inscricao ?? '').includes('?') ||
+      ['duvida','dúvida','vazio','multipla','múltipla','multiplo','múltiplo','erro'].includes(stIns);
+
+    if(inscricaoDuvidosa && !fila.some(o => o.tipo === 'inscricao')){
+      const regIns =
+        j.inscricao_regiao ?? j.regiao_inscricao ?? j.inscricaoRegiao ?? null;
+
+      fila.unshift({
+        tipo:'inscricao',
+        item:'geral',
+        status: stIns || 'duvida',
+        valor: j.inscricao ?? '?',
+        regiao: regIns,
+        scores: j.inscricao_scores ?? j.scores_inscricao ?? {}
+      });
+    }
 
     atual = 0;
     resolvidos = new Set();
@@ -369,24 +379,18 @@ function render(){
     $('state').className = 'state ok';
     $('state').innerHTML = '<b>OMR OK</b> — nenhuma conferência necessária.';
     $('issueBox').hidden = true;
-    $('attentionBox').hidden = true;
-    $('mask').hidden = true;
+    $('masks').innerHTML = '';
     $('topStatus').textContent =
       `OMR OK · Inscrição ${resultado.inscricao || '—'} · ${Object.keys(resultado.respostas || {}).length} questões`;
     return;
   }
 
   $('issueBox').hidden = false;
-  renderAttentionList();
 
   if(concluidas === total){
     $('state').className = 'state ok';
     $('state').innerHTML = '<b>DOCUMENTO CONFERIDO</b> — todas as pendências foram tratadas.';
     $('topStatus').textContent = 'Documento conferido — 100%';
-    $('issueBox').hidden = true;
-    $('attentionBox').hidden = true;
-    $('mask').hidden = true;
-    return;
   }else{
     $('state').className = 'state';
     $('state').innerHTML = `<b>${total - concluidas} pendência(s)</b> aguardando conferência.`;
@@ -403,10 +407,17 @@ function render(){
   }else if(o.tipo === 'versao'){
     $('titulo').textContent = 'Versão da prova';
   }else{
-    $('titulo').textContent = 'Inscrição — posição ' + o.item;
+    $('titulo').textContent =
+      o.item === 'geral' ? 'Número de inscrição' : 'Inscrição — posição ' + o.item;
   }
 
-  $('motivo').textContent = motivoPendencia(o);
+  if(o.status === 'vazio'){
+    $('motivo').textContent = 'Sem marcação detectada';
+  }else if(o.status === 'duvida'){
+    $('motivo').textContent = 'Leitura duvidosa / marcações próximas';
+  }else{
+    $('motivo').textContent = 'Conferência necessária';
+  }
 
   $('leitura').textContent =
     o.valor === '' ? 'BRANCO' :
@@ -419,57 +430,6 @@ function render(){
   if(resolvidos.has(atual)){
     $('contador').innerHTML += ' <span class="done">✓ conferida</span>';
   }
-}
-
-
-function descricaoPendencia(o){
-  if(o.tipo === 'questao') return 'Questão ' + o.questao;
-  if(o.tipo === 'versao') return 'Versão da prova';
-  return 'Inscrição — posição ' + o.item;
-}
-
-function motivoPendencia(o){
-  if(o.status === 'duvida') return 'Leitura duvidosa / marcações próximas';
-  if(['dupla','multipla','multiplo'].includes(o.status)) return 'Mais de uma marcação detectada';
-  if(o.status === 'vazio') return 'Sem marcação detectada';
-  return 'Conferência necessária';
-}
-
-function valorPendencia(o){
-  if(o.valor === '') return 'BRANCO';
-  if(o.valor === '?') return 'DÚVIDA';
-  return o.valor ?? '—';
-}
-
-function renderAttentionList(){
-  const abertos = fila
-    .map((o, idx) => ({o, idx}))
-    .filter(x => !resolvidos.has(x.idx));
-
-  if(!abertos.length){
-    $('attentionBox').hidden = true;
-    $('attentionList').innerHTML = '';
-    return;
-  }
-
-  $('attentionBox').hidden = false;
-  $('attentionList').innerHTML = abertos.map(({o, idx}) => `
-    <button type="button"
-            class="attention-item ${idx === atual ? 'active' : ''}"
-            onclick="irParaPendencia(${idx})">
-      <span>
-        <span class="attention-name">${esc(descricaoPendencia(o))}</span>
-        <span class="attention-why">${esc(motivoPendencia(o))}</span>
-      </span>
-      <span class="attention-value">${esc(valorPendencia(o))}</span>
-    </button>
-  `).join('');
-}
-
-function irParaPendencia(idx){
-  if(idx < 0 || idx >= fila.length || resolvidos.has(idx)) return;
-  atual = idx;
-  render();
 }
 
 
@@ -505,38 +465,50 @@ function atualizarInscricaoCorrigida(o, valor){
   resultado.inscricao = chars.join('');
 }
 
-/* ---------- MÁSCARA / RECORTE ---------- */
-function posicionarMask(r){
-  if(!r || !$('sheet').naturalWidth){
-    $('mask').hidden = true;
-    return;
-  }
+/* ---------- RETÂNGULOS DE TODAS AS PENDÊNCIAS ---------- */
+function renderTodasMascaras(){
+  const box = $('masks');
+  box.innerHTML = '';
+
+  if(!$('sheet').naturalWidth) return;
 
   const img = $('sheet');
-  const mask = $('mask');
-
-  /*
-   * A imagem é exibida redimensionada pelo navegador.
-   * Usamos clientWidth/clientHeight para manter a máscara casada
-   * com o tamanho visual, como no laboratório.
-   */
   const w = img.clientWidth;
   const h = img.clientHeight;
 
-  mask.hidden = false;
-  mask.style.left = (r.x * w) + 'px';
-  mask.style.top = (r.y * h) + 'px';
-  mask.style.width = (r.w * w) + 'px';
-  mask.style.height = (r.h * h) + 'px';
+  fila.forEach((o, idx) => {
+    if(resolvidos.has(idx) || !o.regiao) return;
 
-  /*
-   * Recorte ampliado da ocorrência.
-   */
+    const r = o.regiao;
+    const m = document.createElement('div');
+    m.className = 'mask' + (idx === atual ? ' current' : '');
+    m.style.left = (r.x * w) + 'px';
+    m.style.top = (r.y * h) + 'px';
+    m.style.width = (r.w * w) + 'px';
+    m.style.height = (r.h * h) + 'px';
+
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent =
+      o.tipo === 'questao' ? ('Q' + o.questao) :
+      o.tipo === 'versao' ? 'VERSÃO' : 'INSCRIÇÃO';
+
+    m.appendChild(tag);
+    box.appendChild(m);
+  });
+}
+
+/* ---------- MÁSCARA / RECORTE ---------- */
+function posicionarMask(r){
+  renderTodasMascaras();
+
+  if(!r || !$('sheet').naturalWidth) return;
+
+  const img = $('sheet');
   const naturalW = img.naturalWidth;
   const naturalH = img.naturalHeight;
   const regionW = Math.max(1, r.w * naturalW);
   const regionH = Math.max(1, r.h * naturalH);
-
   const escala = Math.min(350 / regionW, 125 / regionH);
 
   $('crop').style.width = (naturalW * escala) + 'px';
@@ -544,18 +516,15 @@ function posicionarMask(r){
   $('crop').style.left = (-(r.x * naturalW) * escala + 10) + 'px';
   $('crop').style.top = (-(r.y * naturalH) * escala + 10) + 'px';
 
-  /*
-   * Leva a pendência para a região visível.
-   */
   requestAnimationFrame(() => {
     const viewer = $('viewer');
-    const stageRect = $('stage').getBoundingClientRect();
-    const viewerRect = viewer.getBoundingClientRect();
-    const maskRect = mask.getBoundingClientRect();
+    const atualMask = $('masks').querySelector('.mask.current');
+    if(!atualMask) return;
 
+    const viewerRect = viewer.getBoundingClientRect();
+    const maskRect = atualMask.getBoundingClientRect();
     const dx = maskRect.left - viewerRect.left - viewer.clientWidth * .42;
     const dy = maskRect.top - viewerRect.top - viewer.clientHeight * .40;
-
     viewer.scrollBy({left:dx, top:dy, behavior:'smooth'});
   });
 }
@@ -572,11 +541,33 @@ function montarBotoes(o){
     valores = ['0','1','2','3','4','5','6','7','8','9'];
   }
 
+  if(o.tipo === 'inscricao' && o.item === 'geral'){
+    $('choices').innerHTML = `
+      <input id="inscricaoManual" type="text" inputmode="numeric"
+             value="${esc(resultado.inscricao || '')}"
+             maxlength="12"
+             style="grid-column:1 / -1;height:40px;border:1px solid #cbd5e1;border-radius:7px;padding:0 10px;font-size:17px;font-weight:700">
+      <button type="button" class="primary" style="grid-column:1 / -1"
+              onclick="confirmarInscricaoManual()">Confirmar inscrição</button>`;
+    return;
+  }
+
   $('choices').innerHTML =
     valores.map(v =>
       `<button type="button" onclick="corrigir('${v}')">${v}</button>`
     ).join('') +
-    `<button type="button" class="blank" onclick="corrigir('')">Confirmar branco</button>`;
+    (o.tipo === 'questao'
+      ? `<button type="button" class="blank" onclick="corrigir('')">Confirmar branco</button>`
+      : '');
+}
+
+function confirmarInscricaoManual(){
+  const input = $('inscricaoManual');
+  if(!input) return;
+  const valor = input.value.replace(/\D/g,'');
+  if(!valor) return alert('Informe o número de inscrição correto.');
+  resultado.inscricao = valor;
+  corrigir(valor);
 }
 
 function mostrarScores(scores){
@@ -600,7 +591,8 @@ function corrigir(valor){
   }else if(o.tipo === 'versao'){
     resultado.versao = valor;
   }else if(o.tipo === 'inscricao'){
-    atualizarInscricaoCorrigida(o, valor);
+    if(o.item === 'geral') resultado.inscricao = valor;
+    else atualizarInscricaoCorrigida(o, valor);
   }
 
   const total = fila.length;
@@ -636,21 +628,17 @@ function aceitarAtual(){
   corrigir(o.valor);
 }
 
-function navegarAberta(direcao){
-  if(!fila.length || resolvidos.size >= fila.length) return;
-
-  for(let passo=1; passo<=fila.length; passo++){
-    const idx = (atual + direcao * passo + fila.length * 10) % fila.length;
-    if(!resolvidos.has(idx)){
-      atual = idx;
-      render();
-      return;
-    }
-  }
+function proxima(){
+  if(!fila.length) return;
+  atual = (atual + 1) % fila.length;
+  render();
 }
 
-function proxima(){ navegarAberta(1); }
-function anterior(){ navegarAberta(-1); }
+function anterior(){
+  if(!fila.length) return;
+  atual = (atual - 1 + fila.length) % fila.length;
+  render();
+}
 
 $('proximo').addEventListener('click', proxima);
 $('anterior').addEventListener('click', anterior);
@@ -667,6 +655,7 @@ function aplicarZoom(){
     (($('stage').offsetHeight * zoomAtual) - $('stage').offsetHeight) + 'px';
 
   render();
+  renderTodasMascaras();
 }
 
 function ajustarImagem(){
