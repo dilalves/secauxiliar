@@ -546,7 +546,7 @@
     }
 
     .detalhe-kpi-grid{
-      grid-template-columns:repeat(4, minmax(0, 1fr));
+      grid-template-columns:repeat(5, minmax(0, 1fr));
     }
 
     .contato-grid{
@@ -825,6 +825,10 @@
       <div class="dialog-body">
         <div class="dialog-grid detalhe-kpi-grid">
           <div class="dialog-box">
+            <div class="dialog-box-label">Inscritos</div>
+            <div class="dialog-box-value" id="detKpiInscritosValor">0</div>
+          </div>
+          <div class="dialog-box">
             <div class="dialog-box-label" id="detKpi1Label">Presentes informados</div>
             <div class="dialog-box-value" id="detKpi1Valor">0</div>
           </div>
@@ -944,6 +948,7 @@
     const detalhesModal = document.getElementById('detalhesModal');
     const detalhesTitulo = document.getElementById('detalhesTitulo');
     const detalhesSubtitulo = document.getElementById('detalhesSubtitulo');
+    const detKpiInscritosValor = document.getElementById('detKpiInscritosValor');
     const detKpi1Label = document.getElementById('detKpi1Label');
     const detKpi1Valor = document.getElementById('detKpi1Valor');
     const detKpi2Label = document.getElementById('detKpi2Label');
@@ -1201,6 +1206,7 @@
           data-action="abrir-detalhes-unidade"
           data-codigo="${esc(r.codigo)}"
           data-unidade="${esc(r.unidade)}"
+          data-inscritos="${Number(r.total_inscritos || 0)}"
           data-presentes-d1="${Number(r.presentes_d1 || 0)}"
           data-presentes-d2="${Number(r.presentes_d2 || 0)}"
           data-arquivos-d1="${Number(r.arquivos_d1 || 0)}"
@@ -1218,6 +1224,7 @@
       detalhesTitulo.textContent = 'Detalhes da unidade';
       detalhesSubtitulo.textContent = 'Contato da unidade e lotes enviados no evento selecionado.';
 
+      detKpiInscritosValor.textContent = '0';
       detKpi1Label.textContent = 'Presentes informados';
       detKpi1Valor.textContent = '0';
       detKpi2Label.textContent = 'Arquivos enviados';
@@ -1256,12 +1263,15 @@
       detalhesModal.classList.add('show');
       document.body.classList.add('modal-aberto');
 
+      const inscritos = Number(info.inscritos || 0);
       const presentesD1 = Number(info.presentes_d1 || 0);
       const presentesD2 = Number(info.presentes_d2 || 0);
       const arquivosD1 = Number(info.arquivos_d1 || 0);
       const arquivosD2 = Number(info.arquivos_d2 || 0);
       const difD1 = Number(info.dif_d1 || 0);
       const difD2 = Number(info.dif_d2 || 0);
+
+      detKpiInscritosValor.textContent = n(inscritos);
 
       if (isEnem) {
         detKpi1Label.textContent = 'Presentes D1';
@@ -1968,6 +1978,7 @@
         await abrirModalDetalhesUnidade({
           codigo: btnDetalhes.dataset.codigo || '',
           unidade: btnDetalhes.dataset.unidade || '',
+          inscritos: btnDetalhes.dataset.inscritos || '0',
           presentes_d1: btnDetalhes.dataset.presentesD1 || '0',
           presentes_d2: btnDetalhes.dataset.presentesD2 || '0',
           arquivos_d1: btnDetalhes.dataset.arquivosD1 || '0',
