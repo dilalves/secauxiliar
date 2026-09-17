@@ -125,6 +125,7 @@ input[readonly]{background:#f1f5f9;color:#334155;font-weight:800}
 .suggest{position:absolute;background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.18);z-index:50;max-height:240px;overflow:auto;min-width:360px}
 .suggest div{padding:8px 10px;cursor:pointer;border-bottom:1px solid #eef2f7}
 .suggest div:hover{background:#eef6ff}
+.suggest div.suggest-active{background:#dbeafe;outline:2px solid #2563eb;outline-offset:-2px}
 
 .muted{color:var(--muted)}
 .pill{display:inline-flex;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:900}
@@ -788,17 +789,49 @@ async function excluirLinha(idx){
 }
 
 let prestadorTimer=null;
+let suggestIndex=-1;
 
 function navNome(ev,idx){
+  const s=$('suggest');
+  const itens=[...s.querySelectorAll('div[data-prestador="1"]')];
+
+  if(ev.key==='ArrowDown'){
+    if(!itens.length) return;
+    ev.preventDefault();
+    suggestIndex = suggestIndex < itens.length-1 ? suggestIndex+1 : 0;
+    atualizarSuggestAtivo(itens);
+    return;
+  }
+
+  if(ev.key==='ArrowUp'){
+    if(!itens.length) return;
+    ev.preventDefault();
+    suggestIndex = suggestIndex > 0 ? suggestIndex-1 : itens.length-1;
+    atualizarSuggestAtivo(itens);
+    return;
+  }
+
+  if(ev.key==='Escape'){
+    s.classList.add('hidden');
+    suggestIndex=-1;
+    return;
+  }
+
   if(ev.key==='Enter'){
     ev.preventDefault();
 
-    const s=$('suggest');
-    const first=s.querySelector('div');
-
-    if(first) first.click();
-    else document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.querySelector('select')?.focus();
+    if(itens.length){
+      const escolhido = suggestIndex>=0 ? itens[suggestIndex] : itens[0];
+      escolhido.click();
+    }else{
+      document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.querySelector('select')?.focus();
+    }
   }
+}
+
+function atualizarSuggestAtivo(itens){
+  itens.forEach((el,i)=>el.classList.toggle('suggest-active',i===suggestIndex));
+  if(suggestIndex>=0) itens[suggestIndex]?.scrollIntoView({block:'nearest'});
 }
 
 function buscarPrestador(input,idx){
@@ -822,8 +855,10 @@ function buscarPrestador(input,idx){
       s.style.left=(r.left+window.scrollX)+'px';
       s.style.top=(r.bottom+window.scrollY+4)+'px';
 
+      suggestIndex=-1;
+
       s.innerHTML=(j.prestadores||[]).map(p=>`
-        <div onclick='selecionarPrestador(${idx},${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+        <div data-prestador="1" onclick='selecionarPrestador(${idx},${JSON.stringify(p).replace(/'/g,"&#39;")})'>
           <strong>${escapeHtml(p.nome)}</strong><br>
           <small>CPF ${escapeHtml(p.cpf||'')} · Funcional ${escapeHtml(p.funcional||'')}</small>
         </div>
@@ -845,6 +880,7 @@ function selecionarPrestador(idx,p){
   linhas[idx].funcional=p.funcional||'';
 
   $('suggest').classList.add('hidden');
+  suggestIndex=-1;
   renderLinhas();
 
   setTimeout(()=>document.querySelectorAll('#tbody tr:not(.obsrow)')[idx]?.querySelector('select')?.focus(),50);
