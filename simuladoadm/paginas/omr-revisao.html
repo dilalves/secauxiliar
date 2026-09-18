@@ -517,7 +517,13 @@ function renderTodasMascaras(){
       altura=novaAltura;
     }else if(o.tipo==='inscricao'){
       dx=Math.max(.5,r.w*w*.010);
-      dy=Math.max(2.0,r.h*h*.105);
+
+      // A API entrega as regiões da inscrição ligeiramente acima das bolhas.
+      // Deslocamos a máscara para baixo de forma proporcional à altura da
+      // própria região, para o ajuste continuar correto em qualquer zoom.
+      // Alternativas permanecem intocadas.
+      dy=Math.max(3.0,r.h*h*.42);
+
       insetX=Math.max(.4,Math.min(1.0,r.w*w*.010));
       insetY=Math.max(.4,Math.min(.8,r.h*h*.025));
       largura=Math.max(2,r.w*w-insetX*2);
