@@ -45,8 +45,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .sheet-wrap{
   min-height:100%;display:flex;align-items:flex-start;justify-content:center;padding:8px
 }
-#stage{position:relative;display:inline-block;transform-origin:top center}
-#sheet{display:block;max-height:calc(100vh - 202px);max-width:100%;width:auto;height:auto;background:#fff}
+#stage{position:relative;display:inline-block}
+#sheet{display:block;max-width:none;max-height:none;width:auto;height:auto;background:#fff}
+.choices button.selected{
+  background:var(--blue);color:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.18)
+}
+.choices button.multi{font-size:18px}
+.zoom-hint{font-size:11px;color:var(--muted);margin-left:4px;white-space:nowrap}
 .mask{
   position:absolute;border:3px solid #f00052;background:rgba(240,0,82,.10);
   box-shadow:0 0 0 2px rgba(255,255,255,.85);pointer-events:none;z-index:5
@@ -134,6 +139,7 @@ kbd{
     <strong id="zoomTxt">100%</strong>
     <button type="button" id="mais">+</button>
     <button type="button" id="ajustar">Ajustar</button>
+    <span class="zoom-hint">Ctrl + roda</span>
   </div>
 </section>
 
@@ -194,10 +200,10 @@ kbd{
 <footer class="footer">
   <span><kbd>F4</kbd> próxima pendência</span>
   <span><kbd>Shift</kbd>+<kbd>F4</kbd> anterior</span>
-  <span><kbd>←</kbd> <kbd>→</kbd> navegar</span>
-  <span><kbd>A</kbd>–<kbd>E</kbd> confirmar</span>
-  <span><kbd>0</kbd> branco</span>
-  <span><kbd>Enter</kbd> aceitar leitura</span>
+  <span><kbd>←</kbd> <kbd>→</kbd> selecionar resposta</span>
+  <span><kbd>A</kbd>–<kbd>E</kbd> selecionar direto</span>
+  <span><kbd>#</kbd> múltipla</span>
+  <span><kbd>Enter</kbd> confirmar e avançar</span>
 </footer>
 
 <script>
@@ -215,6 +221,9 @@ let atual = 0;
 let resolvidos = new Set();
 let objectURL = '';
 let zoomAtual = 1;
+let baseSheetWidth = 0;
+let baseSheetHeight = 0;
+const selecaoTemporaria = new Map();
 let tiposPendenciaOriginais = new Set();
 
 /* ---------- PROJETOS ---------- */
@@ -338,6 +347,9 @@ $('btnProcessar').addEventListener('click', async () => {
     $('sheet').onload = () => {
       $('placeholder').style.display = 'none';
       $('panel').style.display = 'block';
+      baseSheetWidth = 0;
+      baseSheetHeight = 0;
+      zoomAtual = 1;
       ajustarImagem();
       render();
     };
@@ -530,16 +542,57 @@ function posicionarMask(r){
 }
 
 /* ---------- BOTÕES ---------- */
-function montarBotoes(o){
-  let valores;
+function opcoesDaPendencia(o){
+  if(o.tipo === 'questao') return ['A','B','C','D','E','#'];
+  if(o.tipo === 'versao') return ['V1','V2','V3','V4'];
+  return ['0','1','2','3','4','5','6','7','8','9'];
+}
+
+function selecaoInicial(o){
+  if(selecaoTemporaria.has(atual)) return selecaoTemporaria.get(atual);
+
+  let v = null;
 
   if(o.tipo === 'questao'){
-    valores = ['A','B','C','D','E'];
+    if(['A','B','C','D','E'].includes(o.valor)) v = o.valor;
+    else if(['multipla','múltipla','multiplo','múltiplo'].includes(String(o.status || '').toLowerCase())) v = '#';
   }else if(o.tipo === 'versao'){
-    valores = ['V1','V2','V3','V4'];
-  }else{
-    valores = ['0','1','2','3','4','5','6','7','8','9'];
+    if(['V1','V2','V3','V4'].includes(o.valor)) v = o.valor;
+  }else if(o.tipo === 'inscricao' && o.item !== 'geral'){
+    if(/^\d$/.test(String(o.valor ?? ''))) v = String(o.valor);
   }
+
+  if(v !== null) selecaoTemporaria.set(atual, v);
+  return v;
+}
+
+function selecionarValor(valor){
+  if(!fila.length || resolvidos.has(atual)) return;
+  selecaoTemporaria.set(atual, valor);
+  montarBotoes(fila[atual]);
+}
+
+function moverSelecao(direcao){
+  const o = fila[atual];
+  if(!o || resolvidos.has(atual)) return;
+
+  const opcoes = opcoesDaPendencia(o);
+  if(!opcoes.length) return;
+
+  let valor = selecaoInicial(o);
+  let idx = opcoes.indexOf(valor);
+
+  if(idx < 0){
+    idx = direcao > 0 ? 0 : opcoes.length - 1;
+  }else{
+    idx = (idx + direcao + opcoes.length) % opcoes.length;
+  }
+
+  selecionarValor(opcoes[idx]);
+}
+
+function montarBotoes(o){
+  const valores = opcoesDaPendencia(o);
 
   if(o.tipo === 'inscricao' && o.item === 'geral'){
     $('choices').innerHTML = `
@@ -552,14 +605,17 @@ function montarBotoes(o){
     return;
   }
 
-  $('choices').innerHTML =
-    valores.map(v =>
-      `<button type="button" onclick="corrigir('${v}')">${v}</button>`
-    ).join('') +
-    (o.tipo === 'questao'
-      ? `<button type="button" class="blank" onclick="corrigir('')">Confirmar branco</button>`
-      : '');
+  const selecionado = selecaoInicial(o);
+
+  $('choices').innerHTML = valores.map(v => {
+    const ativo = selecionado === v ? ' selected' : '';
+    const multi = v === '#' ? ' multi' : '';
+    const titulo = v === '#' ? ' title="Múltipla marcação / anulada"' : '';
+    return `<button type="button" class="${ativo}${multi}"${titulo}
+                    onclick="selecionarValor('${v}')">${v}</button>`;
+  }).join('');
 }
+
 
 function confirmarInscricaoManual(){
   const input = $('inscricaoManual');
@@ -585,6 +641,7 @@ function corrigir(valor){
   o.corrigido = valor;
   o.resolvido = true;
   resolvidos.add(atual);
+  selecaoTemporaria.delete(atual);
 
   if(o.tipo === 'questao'){
     resultado.respostas[o.questao] = valor;
@@ -619,14 +676,25 @@ function aceitarAtual(){
 
   const o = fila[atual];
 
+  if(o.tipo === 'inscricao' && o.item === 'geral'){
+    confirmarInscricaoManual();
+    return;
+  }
+
+  if(selecaoTemporaria.has(atual)){
+    corrigir(selecaoTemporaria.get(atual));
+    return;
+  }
+
   /*
-   * Enter só aceita quando existe uma sugestão concreta.
-   * Para branco/dúvida, o operador precisa escolher.
+   * Se a leitura automática já é concreta, Enter aceita.
+   * Dúvida/vazio sem escolha continua exigindo decisão do operador.
    */
   if(o.valor === '' || o.valor === '?') return;
 
   corrigir(o.valor);
 }
+
 
 function proxima(){
   if(!fila.length) return;
@@ -643,35 +711,74 @@ function anterior(){
 $('proximo').addEventListener('click', proxima);
 $('anterior').addEventListener('click', anterior);
 
-/* ---------- ZOOM ---------- */
-function aplicarZoom(){
-  $('stage').style.transform = `scale(${zoomAtual})`;
+/* ---------- ZOOM REAL DA FOLHA ---------- */
+function calcularTamanhoAjustado(){
+  const img = $('sheet');
+  const viewer = $('viewer');
+  if(!img.naturalWidth || !img.naturalHeight) return;
+
+  const maxW = Math.max(200, viewer.clientWidth - 28);
+  const maxH = Math.max(200, viewer.clientHeight - 28);
+  const escalaFit = Math.min(
+    maxW / img.naturalWidth,
+    maxH / img.naturalHeight
+  );
+
+  baseSheetWidth = Math.max(1, Math.round(img.naturalWidth * escalaFit));
+  baseSheetHeight = Math.max(1, Math.round(img.naturalHeight * escalaFit));
+}
+
+function aplicarZoom(ancoraX = null, ancoraY = null){
+  const viewer = $('viewer');
+  const img = $('sheet');
+
+  if(!baseSheetWidth || !baseSheetHeight) calcularTamanhoAjustado();
+  if(!baseSheetWidth || !baseSheetHeight) return;
+
+  const antesW = img.clientWidth || baseSheetWidth;
+  const antesH = img.clientHeight || baseSheetHeight;
+
+  const relX = ancoraX === null
+    ? (viewer.scrollLeft + viewer.clientWidth / 2) / Math.max(1, antesW)
+    : (viewer.scrollLeft + ancoraX) / Math.max(1, antesW);
+
+  const relY = ancoraY === null
+    ? (viewer.scrollTop + viewer.clientHeight / 2) / Math.max(1, antesH)
+    : (viewer.scrollTop + ancoraY) / Math.max(1, antesH);
+
+  img.style.width = Math.round(baseSheetWidth * zoomAtual) + 'px';
+  img.style.height = Math.round(baseSheetHeight * zoomAtual) + 'px';
+
   $('zoomTxt').textContent = Math.round(zoomAtual * 100) + '%';
 
-  /*
-   * Compensa o espaço ocupado pelo transform.
-   */
-  $('stage').style.marginBottom =
-    (($('stage').offsetHeight * zoomAtual) - $('stage').offsetHeight) + 'px';
+  requestAnimationFrame(() => {
+    renderTodasMascaras();
 
-  render();
-  renderTodasMascaras();
+    const novoW = img.clientWidth;
+    const novoH = img.clientHeight;
+    const alvoX = ancoraX === null ? viewer.clientWidth / 2 : ancoraX;
+    const alvoY = ancoraY === null ? viewer.clientHeight / 2 : ancoraY;
+
+    viewer.scrollLeft = Math.max(0, relX * novoW - alvoX);
+    viewer.scrollTop = Math.max(0, relY * novoH - alvoY);
+  });
 }
 
 function ajustarImagem(){
   zoomAtual = 1;
-  $('stage').style.transform = 'scale(1)';
-  $('stage').style.marginBottom = '0';
-  $('zoomTxt').textContent = '100%';
+  calcularTamanhoAjustado();
+  aplicarZoom();
+  $('viewer').scrollLeft = 0;
+  $('viewer').scrollTop = 0;
 }
 
 $('mais').addEventListener('click', () => {
-  zoomAtual = Math.min(2, zoomAtual + .1);
+  zoomAtual = Math.min(3, +(zoomAtual + .1).toFixed(2));
   aplicarZoom();
 });
 
 $('menos').addEventListener('click', () => {
-  zoomAtual = Math.max(.5, zoomAtual - .1);
+  zoomAtual = Math.max(.5, +(zoomAtual - .1).toFixed(2));
   aplicarZoom();
 });
 
@@ -680,9 +787,48 @@ $('ajustar').addEventListener('click', () => {
   render();
 });
 
-/* ---------- TECLADO ---------- */
+/*
+ * Ctrl + roda do mouse sobre a folha:
+ * zoom real do documento, mantendo aproximadamente o ponto sob o mouse.
+ */
+$('viewer').addEventListener('wheel', e => {
+  if(!e.ctrlKey) return;
+
+  e.preventDefault();
+
+  const rect = $('viewer').getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  const passo = e.deltaY < 0 ? .1 : -.1;
+  zoomAtual = Math.max(.5, Math.min(3, +(zoomAtual + passo).toFixed(2)));
+  aplicarZoom(x, y);
+}, {passive:false});
+
+/*
+ * O zoom do próprio navegador altera o tamanho útil da viewport.
+ * Ao redimensionar, recalculamos o "Ajustar" quando a folha está em 100%.
+ */
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if(!resultado || !$('sheet').naturalWidth) return;
+    if(Math.abs(zoomAtual - 1) < 0.001){
+      ajustarImagem();
+      render();
+    }else{
+      renderTodasMascaras();
+    }
+  }, 120);
+});
+
+/* ---------- TECLADO — ESTILO ESTAÇÃO ABBYY ---------- */
 document.addEventListener('keydown', e => {
   if(!resultado || !fila.length) return;
+
+  const alvo = e.target;
+  const digitando = alvo && ['INPUT','TEXTAREA','SELECT'].includes(alvo.tagName);
 
   if(e.key === 'F4'){
     e.preventDefault();
@@ -690,15 +836,26 @@ document.addEventListener('keydown', e => {
     return;
   }
 
+  if(digitando) return;
+
+  const o = fila[atual];
+  if(!o) return;
+
+  /*
+   * Nas alternativas, ←/→ percorrem:
+   * A, B, C, D, E, #
+   *
+   * # = múltipla marcação / questão anulada na conferência.
+   */
   if(e.key === 'ArrowRight'){
     e.preventDefault();
-    proxima();
+    moverSelecao(1);
     return;
   }
 
   if(e.key === 'ArrowLeft'){
     e.preventDefault();
-    anterior();
+    moverSelecao(-1);
     return;
   }
 
@@ -708,18 +865,29 @@ document.addEventListener('keydown', e => {
     return;
   }
 
-  const o = fila[atual];
   const k = e.key.toUpperCase();
 
-  if(o?.tipo === 'questao' && ['A','B','C','D','E'].includes(k)){
+  if(o.tipo === 'questao' && ['A','B','C','D','E'].includes(k)){
     e.preventDefault();
-    corrigir(k);
+    selecionarValor(k);
     return;
   }
 
-  if(e.key === '0' && o?.tipo === 'questao'){
+  if(o.tipo === 'questao' && (e.key === '#' || e.code === 'NumpadMultiply')){
     e.preventDefault();
-    corrigir('');
+    selecionarValor('#');
+    return;
+  }
+
+  if(o.tipo === 'versao' && ['1','2','3','4'].includes(e.key)){
+    e.preventDefault();
+    selecionarValor('V' + e.key);
+    return;
+  }
+
+  if(o.tipo === 'inscricao' && o.item !== 'geral' && /^\d$/.test(e.key)){
+    e.preventDefault();
+    selecionarValor(e.key);
   }
 });
 
