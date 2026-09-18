@@ -518,11 +518,11 @@ function renderTodasMascaras(){
     }else if(o.tipo==='inscricao'){
       dx=Math.max(.5,r.w*w*.010);
 
-      // A API entrega as regiões da inscrição ligeiramente acima das bolhas.
-      // Deslocamos a máscara para baixo de forma proporcional à altura da
-      // própria região, para o ajuste continuar correto em qualquer zoom.
-      // Alternativas permanecem intocadas.
-      dy=Math.max(3.0,r.h*h*.42);
+      // AJUSTE FINO DA INSCRIÇÃO
+      // A região retornada pelo OMR fica um pouco acima da fileira real.
+      // Descemos a máscara proporcionalmente à altura da região.
+      // O cálculo continua acompanhando qualquer nível de zoom.
+      dy=Math.max(3.0,r.h*h*.72);
 
       insetX=Math.max(.4,Math.min(1.0,r.w*w*.010));
       insetY=Math.max(.4,Math.min(.8,r.h*h*.025));
