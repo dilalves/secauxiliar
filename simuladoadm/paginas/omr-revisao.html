@@ -59,7 +59,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .mask.resolved{border-color:#16a34a;background:rgba(34,197,94,.055)}
 .mask.current{border-color:#f59e0b;background:rgba(245,158,11,.10);z-index:7}
 .mask.current.resolved{border-color:#16a34a;background:rgba(34,197,94,.07)}
-.mask-cursor{position:absolute;z-index:9;pointer-events:none;border:2px solid #2563eb;background:rgba(37,99,235,.16);border-radius:3px;box-shadow:0 0 0 1px rgba(255,255,255,.88),0 0 5px rgba(37,99,235,.38);transition:left .07s ease,top .07s ease}
+.mask-cursor{position:absolute;z-index:9;pointer-events:none;border:1.5px solid #2563eb;background:rgba(37,99,235,.12);border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.88),0 0 5px rgba(37,99,235,.38);transition:left .07s ease,top .07s ease}
 .mask .tag{
   position:absolute;left:-3px;top:-24px;background:#dc2626;color:#fff;
   min-width:22px;height:22px;padding:0 6px;border-radius:5px;display:flex;
@@ -105,10 +105,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .choices.versao-opcoes{grid-template-columns:repeat(4,minmax(0,1fr))}
 .choices.manual-inscricao{grid-template-columns:1fr auto}
 .choices.manual-inscricao input{min-width:0}
-.scores{
-  background:#0f172a;color:#e2e8f0;border-radius:7px;padding:9px;
-  font:12px Consolas,monospace;white-space:pre-wrap;max-height:120px;overflow:auto
-}
 .nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .done{color:var(--ok);font-weight:700}
 .footer{
@@ -195,7 +191,6 @@ kbd{
 
         <div class="current">Leitura atual: <b id="leitura">—</b></div>
         <div class="choices" id="choices"></div>
-        <div class="scores" id="scores"></div>
 
         <div class="nav">
           <button type="button" id="anterior">← Anterior</button>
@@ -445,7 +440,6 @@ function render(){
     o.valor === '?' ? 'DÚVIDA' : o.valor;
 
   montarBotoes(o);
-  mostrarScores(o.scores || {});
   posicionarMask(o.regiao);
 
   if(resolvidos.has(atual)){
@@ -498,14 +492,20 @@ function renderTodasMascaras(){
     m.className='mask'+(resolvidos.has(idx)?' resolved':'')+(idx===atual?' current':'');
     m.dataset.idx=String(idx);
 
-    let insetX=Math.min(2,r.w*w*.04), insetY=Math.min(2,r.h*h*.12);
+    // Ajuste visual fino: a máscara acompanha a borda externa das bolhas.
+    // Mantemos só um respiro mínimo para a linha não cortar os círculos.
+    let insetX=Math.max(.5,Math.min(1.2,r.w*w*.012));
+    let insetY=Math.max(.5,Math.min(1.0,r.h*h*.035));
     let dx=0,dy=0;
+
     if(o.tipo==='inscricao'){
-      dx=Math.max(1,r.w*w*.025);
-      dy=Math.max(1,r.h*h*.055);
-      insetX=Math.min(1.5,r.w*w*.025);
-      insetY=Math.min(1.5,r.h*h*.08);
+      // A região de inscrição chega levemente adiantada na folha.
+      dx=Math.max(.5,r.w*w*.010);
+      dy=Math.max(.5,r.h*h*.018);
+      insetX=Math.max(.4,Math.min(1.0,r.w*w*.010));
+      insetY=Math.max(.4,Math.min(.8,r.h*h*.025));
     }
+
     m.style.left=(r.x*w+insetX+dx)+'px';
     m.style.top=(r.y*h+insetY+dy)+'px';
     m.style.width=Math.max(2,r.w*w-insetX*2)+'px';
@@ -533,12 +533,24 @@ function atualizarCursorMascara(){
 
   const mask=$('masks').querySelector('.mask[data-idx="'+atual+'"]'); if(!mask) return;
   const c=document.createElement('div'); c.className='mask-cursor';
-  const mw=mask.offsetWidth,mh=mask.offsetHeight,margem=Math.max(1,mw*.015);
-  const utilW=Math.max(1,mw-margem*2),celW=utilW/qtd;
-  c.style.left=(mask.offsetLeft+margem+pos*celW+celW*.10)+'px';
-  c.style.top=(mask.offsetTop+mh*.08)+'px';
-  c.style.width=Math.max(5,celW*.80)+'px';
-  c.style.height=Math.max(5,mh*.84)+'px';
+  const mw=mask.offsetWidth,mh=mask.offsetHeight;
+
+  // A região da questão representa a faixa completa das alternativas.
+  // Dividimos em células e desenhamos um quadrado centrado na bolha.
+  const margemX=Math.max(.5,mw*.006);
+  const utilW=Math.max(1,mw-margemX*2);
+  const celW=utilW/qtd;
+  const centroX=mask.offsetLeft+margemX+(pos+.5)*celW;
+  const centroY=mask.offsetTop+mh/2;
+
+  // O lado acompanha a altura útil da máscara, limitado pela largura da célula.
+  // Assim o marcador "abraça" a bolha em vez de preencher toda a coluna.
+  const lado=Math.max(7,Math.min(celW*.88,mh*.88));
+
+  c.style.left=(centroX-lado/2)+'px';
+  c.style.top=(centroY-lado/2)+'px';
+  c.style.width=lado+'px';
+  c.style.height=lado+'px';
   $('masks').appendChild(c);
 }
 
@@ -682,11 +694,6 @@ function confirmarInscricaoManual(){
   corrigir(valor);
 }
 
-function mostrarScores(scores){
-  $('scores').textContent = Object.entries(scores)
-    .map(([k,v]) => `${k}: ${Number(v).toFixed(4)}`)
-    .join('\n');
-}
 
 /* ---------- REVISÃO ---------- */
 function corrigir(valor){
