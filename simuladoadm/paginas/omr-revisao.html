@@ -53,8 +53,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .choices button.multi{font-size:18px}
 .zoom-hint{font-size:11px;color:var(--muted);margin-left:4px;white-space:nowrap}
 .mask{
-  position:absolute;border:3px solid #f00052;background:rgba(240,0,82,.10);
-  box-shadow:0 0 0 2px rgba(255,255,255,.85);pointer-events:none;z-index:5
+  position:absolute;border:2px solid #f00052;background:rgba(240,0,82,.06);
+  box-shadow:0 0 0 1px rgba(255,255,255,.78);pointer-events:none;z-index:5
 }
 .mask.current{border-color:#f59e0b;background:rgba(245,158,11,.15);z-index:6}
 .mask .tag{
@@ -87,15 +87,20 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .issue-title{font-size:20px;font-weight:700;margin:8px 0 3px}
 .issue-sub{color:var(--bad);font-weight:700;margin-bottom:8px}
 .crop{
-  height:145px;border:1px solid var(--line);border-radius:7px;background:#f8fafc;
+  height:132px;border:1px solid var(--line);border-radius:7px;background:#f8fafc;
   overflow:hidden;position:relative;margin:10px 0
 }
 #crop{position:absolute;max-width:none}
 .current{font-size:14px;margin:8px 0}
 .current b{font-size:18px}
-.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0}
-.choices button{font-size:16px;padding:11px 8px}
-.choices button.blank{grid-column:span 2}
+.choices{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin:8px 0}
+.choices button{font-size:14px;padding:9px 4px;min-width:0}
+.choices button.multi{font-size:15px}
+.choices.inscricao-digitos{grid-template-columns:repeat(11,minmax(0,1fr))}
+.choices.inscricao-digitos button{font-size:12px;padding:9px 1px}
+.choices.versao-opcoes{grid-template-columns:repeat(4,minmax(0,1fr))}
+.choices.manual-inscricao{grid-template-columns:1fr auto}
+.choices.manual-inscricao input{min-width:0}
 .scores{
   background:#0f172a;color:#e2e8f0;border-radius:7px;padding:9px;
   font:12px Consolas,monospace;white-space:pre-wrap;max-height:120px;overflow:auto
@@ -494,10 +499,14 @@ function renderTodasMascaras(){
     const r = o.regiao;
     const m = document.createElement('div');
     m.className = 'mask' + (idx === atual ? ' current' : '');
-    m.style.left = (r.x * w) + 'px';
-    m.style.top = (r.y * h) + 'px';
-    m.style.width = (r.w * w) + 'px';
-    m.style.height = (r.h * h) + 'px';
+    // Um pequeno inset deixa o retângulo dentro da linha da questão,
+    // evitando encostar/sobrepor visualmente a linha seguinte.
+    const insetX = Math.min(2, r.w * w * 0.04);
+    const insetY = Math.min(2, r.h * h * 0.12);
+    m.style.left = (r.x * w + insetX) + 'px';
+    m.style.top = (r.y * h + insetY) + 'px';
+    m.style.width = Math.max(2, r.w * w - insetX * 2) + 'px';
+    m.style.height = Math.max(2, r.h * h - insetY * 2) + 'px';
 
     const tag = document.createElement('span');
     tag.className = 'tag';
@@ -521,12 +530,20 @@ function posicionarMask(r){
   const naturalH = img.naturalHeight;
   const regionW = Math.max(1, r.w * naturalW);
   const regionH = Math.max(1, r.h * naturalH);
-  const escala = Math.min(350 / regionW, 125 / regionH);
+
+  // Mais contexto ao redor da região: ajuda a enxergar o número da questão.
+  const padX = Math.max(regionW * 0.42, naturalW * 0.010);
+  const padY = Math.max(regionH * 0.55, naturalH * 0.006);
+  const viewW = regionW + padX * 2;
+  const viewH = regionH + padY * 2;
+  const cropBoxW = 350;
+  const cropBoxH = 112;
+  const escala = Math.min(cropBoxW / viewW, cropBoxH / viewH);
 
   $('crop').style.width = (naturalW * escala) + 'px';
   $('crop').style.height = (naturalH * escala) + 'px';
-  $('crop').style.left = (-(r.x * naturalW) * escala + 10) + 'px';
-  $('crop').style.top = (-(r.y * naturalH) * escala + 10) + 'px';
+  $('crop').style.left = (-((r.x * naturalW) - padX) * escala + 6) + 'px';
+  $('crop').style.top = (-((r.y * naturalH) - padY) * escala + 6) + 'px';
 
   requestAnimationFrame(() => {
     const viewer = $('viewer');
@@ -545,11 +562,17 @@ function posicionarMask(r){
 function opcoesDaPendencia(o){
   if(o.tipo === 'questao') return ['A','B','C','D','E','#'];
   if(o.tipo === 'versao') return ['V1','V2','V3','V4'];
-  return ['0','1','2','3','4','5','6','7','8','9'];
+  return ['0','1','2','3','4','5','6','7','8','9','#'];
 }
 
 function selecaoInicial(o){
   if(selecaoTemporaria.has(atual)) return selecaoTemporaria.get(atual);
+
+  // Ao voltar numa pendência já conferida, a correção anterior reaparece
+  // selecionada e pode ser alterada normalmente.
+  if(o.corrigido !== undefined && o.corrigido !== null){
+    return String(o.corrigido);
+  }
 
   let v = null;
 
@@ -567,14 +590,14 @@ function selecaoInicial(o){
 }
 
 function selecionarValor(valor){
-  if(!fila.length || resolvidos.has(atual)) return;
+  if(!fila.length) return;
   selecaoTemporaria.set(atual, valor);
   montarBotoes(fila[atual]);
 }
 
 function moverSelecao(direcao){
   const o = fila[atual];
-  if(!o || resolvidos.has(atual)) return;
+  if(!o) return;
 
   const opcoes = opcoesDaPendencia(o);
   if(!opcoes.length) return;
@@ -592,30 +615,39 @@ function moverSelecao(direcao){
 }
 
 function montarBotoes(o){
-  const valores = opcoesDaPendencia(o);
+  const choices = $('choices');
+  choices.className = 'choices';
 
   if(o.tipo === 'inscricao' && o.item === 'geral'){
-    $('choices').innerHTML = `
+    choices.classList.add('manual-inscricao');
+    choices.innerHTML = `
       <input id="inscricaoManual" type="text" inputmode="numeric"
              value="${esc(resultado.inscricao || '')}"
              maxlength="12"
-             style="grid-column:1 / -1;height:40px;border:1px solid #cbd5e1;border-radius:7px;padding:0 10px;font-size:17px;font-weight:700">
-      <button type="button" class="primary" style="grid-column:1 / -1"
-              onclick="confirmarInscricaoManual()">Confirmar inscrição</button>`;
+             style="height:36px;border:1px solid #cbd5e1;border-radius:7px;padding:0 9px;font-size:15px;font-weight:700">
+      <button type="button" class="primary"
+              onclick="confirmarInscricaoManual()">Confirmar</button>`;
     return;
+  }
+
+  let valores = opcoesDaPendencia(o);
+  if(o.tipo === 'inscricao'){
+    valores = ['0','1','2','3','4','5','6','7','8','9','#'];
+    choices.classList.add('inscricao-digitos');
+  }else if(o.tipo === 'versao'){
+    choices.classList.add('versao-opcoes');
   }
 
   const selecionado = selecaoInicial(o);
 
-  $('choices').innerHTML = valores.map(v => {
+  choices.innerHTML = valores.map(v => {
     const ativo = selecionado === v ? ' selected' : '';
     const multi = v === '#' ? ' multi' : '';
-    const titulo = v === '#' ? ' title="Múltipla marcação / anulada"' : '';
+    const titulo = v === '#' ? ' title="Múltipla marcação / leitura inválida"' : '';
     return `<button type="button" class="${ativo}${multi}"${titulo}
                     onclick="selecionarValor('${v}')">${v}</button>`;
   }).join('');
 }
-
 
 function confirmarInscricaoManual(){
   const input = $('inscricaoManual');
