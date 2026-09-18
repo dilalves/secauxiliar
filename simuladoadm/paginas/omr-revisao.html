@@ -54,7 +54,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .zoom-hint{font-size:11px;color:var(--muted);margin-left:4px;white-space:nowrap}
 .mask{
   position:absolute;border:1px solid #f00052;background:rgba(240,0,82,.035);
-  box-shadow:0 0 0 1px rgba(255,255,255,.55);pointer-events:none;z-index:5
+  box-shadow:0 0 0 1px rgba(255,255,255,.55);pointer-events:auto;cursor:pointer;z-index:5
 }
 .mask.resolved{border-color:#16a34a;background:rgba(34,197,94,.055)}
 .mask.current{border-color:#f59e0b;background:rgba(245,158,11,.10);z-index:7;pointer-events:auto;cursor:move}
@@ -209,7 +209,7 @@ kbd{
   <span><kbd>A</kbd>–<kbd>E</kbd> selecionar direto</span>
   <span><kbd>#</kbd> múltipla</span>
   <span><kbd>Enter</kbd> confirmar e avançar</span>
-  <span>Arraste o <b>retângulo atual</b> com o mouse para reposicionar</span>
+  <span><b>Clique</b> no retângulo para revisar · arraste o atual para reposicionar</span>
 </footer>
 
 <script>
@@ -495,7 +495,9 @@ function renderTodasMascaras(){
     const r=o.regiao, m=document.createElement('div');
     m.className='mask'+(resolvidos.has(idx)?' resolved':'')+(idx===atual?' current':'');
     m.dataset.idx=String(idx);
-    if(idx===atual) m.title='Arraste para reposicionar esta área';
+    m.title = idx===atual
+      ? 'Arraste para reposicionar esta área'
+      : 'Clique para selecionar esta pendência';
 
     // Ajuste fino por tipo.
     // Questões: um pouco à direita e acima, com altura menor para não encavalar linhas.
@@ -541,15 +543,25 @@ function renderTodasMascaras(){
 let dragMascara = null;
 
 $('masks').addEventListener('pointerdown', e => {
-  const m = e.target.closest('.mask.current');
+  const m = e.target.closest('.mask');
   if(!m) return;
 
   const idx = Number(m.dataset.idx);
-  if(!Number.isInteger(idx)) return;
+  if(!Number.isInteger(idx) || !fila[idx]) return;
 
   e.preventDefault();
   e.stopPropagation();
 
+  // Clicar em qualquer retângulo torna aquela pendência ativa novamente,
+  // mesmo que já tenha sido conferida. A correção anterior reaparece
+  // selecionada e pode ser revista.
+  if(idx !== atual){
+    atual = idx;
+    render();
+    return;
+  }
+
+  // Se já é a pendência atual, o gesto continua funcionando como arraste.
   const atualOffset = deslocamentosMascara.get(idx) || {x:0,y:0};
   dragMascara = {
     idx,
