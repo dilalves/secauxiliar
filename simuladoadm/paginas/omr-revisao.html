@@ -58,7 +58,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 }
 .mask.resolved{border-color:#16a34a;background:rgba(34,197,94,.055)}
 .mask.current{border-color:#f59e0b;background:rgba(245,158,11,.10);z-index:7;pointer-events:auto;cursor:move}
-.mask.current.resolved{border-color:#16a34a;background:rgba(34,197,94,.07);pointer-events:auto;cursor:move}
+.mask.current.resolved{border-color:#f59e0b;background:rgba(245,158,11,.10);pointer-events:auto;cursor:move}
 .mask.dragging{cursor:grabbing;box-shadow:0 0 0 2px rgba(245,158,11,.20)}
 .mask-cursor{position:absolute;z-index:9;pointer-events:none;border:1.5px solid #2563eb;background:rgba(37,99,235,.12);border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.88),0 0 5px rgba(37,99,235,.38);transition:left .07s ease,top .07s ease}
 .mask .tag{
@@ -96,8 +96,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
   overflow:hidden;position:relative;margin:10px 0
 }
 #crop{position:absolute;max-width:none}
-.current{font-size:14px;margin:8px 0}
-.current b{font-size:18px}
+.side .current{font-size:14px;margin:8px 0}
+.side .current b{font-size:18px}
 .choices{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin:8px 0}
 .choices button{font-size:14px;padding:9px 4px;min-width:0}
 .choices button.multi{font-size:15px}
@@ -524,10 +524,16 @@ function renderTodasMascaras(){
       altura=Math.max(2,r.h*h-insetY*2);
     }
 
+    // A geometria da máscara NÃO depende de ela estar selecionada.
+    // Selecionar só muda a cor/z-index. Assim o retângulo permanece fixo
+    // exatamente sobre a mesma linha e o cursor das setas acompanha as bolhas.
     const manual=deslocamentosMascara.get(idx) || {x:0,y:0};
 
-    m.style.left=(r.x*w+insetX+dx+manual.x)+'px';
-    m.style.top=(r.y*h+insetY+dy+manual.y)+'px';
+    const maskLeft = r.x*w + insetX + dx + manual.x;
+    const maskTop  = r.y*h + insetY + dy + manual.y;
+
+    m.style.left=maskLeft+'px';
+    m.style.top=maskTop+'px';
     m.style.width=largura+'px';
     m.style.height=altura+'px';
 
