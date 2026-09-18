@@ -53,16 +53,20 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .choices button.multi{font-size:18px}
 .zoom-hint{font-size:11px;color:var(--muted);margin-left:4px;white-space:nowrap}
 .mask{
-  position:absolute;border:2px solid #f00052;background:rgba(240,0,82,.06);
-  box-shadow:0 0 0 1px rgba(255,255,255,.78);pointer-events:none;z-index:5
+  position:absolute;border:1px solid #f00052;background:rgba(240,0,82,.035);
+  box-shadow:0 0 0 1px rgba(255,255,255,.55);pointer-events:none;z-index:5
 }
-.mask.current{border-color:#f59e0b;background:rgba(245,158,11,.15);z-index:6}
+.mask.resolved{border-color:#16a34a;background:rgba(34,197,94,.055)}
+.mask.current{border-color:#f59e0b;background:rgba(245,158,11,.10);z-index:7}
+.mask.current.resolved{border-color:#16a34a;background:rgba(34,197,94,.07)}
+.mask-cursor{position:absolute;z-index:9;pointer-events:none;border:2px solid #2563eb;background:rgba(37,99,235,.16);border-radius:3px;box-shadow:0 0 0 1px rgba(255,255,255,.88),0 0 5px rgba(37,99,235,.38);transition:left .07s ease,top .07s ease}
 .mask .tag{
   position:absolute;left:-3px;top:-24px;background:#dc2626;color:#fff;
   min-width:22px;height:22px;padding:0 6px;border-radius:5px;display:flex;
   align-items:center;justify-content:center;font-size:11px;font-weight:700;white-space:nowrap
 }
 .mask.current .tag{background:#f59e0b}
+.mask.resolved .tag,.mask.current.resolved .tag{background:#16a34a}
 .side{
   background:#fff;border:1px solid var(--line);border-radius:8px;overflow:auto;padding:14px
 }
@@ -484,39 +488,58 @@ function atualizarInscricaoCorrigida(o, valor){
 
 /* ---------- RETÂNGULOS DE TODAS AS PENDÊNCIAS ---------- */
 function renderTodasMascaras(){
-  const box = $('masks');
-  box.innerHTML = '';
-
+  const box=$('masks'); box.innerHTML='';
   if(!$('sheet').naturalWidth) return;
+  const img=$('sheet'), w=img.clientWidth, h=img.clientHeight;
 
-  const img = $('sheet');
-  const w = img.clientWidth;
-  const h = img.clientHeight;
+  fila.forEach((o,idx)=>{
+    if(!o.regiao) return;
+    const r=o.regiao, m=document.createElement('div');
+    m.className='mask'+(resolvidos.has(idx)?' resolved':'')+(idx===atual?' current':'');
+    m.dataset.idx=String(idx);
 
-  fila.forEach((o, idx) => {
-    if(resolvidos.has(idx) || !o.regiao) return;
+    let insetX=Math.min(2,r.w*w*.04), insetY=Math.min(2,r.h*h*.12);
+    let dx=0,dy=0;
+    if(o.tipo==='inscricao'){
+      dx=Math.max(1,r.w*w*.025);
+      dy=Math.max(1,r.h*h*.055);
+      insetX=Math.min(1.5,r.w*w*.025);
+      insetY=Math.min(1.5,r.h*h*.08);
+    }
+    m.style.left=(r.x*w+insetX+dx)+'px';
+    m.style.top=(r.y*h+insetY+dy)+'px';
+    m.style.width=Math.max(2,r.w*w-insetX*2)+'px';
+    m.style.height=Math.max(2,r.h*h-insetY*2)+'px';
 
-    const r = o.regiao;
-    const m = document.createElement('div');
-    m.className = 'mask' + (idx === atual ? ' current' : '');
-    // Um pequeno inset deixa o retângulo dentro da linha da questão,
-    // evitando encostar/sobrepor visualmente a linha seguinte.
-    const insetX = Math.min(2, r.w * w * 0.04);
-    const insetY = Math.min(2, r.h * h * 0.12);
-    m.style.left = (r.x * w + insetX) + 'px';
-    m.style.top = (r.y * h + insetY) + 'px';
-    m.style.width = Math.max(2, r.w * w - insetX * 2) + 'px';
-    m.style.height = Math.max(2, r.h * h - insetY * 2) + 'px';
-
-    const tag = document.createElement('span');
-    tag.className = 'tag';
-    tag.textContent =
-      o.tipo === 'questao' ? ('Q' + o.questao) :
-      o.tipo === 'versao' ? 'VERSÃO' : 'INSCRIÇÃO';
-
-    m.appendChild(tag);
-    box.appendChild(m);
+    const tag=document.createElement('span'); tag.className='tag';
+    tag.textContent=o.tipo==='questao'?'Q'+o.questao:o.tipo==='versao'?'VERSÃO':'INSCRIÇÃO';
+    m.appendChild(tag); box.appendChild(m);
   });
+  atualizarCursorMascara();
+}
+
+function atualizarCursorMascara(){
+  const old=$('masks').querySelector('.mask-cursor'); if(old) old.remove();
+  const o=fila[atual]; if(!o||!o.regiao) return;
+  const valor=selecaoTemporaria.has(atual)?selecaoTemporaria.get(atual):
+    (o.corrigido!==undefined&&o.corrigido!==null?String(o.corrigido):null);
+  if(valor===null||valor==='#') return;
+
+  let pos=-1,qtd=0;
+  if(o.tipo==='questao'){pos=['A','B','C','D','E'].indexOf(String(valor));qtd=5;}
+  else if(o.tipo==='versao'){pos=['V1','V2','V3','V4'].indexOf(String(valor));qtd=4;}
+  else if(o.tipo==='inscricao'&&o.item!=='geral'){pos=['0','1','2','3','4','5','6','7','8','9'].indexOf(String(valor));qtd=10;}
+  if(pos<0||!qtd) return;
+
+  const mask=$('masks').querySelector('.mask[data-idx="'+atual+'"]'); if(!mask) return;
+  const c=document.createElement('div'); c.className='mask-cursor';
+  const mw=mask.offsetWidth,mh=mask.offsetHeight,margem=Math.max(1,mw*.015);
+  const utilW=Math.max(1,mw-margem*2),celW=utilW/qtd;
+  c.style.left=(mask.offsetLeft+margem+pos*celW+celW*.10)+'px';
+  c.style.top=(mask.offsetTop+mh*.08)+'px';
+  c.style.width=Math.max(5,celW*.80)+'px';
+  c.style.height=Math.max(5,mh*.84)+'px';
+  $('masks').appendChild(c);
 }
 
 /* ---------- MÁSCARA / RECORTE ---------- */
@@ -593,6 +616,7 @@ function selecionarValor(valor){
   if(!fila.length) return;
   selecaoTemporaria.set(atual, valor);
   montarBotoes(fila[atual]);
+  atualizarCursorMascara();
 }
 
 function moverSelecao(direcao){
