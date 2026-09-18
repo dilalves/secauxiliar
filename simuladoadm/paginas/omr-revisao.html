@@ -556,8 +556,43 @@ $('masks').addEventListener('pointerdown', e => {
   // mesmo que já tenha sido conferida. A correção anterior reaparece
   // selecionada e pode ser revista.
   if(idx !== atual){
+    // Seleciona a pendência sem reposicionar/centralizar a folha.
+    // O retângulo permanece exatamente onde já estava.
     atual = idx;
-    render();
+
+    $('contador').textContent = `Pendência ${atual + 1} de ${fila.length}`;
+    const o = fila[atual];
+
+    if(o.tipo === 'questao'){
+      $('titulo').textContent = 'Questão ' + o.questao;
+    }else if(o.tipo === 'versao'){
+      $('titulo').textContent = 'Versão da prova';
+    }else{
+      $('titulo').textContent =
+        o.item === 'geral' ? 'Número de inscrição' : 'Inscrição — posição ' + o.item;
+    }
+
+    if(o.status === 'vazio'){
+      $('motivo').textContent = 'Sem marcação detectada';
+    }else if(o.status === 'duvida'){
+      $('motivo').textContent = 'Leitura duvidosa / marcações próximas';
+    }else{
+      $('motivo').textContent = 'Conferência necessária';
+    }
+
+    $('leitura').textContent =
+      o.valor === '' ? 'BRANCO' :
+      o.valor === '?' ? 'DÚVIDA' : o.valor;
+
+    montarBotoes(o);
+    renderTodasMascaras();
+
+    // Atualiza apenas o recorte lateral, sem scroll automático da folha.
+    atualizarRecorte(o.regiao);
+
+    if(resolvidos.has(atual)){
+      $('contador').innerHTML += ' <span class="done">✓ conferida</span>';
+    }
     return;
   }
 
@@ -637,9 +672,7 @@ function atualizarCursorMascara(){
 }
 
 /* ---------- MÁSCARA / RECORTE ---------- */
-function posicionarMask(r){
-  renderTodasMascaras();
-
+function atualizarRecorte(r){
   if(!r || !$('sheet').naturalWidth) return;
 
   const img = $('sheet');
@@ -661,6 +694,13 @@ function posicionarMask(r){
   $('crop').style.height = (naturalH * escala) + 'px';
   $('crop').style.left = (-((r.x * naturalW) - padX) * escala + 6) + 'px';
   $('crop').style.top = (-((r.y * naturalH) - padY) * escala + 6) + 'px';
+}
+
+function posicionarMask(r){
+  renderTodasMascaras();
+  atualizarRecorte(r);
+
+  if(!r || !$('sheet').naturalWidth) return;
 
   requestAnimationFrame(() => {
     const viewer = $('viewer');
