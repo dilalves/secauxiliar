@@ -441,6 +441,15 @@
         }
 
 
+        const token =
+            localStorage.getItem('recrutamento_token')
+            || '';
+
+        if (!token) {
+            location.href = 'index.html';
+        }
+
+
         async function post(payload) {
             const resposta = await fetch(
                 api,
@@ -449,10 +458,11 @@
 
                     headers: {
                         'Content-Type':
-                            'application/json'
-                    },
+                            'application/json',
 
-                    credentials: 'include',
+                        'Authorization':
+                            `Bearer ${token}`
+                    },
 
                     body: JSON.stringify(
                         payload
@@ -468,12 +478,29 @@
                         'Resposta inválida do servidor.'
                 }));
 
+            if (resposta.status === 401) {
+                localStorage.removeItem(
+                    'recrutamento_token'
+                );
+
+                localStorage.removeItem(
+                    'recrutamento_usuario'
+                );
+
+                location.href = 'index.html';
+
+                throw new Error(
+                    'Sessão expirada.'
+                );
+            }
+
             if (
                 !resposta.ok
                 || !json.ok
             ) {
                 throw new Error(
                     json.error
+                    || json.msg
                     || 'Erro na operação.'
                 );
             }
