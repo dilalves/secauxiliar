@@ -127,6 +127,21 @@ body {
   cursor: not-allowed;
 }
 
+.manualCheck {
+  width: 17px;
+  height: 17px;
+  cursor: pointer;
+}
+.manualHint {
+  margin: 8px 0;
+  padding: 9px 11px;
+  border-radius: 9px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 11px;
+  font-weight: 800;
+}
+
 #mensagem {
   flex: 0 0 auto;
 }
@@ -508,7 +523,7 @@ th {
 </section>
 </main>
 <script>
-const API='https://apisec.secauxiliar.com.br/prestadores_adm',el=id=>document.getElementById(id);let eventosRecrutamento=[],eventosFinanceiros=[],ultimaPrevia=null,tabAtual='aptos';
+const API='https://apisec.secauxiliar.com.br/prestadores_adm',el=id=>document.getElementById(id);let eventosRecrutamento=[],eventosFinanceiros=[],ultimaPrevia=null,tabAtual='aptos',liberacoesManuais=new Set();
 function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}function dataBR(v){if(!v)return'-';const[a,m,d]=String(v).split('-');return`${d}/${m}/${a}`}function hora(v){return v?String(v).slice(0,5):'-'}function moeda(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v||0))}
 function headers(){const h={'Content-Type':'application/json'},t=localStorage.getItem('recrutamento_token')||localStorage.getItem('token')||'';if(t)h.Authorization=`Bearer ${t}`;return h}
 async function post(a,p){const r=await fetch(`${API}/${a}`,{method:'POST',credentials:'include',cache:'no-store',headers:headers(),body:JSON.stringify(p)}),d=await r.json().catch(()=>({ok:false,error:'Resposta inválida do servidor.'}));if(!r.ok||!d.ok)throw new Error(d.error||'Não foi possível concluir a operação.');return d}
@@ -590,7 +605,11 @@ function renderEventos(){
 function atualizarSelecaoVisual(){document.querySelectorAll('.eventItem').forEach(i=>i.classList.toggle('selected',Boolean(i.querySelector('input')?.checked)))}function idsSelecionados(){return[...document.querySelectorAll('.eventoCheck:checked')].map(i=>Number(i.value))}
 function alternarTodos(){const c=[...document.querySelectorAll('.eventoCheck:not(:disabled)')],todos=c.length&&c.every(x=>x.checked);c.forEach(x=>x.checked=!todos);el('btnTodos').textContent=todos?'Marcar todos':'Desmarcar todos';atualizarSelecaoVisual()}
 function parametros(acao){const financeiro=Number(el('eventoFinanceiro').value||0),ids=idsSelecionados(),funcao=el('funcao').value.trim(),q=Number(el('quantidade').value||0),v=Number(el('valorUnitario').value||0);if(!financeiro)throw new Error('Selecione o código para pagamento.');if(!ids.length)throw new Error('Selecione pelo menos um evento do recrutamento.');if(!funcao)throw new Error('Informe a função para o pagamento.');if(!(q>0))throw new Error('Informe uma quantidade válida.');if(!(v>0))throw new Error('Informe um valor unitário válido.');return{acao,evento_destino_id:financeiro,recrutamento_evento_ids:ids,funcao,quantidade:q,valor_unitario:v}}
-async function prever(){limparMensagem();try{ultimaPrevia=await post('importar_recrutamento_pagamentos.php',parametros('prever'));tabAtual='aptos';renderPreview()}catch(e){mostrar(e.message,'erro')}}
+
+function parametrosComLiberacaoManual(){const p=parametros('importar');p.liberacoes_manuais=[...liberacoesManuais];return p}
+function toggleLiberacaoManual(ctrl,checked){if(checked)liberacoesManuais.add(ctrl);else liberacoesManuais.delete(ctrl);atualizarBotaoManual()}
+function atualizarBotaoManual(){const b=el('btnImportarPendentes');if(b){b.disabled=liberacoesManuais.size<1;b.textContent=`Importar pendentes selecionados (${liberacoesManuais.size})`}}
+async function prever(){limparMensagem();liberacoesManuais.clear();try{ultimaPrevia=await post('importar_recrutamento_pagamentos.php',parametros('prever'));tabAtual='aptos';renderPreview()}catch(e){mostrar(e.message,'erro')}}
 function renderPreview(){
     const d=ultimaPrevia;
     const r=d.resumo||{};
@@ -650,6 +669,10 @@ function renderPreview(){
 
         <div class="actions">
             <button class="btn btnLight" onclick="prever()">Atualizar prévia</button>
+            ${tabAtual==='pendentes' && (r.pendentes||0)>0 ? `
+            <button id="btnImportarPendentes" class="btn btnPrimary" onclick="confirmarImportacaoManual()" ${liberacoesManuais.size<1?'disabled':''}>
+                Importar pendentes selecionados (${liberacoesManuais.size})
+            </button>` : ''}
             <button
                 class="btn btnAccent"
                 onclick="confirmarImportacao()"
@@ -662,8 +685,40 @@ function renderPreview(){
 
     renderTabelaPreview();
 }
-function mudarTab(t){tabAtual=t;renderPreview()}function renderTabelaPreview(){const dados=ultimaPrevia?.[tabAtual]||[],a=el('listaPreview');if(!dados.length){a.innerHTML='<div class="empty">Nenhum registro nesta categoria.</div>';return}a.innerHTML=`<div class="tableWrap"><table><thead><tr><th>Unidade</th><th>Evento ID</th><th>Prestador</th><th>Posto</th><th>Entrada</th><th>Saída</th>${tabAtual==='pendentes'?'<th>Motivo</th>':''}</tr></thead><tbody>${dados.map(i=>`<tr><td>${esc(i.cod_unidade||'-')}</td><td>${esc(i.recrutamento_evento_id||'-')}</td><td>${esc(i.nome||'-')}</td><td>${esc(i.posto||'-')}</td><td>${esc(i.entrada_em||'-')}</td><td>${esc(i.saida_em||'-')}</td>${tabAtual==='pendentes'?`<td>${esc((i.motivos||[]).join(', '))}</td>`:''}</tr>`).join('')}</tbody></table></div>`}
+function mudarTab(t){tabAtual=t;renderPreview()}
+function renderTabelaPreview(){
+    const dados=ultimaPrevia?.[tabAtual]||[],a=el('listaPreview');
+    if(!dados.length){a.innerHTML='<div class="empty">Nenhum registro nesta categoria.</div>';return}
+    const pend=tabAtual==='pendentes';
+    a.innerHTML=`
+        ${pend?'<div class="manualHint">Marque somente quem teve o trabalho conferido e deve ser liberado manualmente para pagamento.</div>':''}
+        <div class="tableWrap"><table><thead><tr>
+        ${pend?'<th>Liberar</th>':''}
+        <th>Unidade</th><th>Evento ID</th><th>Prestador</th><th>Posto</th><th>Entrada</th><th>Saída</th>
+        ${pend?'<th>Motivo</th>':''}
+        </tr></thead><tbody>
+        ${dados.map(i=>`<tr>
+            ${pend?`<td><input class="manualCheck" type="checkbox" ${liberacoesManuais.has(i.ctrl_pg)?'checked':''} onchange="toggleLiberacaoManual('${esc(i.ctrl_pg)}',this.checked)"></td>`:''}
+            <td>${esc(i.cod_unidade||'-')}</td><td>${esc(i.recrutamento_evento_id||'-')}</td>
+            <td>${esc(i.nome||'-')}</td><td>${esc(i.posto||'-')}</td>
+            <td>${esc(i.entrada_em||'-')}</td><td>${esc(i.saida_em||'-')}</td>
+            ${pend?`<td>${esc((i.motivos||[]).join(', '))}</td>`:''}
+        </tr>`).join('')}
+        </tbody></table></div>`;
+    atualizarBotaoManual();
+}
 async function confirmarImportacao(){const n=Number(ultimaPrevia?.resumo?.aptos||0);if(!n)return mostrar('Não há pedidos aptos para importar.','erro');if(!confirm(`Confirmar a importação de ${n} pedido(s)?`))return;try{const d=await post('importar_recrutamento_pagamentos.php',parametros('importar'));mostrar(d.message||'Importação concluída.');await prever()}catch(e){mostrar(e.message,'erro')}}
+
+async function confirmarImportacaoManual(){
+    const n=liberacoesManuais.size;
+    if(!n)return mostrar('Marque pelo menos um pendente para liberação manual.','erro');
+    if(!confirm(`Confirmar a importação manual de ${n} prestador(es) pendente(s)?\n\nUse esta opção somente após conferir que o trabalho foi realizado.`))return;
+    try{
+        const d=await post('importar_recrutamento_pagamentos.php',parametrosComLiberacaoManual());
+        mostrar(d.message||'Importação manual concluída.');
+        await prever();
+    }catch(e){mostrar(e.message,'erro')}
+}
 el('btnCarregar').onclick=carregarOpcoes;el('btnPrever').onclick=prever;el('btnTodos').onclick=alternarTodos;el('eventoFinanceiro').onchange=()=>{const o=el('eventoFinanceiro').selectedOptions[0],v=o?.dataset?.valor||'';if(v!=='')el('valorUnitario').value=Number(v).toFixed(2)};const ontem=new Date();
 ontem.setDate(ontem.getDate()-1);
 const ano=ontem.getFullYear();
