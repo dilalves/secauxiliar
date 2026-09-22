@@ -759,7 +759,15 @@
               <i class="material-icons">block</i>
               Alteração de e-mail indisponível
             </button>
-  `}  
+          `}
+
+          <button type="button"
+                  class="btn-consultar"
+                  style="width:auto; height:42px; padding:0 16px; background:#166534;"
+                  onclick="abrirDeclaracaoComparecimento()">
+            <i class="material-icons">description</i>
+            Declaração de comparecimento
+          </button>
         </div>
 
         <div class="note">
@@ -814,6 +822,43 @@
       $btn.disabled = false;
       $btn.innerHTML = '<i class="material-icons">search</i> Consultar CPF';
     }
+  }
+
+  async function abrirDeclaracaoComparecimento(){
+    if (!candidatoAtual) return;
+    const cpf = somenteDigitos(candidatoAtual.cpf || '');
+    if (cpf.length !== 11) {
+      Swal.fire('Atenção', 'CPF do candidato não está disponível para emissão.', 'warning');
+      return;
+    }
+    Swal.fire({title:'Verificando declaração...',text:'Conferindo inscrição, unidade e data do Fuvestão.',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
+    try {
+      const resp = await fetch(API + 'declaracao_opcoes.php?cpf=' + encodeURIComponent(cpf), {method:'GET',credentials:'include',cache:'no-store'});
+      const json = await resp.json().catch(() => ({}));
+      if (!resp.ok || !json.ok) {
+        await Swal.fire({title:'Declaração indisponível',text:json.msg || json.error || 'Não foi possível liberar a declaração.',icon:'info',confirmButtonColor:'#0b3b78'});
+        return;
+      }
+      if (!json.liberada) {
+        await Swal.fire({title:'Declaração ainda indisponível',text:json.msg || 'A declaração ainda não está liberada.',icon:'info',confirmButtonColor:'#0b3b78'});
+        return;
+      }
+      const resultado = await Swal.fire({
+        title:'Declaração de comparecimento', width:650,
+        html:`<div style="text-align:left">
+          <div style="margin-bottom:12px;padding:11px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;color:#1e3a8a;font-size:13px;line-height:1.45;"><b>${escapeHtml(candidatoAtual.nome || '')}</b><br>${escapeHtml(json.inscricao || '')} • ${escapeHtml(json.unidade_nome || json.unidade_login || '')}</div>
+          <div style="margin-bottom:12px;padding:11px 12px;background:#f8fafc;border:1px solid #dbe5f2;border-radius:10px;color:#334155;font-size:13px;line-height:1.45;"><b>Fuvestão 2027</b><br>Data da aplicação: <b>${escapeHtml(json.data_prova || '26/09/2026')}</b></div>
+          <label style="display:flex;align-items:flex-start;gap:9px;margin-top:14px;padding:11px 12px;background:#fff8e1;border:1px solid #f0d98a;border-radius:10px;cursor:pointer;"><input id="confirmaListaPresenca" type="checkbox" style="margin-top:4px;opacity:1;position:static;pointer-events:auto;"><span style="font-size:12px;color:#795600;line-height:1.45;">Confirmo que conferi a assinatura do candidato na lista de presença do Fuvestão.</span></label>
+        </div>`,
+        showCancelButton:true,confirmButtonText:'Emitir declaração',cancelButtonText:'Cancelar',confirmButtonColor:'#166534',focusConfirm:false,
+        preConfirm:()=>{const confirmou=document.getElementById('confirmaListaPresenca')?.checked;if(!confirmou){Swal.showValidationMessage('Confirme a conferência da lista de presença.');return false;}return true;}
+      });
+      if (!resultado.isConfirmed) return;
+      const form=document.createElement('form'); form.method='POST'; form.action=API+'gerar_declaracao.php'; form.target='_blank'; form.style.display='none';
+      const campos={cpf:cpf,confirmado:'1'};
+      Object.entries(campos).forEach(([k,v])=>{const input=document.createElement('input');input.type='hidden';input.name=k;input.value=v;form.appendChild(input);});
+      document.body.appendChild(form); form.submit(); form.remove();
+    } catch(e) { console.error(e); Swal.fire('Erro','Erro de comunicação com o servidor.','error'); }
   }
 
   async function abrirModalAlterarEmail(){
