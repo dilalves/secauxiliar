@@ -191,7 +191,7 @@ td:nth-child(9){
   color:#0f172a;
 }
 
-th:nth-child(1),  td:nth-child(1)  { width: 64px; }
+th:nth-child(1),  td:nth-child(1)  { width: 90px; }
 th:nth-child(2),  td:nth-child(2)  { width: 90px; }
 th:nth-child(3),  td:nth-child(3)  { width: 110px; }
 th:nth-child(4),  td:nth-child(4)  { width: 110px; }
@@ -204,7 +204,7 @@ th:nth-child(12), td:nth-child(12) { width: 170px; }
 th:nth-child(9),  td:nth-child(9),
 th:nth-child(10), td:nth-child(10),
 th:nth-child(11), td:nth-child(11){
-  width: calc((100% - (64px + 90px + 110px + 110px + 130px + 70px + 230px + 110px + 170px)) / 3);
+  width: calc((100% - (90px + 90px + 110px + 110px + 130px + 70px + 230px + 110px + 170px)) / 3);
 }
 
 td:nth-child(1),
@@ -231,6 +231,9 @@ td:nth-child(12){
   background:#e0e7ff;
 }
 .btn-edit i{ font-size: 18px; line-height: 32px; }
+.row-actions{ display:flex; justify-content:center; align-items:center; gap:4px; }
+.btn-download{ background:#e0f7f4; color:#087f75; cursor:pointer; }
+.btn-download:hover{ background:#bcece5; }
 
 .muted{ color: var(--muted); font-size:.92rem; }
 
@@ -631,6 +634,39 @@ td:nth-child(12){
         .replaceAll("'","&#039;");
     }
 
+    function baixarQRCodePNG(codigo) {
+      return new Promise((resolve, reject) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            canvas.width = 600;
+            canvas.height = 700;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 600, 700);
+            ctx.drawImage(img, 0, 0);
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 84px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(codigo, 300, 650, 570);
+
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = `${codigo}.png`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            resolve();
+          } catch (e) { reject(e); }
+        };
+        img.onerror = () => reject(new Error('Não foi possível carregar o QR Code. Tente novamente.'));
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(codigo)}&size=600x600`;
+      });
+    }
+
     function fmtDT(dt){
       if(!dt) return '';
       return String(dt).replace('T',' ').replace('.000','');
@@ -929,7 +965,10 @@ td:nth-child(12){
 
           return `
             <tr>
-              <td class="center">${btn}</td>
+              <td class="center"><div class="row-actions">${btn}
+                <button type="button" class="btn btn-edit btn-download btn-small js-download" title="Baixar QR Code" aria-label="Baixar QR Code ${esc(r.codigo)}" data-codigo="${esc(r.codigo)}">
+                  <i class="material-icons">file_download</i>
+                </button></div></td>
               <td><strong>${esc(r.codigo)}</strong></td>
               <td>${esc(r.identred)}</td>
               <td>${esc(r.segmento)}</td>
@@ -981,6 +1020,21 @@ td:nth-child(12){
         const codigo = a.getAttribute('data-codigo');
         const dt = a.getAttribute('data-dt') || '';
         abrirEditar(codigo, dt);
+      });
+
+      el('tbody').addEventListener('click', async (ev)=>{
+        const btn = ev.target.closest('.js-download');
+        if(!btn) return;
+        ev.preventDefault();
+        if(btn.disabled) return;
+        btn.disabled = true;
+        try {
+          await baixarQRCodePNG(btn.getAttribute('data-codigo'));
+        } catch (e) {
+          Swal.fire({icon:'error', title:'Erro no download', text:e.message || String(e)});
+        } finally {
+          btn.disabled = false;
+        }
       });
 
       carregar();
