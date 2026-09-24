@@ -141,7 +141,7 @@ form.addEventListener('submit', async event => {
   body.set('csrf',csrf); body.set('payload',JSON.stringify(payload));
   [...$('comprovantes').files].forEach(file => body.append('comprovantes[]',file));
   try {
-    const response = await fetch(API_BASE + 'config.php',{method:'POST',body,credentials:'include'});
+    const response = await fetch(API_BASE + 'bolsa_inserir.php',{method:'POST',body,credentials:'include'});
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Não foi possível enviar.');
     document.querySelector('#protocol').textContent = result.protocolo;
@@ -155,7 +155,7 @@ form.addEventListener('submit', async event => {
 });
 (async () => {
   try {
-    const response = await fetch(API_BASE + 'config.php',{credentials:'include'});
+    const response = await fetch(API_BASE + 'bolsa_inserir.php',{credentials:'include'});
     if (!response.ok) throw new Error('O formulário ainda não está disponível.');
     catalog = await response.json(); csrf = catalog.csrf;
     options('unidade',catalog.units); options('curso',catalog.courses); options('periodo',catalog.periods); options('exame',catalog.exam_types);
