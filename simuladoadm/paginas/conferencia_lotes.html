@@ -428,7 +428,7 @@
 
     .modal-top{
       display:grid;
-      grid-template-columns: 1.8fr .8fr;
+      grid-template-columns: 1.65fr 1fr;
       gap:20px;
       align-items:start;
     }
@@ -856,7 +856,7 @@
   </div>
 
 <script>
-  const API_BASE = 'https://apisec.secauxiliar.com.br/sim_adm_hml';
+  const API_BASE = 'https://apisec.secauxiliar.com.br/sim_adm';
 
   const URL_EVENTOS = `${API_BASE}/listar_eventos_conferencia.php`;
   const URL_LOTES = `${API_BASE}/listar_lotes_conferencia.php`;
@@ -870,6 +870,7 @@
   const URL_RECUSAR_LOTE = `${API_BASE}/recusar_lote_conferencia.php`;
   const URL_RECUSAR_ARQUIVO_LOTE = `${API_BASE}/recusar_arquivo_lote_conferencia.php`;
   const URL_GERAR_STATS_ALTERNATIVAS = `${API_BASE}/gerar_stats_alternativas.php`;
+  const URL_CODIGOS_PROVA = `${API_BASE}/codigos_prova_evento.php`;
 
 
   const elEvento = document.getElementById('evento');
@@ -909,6 +910,9 @@
   // Assim, ao fechar a imagem aberta pelo botão "Ver",
   // voltamos para a lista de arquivos do mesmo lote.
   let arquivosLoteModalContext = null;
+
+  // Referências de versão/cor e frase por evento + dia.
+  const referenciasCorProvaCache = new Map();
 
   function aplicarRotacaoRecorte() {
     const img = document.getElementById('imgRecortePendencia');
@@ -1126,7 +1130,7 @@ function valorVazioOuPendente(valor, tipo = '') {
   }
 
   function loteAptoParaBaixa(row) {
-    return !!row?.ok_habilitado && !isLoteRedacao(row);
+    return !!row?.ok_habilitado;
   }
 
   function filtrarLotesPorTipo(rows) {
@@ -1258,7 +1262,7 @@ function valorVazioOuPendente(valor, tipo = '') {
             type="button"
             class="btn-mini block"
             onclick="event.stopPropagation();"
-            title="${redacao ? 'Lote de redação R1 fica apenas para consulta nesta tela' : 'Só habilita quando diferença = 0 e pendências = 0'}">
+            title="${redacao ? 'Só habilita quando todas as redações do lote estiverem processadas' : 'Só habilita quando diferença = 0 e pendências = 0'}">
             OK
         </button>`;
 
@@ -1328,9 +1332,9 @@ function valorVazioOuPendente(valor, tipo = '') {
       ctxEvento.textContent = `Evento: ${evento}`;
       ctxDia.textContent = `Dia: ${dia}`;
       ctxFtp.textContent = `FTP/Lote: ${ftp}`;
-      ctxPend.textContent = 'Redação: consulta';
+      ctxPend.textContent = 'Redação R1';
 
-      infoPendencias.textContent = 'Lote de redação R1: use o botão Arq. para consultar os arquivos. Este lote não entra na conferência/finalização objetiva.';
+      infoPendencias.textContent = 'Lote de redação R1: use o botão Arq. para consultar os arquivos. Quando todas as redações estiverem processadas, use OK para finalizar o lote.';
       tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Redação R1 fica apenas para consulta nesta tela.</td></tr>`;
       return;
     }
@@ -1420,6 +1424,54 @@ function valorVazioOuPendente(valor, tipo = '') {
     return tipo === 'inscricao' ? row.INSCRICAO : row.CORPROVA;
   }
 
+  async function carregarReferenciasCorProva(evento, dia) {
+    const ev = String(evento || '').trim();
+    const d = String(dia || '').trim().toUpperCase();
+
+    if (!ev || !d) return [];
+
+    const chave = `${ev}|${d}`;
+    if (referenciasCorProvaCache.has(chave)) {
+      return referenciasCorProvaCache.get(chave);
+    }
+
+    const data = await fetchJson(
+      `${URL_CODIGOS_PROVA}?acao=listar&evento=${encodeURIComponent(ev)}&dia=${encodeURIComponent(d)}`
+    );
+
+    const rows = Array.isArray(data.rows) ? data.rows : [];
+    referenciasCorProvaCache.set(chave, rows);
+    return rows;
+  }
+
+  function montarReferenciasCorProvaHtml(row, tipo) {
+    if (tipo !== 'corprova') return '';
+
+    const refs = Array.isArray(row._referenciasCorProva) ? row._referenciasCorProva : [];
+    if (!refs.length) return '';
+
+    const linhas = refs
+      .filter(r => String(r.versao || '').trim() !== '' && String(r.frase || '').trim() !== '')
+      .map(r => `
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:1px solid #edf2f7;">
+          <strong style="min-width:65px;color:#0b3b78;font-size:12px;">${escapeHtml(String(r.versao || '').trim())}</strong>
+          <span style="color:#334155;font-size:11px;line-height:1.3;">${escapeHtml(String(r.frase || '').trim())}</span>
+        </div>
+      `)
+      .join('');
+
+    if (!linhas) return '';
+
+    return `
+      <div style="margin-top:10px;padding:10px 12px;border:1px solid #dce7f6;border-radius:10px;background:#f8fbff;">
+        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;">
+          Frases da prova — ${escapeHtml(String(row.dia || '').trim())}
+        </div>
+        ${linhas}
+      </div>
+    `;
+  }
+
   function buildModalHtml(row, tipo) {
     const valorAtual = normalizarValor(valorCampo(row, tipo));
     const valorAtualExibicao = valorAtual || '#';
@@ -1493,6 +1545,8 @@ function valorVazioOuPendente(valor, tipo = '') {
                 Confira o que está marcado na imagem e informe o valor correto.
               </div>
 
+              ${montarReferenciasCorProvaHtml(row, tipo)}
+
               ${vazio ? `<div class="empty-alert" style="margin-top:10px;">Este campo veio vazio / pendente. Se o aluno realmente não preencheu, use o botão CONFERIDO.</div>` : ''}
             </div>
           </div>
@@ -1522,10 +1576,20 @@ function valorVazioOuPendente(valor, tipo = '') {
     const titulo = `Conferir ${tituloTipo(tipo)}`;
     const mostrarConferido = (tipo === 'inscricao');
 
+    if (tipo === 'corprova') {
+      const eventoTela = document.getElementById('evento')?.value || row.evento || '';
+      try {
+        row._referenciasCorProva = await carregarReferenciasCorProva(eventoTela, row.dia);
+      } catch (err) {
+        console.error('Falha ao carregar frases da prova:', err);
+        row._referenciasCorProva = [];
+      }
+    }
+
     await Swal.fire({
       title: titulo,
       html: buildModalHtml(row, tipo),
-      width: 1380,
+      width: 1500,
       showCancelButton: true,
       showDenyButton: mostrarConferido,
       confirmButtonText: 'Salvar',
@@ -2217,11 +2281,6 @@ function resetarImagemCompleta() {
       return;
     }
 
-    if (isLoteRedacao(row)) {
-      Swal.fire('Redação R1', 'Este lote fica apenas para consulta nesta tela e não será finalizado pelo fluxo objetivo.', 'info');
-      return;
-    }
-
     const lote = String(row.ftp || '').trim();
     const unidade = String(row.id_und || '').trim();
     const evento = String(row.simulado || elEvento.value || '').trim();
@@ -2229,6 +2288,83 @@ function resetarImagemCompleta() {
 
     if (!lote || !unidade || !evento || !dia) {
       Swal.fire('Erro', 'Dados insuficientes para finalizar o lote.', 'error');
+      return;
+    }
+
+    if (isLoteRedacao(row)) {
+      const qnt = Number(row.qnt || 0);
+      const processadas = Number(row.quantidade_processada_real || 0);
+
+      if (!row.ok_habilitado || qnt <= 0 || processadas < qnt) {
+        Swal.fire('Lote de redação ainda incompleto', `Processadas ${processadas} de ${qnt}. O OK só é liberado quando todo o lote estiver processado.`, 'warning');
+        return;
+      }
+
+      const confirmR1 = await Swal.fire({
+        icon: 'question',
+        title: 'Finalizar lote de redação?',
+        html: `
+          <div style="text-align:left;line-height:1.55;">
+            <p><b>Evento:</b> ${escapeHtml(evento)}</p>
+            <p><b>Unidade:</b> ${escapeHtml(unidade)}</p>
+            <p><b>FTP:</b> ${escapeHtml(lote)}</p>
+            <p><b>Dia:</b> ${escapeHtml(dia)}</p>
+            <p><b>Processadas:</b> ${escapeHtml(String(processadas))} de ${escapeHtml(String(qnt))}</p>
+            <hr style="border:none;border-top:1px solid #e5edf7;margin:10px 0;">
+            <p>As redações já estão gravadas. Esta ação apenas marcará o lote como <b>FINALIZADO</b>.</p>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Sim, finalizar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#0b3b78'
+      });
+
+      if (!confirmR1.isConfirmed) return;
+
+      try {
+        Swal.fire({
+          title: 'Finalizando lote de redação...',
+          html: 'Confirmando o processamento e fechando o lote.',
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        const dataR1 = await fetchJson(URL_FINALIZAR_LOTE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lote, unidade, evento, dia })
+        });
+
+        await Swal.fire({
+          icon: 'success',
+          title: 'Lote de redação finalizado ✅',
+          html: `Processadas <b>${escapeHtml(String(dataR1.processadas ?? processadas))}</b> de <b>${escapeHtml(String(dataR1.qnt ?? qnt))}</b>.`,
+          confirmButtonColor: '#0b3b78'
+        });
+
+        const chaveFinalizada = getChaveLote(row);
+        [lotesTodosCache, lotesCache].forEach(lista => {
+          const loteLocal = lista.find(r => getChaveLote(r) === chaveFinalizada);
+          if (loteLocal) {
+            loteLocal.status = 'FINALIZADO';
+            loteLocal.ok_habilitado = false;
+            loteLocal.pendencias = 0;
+            loteLocal.diferenca = 0;
+            loteLocal.oculto_na_fila = true;
+          }
+        });
+
+        pendenciasCache = [];
+        linhaSelecionada = null;
+        contextoLote.style.display = 'none';
+        infoPendencias.textContent = 'Lote de redação finalizado. Selecione outro lote à esquerda.';
+        tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Lote de redação finalizado com sucesso.</td></tr>`;
+        reaplicarFiltrosSemRecarregar('');
+      } catch (err) {
+        Swal.fire('Erro', err.message || 'Falha ao finalizar o lote de redação.', 'error');
+      }
       return;
     }
 
