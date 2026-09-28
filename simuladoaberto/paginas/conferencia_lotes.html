@@ -870,6 +870,7 @@
   const URL_RECUSAR_LOTE = `${API_BASE}/recusar_lote_conferencia.php`;
   const URL_RECUSAR_ARQUIVO_LOTE = `${API_BASE}/recusar_arquivo_lote_conferencia.php`;
   const URL_GERAR_STATS_ALTERNATIVAS = `${API_BASE}/gerar_stats_alternativas.php`;
+  const URL_CODIGOS_PROVA = `${API_BASE}/codigos_prova_evento.php`;
 
 
   const elEvento = document.getElementById('evento');
@@ -909,6 +910,9 @@
   // Assim, ao fechar a imagem aberta pelo botão "Ver",
   // voltamos para a lista de arquivos do mesmo lote.
   let arquivosLoteModalContext = null;
+
+  // Referências de versão/cor e frase por evento + dia.
+  const referenciasCorProvaCache = new Map();
 
   function aplicarRotacaoRecorte() {
     const img = document.getElementById('imgRecortePendencia');
@@ -1420,6 +1424,54 @@ function valorVazioOuPendente(valor, tipo = '') {
     return tipo === 'inscricao' ? row.INSCRICAO : row.CORPROVA;
   }
 
+  async function carregarReferenciasCorProva(evento, dia) {
+    const ev = String(evento || '').trim();
+    const d = String(dia || '').trim().toUpperCase();
+
+    if (!ev || !d) return [];
+
+    const chave = `${ev}|${d}`;
+    if (referenciasCorProvaCache.has(chave)) {
+      return referenciasCorProvaCache.get(chave);
+    }
+
+    const data = await fetchJson(
+      `${URL_CODIGOS_PROVA}?acao=listar&evento=${encodeURIComponent(ev)}&dia=${encodeURIComponent(d)}`
+    );
+
+    const rows = Array.isArray(data.rows) ? data.rows : [];
+    referenciasCorProvaCache.set(chave, rows);
+    return rows;
+  }
+
+  function montarReferenciasCorProvaHtml(row, tipo) {
+    if (tipo !== 'corprova') return '';
+
+    const refs = Array.isArray(row._referenciasCorProva) ? row._referenciasCorProva : [];
+    if (!refs.length) return '';
+
+    const linhas = refs
+      .filter(r => String(r.versao || '').trim() !== '' && String(r.frase || '').trim() !== '')
+      .map(r => `
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:1px solid #edf2f7;">
+          <strong style="min-width:72px;color:#0b3b78;">${escapeHtml(String(r.versao || '').trim())}</strong>
+          <span style="color:#334155;line-height:1.35;">${escapeHtml(String(r.frase || '').trim())}</span>
+        </div>
+      `)
+      .join('');
+
+    if (!linhas) return '';
+
+    return `
+      <div style="margin-top:10px;padding:10px 12px;border:1px solid #dce7f6;border-radius:10px;background:#f8fbff;">
+        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;">
+          Frases da prova — ${escapeHtml(String(row.dia || '').trim())}
+        </div>
+        ${linhas}
+      </div>
+    `;
+  }
+
   function buildModalHtml(row, tipo) {
     const valorAtual = normalizarValor(valorCampo(row, tipo));
     const valorAtualExibicao = valorAtual || '#';
@@ -1493,6 +1545,8 @@ function valorVazioOuPendente(valor, tipo = '') {
                 Confira o que está marcado na imagem e informe o valor correto.
               </div>
 
+              ${montarReferenciasCorProvaHtml(row, tipo)}
+
               ${vazio ? `<div class="empty-alert" style="margin-top:10px;">Este campo veio vazio / pendente. Se o aluno realmente não preencheu, use o botão CONFERIDO.</div>` : ''}
             </div>
           </div>
@@ -1521,6 +1575,16 @@ function valorVazioOuPendente(valor, tipo = '') {
     const vazio = valorVazioOuPendente(valorCampo(row, tipo));
     const titulo = `Conferir ${tituloTipo(tipo)}`;
     const mostrarConferido = (tipo === 'inscricao');
+
+    if (tipo === 'corprova') {
+      const eventoTela = document.getElementById('evento')?.value || row.evento || '';
+      try {
+        row._referenciasCorProva = await carregarReferenciasCorProva(eventoTela, row.dia);
+      } catch (err) {
+        console.error('Falha ao carregar frases da prova:', err);
+        row._referenciasCorProva = [];
+      }
+    }
 
     await Swal.fire({
       title: titulo,
