@@ -513,7 +513,6 @@ th {
 <div class="field"><label>Função</label><input id="funcao" value="DIVULGADOR"></div>
 <div class="field"><label>Quantidade</label><input id="quantidade" type="number" min="0.01" step="0.01" value="1"></div>
 <div class="field"><label>Valor unitário</label><input id="valorUnitario" type="number" min="0.01" step="0.01"></div>
-<button id="btnCarregar" class="btn btnLight">Carregar</button>
 <button id="btnPrever" class="btn btnPrimary">Pré-visualizar</button>
 </section>
 <div id="mensagem"></div>
@@ -528,7 +527,34 @@ function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&l
 function headers(){const h={'Content-Type':'application/json'},t=localStorage.getItem('recrutamento_token')||localStorage.getItem('token')||'';if(t)h.Authorization=`Bearer ${t}`;return h}
 async function post(a,p){const r=await fetch(`${API}/${a}`,{method:'POST',credentials:'include',cache:'no-store',headers:headers(),body:JSON.stringify(p)}),d=await r.json().catch(()=>({ok:false,error:'Resposta inválida do servidor.'}));if(!r.ok||!d.ok)throw new Error(d.error||'Não foi possível concluir a operação.');return d}
 function mostrar(t,tipo='ok'){el('mensagem').innerHTML=`<div class="msg ${tipo==='erro'?'msgErro':'msgOk'}">${esc(t)}</div>`}function limparMensagem(){el('mensagem').innerHTML=''}
-async function carregarOpcoes(){limparMensagem();ultimaPrevia=null;const data=el('dataEvento').value;if(!data)return mostrar('Selecione a data do evento.','erro');el('btnCarregar').disabled=true;try{const d=await post('listar_opcoes_importacao.php',{data_evento:data});eventosRecrutamento=d.eventos_recrutamento||[];eventosFinanceiros=d.eventos_financeiros||[];renderFinanceiros();renderEventos();if(!d.importacao_liberada)mostrar('A importação ficará disponível somente no dia seguinte ao evento.','erro')}catch(e){mostrar(e.message,'erro')}finally{el('btnCarregar').disabled=false}}
+async function carregarOpcoes(){
+    limparMensagem();
+    ultimaPrevia=null;
+
+    const data=el('dataEvento').value;
+    if(!data) return mostrar('Selecione a data do evento.','erro');
+
+    try{
+        const d=await post('listar_opcoes_importacao.php',{
+            data_evento:data
+        });
+
+        eventosRecrutamento=d.eventos_recrutamento||[];
+        eventosFinanceiros=d.eventos_financeiros||[];
+
+        renderFinanceiros();
+        renderEventos();
+
+        if(!d.importacao_liberada){
+            mostrar(
+                'A importação ficará disponível somente no dia seguinte ao evento.',
+                'erro'
+            );
+        }
+    }catch(e){
+        mostrar(e.message,'erro');
+    }
+}
 function renderFinanceiros(){
     const s=el('eventoFinanceiro');
 
@@ -719,12 +745,35 @@ async function confirmarImportacaoManual(){
         await prever();
     }catch(e){mostrar(e.message,'erro')}
 }
-el('btnCarregar').onclick=carregarOpcoes;el('btnPrever').onclick=prever;el('btnTodos').onclick=alternarTodos;el('eventoFinanceiro').onchange=()=>{const o=el('eventoFinanceiro').selectedOptions[0],v=o?.dataset?.valor||'';if(v!=='')el('valorUnitario').value=Number(v).toFixed(2)};const ontem=new Date();
-ontem.setDate(ontem.getDate()-1);
-const ano=ontem.getFullYear();
-const mes=String(ontem.getMonth()+1).padStart(2,'0');
-const dia=String(ontem.getDate()).padStart(2,'0');
-el('dataEvento').value=`${ano}-${mes}-${dia}`;
+
+el('btnPrever').onclick = prever;
+el('btnTodos').onclick = alternarTodos;
+
+el('eventoFinanceiro').onchange = () => {
+    const o = el('eventoFinanceiro').selectedOptions[0];
+    const v = o?.dataset?.valor || '';
+
+    if (v !== '') {
+        el('valorUnitario').value = Number(v).toFixed(2);
+    }
+};
+
+// Ao trocar a data, recarrega automaticamente
+el('dataEvento').onchange = carregarOpcoes;
+
+// Define ontem como data inicial
+const ontem = new Date();
+ontem.setDate(ontem.getDate() - 1);
+
+const ano = ontem.getFullYear();
+const mes = String(ontem.getMonth() + 1).padStart(2, '0');
+const dia = String(ontem.getDate()).padStart(2, '0');
+
+el('dataEvento').value = `${ano}-${mes}-${dia}`;
+
+// Carrega automaticamente ao abrir a tela
+carregarOpcoes();
+
 </script>
 </body>
 </html>
