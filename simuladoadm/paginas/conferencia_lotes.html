@@ -1262,7 +1262,7 @@ function valorVazioOuPendente(valor, tipo = '') {
             type="button"
             class="btn-mini block"
             onclick="event.stopPropagation();"
-            title="${redacao ? 'Só habilita quando todas as redações do lote estiverem processadas' : 'Só habilita quando diferença = 0 e pendências = 0'}">
+            title="${redacao ? 'Só habilita quando todas as redações chegarem e estiverem com status CORRIGIDA' : 'Só habilita quando diferença = 0 e pendências = 0'}">
             OK
         </button>`;
 
@@ -1332,10 +1332,15 @@ function valorVazioOuPendente(valor, tipo = '') {
       ctxEvento.textContent = `Evento: ${evento}`;
       ctxDia.textContent = `Dia: ${dia}`;
       ctxFtp.textContent = `FTP/Lote: ${ftp}`;
-      ctxPend.textContent = 'Redação R1';
+      ctxPend.textContent = `Pend. correção: ${pendenciasQtd}`;
 
-      infoPendencias.textContent = 'Lote de redação R1: use o botão Arq. para consultar os arquivos. Quando todas as redações estiverem processadas, use OK para finalizar o lote.';
-      tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Redação R1 fica apenas para consulta nesta tela.</td></tr>`;
+      if (Number(row.diferenca || 0) === 0 && pendenciasQtd === 0) {
+        infoPendencias.textContent = 'Lote de redação R1 completo: todas as imagens chegaram e estão com status CORRIGIDA. Use OK para finalizar o lote.';
+        tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Todas as redações deste lote estão corrigidas. Lote pronto para finalizar.</td></tr>`;
+      } else {
+        infoPendencias.textContent = `Lote de redação R1: ${Number(row.quantidade_processada_real || 0)} de ${Number(row.qnt || 0)} imagens no MySQL e ${pendenciasQtd} pendência(s) de correção.`;
+        tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Aguarde todas as redações chegarem e ficarem com status CORRIGIDA antes de finalizar.</td></tr>`;
+      }
       return;
     }
 
@@ -2294,9 +2299,15 @@ function resetarImagemCompleta() {
     if (isLoteRedacao(row)) {
       const qnt = Number(row.qnt || 0);
       const processadas = Number(row.quantidade_processada_real || 0);
+      const pendentesCorrecao = Number(row.pendencias || 0);
+      const corrigidas = Math.max(0, processadas - pendentesCorrecao);
 
-      if (!row.ok_habilitado || qnt <= 0 || processadas < qnt) {
-        Swal.fire('Lote de redação ainda incompleto', `Processadas ${processadas} de ${qnt}. O OK só é liberado quando todo o lote estiver processado.`, 'warning');
+      if (!row.ok_habilitado || qnt <= 0 || processadas < qnt || pendentesCorrecao > 0) {
+        Swal.fire(
+          'Lote de redação ainda não pode ser finalizado',
+          `No MySQL: ${processadas} de ${qnt}. Corrigidas: ${corrigidas}. Pendentes de correção: ${pendentesCorrecao}.`,
+          'warning'
+        );
         return;
       }
 
@@ -2309,9 +2320,11 @@ function resetarImagemCompleta() {
             <p><b>Unidade:</b> ${escapeHtml(unidade)}</p>
             <p><b>FTP:</b> ${escapeHtml(lote)}</p>
             <p><b>Dia:</b> ${escapeHtml(dia)}</p>
-            <p><b>Processadas:</b> ${escapeHtml(String(processadas))} de ${escapeHtml(String(qnt))}</p>
+            <p><b>No MySQL:</b> ${escapeHtml(String(processadas))} de ${escapeHtml(String(qnt))}</p>
+            <p><b>Corrigidas:</b> ${escapeHtml(String(corrigidas))}</p>
+            <p><b>Pendentes de correção:</b> ${escapeHtml(String(pendentesCorrecao))}</p>
             <hr style="border:none;border-top:1px solid #e5edf7;margin:10px 0;">
-            <p>As redações já estão gravadas. Esta ação apenas marcará o lote como <b>FINALIZADO</b>.</p>
+            <p>Todas as redações chegaram e estão com status <b>CORRIGIDA</b>. Esta ação apenas marcará o lote como <b>FINALIZADO</b>.</p>
           </div>
         `,
         showCancelButton: true,
@@ -2340,7 +2353,7 @@ function resetarImagemCompleta() {
         await Swal.fire({
           icon: 'success',
           title: 'Lote de redação finalizado ✅',
-          html: `Processadas <b>${escapeHtml(String(dataR1.processadas ?? processadas))}</b> de <b>${escapeHtml(String(dataR1.qnt ?? qnt))}</b>.`,
+          html: `No MySQL: <b>${escapeHtml(String(dataR1.processadas ?? processadas))}</b> de <b>${escapeHtml(String(dataR1.qnt ?? qnt))}</b>.<br>Corrigidas: <b>${escapeHtml(String(dataR1.corrigidas ?? corrigidas))}</b>.`,
           confirmButtonColor: '#0b3b78'
         });
 
