@@ -873,6 +873,7 @@
   const URL_CODIGOS_PROVA = `${API_BASE}/codigos_prova_evento.php`;
   const URL_RESOLVER_REDACAO = `${API_BASE}/resolver_pendencia_redacao.php`;
   const URL_CONSULTAR_REDACAO_INSCRICAO = `${API_BASE}/consultar_redacao_inscricao.php`;
+  const URL_EXCLUIR_REDACAO_DUPLICADA = `${API_BASE}/excluir_redacao_duplicada.php`;
 
 
   const elEvento = document.getElementById('evento');
@@ -1032,17 +1033,17 @@ function valorVazioOuPendente(valor, tipo = '') {
     return `${URL_IMAGEM_RECORTE}?arquivo=${arquivo}&dia=${dia}&evento=${evento}&campo=${campoEnc}`;
   }
 
-function buildCropStyle(tipo, dia = '') {
-  if (tipo === 'inscricao') {
-    if (String(dia).toUpperCase() === 'R1') {
-      return 'transform: translate(-48%, -80%) scale(1.35);';
+  function buildCropStyle(tipo, dia = '') {
+    if (tipo === 'inscricao') {
+      if (String(dia).toUpperCase() === 'R1') {
+        return 'transform: translate(-50%, -78%) scale(1);';
+      }
+
+      return 'transform: translate(-50%, -25%) scale(1);';
     }
 
-    return 'transform: translate(-50%, -25%) scale(1);';
+    return 'transform: translate(-50%, -40%) scale(0.9);';
   }
-
-  return 'transform: translate(-50%, -40%) scale(0.9);';
-}
 
   async function fetchJson(url, options = {}) {
     const resp = await fetch(url, {
@@ -1345,6 +1346,76 @@ function buildCropStyle(tipo, dia = '') {
     return escapeHtml(v);
   }
 
+  async function excluirRedacaoDuplicada(id, inscricao, arquivoOrigem = '') {
+    const evento = String(elEvento.value || '').trim();
+    const idNum = Number(id || 0);
+    const insc = normalizarValor(inscricao);
+
+    if (!idNum || !/^\d{7}$/.test(insc)) {
+      Swal.fire('Erro', 'Dados insuficientes para excluir a duplicidade.', 'error');
+      return;
+    }
+
+    const confirma = await Swal.fire({
+      icon: 'warning',
+      title: 'Excluir redação duplicada?',
+      html: `
+        <div style="text-align:left;line-height:1.55;">
+          <p><b>Inscrição:</b> ${escapeHtml(insc)}</p>
+          <p><b>Arquivo:</b> <span class="mono">${escapeHtml(arquivoOrigem || '')}</span></p>
+          <hr style="border:none;border-top:1px solid #e5edf7;margin:10px 0;">
+          <p>Esta ocorrência ainda está <b>INICIADA</b> e existe outra ocorrência <b>CORRIGIDA</b> da mesma inscrição no evento.</p>
+          <p>A ocorrência corrigida e sua nota serão preservadas.</p>
+          <p>Esta linha será marcada como <b>NULO</b> para sair das pendências do lote.</p>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Sim, excluir duplicada',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#991b1b'
+    });
+
+    if (!confirma.isConfirmed) return;
+
+    try {
+      Swal.fire({
+        title: 'Excluindo duplicidade...',
+        html: 'Validando a ocorrência corrigida e atualizando a pendência.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const data = await fetchJson(URL_EXCLUIR_REDACAO_DUPLICADA, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          id: idNum,
+          evento,
+          inscricao: insc
+        })
+      });
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Duplicidade excluída',
+        html: `
+          <div style="text-align:left;line-height:1.55;">
+            <p>${escapeHtml(data.message || 'A ocorrência duplicada foi retirada das pendências.')}</p>
+            <p><b>Ocorrência corrigida preservada:</b> ID ${escapeHtml(String(data.id_corrigida ?? ''))}</p>
+          </div>
+        `,
+        confirmButtonColor: '#0b3b78'
+      });
+
+      await recarregarLoteSelecionado();
+
+    } catch (err) {
+      Swal.fire('Erro', err.message || 'Falha ao excluir a redação duplicada.', 'error');
+    }
+  }
+
+
   async function consultarRedacoesInscricao(inscricao) {
     const inscricaoNorm = normalizarValor(inscricao);
     const evento = String(elEvento.value || '').trim();
@@ -1368,6 +1439,9 @@ function buildCropStyle(tipo, dia = '') {
       );
 
       const rows = Array.isArray(data.rows) ? data.rows : [];
+      const temCorrigida = rows.some(
+        r => String(r.status || '').trim().toUpperCase() === 'CORRIGIDA'
+      );
 
       const tabela = rows.length
         ? `
@@ -1386,6 +1460,7 @@ function buildCropStyle(tipo, dia = '') {
                   <th>RESULTADO</th>
                   <th>STATUS</th>
                   <th>ARQUIVO</th>
+                  <th>AÇÃO</th>
                 </tr>
               </thead>
               <tbody>
@@ -1402,6 +1477,23 @@ function buildCropStyle(tipo, dia = '') {
                     <td><strong>${formatarNotaRedacao(r.resultado)}</strong></td>
                     <td>${chipStatus(r.status || '')}</td>
                     <td class="mono">${escapeHtml(r.arquivo_origem || '')}</td>
+                    <td>
+                      ${
+                        temCorrigida &&
+                        String(r.status || '').trim().toUpperCase() !== 'CORRIGIDA'
+                          ? `<button
+                               type="button"
+                               class="btn-mini reject"
+                               onclick="excluirRedacaoDuplicada(
+                                 ${Number(r.id || 0)},
+                                 '${escapeHtml(r.inscricao || '')}',
+                                 '${escapeHtml(r.arquivo_origem || '')}'
+                               )">
+                               Excluir duplicada
+                             </button>`
+                          : `<span class="helper">-</span>`
+                      }
+                    </td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1796,8 +1888,8 @@ function buildCropStyle(tipo, dia = '') {
 
   function buildModalRedacaoHtml(row) {
     const valorAtual = normalizarValor(row.INSCRICAO || '');
-    const imagemUrl = montarImagemUrl(row, 'inscricao');
-    const cropStyle = buildCropStyle('inscricao');
+    const imagemUrl = `${montarImagemUrl(row, 'inscricao')}&full=1`;
+    const cropStyle = buildCropStyle('inscricao', 'R1');
 
     return `
       <div class="modal-wrap">
