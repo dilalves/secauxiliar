@@ -1031,12 +1031,17 @@ function valorVazioOuPendente(valor, tipo = '') {
     return `${URL_IMAGEM_RECORTE}?arquivo=${arquivo}&dia=${dia}&evento=${evento}&campo=${campoEnc}`;
   }
 
-  function buildCropStyle(tipo) {
-    if (tipo === 'inscricao') {
-      return 'transform: translate(-50%, -25%) scale(1);';
+function buildCropStyle(tipo, dia = '') {
+  if (tipo === 'inscricao') {
+    if (String(dia).toUpperCase() === 'R1') {
+      return 'transform: translate(-50%, -78%) scale(1);';
     }
-    return 'transform: translate(-50%, -40%) scale(0.9);';
+
+    return 'transform: translate(-50%, -25%) scale(1);';
   }
+
+  return 'transform: translate(-50%, -40%) scale(0.9);';
+}
 
   async function fetchJson(url, options = {}) {
     const resp = await fetch(url, {
@@ -1688,7 +1693,8 @@ function valorVazioOuPendente(valor, tipo = '') {
   function buildModalRedacaoHtml(row) {
     const valorAtual = normalizarValor(row.INSCRICAO || '');
     const imagemUrl = montarImagemUrl(row, 'inscricao');
-    const cropStyle = buildCropStyle('inscricao');
+    //const cropStyle = buildCropStyle('inscricao');
+    const cropStyle = buildCropStyle('inscricao', 'R1');
 
     return `
       <div class="modal-wrap">
