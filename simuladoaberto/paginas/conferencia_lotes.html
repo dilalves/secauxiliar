@@ -1310,6 +1310,64 @@ function valorVazioOuPendente(valor, tipo = '') {
     }).join('');
   }
 
+  function configurarCabecalhoPendencias(redacao = false) {
+    const trHead = tbodyPendencias?.closest('table')?.querySelector('thead tr');
+    if (!trHead) return;
+
+    if (redacao) {
+      trHead.innerHTML = `
+        <th class="pend-col-insc">INSCRIÇÃO</th>
+        <th class="pend-col-cor">STATUS</th>
+        <th>ARQUIVO_ORIGEM</th>
+        <th class="pend-col-acoes">AÇÕES</th>
+      `;
+      return;
+    }
+
+    trHead.innerHTML = `
+      <th class="pend-col-insc">INSCRIÇÃO</th>
+      <th class="pend-col-cor">CORPROVA</th>
+      <th>ARQUIVO_ORIGEM</th>
+      <th class="pend-col-acoes">AÇÕES</th>
+    `;
+  }
+
+  function montarTabelaPendenciasRedacao(rows) {
+    configurarCabecalhoPendencias(true);
+
+    if (!rows.length) {
+      tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Nenhuma redação pendente neste lote.</td></tr>`;
+      return;
+    }
+
+    tbodyPendencias.innerHTML = rows.map(r => {
+      const status = String(r.STATUS_REDACAO || '').trim();
+      const statusExibicao = status || 'SEM STATUS';
+
+      return `
+        <tr>
+          <td><strong>${escapeHtml(r.INSCRICAO || '')}</strong></td>
+          <td><span class="chip chip-warn">${escapeHtml(statusExibicao)}</span></td>
+          <td class="mono">
+            <a href="javascript:void(0)" class="arq-link" onclick="verImagem('${escapeHtml(r.arquivo_origem)}', '${escapeHtml(r.dia)}')">
+              ${escapeHtml(r.arquivo_origem || '')}
+            </a>
+          </td>
+          <td>
+            <div class="acoes">
+              <button
+                type="button"
+                class="btn-mini view"
+                onclick="verImagem('${escapeHtml(r.arquivo_origem)}', '${escapeHtml(r.dia)}')">
+                Ver
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
   async function selecionarLote(idx) {
     const row = lotesCache[idx];
     if (!row) return;
@@ -1326,19 +1384,39 @@ function valorVazioOuPendente(valor, tipo = '') {
     const pendenciasQtd = Number(row.pendencias || 0);
 
     if (isLoteRedacao(row)) {
-      pendenciasCache = [];
+      configurarCabecalhoPendencias(true);
+      infoPendencias.textContent = `Carregando redações pendentes do lote FTP ${ftp} (${dia})...`;
+      tbodyPendencias.innerHTML = `<tr><td colspan="4" class="loading">Carregando pendências da redação...</td></tr>`;
 
-      contextoLote.style.display = 'flex';
-      ctxEvento.textContent = `Evento: ${evento}`;
-      ctxDia.textContent = `Dia: ${dia}`;
-      ctxFtp.textContent = `FTP/Lote: ${ftp}`;
-      ctxPend.textContent = 'Redação: consulta';
+      try {
+        const unidade = String(row.id_und || '').trim();
+        const data = await fetchJson(
+          `${URL_PENDENCIAS}?evento=${encodeURIComponent(evento)}&dia=${encodeURIComponent(dia)}&ftp=${encodeURIComponent(ftp)}&unidade=${encodeURIComponent(unidade)}`
+        );
 
-      infoPendencias.textContent = 'Lote de redação R1: use o botão Arq. para consultar os arquivos. Este lote não entra na conferência/finalização objetiva.';
-      tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Redação R1 fica apenas para consulta nesta tela.</td></tr>`;
+        pendenciasCache = data.rows || [];
+        montarTabelaPendenciasRedacao(pendenciasCache);
+
+        contextoLote.style.display = 'flex';
+        ctxEvento.textContent = `Evento: ${evento}`;
+        ctxDia.textContent = `Dia: ${dia}`;
+        ctxFtp.textContent = `FTP/Lote: ${ftp}`;
+        ctxPend.textContent = `Pendências: ${data.total || 0}`;
+
+        infoPendencias.textContent = (Number(data.total || 0) > 0)
+          ? `${data.total} redação(ões) ainda não corrigida(s) neste lote.`
+          : 'Todas as redações deste lote estão com status CORRIGIDA.';
+      } catch (err) {
+        Swal.fire('Erro', err.message || 'Falha ao carregar pendências da redação.', 'error');
+        tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Erro ao carregar pendências da redação.</td></tr>`;
+        contextoLote.style.display = 'none';
+        pendenciasCache = [];
+      }
+
       return;
     }
 
+    configurarCabecalhoPendencias(false);
     infoPendencias.textContent = `Carregando pendências do lote FTP ${ftp} (${dia})...`;
     tbodyPendencias.innerHTML = `<tr><td colspan="4" class="loading">Carregando pendências...</td></tr>`;
 
@@ -1381,6 +1459,7 @@ function valorVazioOuPendente(valor, tipo = '') {
   }
 
   function montarTabelaPendencias(rows) {
+    configurarCabecalhoPendencias(false);
     if (!rows.length) {
       tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Nenhuma pendência encontrada para este lote.</td></tr>`;
       return;
@@ -2552,6 +2631,7 @@ function resetarImagemCompleta() {
       ? getChaveLote(lotesCache[linhaSelecionada])
       : '';
 
+    configurarCabecalhoPendencias(getFiltroTipoLote() === 'RED');
     tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Selecione um lote à esquerda para visualizar as pendências manuais.</td></tr>`;
     infoPendencias.textContent = 'Selecione um lote à esquerda para visualizar as pendências manuais.';
     contextoLote.style.display = 'none';
