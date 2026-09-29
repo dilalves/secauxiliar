@@ -871,6 +871,7 @@
   const URL_RECUSAR_ARQUIVO_LOTE = `${API_BASE}/recusar_arquivo_lote_conferencia.php`;
   const URL_GERAR_STATS_ALTERNATIVAS = `${API_BASE}/gerar_stats_alternativas.php`;
   const URL_CODIGOS_PROVA = `${API_BASE}/codigos_prova_evento.php`;
+  const URL_RESOLVER_REDACAO = `${API_BASE}/resolver_pendencia_redacao.php`;
 
 
   const elEvento = document.getElementById('evento');
@@ -1130,7 +1131,7 @@ function valorVazioOuPendente(valor, tipo = '') {
   }
 
   function loteAptoParaBaixa(row) {
-    return !!row?.ok_habilitado && !isLoteRedacao(row);
+    return !!row?.ok_habilitado;
   }
 
   function filtrarLotesPorTipo(rows) {
@@ -1262,7 +1263,7 @@ function valorVazioOuPendente(valor, tipo = '') {
             type="button"
             class="btn-mini block"
             onclick="event.stopPropagation();"
-            title="${redacao ? 'Lote de redação R1 fica apenas para consulta nesta tela' : 'Só habilita quando diferença = 0 e pendências = 0'}">
+            title="${redacao ? 'Só habilita quando diferença = 0 e pendências da redação = 0' : 'Só habilita quando diferença = 0 e pendências = 0'}">
             OK
         </button>`;
 
@@ -1343,10 +1344,21 @@ function valorVazioOuPendente(valor, tipo = '') {
     tbodyPendencias.innerHTML = rows.map(r => {
       const status = String(r.STATUS_REDACAO || '').trim();
       const statusExibicao = status || 'SEM STATUS';
+      const inscricao = normalizarValor(r.INSCRICAO || '');
+      const inscricaoPendente = valorVazioOuPendente(inscricao, 'inscricao');
+
+      const inscricaoHtml = inscricaoPendente
+        ? `<span
+             class="campo-problema alerta"
+             onclick="abrirModalCorrecao(${Number(r.id)}, 'inscricao')"
+             title="Clique para conferir a inscrição da redação">
+             ${escapeHtml(inscricao || '#')}
+           </span>`
+        : `<strong>${escapeHtml(inscricao)}</strong>`;
 
       return `
         <tr>
-          <td><strong>${escapeHtml(r.INSCRICAO || '')}</strong></td>
+          <td>${inscricaoHtml}</td>
           <td><span class="chip chip-warn">${escapeHtml(statusExibicao)}</span></td>
           <td class="mono">
             <a href="javascript:void(0)" class="arq-link" onclick="verImagem('${escapeHtml(r.arquivo_origem)}', '${escapeHtml(r.dia)}')">
@@ -1355,12 +1367,21 @@ function valorVazioOuPendente(valor, tipo = '') {
           </td>
           <td>
             <div class="acoes">
-              <button
-                type="button"
-                class="btn-mini view"
-                onclick="verImagem('${escapeHtml(r.arquivo_origem)}', '${escapeHtml(r.dia)}')">
-                Ver
-              </button>
+              ${
+                inscricaoPendente
+                  ? `<button
+                       type="button"
+                       class="btn-mini edit"
+                       onclick="abrirModalCorrecao(${Number(r.id)}, 'inscricao')">
+                       Corrigir
+                     </button>`
+                  : `<button
+                       type="button"
+                       class="btn-mini view"
+                       onclick="verImagem('${escapeHtml(r.arquivo_origem)}', '${escapeHtml(r.dia)}')">
+                       Ver
+                     </button>`
+              }
             </div>
           </td>
         </tr>
@@ -1644,10 +1665,205 @@ function valorVazioOuPendente(valor, tipo = '') {
     return valorVazioOuPendente(v, tipo) ? '' : v;
   }
 
+  async function salvarCorrecaoRedacao(row, valor) {
+    const loteAtual = linhaSelecionada !== null ? lotesCache[linhaSelecionada] : null;
+    const evento = String(elEvento.value || row.evento || '').trim();
+    const unidade = String(loteAtual?.id_und || row.unidade || '').trim();
+    const lote = String(loteAtual?.ftp || row.lote || '').trim();
+
+    return await fetchJson(URL_RESOLVER_REDACAO, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        id: row.id,
+        evento,
+        dia: 'R1',
+        lote,
+        unidade,
+        valor
+      })
+    });
+  }
+
+  function buildModalRedacaoHtml(row) {
+    const valorAtual = normalizarValor(row.INSCRICAO || '');
+    const imagemUrl = montarImagemUrl(row, 'inscricao');
+    const cropStyle = buildCropStyle('inscricao');
+
+    return `
+      <div class="modal-wrap">
+        <div class="modal-top">
+          <div class="recorte-box">
+            <div class="recorte-head">
+              <div class="recorte-title">Conferir inscrição da redação</div>
+              <div class="recorte-hint">Redação R1 — conferência manual</div>
+            </div>
+
+            <div class="crop-frame">
+              <span class="crop-badge">INSCRIÇÃO</span>
+              <img
+                id="imgRecortePendencia"
+                data-base-transform="${escapeHtml(cropStyle.replace('transform:', '').replace(';', '').trim())}"
+                src="${imagemUrl}"
+                alt="Recorte da inscrição"
+                style="${cropStyle}"
+                onerror="this.onerror=null;this.src='';this.closest('.crop-frame').innerHTML='<div style=&quot;padding:20px;color:#64748b;font-size:13px;&quot;>Não foi possível carregar o recorte.<br>Use a opção Ver imagem completa.</div>';">
+            </div>
+
+            <div class="full-image-box">
+              <a href="javascript:void(0)" onclick="verImagem('${escapeHtml(row.arquivo_origem)}','R1')">
+                Ver imagem completa
+              </a>
+            </div>
+          </div>
+
+          <div class="modal-side">
+            <div class="bloco">
+              <div class="bloco-title">Dados da pendência</div>
+              <div class="dados-grid">
+                <div class="dados-item">
+                  <strong>ID</strong>
+                  ${escapeHtml(String(row.id))}
+                </div>
+                <div class="dados-item">
+                  <strong>Status redação</strong>
+                  ${escapeHtml(row.STATUS_REDACAO || '')}
+                </div>
+                <div class="dados-item" style="grid-column:1 / span 2;">
+                  <strong>Arquivo</strong>
+                  <span class="mono">${escapeHtml(row.arquivo_origem || '')}</span>
+                </div>
+                <div class="dados-item">
+                  <strong>Inscrição atual</strong>
+                  ${escapeHtml(valorAtual || '#')}
+                </div>
+                <div class="dados-item">
+                  <strong>Dia</strong>
+                  R1
+                </div>
+              </div>
+            </div>
+
+            <div class="bloco">
+              <div class="bloco-title">Conferência da inscrição</div>
+              <div class="campo-edicao">
+                <label for="swal-input-valor">INSCRIÇÃO</label>
+                <input
+                  id="swal-input-valor"
+                  type="text"
+                  maxlength="7"
+                  value="${escapeHtml(valorAtualVazioParaInput(valorAtual, 'inscricao'))}"
+                  placeholder="Digite a inscrição correta"
+                  autocomplete="off">
+              </div>
+
+              <div class="mini-note" style="margin-top:8px;">
+                Informe a inscrição com 7 dígitos. Se a imagem realmente não permitir identificar uma inscrição válida, use <b>NULO</b>.
+              </div>
+
+              <div class="empty-alert" style="margin-top:10px;">
+                NULO libera esta pendência manualmente, sem alterar nota, competências ou o trabalho do departamento de redação.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function abrirModalCorrecaoRedacao(row) {
+    const result = await Swal.fire({
+      title: 'Conferir inscrição — Redação R1',
+      html: buildModalRedacaoHtml(row),
+      width: 1500,
+      showCancelButton: true,
+      showDenyButton: true,
+      confirmButtonText: 'Salvar inscrição',
+      denyButtonText: 'NULO',
+      cancelButtonText: 'Voltar',
+      customClass: {
+        popup: 'swal2-overflow-visible'
+      },
+      focusConfirm: false,
+      didOpen: () => {
+        resetarRotacaoRecorte();
+        const input = document.getElementById('swal-input-valor');
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      },
+      preConfirm: async () => {
+        const input = document.getElementById('swal-input-valor');
+        const valor = normalizarValor(input?.value);
+
+        if (!/^\d{7}$/.test(valor)) {
+          Swal.showValidationMessage('Informe uma inscrição com 7 dígitos ou use NULO.');
+          return false;
+        }
+
+        try {
+          const data = await salvarCorrecaoRedacao(row, valor);
+          row.INSCRICAO = valor;
+          montarTabelaPendenciasRedacao(pendenciasCache);
+          return data;
+        } catch (err) {
+          Swal.showValidationMessage(err.message || 'Falha ao atualizar a inscrição da redação.');
+          return false;
+        }
+      }
+    });
+
+    if (result.isDenied) {
+      try {
+        await salvarCorrecaoRedacao(row, 'NULO');
+
+        pendenciasCache = pendenciasCache.filter(r => Number(r.id) !== Number(row.id));
+        montarTabelaPendenciasRedacao(pendenciasCache);
+
+        const chave = atualizarLoteSelecionadoLocal();
+
+        if (ctxPend) {
+          ctxPend.textContent = `Pendências: ${pendenciasCache.length}`;
+        }
+
+        infoPendencias.textContent = pendenciasCache.length > 0
+          ? `${pendenciasCache.length} redação(ões) ainda pendente(s) neste lote.`
+          : 'Todas as pendências deste lote de redação foram resolvidas. O lote está pronto para OK.';
+
+        reaplicarFiltrosSemRecarregar(chave);
+
+        await Swal.fire(
+          'Pendência liberada',
+          'A inscrição foi marcada como NULO para esta redação.',
+          'success'
+        );
+      } catch (err) {
+        Swal.fire('Erro', err.message || 'Falha ao marcar a inscrição como NULO.', 'error');
+      }
+
+      return;
+    }
+
+    if (result.isConfirmed) {
+      await Swal.fire(
+        'Inscrição atualizada',
+        'A redação continuará aparecendo como pendente até o departamento concluir a correção.',
+        'success'
+      );
+    }
+  }
+
+
   async function abrirModalCorrecao(id, tipo) {
     const row = getPendenciaById(id);
     if (!row) {
       Swal.fire('Erro', 'Pendência não encontrada em memória.', 'error');
+      return;
+    }
+
+    if (String(row.dia || '').trim().toUpperCase() === 'R1' && tipo === 'inscricao') {
+      await abrirModalCorrecaoRedacao(row);
       return;
     }
 
@@ -1794,7 +2010,7 @@ function valorVazioOuPendente(valor, tipo = '') {
       if (!lote) return;
 
       lote.pendencias = novaQtdPend;
-      lote.ok_habilitado = !isLoteRedacao(lote) && Number(lote.diferenca || 0) === 0 && novaQtdPend === 0;
+      lote.ok_habilitado = Number(lote.diferenca || 0) === 0 && novaQtdPend === 0;
     });
 
     return chave;
@@ -2353,6 +2569,135 @@ function resetarImagemCompleta() {
     }
   }
 
+  async function finalizarLoteRedacao(idx) {
+    const row = lotesCache[idx];
+    if (!row) {
+      Swal.fire('Erro', 'Lote de redação não encontrado em memória.', 'error');
+      return;
+    }
+
+    const lote = String(row.ftp || '').trim();
+    const unidade = String(row.id_und || '').trim();
+    const evento = String(row.simulado || elEvento.value || '').trim();
+
+    if (!lote || !unidade || !evento) {
+      Swal.fire('Erro', 'Dados insuficientes para processar o lote de redação.', 'error');
+      return;
+    }
+
+    try {
+      const pendenciasAtuais = await fetchJson(
+        `${URL_PENDENCIAS}?evento=${encodeURIComponent(evento)}&dia=R1&ftp=${encodeURIComponent(lote)}&unidade=${encodeURIComponent(unidade)}`
+      );
+
+      const totalPendenciasAtuais = Number(pendenciasAtuais.total || 0);
+
+      if (totalPendenciasAtuais > 0) {
+        row.pendencias = totalPendenciasAtuais;
+        row.ok_habilitado = false;
+        montarTabelaLotes(lotesCache);
+
+        Swal.fire(
+          'Lote ainda possui pendências',
+          `Há ${totalPendenciasAtuais} redação(ões) ainda pendente(s). Resolva a inscrição ou aguarde a correção antes de dar OK.`,
+          'warning'
+        );
+        return;
+      }
+    } catch (err) {
+      Swal.fire(
+        'Não foi possível conferir as pendências',
+        err.message || 'Tente novamente antes de dar OK no lote.',
+        'error'
+      );
+      return;
+    }
+
+    const confirm = await Swal.fire({
+      icon: 'question',
+      title: 'Dar OK no lote de redação?',
+      html: `
+        <div style="text-align:left;line-height:1.55;">
+          <p><b>Evento:</b> ${escapeHtml(evento)}</p>
+          <p><b>Unidade:</b> ${escapeHtml(unidade)}</p>
+          <p><b>FTP:</b> ${escapeHtml(lote)}</p>
+          <p><b>Dia:</b> R1</p>
+          <hr style="border:none;border-top:1px solid #e5edf7;margin:10px 0;">
+          <p>Não há pendências neste lote.</p>
+          <p>O sistema marcará o lote como <b>PROCESSADO</b> em controle_lotes e ele sairá desta fila.</p>
+          <p><b>Nenhum fluxo de D1/D2, gabarito ou tabela _corrigido será executado.</b></p>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Sim, dar OK',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#0b3b78'
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      Swal.fire({
+        title: 'Processando lote de redação...',
+        html: 'Marcando o lote R1 como PROCESSADO.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const data = await fetchJson(URL_FINALIZAR_LOTE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lote,
+          unidade,
+          evento,
+          dia: 'R1'
+        })
+      });
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Lote processado ✅',
+        html: `
+          <div style="text-align:left;line-height:1.55;">
+            <p><b>Status:</b> ${escapeHtml(data.status || 'Processado')}</p>
+            <p><b>Redações:</b> ${escapeHtml(String(data.processadas ?? row.qnt ?? 0))}</p>
+            <p><b>Corrigidas:</b> ${escapeHtml(String(data.corrigidas ?? 0))}</p>
+            <p><b>NULO:</b> ${escapeHtml(String(data.nulos ?? 0))}</p>
+          </div>
+        `,
+        confirmButtonColor: '#0b3b78'
+      });
+
+      const chaveProcessada = getChaveLote(row);
+
+      [lotesTodosCache, lotesCache].forEach(lista => {
+        const loteLocal = lista.find(r => getChaveLote(r) === chaveProcessada);
+
+        if (loteLocal) {
+          loteLocal.status = 'PROCESSADO';
+          loteLocal.ok_habilitado = false;
+          loteLocal.pendencias = 0;
+          loteLocal.diferenca = 0;
+          loteLocal.oculto_na_fila = true;
+        }
+      });
+
+      pendenciasCache = [];
+      linhaSelecionada = null;
+      contextoLote.style.display = 'none';
+      infoPendencias.textContent = 'Lote de redação processado. Selecione outro lote à esquerda.';
+      tbodyPendencias.innerHTML = `<tr><td colspan="4" class="vazio">Lote de redação processado com sucesso.</td></tr>`;
+
+      reaplicarFiltrosSemRecarregar('');
+
+    } catch (err) {
+      Swal.fire('Erro', err.message || 'Falha ao processar o lote de redação.', 'error');
+    }
+  }
+
+
     async function finalizarLote(idx) {
     const row = lotesCache[idx];
     if (!row) {
@@ -2361,7 +2706,7 @@ function resetarImagemCompleta() {
     }
 
     if (isLoteRedacao(row)) {
-      Swal.fire('Redação R1', 'Este lote fica apenas para consulta nesta tela e não será finalizado pelo fluxo objetivo.', 'info');
+      await finalizarLoteRedacao(idx);
       return;
     }
 
