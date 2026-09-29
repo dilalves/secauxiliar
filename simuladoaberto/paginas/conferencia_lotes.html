@@ -872,6 +872,7 @@
   const URL_GERAR_STATS_ALTERNATIVAS = `${API_BASE}/gerar_stats_alternativas.php`;
   const URL_CODIGOS_PROVA = `${API_BASE}/codigos_prova_evento.php`;
   const URL_RESOLVER_REDACAO = `${API_BASE}/resolver_pendencia_redacao.php`;
+  const URL_CONSULTAR_REDACAO_INSCRICAO = `${API_BASE}/consultar_redacao_inscricao.php`;
 
 
   const elEvento = document.getElementById('evento');
@@ -1034,7 +1035,7 @@ function valorVazioOuPendente(valor, tipo = '') {
 function buildCropStyle(tipo, dia = '') {
   if (tipo === 'inscricao') {
     if (String(dia).toUpperCase() === 'R1') {
-      return 'transform: translate(-50%, -85%) scale(1.35);';
+      return 'transform: translate(-48%, -80%) scale(1.35);';
     }
 
     return 'transform: translate(-50%, -25%) scale(1);';
@@ -1338,6 +1339,103 @@ function buildCropStyle(tipo, dia = '') {
     `;
   }
 
+  function formatarNotaRedacao(valor) {
+    const v = normalizarValor(valor);
+    if (v === '' || v.toUpperCase() === 'NULL') return '-';
+    return escapeHtml(v);
+  }
+
+  async function consultarRedacoesInscricao(inscricao) {
+    const inscricaoNorm = normalizarValor(inscricao);
+    const evento = String(elEvento.value || '').trim();
+
+    if (!/^\d{7}$/.test(inscricaoNorm)) {
+      Swal.fire('Atenção', 'Inscrição inválida para consulta.', 'warning');
+      return;
+    }
+
+    try {
+      Swal.fire({
+        title: 'Consultando redações...',
+        html: `Buscando ocorrências da inscrição <b>${escapeHtml(inscricaoNorm)}</b>.`,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const data = await fetchJson(
+        `${URL_CONSULTAR_REDACAO_INSCRICAO}?evento=${encodeURIComponent(evento)}&inscricao=${encodeURIComponent(inscricaoNorm)}`
+      );
+
+      const rows = Array.isArray(data.rows) ? data.rows : [];
+
+      const tabela = rows.length
+        ? `
+          <div class="arquivos-lote-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>INSCRIÇÃO</th>
+                  <th>UNIDADE</th>
+                  <th>LOTE</th>
+                  <th>C1</th>
+                  <th>C2</th>
+                  <th>C3</th>
+                  <th>C4</th>
+                  <th>C5</th>
+                  <th>RESULTADO</th>
+                  <th>STATUS</th>
+                  <th>ARQUIVO</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(r => `
+                  <tr>
+                    <td><strong>${escapeHtml(r.inscricao || '')}</strong></td>
+                    <td>${escapeHtml(r.unidade || '')}</td>
+                    <td>${escapeHtml(r.lote || '')}</td>
+                    <td>${formatarNotaRedacao(r.c1)}</td>
+                    <td>${formatarNotaRedacao(r.c2)}</td>
+                    <td>${formatarNotaRedacao(r.c3)}</td>
+                    <td>${formatarNotaRedacao(r.c4)}</td>
+                    <td>${formatarNotaRedacao(r.c5)}</td>
+                    <td><strong>${formatarNotaRedacao(r.resultado)}</strong></td>
+                    <td>${chipStatus(r.status || '')}</td>
+                    <td class="mono">${escapeHtml(r.arquivo_origem || '')}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `
+        : `<div class="vazio">Nenhuma redação encontrada para esta inscrição no evento atual.</div>`;
+
+      const corrigidas = rows.filter(r => String(r.status || '').trim().toUpperCase() === 'CORRIGIDA').length;
+
+      await Swal.fire({
+        title: `Redações da inscrição ${escapeHtml(inscricaoNorm)}`,
+        width: 1400,
+        html: `
+          <div style="text-align:left;">
+            <div class="modal-info-lote">
+              <span>Evento: ${escapeHtml(data.evento || evento)}</span>
+              <span>Inscrição: ${escapeHtml(inscricaoNorm)}</span>
+              <span>Ocorrências: ${escapeHtml(String(rows.length))}</span>
+              <span>Corrigidas: ${escapeHtml(String(corrigidas))}</span>
+            </div>
+            ${tabela}
+          </div>
+        `,
+        confirmButtonText: 'Fechar',
+        confirmButtonColor: '#0b3b78'
+      });
+
+    } catch (err) {
+      Swal.fire('Erro', err.message || 'Falha ao consultar as redações desta inscrição.', 'error');
+    }
+  }
+
+
   function montarTabelaPendenciasRedacao(rows) {
     configurarCabecalhoPendencias(true);
 
@@ -1359,7 +1457,13 @@ function buildCropStyle(tipo, dia = '') {
              title="Clique para conferir a inscrição da redação">
              ${escapeHtml(inscricao || '#')}
            </span>`
-        : `<strong>${escapeHtml(inscricao)}</strong>`;
+        : `<a
+             href="javascript:void(0)"
+             class="arq-link"
+             onclick="consultarRedacoesInscricao('${escapeHtml(inscricao)}')"
+             title="Consultar redações desta inscrição no evento atual">
+             ${escapeHtml(inscricao)}
+           </a>`;
 
       return `
         <tr>
@@ -1692,10 +1796,8 @@ function buildCropStyle(tipo, dia = '') {
 
   function buildModalRedacaoHtml(row) {
     const valorAtual = normalizarValor(row.INSCRICAO || '');
-    //const imagemUrl = montarImagemUrl(row, 'inscricao');
-    const imagemUrl = `${montarImagemUrl(row, 'inscricao')}&full=1`;
-    //const cropStyle = buildCropStyle('inscricao');
-    const cropStyle = buildCropStyle('inscricao', 'R1');
+    const imagemUrl = montarImagemUrl(row, 'inscricao');
+    const cropStyle = buildCropStyle('inscricao');
 
     return `
       <div class="modal-wrap">
