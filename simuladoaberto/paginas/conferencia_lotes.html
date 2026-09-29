@@ -873,7 +873,7 @@
   const URL_CODIGOS_PROVA = `${API_BASE}/codigos_prova_evento.php`;
   const URL_RESOLVER_REDACAO = `${API_BASE}/resolver_pendencia_redacao.php`;
   const URL_CONSULTAR_REDACAO_INSCRICAO = `${API_BASE}/consultar_redacao_inscricao.php`;
-  const URL_EXCLUIR_REDACAO_DUPLICADA = `${API_BASE}/excluir_redacao_duplicada.php`;
+  const URL_FINALIZAR_PENDENCIA_REDACAO = `${API_BASE}/finalizar_pendencia_redacao.php`;
 
 
   const elEvento = document.getElementById('evento');
@@ -997,7 +997,7 @@ function valorVazioOuPendente(valor, tipo = '') {
     const s = String(status || '').toUpperCase();
     let cls = 'chip';
 
-    if (s === 'FINALIZADO' || s === 'PROCESSADO') {
+    if (s === 'FINALIZADO' || s === 'FINALIZADA' || s === 'PROCESSADO') {
       cls += ' chip-ok';
 
     } else if (s === 'PROCESSANDO') {
@@ -1346,63 +1346,62 @@ function valorVazioOuPendente(valor, tipo = '') {
     return escapeHtml(v);
   }
 
-  async function excluirRedacaoDuplicada(id, inscricao, arquivoOrigem = '') {
+  async function finalizarPendenciaRedacao(id, inscricao, arquivoOrigem = '') {
     const evento = String(elEvento.value || '').trim();
     const idNum = Number(id || 0);
     const insc = normalizarValor(inscricao);
 
-    if (!idNum || !/^\d{7}$/.test(insc)) {
-      Swal.fire('Erro', 'Dados insuficientes para excluir a duplicidade.', 'error');
+    if (!idNum) {
+      Swal.fire('Erro', 'ID da redação inválido.', 'error');
       return;
     }
 
     const confirma = await Swal.fire({
       icon: 'warning',
-      title: 'Excluir redação duplicada?',
+      title: 'Finalizar pendência da redação?',
       html: `
         <div style="text-align:left;line-height:1.55;">
-          <p><b>Inscrição:</b> ${escapeHtml(insc)}</p>
+          <p><b>Inscrição:</b> ${escapeHtml(insc || '-')}</p>
           <p><b>Arquivo:</b> <span class="mono">${escapeHtml(arquivoOrigem || '')}</span></p>
           <hr style="border:none;border-top:1px solid #e5edf7;margin:10px 0;">
-          <p>Esta ocorrência ainda está <b>INICIADA</b> e existe outra ocorrência <b>CORRIGIDA</b> da mesma inscrição no evento.</p>
-          <p>A ocorrência corrigida e sua nota serão preservadas.</p>
-          <p>Esta linha será marcada como <b>NULO</b> para sair das pendências do lote.</p>
+          <p>Esta redação continuará registrada no banco e o arquivo continuará disponível para consulta.</p>
+          <p>Somente o status desta ocorrência será alterado para <b>FINALIZADA</b>.</p>
+          <p><b>Nenhuma nota, competência ou inscrição será alterada.</b></p>
         </div>
       `,
       showCancelButton: true,
       confirmButtonText: 'Sim, finalizar pendência',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#991b1b'
+      confirmButtonColor: '#0b3b78'
     });
 
     if (!confirma.isConfirmed) return;
 
     try {
       Swal.fire({
-        title: 'Excluindo duplicidade...',
-        html: 'Validando a ocorrência corrigida e atualizando a pendência.',
+        title: 'Finalizando pendência...',
+        html: 'Atualizando somente o status desta redação.',
         allowOutsideClick: false,
         allowEscapeKey: false,
         didOpen: () => Swal.showLoading()
       });
 
-      const data = await fetchJson(URL_EXCLUIR_REDACAO_DUPLICADA, {
+      const data = await fetchJson(URL_FINALIZAR_PENDENCIA_REDACAO, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({
           id: idNum,
-          evento,
-          inscricao: insc
+          evento
         })
       });
 
       await Swal.fire({
         icon: 'success',
-        title: 'Duplicidade excluída',
+        title: 'Pendência finalizada',
         html: `
           <div style="text-align:left;line-height:1.55;">
-            <p>${escapeHtml(data.message || 'A ocorrência duplicada foi retirada das pendências.')}</p>
-            <p><b>Ocorrência corrigida preservada:</b> ID ${escapeHtml(String(data.id_corrigida ?? ''))}</p>
+            <p>${escapeHtml(data.message || 'A pendência foi finalizada com sucesso.')}</p>
+            <p><b>Status:</b> ${escapeHtml(data.status || 'Finalizada')}</p>
           </div>
         `,
         confirmButtonColor: '#0b3b78'
@@ -1411,7 +1410,7 @@ function valorVazioOuPendente(valor, tipo = '') {
       await recarregarLoteSelecionado();
 
     } catch (err) {
-      Swal.fire('Erro', err.message || 'Falha ao excluir a redação duplicada.', 'error');
+      Swal.fire('Erro', err.message || 'Falha ao finalizar a pendência da redação.', 'error');
     }
   }
 
@@ -1439,10 +1438,6 @@ function valorVazioOuPendente(valor, tipo = '') {
       );
 
       const rows = Array.isArray(data.rows) ? data.rows : [];
-      const temCorrigida = rows.some(
-        r => String(r.status || '').trim().toUpperCase() === 'CORRIGIDA'
-      );
-
       const tabela = rows.length
         ? `
           <div class="arquivos-lote-wrap">
@@ -1479,12 +1474,13 @@ function valorVazioOuPendente(valor, tipo = '') {
                     <td class="mono">${escapeHtml(r.arquivo_origem || '')}</td>
                     <td>
                       ${
-                        temCorrigida &&
-                        String(r.status || '').trim().toUpperCase() !== 'CORRIGIDA'
+                        !['CORRIGIDA', 'FINALIZADA'].includes(
+                          String(r.status || '').trim().toUpperCase()
+                        )
                           ? `<button
                                type="button"
-                               class="btn-mini reject"
-                               onclick="excluirRedacaoDuplicada(
+                               class="btn-mini edit"
+                               onclick="finalizarPendenciaRedacao(
                                  ${Number(r.id || 0)},
                                  '${escapeHtml(r.inscricao || '')}',
                                  '${escapeHtml(r.arquivo_origem || '')}'
