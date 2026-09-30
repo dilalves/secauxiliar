@@ -1773,6 +1773,13 @@ function valorVazioOuPendente(valor, tipo = '') {
     const valorAtual = normalizarValor(valorCampo(row, tipo));
     const valorAtualExibicao = valorAtual || '#';
     const vazio = valorVazioOuPendente(valorAtual);
+    const inscricaoParcialFuvestao = tipo === 'inscricao'
+      && getTipoEvento(elEvento.value || row.evento || '') === 'FUVESTAO'
+      && /^[0-9#*@]+$/.test(valorAtual)
+      && /[0-9]/.test(valorAtual);
+    const mensagemPendencia = inscricaoParcialFuvestao
+      ? 'A inscrição contém uma leitura pendente. Corrija os caracteres necessários no valor acima e clique em SALVAR.'
+      : 'Este campo veio vazio / pendente. Se o aluno realmente não preencheu, use o botão CONFERIDO.';
     const imagemUrl = montarImagemUrl(row, tipo);
     const cropStyle = buildCropStyle(tipo);
     const titulo = tituloTipo(tipo);
@@ -1844,7 +1851,7 @@ function valorVazioOuPendente(valor, tipo = '') {
 
               ${montarReferenciasCorProvaHtml(row, tipo)}
 
-              ${vazio ? `<div class="empty-alert" style="margin-top:10px;">Este campo veio vazio / pendente. Se o aluno realmente não preencheu, use o botão CONFERIDO.</div>` : ''}
+              ${vazio ? `<div class="empty-alert" style="margin-top:10px;">${escapeHtml(mensagemPendencia)}</div>` : ''}
             </div>
           </div>
         </div>
@@ -3237,18 +3244,24 @@ function getOpcoesCorprova(evento, dia) {
 }
 
 function montarCampoEdicao(row, tipo, valorAtual) {
+  const eventoTela = document.getElementById('evento')?.value || row.evento || '';
   if (tipo === 'inscricao') {
+    const valorNormalizado = normalizarValor(valorAtual);
+    const manterInscricaoFuvestao = getTipoEvento(eventoTela) === 'FUVESTAO'
+      && /^[0-9#*@]+$/.test(valorNormalizado);
+    const valorInput = manterInscricaoFuvestao
+      ? valorNormalizado
+      : valorAtualVazioParaInput(valorAtual, tipo);
     return `
       <input
         id="swal-input-valor"
         type="text"
-        value="${escapeHtml(valorAtualVazioParaInput(valorAtual, tipo))}"
+        value="${escapeHtml(valorInput)}"
         placeholder="Digite a inscrição correta"
         autocomplete="off">
     `;
   }
 
-  const eventoTela = document.getElementById('evento')?.value || row.evento || '';
   const opcoes = getOpcoesCorprova(eventoTela, row.dia);
   const valorNormalizado = String(valorAtual || '').trim().toUpperCase();
 
