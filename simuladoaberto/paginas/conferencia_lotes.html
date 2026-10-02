@@ -855,6 +855,8 @@
     </div>
   </div>
 
+<script src="./imagem_rodape.js"></script>
+
 <script>
   const API_BASE = 'https://apisec.secauxiliar.com.br/sim_adm';
 
@@ -2680,7 +2682,24 @@ function resetarImagemCompleta() {
         }
 
         usados.add(nome.toLowerCase());
-        zip.file(nome, blob);
+
+        /*
+         * Gera uma CÓPIA da imagem com o nome gravado
+         * em uma faixa branca acrescentada no rodapé.
+         * O arquivo original no servidor não é alterado.
+         */
+        const blobComRodape = await adicionarRodapeNome(
+          blob,
+          nome
+        );
+
+        const nomeBase = nomeSemExtensaoImagem(nome);
+
+        zip.file(
+          `${nomeBase}.jpg`,
+          blobComRodape
+        );
+
         baixados++;
 
         const progresso = document.getElementById('zipProgresso');
