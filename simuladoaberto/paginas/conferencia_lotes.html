@@ -2618,6 +2618,114 @@ function resetarImagemCompleta() {
     }
   }
 
+  async function carregarJsZip() {
+    if (window.JSZip) return window.JSZip;
+
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+      script.onload = resolve;
+      script.onerror = () => reject(new Error('Não foi possível carregar o componente de compactação.'));
+      document.head.appendChild(script);
+    });
+
+    return window.JSZip;
+  }
+
+  function nomeSeguroArquivo(valor, fallback = 'imagem.jpg') {
+    const nome = String(valor || '').trim().split(/[\\/]/).pop();
+    return nome || fallback;
+  }
+
+  async function baixarArquivosLoteZip(ctx) {
+    if (!ctx || !Array.isArray(ctx.rows) || !ctx.rows.length) {
+      await Swal.fire('Atenção', 'Nenhum arquivo disponível neste lote.', 'warning');
+      return;
+    }
+
+    try {
+      Swal.fire({
+        title: 'Preparando download...',
+        html: `<div id="zipProgresso">Carregando imagens do lote...</div>`,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const JSZip = await carregarJsZip();
+      const zip = new JSZip();
+      const usados = new Set();
+      let baixados = 0;
+
+      for (let i = 0; i < ctx.rows.length; i++) {
+        const r = ctx.rows[i];
+        const arquivoRecebido = r.nome_arquivo_recebido || r.arquivo_origem || r.nome_arquivo_unidade || '';
+        const dia = r.dia || ctx.dia || '';
+
+        if (!arquivoRecebido) continue;
+
+        const url = `${URL_IMAGEM_RECORTE}?arquivo=${encodeURIComponent(arquivoRecebido)}&dia=${encodeURIComponent(dia)}&evento=${encodeURIComponent(ctx.evento || '')}&full=1`;
+        const resp = await fetch(url, { credentials: 'include' });
+
+        if (!resp.ok) {
+          throw new Error(`Falha ao baixar a imagem ${arquivoRecebido}.`);
+        }
+
+        const blob = await resp.blob();
+        let nome = nomeSeguroArquivo(r.nome_arquivo_unidade || arquivoRecebido, `imagem_${i + 1}.jpg`);
+
+        if (usados.has(nome.toLowerCase())) {
+          nome = `${String(r.seq_lote || i + 1).padStart(3, '0')}_${nome}`;
+        }
+
+        usados.add(nome.toLowerCase());
+        zip.file(nome, blob);
+        baixados++;
+
+        const progresso = document.getElementById('zipProgresso');
+        if (progresso) {
+          progresso.textContent = `Carregando imagens: ${baixados} de ${ctx.rows.length}`;
+        }
+      }
+
+      if (!baixados) {
+        throw new Error('Nenhuma imagem válida foi encontrada para download.');
+      }
+
+      const progresso = document.getElementById('zipProgresso');
+      if (progresso) progresso.textContent = 'Compactando imagens...';
+
+      const conteudo = await zip.generateAsync({ type: 'blob' });
+      const nomeZip = [
+        ctx.evento || 'EVENTO',
+        ctx.dia || 'DIA',
+        `UND${ctx.unidade || ''}`,
+        `LOTE${ctx.lote || ''}`
+      ].join('_').replace(/[^a-zA-Z0-9_-]+/g, '_') + '.zip';
+
+      const blobUrl = URL.createObjectURL(conteudo);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = nomeZip;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Download preparado',
+        html: `${baixados} imagem(ns) foram incluídas no arquivo <b>${escapeHtml(nomeZip)}</b>.`,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#0b3b78'
+      });
+
+    } catch (err) {
+      await Swal.fire('Erro', err.message || 'Falha ao preparar o download das imagens.', 'error');
+    }
+  }
+
   function abrirModalArquivosLote(ctx) {
     if (!ctx) return Promise.resolve();
 
@@ -2638,8 +2746,16 @@ function resetarImagemCompleta() {
           ${montarTabelaArquivosLote(ctx.rows, ctx.dia)}
         </div>
       `,
+      showDenyButton: true,
       confirmButtonText: 'Fechar',
-      confirmButtonColor: '#0b3b78'
+      denyButtonText: '⬇ Baixar imagens',
+      confirmButtonColor: '#0b3b78',
+      denyButtonColor: '#166534'
+    }).then(async result => {
+      if (result.isDenied) {
+        await baixarArquivosLoteZip(ctx);
+        return abrirModalArquivosLote(ctx);
+      }
     });
   }
 
