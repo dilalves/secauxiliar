@@ -876,6 +876,7 @@
   const URL_RESOLVER_REDACAO = `${API_BASE}/resolver_pendencia_redacao.php`;
   const URL_CONSULTAR_REDACAO_INSCRICAO = `${API_BASE}/consultar_redacao_inscricao.php`;
   const URL_FINALIZAR_PENDENCIA_REDACAO = `${API_BASE}/finalizar_pendencia_redacao.php`;
+  const URL_SALVAR_NOTAS_REDACAO_MANUAL = `${API_BASE}/salvar_notas_redacao_manual.php`;
 
 
   const elEvento = document.getElementById('evento');
@@ -1417,6 +1418,145 @@ function valorVazioOuPendente(valor, tipo = '') {
   }
 
 
+  function opcoesNotaRedacao(valorAtual = '') {
+    const opcoes = [0, 40, 80, 120, 160, 200];
+    const atual = normalizarValor(valorAtual);
+
+    return `
+      <option value="">-</option>
+      ${opcoes.map(n => `
+        <option value="${n}" ${String(n) === atual ? 'selected' : ''}>${n}</option>
+      `).join('')}
+    `;
+  }
+
+  function montarCampoNotaRedacao(id, competencia, valorAtual = '') {
+    return `
+      <select
+        id="red-nota-${Number(id)}-${competencia}"
+        onchange="calcularResultadoRedacaoManual(${Number(id)})"
+        style="width:72px;height:32px;padding:0 7px;border:1px solid #d9e5f2;border-radius:8px;background:#fff;color:#10233f;font-size:12px;font-weight:700;">
+        ${opcoesNotaRedacao(valorAtual)}
+      </select>
+    `;
+  }
+
+  function calcularResultadoRedacaoManual(id) {
+    const competencias = ['c1', 'c2', 'c3', 'c4', 'c5'];
+    const valores = competencias.map(c => {
+      const el = document.getElementById(`red-nota-${Number(id)}-${c}`);
+      return el ? String(el.value || '').trim() : '';
+    });
+
+    const resultadoEl = document.getElementById(`red-resultado-${Number(id)}`);
+    if (!resultadoEl) return;
+
+    if (valores.some(v => v === '')) {
+      resultadoEl.textContent = '-';
+      return;
+    }
+
+    const total = valores.reduce((soma, valor) => soma + Number(valor || 0), 0);
+    resultadoEl.textContent = String(total);
+  }
+
+  async function salvarNotasRedacaoManual(id, inscricao) {
+    const evento = String(elEvento.value || '').trim();
+    const idNum = Number(id || 0);
+    const inscricaoNorm = normalizarValor(inscricao);
+
+    if (!idNum) {
+      await Swal.fire('Erro', 'ID da redação inválido.', 'error');
+      return;
+    }
+
+    const competencias = ['c1', 'c2', 'c3', 'c4', 'c5'];
+    const notas = {};
+
+    for (const c of competencias) {
+      const el = document.getElementById(`red-nota-${idNum}-${c}`);
+      const valor = String(el?.value || '').trim();
+
+      if (valor === '') {
+        await Swal.fire('Atenção', `Informe a nota de ${c.toUpperCase()}.`, 'warning');
+        return;
+      }
+
+      notas[c] = Number(valor);
+    }
+
+    const resultado = competencias.reduce((soma, c) => soma + Number(notas[c] || 0), 0);
+
+    const confirma = await Swal.fire({
+      icon: 'question',
+      title: 'Salvar notas da redação?',
+      html: `
+        <div style="text-align:left;line-height:1.6;">
+          <p><b>Inscrição:</b> ${escapeHtml(inscricaoNorm)}</p>
+          <p><b>C1:</b> ${notas.c1} &nbsp; <b>C2:</b> ${notas.c2} &nbsp; <b>C3:</b> ${notas.c3} &nbsp; <b>C4:</b> ${notas.c4} &nbsp; <b>C5:</b> ${notas.c5}</p>
+          <p><b>Resultado:</b> ${resultado}</p>
+          <hr style="border:none;border-top:1px solid #e5edf7;margin:10px 0;">
+          <p>As competências e o resultado serão gravados e o status passará para <b>CORRIGIDA</b>.</p>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Sim, salvar notas',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#166534'
+    });
+
+    if (!confirma.isConfirmed) {
+      await consultarRedacoesInscricao(inscricaoNorm);
+      return;
+    }
+
+    try {
+      Swal.fire({
+        title: 'Salvando notas...',
+        html: 'Gravando as competências e calculando o resultado.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const data = await fetchJson(URL_SALVAR_NOTAS_REDACAO_MANUAL, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          id: idNum,
+          evento,
+          c1: notas.c1,
+          c2: notas.c2,
+          c3: notas.c3,
+          c4: notas.c4,
+          c5: notas.c5
+        })
+      });
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Notas salvas',
+        html: `
+          <div style="text-align:left;line-height:1.6;">
+            <p><b>Inscrição:</b> ${escapeHtml(inscricaoNorm)}</p>
+            <p><b>Resultado:</b> ${escapeHtml(String(data.resultado ?? resultado))}</p>
+            <p><b>Status:</b> ${escapeHtml(data.status || 'CORRIGIDA')}</p>
+          </div>
+        `,
+        confirmButtonText: 'Continuar',
+        confirmButtonColor: '#0b3b78'
+      });
+
+      await recarregarLoteSelecionado();
+      await consultarRedacoesInscricao(inscricaoNorm);
+
+    } catch (err) {
+      await Swal.fire('Erro', err.message || 'Falha ao salvar as notas da redação.', 'error');
+      await consultarRedacoesInscricao(inscricaoNorm);
+    }
+  }
+
   async function consultarRedacoesInscricao(inscricao) {
     const inscricaoNorm = normalizarValor(inscricao);
     const evento = String(elEvento.value || '').trim();
@@ -1461,39 +1601,57 @@ function valorVazioOuPendente(valor, tipo = '') {
                 </tr>
               </thead>
               <tbody>
-                ${rows.map(r => `
-                  <tr>
-                    <td><strong>${escapeHtml(r.inscricao || '')}</strong></td>
-                    <td>${escapeHtml(r.unidade || '')}</td>
-                    <td>${escapeHtml(r.lote || '')}</td>
-                    <td>${formatarNotaRedacao(r.c1)}</td>
-                    <td>${formatarNotaRedacao(r.c2)}</td>
-                    <td>${formatarNotaRedacao(r.c3)}</td>
-                    <td>${formatarNotaRedacao(r.c4)}</td>
-                    <td>${formatarNotaRedacao(r.c5)}</td>
-                    <td><strong>${formatarNotaRedacao(r.resultado)}</strong></td>
-                    <td>${chipStatus(r.status || '')}</td>
-                    <td class="mono">${escapeHtml(r.arquivo_origem || '')}</td>
-                    <td>
-                      ${
-                        !['CORRIGIDA', 'FINALIZADA'].includes(
-                          String(r.status || '').trim().toUpperCase()
-                        )
-                          ? `<button
-                               type="button"
-                               class="btn-mini edit"
-                               onclick="finalizarPendenciaRedacao(
-                                 ${Number(r.id || 0)},
-                                 '${escapeHtml(r.inscricao || '')}',
-                                 '${escapeHtml(r.arquivo_origem || '')}'
-                               )">
-                               Finalizar pendência
-                             </button>`
-                          : `<span class="helper">-</span>`
-                      }
-                    </td>
-                  </tr>
-                `).join('')}
+                ${rows.map(r => {
+                  const statusAtual = String(r.status || '').trim().toUpperCase();
+                  const podeEditarNotas = !['CORRIGIDA', 'FINALIZADA'].includes(statusAtual);
+                  const id = Number(r.id || 0);
+
+                  return `
+                    <tr>
+                      <td><strong>${escapeHtml(r.inscricao || '')}</strong></td>
+                      <td>${escapeHtml(r.unidade || '')}</td>
+                      <td>${escapeHtml(r.lote || '')}</td>
+                      <td>${podeEditarNotas ? montarCampoNotaRedacao(id, 'c1', r.c1) : formatarNotaRedacao(r.c1)}</td>
+                      <td>${podeEditarNotas ? montarCampoNotaRedacao(id, 'c2', r.c2) : formatarNotaRedacao(r.c2)}</td>
+                      <td>${podeEditarNotas ? montarCampoNotaRedacao(id, 'c3', r.c3) : formatarNotaRedacao(r.c3)}</td>
+                      <td>${podeEditarNotas ? montarCampoNotaRedacao(id, 'c4', r.c4) : formatarNotaRedacao(r.c4)}</td>
+                      <td>${podeEditarNotas ? montarCampoNotaRedacao(id, 'c5', r.c5) : formatarNotaRedacao(r.c5)}</td>
+                      <td>
+                        <strong id="red-resultado-${id}">
+                          ${podeEditarNotas ? '-' : formatarNotaRedacao(r.resultado)}
+                        </strong>
+                      </td>
+                      <td>
+                        ${statusAtual === 'CORRIGIDA'
+                          ? `<span class="chip chip-ok">${escapeHtml(r.status || '')}</span>`
+                          : chipStatus(r.status || '')}
+                      </td>
+                      <td class="mono">${escapeHtml(r.arquivo_origem || '')}</td>
+                      <td>
+                        ${podeEditarNotas
+                          ? `<div class="acoes" style="min-width:190px;">
+                               <button
+                                 type="button"
+                                 class="btn-mini ok"
+                                 onclick="salvarNotasRedacaoManual(${id}, '${escapeHtml(r.inscricao || '')}')">
+                                 Salvar notas
+                               </button>
+                               <button
+                                 type="button"
+                                 class="btn-mini edit"
+                                 onclick="finalizarPendenciaRedacao(
+                                   ${id},
+                                   '${escapeHtml(r.inscricao || '')}',
+                                   '${escapeHtml(r.arquivo_origem || '')}'
+                                 )">
+                                 Finalizar pendência
+                               </button>
+                             </div>`
+                          : `<span class="helper">-</span>`}
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
               </tbody>
             </table>
           </div>
@@ -1504,7 +1662,7 @@ function valorVazioOuPendente(valor, tipo = '') {
 
       await Swal.fire({
         title: `Redações da inscrição ${escapeHtml(inscricaoNorm)}`,
-        width: 1400,
+        width: 1500,
         html: `
           <div style="text-align:left;">
             <div class="modal-info-lote">
@@ -1517,7 +1675,15 @@ function valorVazioOuPendente(valor, tipo = '') {
           </div>
         `,
         confirmButtonText: 'Fechar',
-        confirmButtonColor: '#0b3b78'
+        confirmButtonColor: '#0b3b78',
+        didOpen: () => {
+          rows.forEach(r => {
+            const statusAtual = String(r.status || '').trim().toUpperCase();
+            if (!['CORRIGIDA', 'FINALIZADA'].includes(statusAtual)) {
+              calcularResultadoRedacaoManual(Number(r.id || 0));
+            }
+          });
+        }
       });
 
     } catch (err) {
