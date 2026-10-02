@@ -1,17 +1,26 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
   <meta charset="UTF-8" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
   <link rel="icon" type="image/x-icon" href="https://www.curso-objetivo.br/assets/img/favicon.ico" />
+
   <title>Enviar folhas — Simulado ENEM Setembro/2026</title>
 
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <style>
+
     :root{
       --primary:#0b3b78;
       --accent:#2563eb;
@@ -26,41 +35,86 @@
     }
 
     html,body{
-      margin:0; padding:0;
+      margin:0;
+      padding:0;
       background:var(--bg);
       color:var(--ink);
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
     }
 
-    a{ color:inherit; text-decoration:none; }
-    .container{ max-width:1100px; margin:0 auto; padding:0 16px; }
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    .container{
+      max-width:1100px;
+      margin:0 auto;
+      padding:0 16px;
+    }
 
     header.topbar{
-      position:fixed; top:0; left:0; right:0; height:64px;
-      background:var(--primary); color:#fff;
-      display:flex; align-items:center; z-index:1000;
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:64px;
+      background:var(--primary);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      z-index:1000;
       box-shadow:0 2px 10px rgba(16,24,40,.22);
     }
+
     .topbar .container{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
     }
+
     .brand{
-      display:flex; align-items:center; gap:12px; min-width:0;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
     }
-    .brand img{ height:28px; }
+
+    .brand img{
+      height:28px;
+    }
+
     .brand .title-wrap{
-      display:flex; flex-direction:column; line-height:1.05; min-width:0;
+      display:flex;
+      flex-direction:column;
+      line-height:1.05;
+      min-width:0;
     }
+
     .brand .title{
-      font-weight:700; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-weight:700;
+      font-size:15px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
+
     .brand .sub{
-      font-size:12px; opacity:.9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-size:12px;
+      opacity:.9;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .actions{ display:flex; align-items:center; gap:10px; }
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
 
-    chip-link{
+    .chip-link{
       display:inline-flex;
       align-items:center;
       gap:8px;
@@ -86,10 +140,14 @@
       line-height:1;
     }
 
-    .user-menu{ position:relative; }
+    .user-menu{
+      position:relative;
+    }
 
     .chip-user{
-      display:flex; align-items:center; gap:8px;
+      display:flex;
+      align-items:center;
+      gap:8px;
       background:rgba(255,255,255,.14);
       border:1px solid rgba(255,255,255,.22);
       border-radius:999px;
@@ -97,16 +155,28 @@
       max-width:420px;
       color:#fff !important;
     }
+
     .chip-user .mat,
-    .chip-user .caret{ color:#fff !important; opacity:.95; }
-    .chip-user .txt{
-      display:flex; flex-direction:column; line-height:1.05; min-width:0;
+    .chip-user .caret{
+      color:#fff !important;
+      opacity:.95;
     }
+
+    .chip-user .txt{
+      display:flex;
+      flex-direction:column;
+      line-height:1.05;
+      min-width:0;
+    }
+
     .chip-user .txt b,
     .chip-user .txt span{
       color:#fff !important;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
+
     .btn-user{
       cursor:pointer;
       border:none;
@@ -126,7 +196,10 @@
       display:none;
       z-index:9999;
     }
-    .dropdown.open{ display:block; }
+
+    .dropdown.open{
+      display:block;
+    }
 
     .dd-item{
       display:flex;
@@ -136,36 +209,78 @@
       border-radius:10px;
       color:var(--ink);
     }
-    .dd-item i{ color:var(--accent); font-size:18px; }
-    .dd-item:hover{ background:#f0f4ff; }
 
-    main{ padding-top:88px; padding-bottom:40px; }
+    .dd-item i{
+      color:var(--accent);
+      font-size:18px;
+    }
+
+    .dd-item:hover{
+      background:#f0f4ff;
+    }
+
+    main{
+      padding-top:88px;
+      padding-bottom:40px;
+    }
 
     .hero{
-      background:linear-gradient(180deg, rgba(11,59,120,.10), rgba(11,59,120,0));
+      background:linear-gradient(
+        180deg,
+        rgba(11,59,120,.10),
+        rgba(11,59,120,0)
+      );
+
       border:1px solid var(--line);
       border-radius:16px;
       padding:18px;
       box-shadow:0 10px 30px rgba(0,0,0,.05);
       overflow:hidden;
     }
+
     .hero-top{
-      display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
     }
+
     .hero h1{
-      margin:0; font-size:22px; font-weight:800;
+      margin:0;
+      font-size:22px;
+      font-weight:800;
     }
+
     .hero p{
-      margin:6px 0 0; color:var(--muted); font-size:14px;
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
     }
-    .badges{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+
+    .badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
     .badge{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:6px 10px; border-radius:999px;
-      background:#fff; border:1px solid var(--line);
-      font-size:12px; color:var(--muted);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--line);
+      font-size:12px;
+      color:var(--muted);
     }
-    .badge i{ font-size:16px; color:var(--accent); }
+
+    .badge i{
+      font-size:16px;
+      color:var(--accent);
+    }
 
     .upload-wrap{
       margin-top:16px;
@@ -177,10 +292,14 @@
     }
 
     .section-title{
-      display:flex; align-items:center; gap:10px;
+      display:flex;
+      align-items:center;
+      gap:10px;
       margin:0 0 6px;
-      font-size:18px; font-weight:800;
+      font-size:18px;
+      font-weight:800;
     }
+
     .section-sub{
       margin:0 0 16px;
       color:var(--muted);
@@ -200,7 +319,9 @@
       padding:14px;
     }
 
-    .field-card.full{ grid-column:1 / -1; }
+    .field-card.full{
+      grid-column:1 / -1;
+    }
 
     .field-label{
       display:block;
@@ -223,10 +344,12 @@
       padding:10px;
       background:#fff;
     }
+
     .mini-kpi .v{
       font-size:20px;
       font-weight:900;
     }
+
     .mini-kpi .l{
       font-size:12px;
       color:var(--muted);
@@ -258,15 +381,18 @@
       cursor:pointer;
       font-weight:700;
     }
+
     .btn-primary{
       background:var(--accent);
       color:#fff;
     }
+
     .btn-secondary{
       background:#fff;
       color:var(--ink);
       border:1px solid var(--line);
     }
+
     .btnx:disabled{
       opacity:.6;
       cursor:not-allowed;
@@ -295,12 +421,29 @@
       line-height:1.45;
       word-break:break-word;
     }
-    .preview-item:last-child{ border-bottom:none; }
 
-    .muted{ color:var(--muted); }
-    .ok{ color:var(--ok); font-weight:700; }
-    .err{ color:var(--err); font-weight:700; }
-    .warn{ color:var(--warn); font-weight:700; }
+    .preview-item:last-child{
+      border-bottom:none;
+    }
+
+    .muted{
+      color:var(--muted);
+    }
+
+    .ok{
+      color:var(--ok);
+      font-weight:700;
+    }
+
+    .err{
+      color:var(--err);
+      font-weight:700;
+    }
+
+    .warn{
+      color:var(--warn);
+      font-weight:700;
+    }
 
     .loading-overlay{
       display:none;
@@ -311,7 +454,10 @@
       justify-content:center;
       align-items:center;
     }
-    .loading-overlay.show{ display:flex; }
+
+    .loading-overlay.show{
+      display:flex;
+    }
 
     .loading-card{
       background:#fff;
@@ -321,16 +467,19 @@
       text-align:center;
       box-shadow:0 16px 40px rgba(0,0,0,.20);
     }
+
     .loading-card .material-icons{
       font-size:40px;
       color:var(--accent);
-      animation: pulse 1s infinite ease-in-out;
+      animation:pulse 1s infinite ease-in-out;
     }
+
     .loading-card h3{
       margin:8px 0 6px;
       font-size:18px;
       font-weight:800;
     }
+
     .loading-card p{
       margin:0;
       color:var(--muted);
@@ -338,759 +487,2571 @@
     }
 
     @keyframes pulse{
-      0%,100%{ transform:scale(1); opacity:1; }
-      50%{ transform:scale(1.08); opacity:.75; }
+      0%,100%{
+        transform:scale(1);
+        opacity:1;
+      }
+
+      50%{
+        transform:scale(1.08);
+        opacity:.75;
+      }
     }
 
     .skeleton{
-      background: linear-gradient(90deg, #eef2f7, #f8fafc, #eef2f7);
-      background-size: 200% 100%;
-      animation: sk 1.2s infinite;
+      background:linear-gradient(
+        90deg,
+        #eef2f7,
+        #f8fafc,
+        #eef2f7
+      );
+
+      background-size:200% 100%;
+      animation:sk 1.2s infinite;
       border-radius:8px;
     }
-    @keyframes sk {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    .sk-line{ height:12px; width:220px; }
-    .sk-mini{ height:10px; width:180px; opacity:.85; }
 
-    @media (max-width: 860px){
-      .grid-form{ grid-template-columns:1fr; }
-      .info-row{ grid-template-columns:1fr; }
-      .chip-user{ max-width:260px; }
+    @keyframes sk{
+      0%{
+        background-position:200% 0;
+      }
+
+      100%{
+        background-position:-200% 0;
+      }
     }
+
+    .sk-line{
+      height:12px;
+      width:220px;
+    }
+
+    .sk-mini{
+      height:10px;
+      width:180px;
+      opacity:.85;
+    }
+
+    @media (max-width:860px){
+
+      .grid-form{
+        grid-template-columns:1fr;
+      }
+
+      .info-row{
+        grid-template-columns:1fr;
+      }
+
+      .chip-user{
+        max-width:260px;
+      }
+
+    }
+
   </style>
+
 </head>
+
 <body>
 
 <header class="topbar">
+
   <div class="container">
+
     <div class="brand">
-      <img src="/enem0926/logo-mini.png" alt="Logo">
+
+      <img
+        src="/enem0926/logo-mini.png"
+        alt="Logo"
+      >
+
       <div class="title-wrap">
-        <div class="title">Simulado Aberto ENEM — Setembro/2026</div>
-        <div class="sub">Inscrição avulsa</div>
+
+        <div class="title">
+          Simulado Aberto ENEM — Setembro/2026
+        </div>
+
+        <div class="sub">
+          Inscrição avulsa
+        </div>
+
       </div>
+
     </div>
 
     <div class="actions">
-      <a href="./painel.html" class="chip-link">
-        <i class="material-icons">dashboard</i>
-        <span>Painel</span>
+
+      <a
+        href="./painel.html"
+        class="chip-link"
+      >
+
+        <i class="material-icons">
+          dashboard
+        </i>
+
+        <span>
+          Painel
+        </span>
+
       </a>
 
-      <div class="user-menu" id="userMenu">
-        <button class="chip-user btn-user" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false">
-          <i class="material-icons mat">account_circle</i>
+      <div
+        class="user-menu"
+        id="userMenu"
+      >
+
+        <button
+          class="chip-user btn-user"
+          id="userBtn"
+          type="button"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+
+          <i class="material-icons mat">
+            account_circle
+          </i>
+
           <div class="txt">
-            <b id="uLogin" class="skeleton sk-line"></b>
-            <span id="uNome" class="skeleton sk-mini"></span>
+
+            <b
+              id="uLogin"
+              class="skeleton sk-line"
+            ></b>
+
+            <span
+              id="uNome"
+              class="skeleton sk-mini"
+            ></span>
+
           </div>
-          <i class="material-icons caret">arrow_drop_down</i>
+
+          <i class="material-icons caret">
+            arrow_drop_down
+          </i>
+
         </button>
 
-        <div class="dropdown" id="userDropdown">
-          <a href="./alterar_senha.html" class="dd-item">
-            <i class="material-icons">lock</i> Alterar senha
+        <div
+          class="dropdown"
+          id="userDropdown"
+        >
+
+          <a
+            href="./alterar_senha.html"
+            class="dd-item"
+          >
+
+            <i class="material-icons">
+              lock
+            </i>
+
+            Alterar senha
+
           </a>
-          <a href="#" class="dd-item" onclick="logout(); return false;">
-            <i class="material-icons">logout</i> Sair
+
+          <a
+            href="#"
+            class="dd-item"
+            onclick="logout(); return false;"
+          >
+
+            <i class="material-icons">
+              logout
+            </i>
+
+            Sair
+
           </a>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
+
 </header>
 
 <main>
+
   <div class="container">
+
     <section class="hero">
+
       <div class="hero-top">
+
         <div>
-          <h1 id="welcomeTitle">Enviar folhas da unidade</h1>
-          <p id="welcomeSub">Selecione o dia, escolha os arquivos e faça o envio com validação de quantidade e resolução.</p>
+
+          <h1 id="welcomeTitle">
+            Enviar folhas da unidade
+          </h1>
+
+          <p id="welcomeSub">
+            Selecione o dia, escolha os arquivos e faça o envio com validação de quantidade, formato e tipo da folha.
+          </p>
+
         </div>
 
         <div class="badges">
-          <span class="badge"><i class="material-icons">event</i><b id="evt">ENEM0926</b></span>
-          <span class="badge"><i class="material-icons">cloud_upload</i> Upload seguro</span>
-          <span class="badge"><i class="material-icons">verified</i> Validação ativa</span>
+
+          <span class="badge">
+
+            <i class="material-icons">
+              event
+            </i>
+
+            <b id="evt">
+              ENEM0926
+            </b>
+
+          </span>
+
+          <span class="badge">
+
+            <i class="material-icons">
+              cloud_upload
+            </i>
+
+            Upload seguro
+
+          </span>
+
+          <span class="badge">
+
+            <i class="material-icons">
+              verified
+            </i>
+
+            Validação ativa
+
+          </span>
+
         </div>
+
       </div>
+
     </section>
 
     <section class="upload-wrap">
+
       <h2 class="section-title">
-        <i class="material-icons" style="color:var(--accent)">upload_file</i>
+
+        <i
+          class="material-icons"
+          style="color:var(--accent)"
+        >
+          upload_file
+        </i>
+
         Envio das folhas
+
       </h2>
+
       <p class="section-sub">
-        O sistema valida o limite liberado para a unidade e confere a resolução das imagens antes do envio.
+        O sistema valida o limite da unidade, o padrão A4 e confere se cada imagem corresponde ao tipo de envio selecionado.
       </p>
 
       <div class="grid-form">
+
         <div class="field-card">
-          <label class="field-label" for="dia">Dia da prova</label>
-          <div class="input-field" style="margin:0">
-            <select id="dia" required>
-              <option value="" disabled selected>Selecione o dia</option>
-              <option value="D1">1º DIA</option>
-              <option value="D2">2º DIA</option>
+
+          <label
+            class="field-label"
+            for="dia"
+          >
+            Dia da prova
+          </label>
+
+          <div
+            class="input-field"
+            style="margin:0"
+          >
+
+            <select
+              id="dia"
+              required
+            >
+
+              <option
+                value=""
+                disabled
+                selected
+              >
+                Selecione o dia
+              </option>
+
+              <option value="D1">
+                1º DIA
+              </option>
+
+              <option value="D2">
+                2º DIA
+              </option>
+
             </select>
+
           </div>
+
         </div>
 
         <div class="field-card">
-          <label class="field-label">Resumo do envio</label>
+
+          <label class="field-label">
+            Resumo do envio
+          </label>
+
           <div class="info-row">
+
             <div class="mini-kpi">
-              <div class="v" id="kpiPermitido">-</div>
-              <div class="l">Permitidos</div>
+
+              <div
+                class="v"
+                id="kpiPermitido"
+              >
+                -
+              </div>
+
+              <div class="l">
+                Permitidos
+              </div>
+
             </div>
+
             <div class="mini-kpi">
-              <div class="v" id="kpiEnviados">-</div>
-              <div class="l">Já enviados</div>
+
+              <div
+                class="v"
+                id="kpiEnviados"
+              >
+                -
+              </div>
+
+              <div class="l">
+                Já enviados
+              </div>
+
             </div>
+
             <div class="mini-kpi">
-              <div class="v" id="kpiFaltam">-</div>
-              <div class="l">Faltam enviar</div>
+
+              <div
+                class="v"
+                id="kpiFaltam"
+              >
+                -
+              </div>
+
+              <div class="l">
+                Faltam enviar
+              </div>
+
             </div>
+
             <div class="mini-kpi">
-              <div class="v" id="kpiSelecionados">0</div>
-              <div class="l">Selecionados</div>
+
+              <div
+                class="v"
+                id="kpiSelecionados"
+              >
+                0
+              </div>
+
+              <div class="l">
+                Selecionados
+              </div>
+
             </div>
+
           </div>
+
         </div>
 
         <div class="field-card full">
-          <label class="field-label">Arquivos</label>
+
+          <label class="field-label">
+            Arquivos
+          </label>
+
           <div class="file-box">
-            <div class="file-field input-field" style="margin:0">
+
+            <div
+              class="file-field input-field"
+              style="margin:0"
+            >
+
               <div class="btn blue">
-                <span>Escolher arquivos</span>
-                <input type="file" id="fileInput" accept=".jpg,.jpeg" multiple />
+
+                <span>
+                  Escolher arquivos
+                </span>
+
+                <input
+                  type="file"
+                  id="fileInput"
+                  accept=".jpg,.jpeg"
+                  multiple
+                />
+
               </div>
+
               <div class="file-path-wrapper">
-                <input class="file-path validate" type="text" placeholder="Selecione os arquivos JPG/JPEG">
+
+                <input
+                  class="file-path validate"
+                  type="text"
+                  placeholder="Selecione os arquivos JPG/JPEG"
+                >
+
               </div>
+
             </div>
-            <p class="muted" style="margin:12px 0 0">
-               Envie apenas imagens JPG ou JPEG com resolução mínima de 300 DPI.
+
+            <p
+              class="muted"
+              style="margin:12px 0 0"
+            >
+              Envie apenas imagens JPG ou JPEG em padrão A4. O sistema também verifica automaticamente se a folha pertence ao dia selecionado.
             </p>
+
           </div>
 
           <div class="btn-row">
-            <button class="btnx btn-primary" id="btnEnviar" type="button" onclick="uploadFile()">
-              <i class="material-icons">cloud_upload</i>
+
+            <button
+              class="btnx btn-primary"
+              id="btnEnviar"
+              type="button"
+              onclick="uploadFile()"
+            >
+
+              <i class="material-icons">
+                cloud_upload
+              </i>
+
               Enviar
+
             </button>
 
-            <a class="btnx btn-secondary" href="./painel.html">
-              <i class="material-icons">arrow_back</i>
+            <a
+              class="btnx btn-secondary"
+              href="./painel.html"
+            >
+
+              <i class="material-icons">
+                arrow_back
+              </i>
+
               Voltar ao painel
+
             </a>
+
           </div>
+
         </div>
+
       </div>
 
-      <div class="preview-box" id="previewBox">
+      <div
+        class="preview-box"
+        id="previewBox"
+      >
+
         <p class="preview-head">
-          <strong>Arquivo_Unidade</strong> → <strong>Arquivo_Recebido</strong> — <strong>Status</strong>
+
+          <strong>
+            Arquivo_Unidade
+          </strong>
+
+          →
+
+          <strong>
+            Arquivo_Recebido
+          </strong>
+
+          —
+
+          <strong>
+            Status
+          </strong>
+
         </p>
+
         <div id="fileNamesPreview"></div>
+
       </div>
+
     </section>
+
   </div>
+
 </main>
 
-<div id="loadingOverlay" class="loading-overlay">
+<div
+  id="loadingOverlay"
+  class="loading-overlay"
+>
+
   <div class="loading-card">
-    <i class="material-icons">sync</i>
-    <h3>Processando envio</h3>
-    <p>Aguarde enquanto os arquivos são enviados.</p>
+
+    <i class="material-icons">
+      sync
+    </i>
+
+    <h3>
+      Processando envio
+    </h3>
+
+    <p>
+      Aguarde enquanto as imagens são validadas e enviadas.
+    </p>
+
   </div>
+
 </div>
 
 <script>
-  const API = 'https://apisec.secauxiliar.com.br/enem0926/';
-  const EVENTO_FIXO = 'ENEM0926';
-  const DPI_API_URL = 'https://dpi.secauxiliar.com.br/verificar-dpi';
 
-  let numeroPresentes = 0;
-  let imagensEnviadas = 0;
+const API =
+  'https://apisec.secauxiliar.com.br/enem0926/';
 
-  function pad2(n){
-    return String(n).padStart(2, '0');
-  }
+const EVENTO_FIXO =
+  'ENEM0926';
 
-  function gerarLoteId() {
-    const agora = new Date();
-    return [
-      agora.getHours(),
-      agora.getMinutes(),
-      agora.getSeconds()
-    ].map(pad2).join('');
-  }
+/*
+|--------------------------------------------------------------------------
+| NOVA VALIDAÇÃO
+|--------------------------------------------------------------------------
+|
+| Este PHP valida:
+|
+| - JPG/JPEG
+| - orientação
+| - proporção A4
+| - 300 / 600
+| - código da folha via OCR/Tesseract
+|
+| D1 -> 26081
+| D2 -> 26082
+| R1 -> 26083
+|
+*/
 
-  function toast(msg){
-    if (window.M && M.toast) M.toast({ html: msg });
-    else alert(msg);
-  }
+const VALIDAR_IMAGEM_URL =
+  API + 'verificar-imagem-a4.php';
 
-  function esc(s){
-    return String(s).replace(/[&<>"']/g, m => ({
-      '&':'&amp;',
-      '<':'&lt;',
-      '>':'&gt;',
-      '"':'&quot;',
-      "'":'&#39;'
-    }[m]));
-  }
 
-  async function logout(){
-    try {
-      await fetch(API + 'auth_login_out.php', {
-        method: 'POST',
-        credentials: 'include',
-        cache: 'no-store'
-      });
-    } catch(e){
-      console.error(e);
-    }
-    location.href = './index.html?logout=1';
-  }
+let numeroPresentes = 0;
 
-  function setupUserMenu(){
-    const btn = document.getElementById('userBtn');
-    const dd = document.getElementById('userDropdown');
-    if (!btn || !dd) return;
+let imagensEnviadas = 0;
 
-    function close(){
-      dd.classList.remove('open');
-      btn.setAttribute('aria-expanded', 'false');
-    }
 
-    function toggle(){
-      const isOpen = dd.classList.toggle('open');
-      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    }
+/*
+|--------------------------------------------------------------------------
+| Utilidades
+|--------------------------------------------------------------------------
+*/
 
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggle();
-    });
+function pad2(n){
 
-    document.addEventListener('click', close);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') close();
-    });
-  }
+  return String(n)
+    .padStart(
+      2,
+      '0'
+    );
 
-  async function gatePainel() {
-    const r = await fetch(API + 'auth_me_unidade.php', { credentials: 'include' });
-    const data = await r.json().catch(() => ({}));
-
-    if (!r.ok || !data.ok) {
-      location.replace('./index.html');
-      return false;
-    }
-
-    const st = (data.adesao?.status || '').toUpperCase();
-
-    if (st !== 'ATIVA') {
-      await Swal.fire({
-        title: 'Acesso indisponível',
-        html: `
-          <div style="text-align:left;line-height:1.5">
-            <p>Sua adesão ainda não foi liberada.</p>
-            <p>Status atual: <b>${st || 'SEM ADESÃO'}</b></p>
-            <p>⏳ Aguarde a conferência e liberação.</p>
-          </div>
-        `,
-        icon: 'info',
-        confirmButtonColor: '#0b3b78',
-        confirmButtonText: 'OK'
-      });
-      location.replace('./index.html');
-      return false;
-    }
-
-    return data;
-  }
-
-  async function carregarUsuario(){
-    const evt = document.getElementById('evt');
-    const uLogin = document.getElementById('uLogin');
-    const uNome = document.getElementById('uNome');
-    const welcomeTitle = document.getElementById('welcomeTitle');
-    const welcomeSub = document.getElementById('welcomeSub');
-
-    if (evt) evt.textContent = EVENTO_FIXO;
-
-    uLogin.classList.remove('skeleton','sk-line');
-    uNome.classList.remove('skeleton','sk-mini');
-    uLogin.textContent = 'Carregando...';
-    uNome.textContent = '';
-
-    try {
-      const res = await fetch(API + 'auth_me_unidade.php', {
-        credentials: 'include'
-      });
-
-      const data = await res.json();
-
-      if (!data.ok) {
-        toast('Sessão expirada. Faça login novamente.');
-        return logout();
-      }
-
-      const login = data.login || '';
-      const unidade = data.unidade || '';
-
-      uLogin.textContent = login ? `Unidade ${login}` : 'Login';
-      uNome.textContent = unidade || '';
-
-      if (welcomeTitle) {
-        welcomeTitle.textContent = `Enviar folhas — ${unidade || 'Unidade'}`;
-      }
-
-      if (welcomeSub) {
-        welcomeSub.textContent = `Evento ${EVENTO_FIXO}. Selecione o dia e envie as imagens da unidade.`;
-      }
-
-    } catch (e) {
-      console.error(e);
-      toast('Erro de conexão ao carregar usuário.');
-      uLogin.textContent = 'Erro';
-      uNome.textContent = 'Sem conexão';
-    }
-  }
-
-  async function verificarLimiteUpload(evento, diaSelecionado) {
-    const resp = await fetch(API + 'verificar_limite.php', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        evento: evento,
-        dia: diaSelecionado
-      })
-    });
-
-    const data = await resp.json().catch(() => ({}));
-
-    if (!resp.ok || !data.ok) {
-      throw new Error(data.error || data.msg || 'Erro ao verificar limite.');
-    }
-
-    return data;
-  }
-
-  async function verificarRedacaoHabilitada(evento) {
-    const resp = await fetch(API + 'redacao_habilitada.php', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        evento: evento
-      })
-    });
-
-    const data = await resp.json().catch(() => ({}));
-
-    if (!resp.ok || !data.ok) {
-      throw new Error(data.error || data.msg || 'Erro ao verificar redação.');
-    }
-
-    return data;
-  }
-
-  function atualizarKPIs(presentes = '-', enviados = '-', selecionados = 0) {
-    const nPresentes = Number(presentes);
-    const nEnviados = Number(enviados);
-    const faltam = Number.isFinite(nPresentes) && Number.isFinite(nEnviados)
-      ? Math.max(0, nPresentes - nEnviados)
-      : '-';
-
-    document.getElementById('kpiPermitido').textContent = presentes;
-    document.getElementById('kpiEnviados').textContent = enviados;
-    document.getElementById('kpiFaltam').textContent = faltam;
-    document.getElementById('kpiSelecionados').textContent = selecionados;
-  }
-
-  async function atualizarResumoDoDia() {
-    const dia = document.getElementById('dia').value;
-    const files = Array.from(document.getElementById('fileInput').files || []);
-    atualizarKPIs('-', '-', files.length);
-
-    if (!dia) return;
-
-    try {
-      const res = await verificarLimiteUpload(EVENTO_FIXO, dia);
-      numeroPresentes = res.presentes || 0;
-      imagensEnviadas = res.enviados || 0;
-      atualizarKPIs(numeroPresentes, imagensEnviadas, files.length);
-    } catch (err) {
-      console.error(err);
-      atualizarKPIs('-', '-', files.length);
-    }
-  }
-
-  function obterDimensoesImagem(file) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve({
-        largura: img.naturalWidth,
-        altura: img.naturalHeight
-      });
-    };
-
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      resolve({
-        largura: 0,
-        altura: 0
-      });
-    };
-
-    img.src = url;
-  });
 }
 
-  async function verificarDPIReal(file) {
-    const MIN_A4_300_LARGURA = 2480;
-    const MIN_A4_300_ALTURA = 3507;
 
-    function dimensaoA4Ok(largura, altura) {
-      return (
-        (largura >= MIN_A4_300_LARGURA && altura >= MIN_A4_300_ALTURA) ||
-        (largura >= MIN_A4_300_ALTURA && altura >= MIN_A4_300_LARGURA)
+function gerarLoteId(){
+
+  const agora =
+    new Date();
+
+  return [
+
+    agora.getHours(),
+
+    agora.getMinutes(),
+
+    agora.getSeconds()
+
+  ]
+  .map(
+    pad2
+  )
+  .join('');
+
+}
+
+
+function toast(msg){
+
+  if (
+    window.M &&
+    M.toast
+  ){
+
+    M.toast({
+      html:msg
+    });
+
+  }
+  else{
+
+    alert(msg);
+
+  }
+
+}
+
+
+function esc(s){
+
+  return String(s)
+    .replace(
+      /[&<>"']/g,
+      m => ({
+
+        '&':
+          '&amp;',
+
+        '<':
+          '&lt;',
+
+        '>':
+          '&gt;',
+
+        '"':
+          '&quot;',
+
+        "'":
+          '&#39;'
+
+      }[m])
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Logout
+|--------------------------------------------------------------------------
+*/
+
+async function logout(){
+
+  try{
+
+    await fetch(
+      API + 'auth_login_out.php',
+      {
+
+        method:
+          'POST',
+
+        credentials:
+          'include',
+
+        cache:
+          'no-store'
+
+      }
+    );
+
+  }
+  catch(e){
+
+    console.error(e);
+
+  }
+
+  location.href =
+    './index.html?logout=1';
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Menu usuário
+|--------------------------------------------------------------------------
+*/
+
+function setupUserMenu(){
+
+  const btn =
+    document.getElementById(
+      'userBtn'
+    );
+
+  const dd =
+    document.getElementById(
+      'userDropdown'
+    );
+
+  if (
+    !btn ||
+    !dd
+  ){
+
+    return;
+
+  }
+
+
+  function close(){
+
+    dd.classList.remove(
+      'open'
+    );
+
+    btn.setAttribute(
+      'aria-expanded',
+      'false'
+    );
+
+  }
+
+
+  function toggle(){
+
+    const isOpen =
+      dd.classList.toggle(
+        'open'
       );
+
+    btn.setAttribute(
+      'aria-expanded',
+      isOpen
+        ? 'true'
+        : 'false'
+    );
+
+  }
+
+
+  btn.addEventListener(
+    'click',
+    e => {
+
+      e.stopPropagation();
+
+      toggle();
+
     }
+  );
 
-    const dim = await obterDimensoesImagem(file);
 
-    return new Promise((resolve) => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+  document.addEventListener(
+    'click',
+    close
+  );
 
-      const formData = new FormData();
-      formData.append('arquivo', file);
 
-      fetch(DPI_API_URL, {
-        method: 'POST',
-        body: formData,
-        signal: controller.signal
-      })
-      .then(res => res.json())
-      .then(data => {
-        clearTimeout(timeoutId);
+  document.addEventListener(
+    'keydown',
+    e => {
 
-        const dpiX = Number(data.dpi_x || 0);
-        const dpiY = Number(data.dpi_y || 0);
+      if (
+        e.key === 'Escape'
+      ){
 
-        if (data.ok || (dpiX >= 300 && dpiY >= 300)) {
-          resolve({
-            nome: file.name,
-            ok: true,
-            dpiX: data.dpi_x || 300,
-            dpiY: data.dpi_y || 300
-          });
-          return;
-        }
+        close();
 
-        if (dimensaoA4Ok(dim.largura, dim.altura)) {
-          resolve({
-            nome: file.name,
-            ok: true,
-            dpiX: 300,
-            dpiY: 300,
-            validadoPorDimensao: true
-          });
-          return;
-        }
+      }
 
-        resolve({
-          nome: file.name,
-          ok: false,
-          dpiX: data.dpi_x || '?',
-          dpiY: data.dpi_y || '?',
-          erro: `❌ <strong>${file.name}</strong> - ${data.dpi_x || '?'}x${data.dpi_y || '?'} DPI / ${dim.largura}x${dim.altura}px`
-        });
-      })
-      .catch((err) => {
-        clearTimeout(timeoutId);
+    }
+  );
 
-        if (dimensaoA4Ok(dim.largura, dim.altura)) {
-          resolve({
-            nome: file.name,
-            ok: true,
-            dpiX: 300,
-            dpiY: 300,
-            validadoPorDimensao: true
-          });
-          return;
-        }
-
-        resolve({
-          nome: file.name,
-          ok: false,
-          dpiX: '-',
-          dpiY: '-',
-          erro: err.name === 'AbortError'
-            ? `❌ <strong>${file.name}</strong> - falha na verificação de DPI e imagem não atingiu A4 300dpi (${dim.largura}x${dim.altura}px)`
-            : `❌ <strong>${file.name}</strong> - erro ao verificar DPI e imagem não atingiu A4 300dpi (${dim.largura}x${dim.altura}px)`
-        });
-      });
-    });
-  }
-  async function verificarDpiEmBlocos(arquivos, tamanhoBloco = 10) {
-  const resultados = [];
-
-  for (let i = 0; i < arquivos.length; i += tamanhoBloco) {
-    const bloco = arquivos.slice(i, i + tamanhoBloco);
-    const res = await Promise.all(bloco.map(verificarDPIReal));
-    resultados.push(...res);
-  }
-
-  return resultados;
 }
 
-async function enviarArquivo(file, originalFileName, diaSelecionado, dpiX, dpiY, loteId, seqLote) {
-  const fd = new FormData();
-  fd.append('arquivo', file);
-  fd.append('evento', EVENTO_FIXO);
-  fd.append('dia', diaSelecionado);
-  fd.append('originalFileName', originalFileName);
-  fd.append('dpi_x', dpiX ?? '');
-  fd.append('dpi_y', dpiY ?? '');
-  fd.append('lote_id', loteId ?? '');
-  fd.append('seq_lote', String(seqLote ?? ''));
 
-  const resp = await fetch(API + 'enviar_upload.php', {
-    method: 'POST',
-    credentials: 'include',
-    body: fd
-  });
+/*
+|--------------------------------------------------------------------------
+| Gate painel
+|--------------------------------------------------------------------------
+*/
 
-  const data = await resp.json().catch(() => ({}));
+async function gatePainel(){
 
-  if (!resp.ok || !data.ok) {
-    throw new Error(data.error || data.msg || 'Erro ao enviar arquivo.');
+  const r =
+    await fetch(
+      API + 'auth_me_unidade.php',
+      {
+        credentials:
+          'include'
+      }
+    );
+
+
+  const data =
+    await r
+      .json()
+      .catch(
+        () => ({})
+      );
+
+
+  if (
+    !r.ok ||
+    !data.ok
+  ){
+
+    location.replace(
+      './index.html'
+    );
+
+    return false;
+
   }
+
+
+  const st =
+    (
+      data.adesao?.status ||
+      ''
+    )
+    .toUpperCase();
+
+
+  if (
+    st !== 'ATIVA'
+  ){
+
+    await Swal.fire({
+
+      title:
+        'Acesso indisponível',
+
+      html:
+        `
+        <div style="text-align:left;line-height:1.5">
+
+          <p>
+            Sua adesão ainda não foi liberada.
+          </p>
+
+          <p>
+            Status atual:
+            <b>
+              ${st || 'SEM ADESÃO'}
+            </b>
+          </p>
+
+          <p>
+            ⏳ Aguarde a conferência e liberação.
+          </p>
+
+        </div>
+        `,
+
+      icon:
+        'info',
+
+      confirmButtonColor:
+        '#0b3b78',
+
+      confirmButtonText:
+        'OK'
+
+    });
+
+
+    location.replace(
+      './index.html'
+    );
+
+    return false;
+
+  }
+
 
   return data;
+
 }
 
-async function uploadFile() {
-  const fileInput = document.getElementById('fileInput');
-  const arquivosOriginais = Array.from(fileInput.files || []);
-  const fileNamesPreview = document.getElementById('fileNamesPreview');
-  const sendButton = document.getElementById('btnEnviar');
-  const diaSelecionado = document.getElementById('dia').value;
 
-  fileNamesPreview.innerHTML = '';
-  sendButton.disabled = true;
+/*
+|--------------------------------------------------------------------------
+| Carrega usuário
+|--------------------------------------------------------------------------
+*/
 
-  if (!diaSelecionado) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Dados inválidos',
-      text: 'Selecione o dia do envio.'
-    });
-    sendButton.disabled = false;
-    return;
+async function carregarUsuario(){
+
+  const evt =
+    document.getElementById(
+      'evt'
+    );
+
+  const uLogin =
+    document.getElementById(
+      'uLogin'
+    );
+
+  const uNome =
+    document.getElementById(
+      'uNome'
+    );
+
+  const welcomeTitle =
+    document.getElementById(
+      'welcomeTitle'
+    );
+
+  const welcomeSub =
+    document.getElementById(
+      'welcomeSub'
+    );
+
+
+  if(evt){
+
+    evt.textContent =
+      EVENTO_FIXO;
+
   }
 
-  if (arquivosOriginais.length === 0) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Nenhum arquivo selecionado',
-      text: 'Escolha pelo menos um arquivo para enviar.'
-    });
-    sendButton.disabled = false;
-    return;
-  }
 
-    const arquivosInvalidos = arquivosOriginais.filter(f => !/\.(jpe?g)$/i.test(f.name));
+  uLogin.classList.remove(
+    'skeleton',
+    'sk-line'
+  );
 
-    if (arquivosInvalidos.length > 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Formato inválido',
-        html: 'Envie apenas arquivos JPG ou JPEG.<br><br>' +
-          arquivosInvalidos.map(f => `<strong>${esc(f.name)}</strong>`).join('<br>')
-      });
-      sendButton.disabled = false;
-      return;
-    }
+  uNome.classList.remove(
+    'skeleton',
+    'sk-mini'
+  );
 
-    let arquivosProcessados = arquivosOriginais;
 
-  atualizarKPIs(numeroPresentes, imagensEnviadas, arquivosProcessados.length);
+  uLogin.textContent =
+    'Carregando...';
 
-  let resposta;
-  try {
-    resposta = await verificarLimiteUpload(EVENTO_FIXO, diaSelecionado);
-  } catch (err) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Erro ao validar envio',
-      text: err.message || String(err)
-    });
-    sendButton.disabled = false;
-    return;
-  }
+  uNome.textContent =
+    '';
 
-  numeroPresentes = resposta.presentes || 0;
-  imagensEnviadas = resposta.enviados || 0;
-  atualizarKPIs(numeroPresentes, imagensEnviadas, arquivosProcessados.length);
 
-  if (numeroPresentes === 0) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Presença não informada',
-      text: 'Essa unidade não tem quantidade liberada para esse dia.'
-    });
-    sendButton.disabled = false;
-    return;
-  }
+  try{
 
-  if ((arquivosProcessados.length + imagensEnviadas) > numeroPresentes) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Excesso de arquivos',
-      text: `Já foram enviados ${imagensEnviadas} de ${numeroPresentes} imagens permitidas.`
-    });
-    sendButton.disabled = false;
-    return;
-  }
-
-  const resultadosDpi = await verificarDpiEmBlocos(arquivosProcessados, 10);
-  const falhas = resultadosDpi.filter(r => !r.ok);
-
-  if (falhas.length > 0) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Imagens recusadas por baixa resolução',
-      html: falhas.map(f => f.erro || `❌ <strong>${f.nome}</strong> - ${f.dpiX}x${f.dpiY} DPI`).join('<br>')
-    });
-    sendButton.disabled = false;
-    return;
-  }
-
-  document.getElementById('loadingOverlay').classList.add('show');
-
-  let houveErro = false;
-  const loteId = gerarLoteId();
-
-  for (let idx = 0; idx < arquivosProcessados.length; idx++) {
-    const file = arquivosProcessados[idx];
-    const originalFileName = file.name;
-    const dpiInfo = resultadosDpi[idx];
-
-    const row = document.createElement('div');
-    row.className = 'preview-item';
-    row.innerHTML = `
-      <span class="muted">${esc(originalFileName)}</span>
-      → <strong>gerando nome...</strong>
-      — <span class="warn">⏳ em andamento</span>
-    `;
-    fileNamesPreview.appendChild(row);
-    row.scrollIntoView({ behavior: 'smooth', block: 'end' });
-
-    try {
-      const retorno = await enviarArquivo(
-        file,
-        originalFileName,
-        diaSelecionado,
-        dpiInfo?.dpiX ?? '',
-        dpiInfo?.dpiY ?? '',
-        loteId,
-        idx + 1
+    const res =
+      await fetch(
+        API + 'auth_me_unidade.php',
+        {
+          credentials:
+            'include'
+        }
       );
 
-      row.innerHTML = `
-        <span class="muted">${esc(originalFileName)}</span>
-        → <strong>${esc(retorno.arquivo)}</strong>
-        — <span class="ok">✔ enviado</span>
-      `;
-    } catch (err) {
-      houveErro = true;
-      row.innerHTML = `
-        <span class="muted">${esc(originalFileName)}</span>
-        — <span class="err">✖ erro</span>
-        <span class="muted">${esc(err.message || String(err))}</span>
-      `;
+
+    const data =
+      await res.json();
+
+
+    if(
+      !data.ok
+    ){
+
+      toast(
+        'Sessão expirada. Faça login novamente.'
+      );
+
+      return logout();
+
     }
+
+
+    const login =
+      data.login ||
+      '';
+
+    const unidade =
+      data.unidade ||
+      '';
+
+
+    uLogin.textContent =
+      login
+        ? `Unidade ${login}`
+        : 'Login';
+
+
+    uNome.textContent =
+      unidade ||
+      '';
+
+
+    if(
+      welcomeTitle
+    ){
+
+      welcomeTitle.textContent =
+        `Enviar folhas — ${unidade || 'Unidade'}`;
+
+    }
+
+
+    if(
+      welcomeSub
+    ){
+
+      welcomeSub.textContent =
+        `Evento ${EVENTO_FIXO}. Selecione o dia e envie as imagens da unidade.`;
+
+    }
+
+  }
+  catch(e){
+
+    console.error(e);
+
+    toast(
+      'Erro de conexão ao carregar usuário.'
+    );
+
+    uLogin.textContent =
+      'Erro';
+
+    uNome.textContent =
+      'Sem conexão';
+
   }
 
-  document.getElementById('loadingOverlay').classList.remove('show');
-  sendButton.disabled = false;
-
-  await atualizarResumoDoDia();
-
-  if (houveErro) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Envio concluído com ocorrências',
-      text: 'Alguns arquivos não foram enviados. Verifique a lista abaixo.'
-    });
-  } else {
-    Swal.fire({
-      icon: 'success',
-      title: 'Sucesso',
-      text: 'Todos os arquivos foram enviados com sucesso.'
-    });
-    fileInput.value = '';
-    document.querySelector('.file-path').value = '';
-    atualizarKPIs(numeroPresentes, imagensEnviadas, 0);
-  }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const ok = await gatePainel();
-  if (!ok) return;
 
-  // Inicializa o select do Materialize
-  M.FormSelect.init(document.querySelectorAll('select'));
+/*
+|--------------------------------------------------------------------------
+| Verifica limite
+|--------------------------------------------------------------------------
+*/
 
-  // Menu do usuário
-  setupUserMenu();
+async function verificarLimiteUpload(
+  evento,
+  diaSelecionado
+){
 
-  // Carrega unidade/login no topo
-  await carregarUsuario();
+  const resp =
+    await fetch(
+      API + 'verificar_limite.php',
+      {
 
-  // Eventos da tela
-  document.getElementById('fileInput').addEventListener('change', atualizarResumoDoDia);
-  document.getElementById('dia').addEventListener('change', atualizarResumoDoDia);
+        method:
+          'POST',
 
-  // Habilita R1 quando a redação estiver liberada
-  try {
-    const res = await verificarRedacaoHabilitada(EVENTO_FIXO);
-    const sel = document.getElementById('dia');
+        credentials:
+          'include',
 
-    if (res.habilitada && !sel.querySelector('option[value="R1"]')) {
-      sel.insertAdjacentHTML('beforeend', '<option value="R1">REDAÇÃO (R1)</option>');
-      M.FormSelect.init(sel);
-    }
-  } catch (err) {
-    console.error('Erro ao verificar redação:', err);
+        headers:{
+          'Content-Type':
+            'application/json'
+        },
+
+        body:
+          JSON.stringify({
+
+            evento:
+              evento,
+
+            dia:
+              diaSelecionado
+
+          })
+
+      }
+    );
+
+
+  const data =
+    await resp
+      .json()
+      .catch(
+        () => ({})
+      );
+
+
+  if(
+    !resp.ok ||
+    !data.ok
+  ){
+
+    throw new Error(
+      data.error ||
+      data.msg ||
+      'Erro ao verificar limite.'
+    );
+
   }
 
-  // Atualiza os KPIs iniciais se já houver dia selecionado
-  await atualizarResumoDoDia();
-});
 
+  return data;
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Verifica redação
+|--------------------------------------------------------------------------
+*/
+
+async function verificarRedacaoHabilitada(
+  evento
+){
+
+  const resp =
+    await fetch(
+      API + 'redacao_habilitada.php',
+      {
+
+        method:
+          'POST',
+
+        credentials:
+          'include',
+
+        headers:{
+          'Content-Type':
+            'application/json'
+        },
+
+        body:
+          JSON.stringify({
+
+            evento:
+              evento
+
+          })
+
+      }
+    );
+
+
+  const data =
+    await resp
+      .json()
+      .catch(
+        () => ({})
+      );
+
+
+  if(
+    !resp.ok ||
+    !data.ok
+  ){
+
+    throw new Error(
+      data.error ||
+      data.msg ||
+      'Erro ao verificar redação.'
+    );
+
+  }
+
+
+  return data;
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| KPIs
+|--------------------------------------------------------------------------
+*/
+
+function atualizarKPIs(
+  presentes = '-',
+  enviados = '-',
+  selecionados = 0
+){
+
+  const nPresentes =
+    Number(
+      presentes
+    );
+
+  const nEnviados =
+    Number(
+      enviados
+    );
+
+
+  const faltam =
+    Number.isFinite(
+      nPresentes
+    )
+    &&
+    Number.isFinite(
+      nEnviados
+    )
+
+      ? Math.max(
+          0,
+          nPresentes - nEnviados
+        )
+
+      : '-';
+
+
+  document.getElementById(
+    'kpiPermitido'
+  ).textContent =
+    presentes;
+
+
+  document.getElementById(
+    'kpiEnviados'
+  ).textContent =
+    enviados;
+
+
+  document.getElementById(
+    'kpiFaltam'
+  ).textContent =
+    faltam;
+
+
+  document.getElementById(
+    'kpiSelecionados'
+  ).textContent =
+    selecionados;
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Atualiza resumo
+|--------------------------------------------------------------------------
+*/
+
+async function atualizarResumoDoDia(){
+
+  const dia =
+    document.getElementById(
+      'dia'
+    ).value;
+
+
+  const files =
+    Array.from(
+      document.getElementById(
+        'fileInput'
+      ).files ||
+      []
+    );
+
+
+  atualizarKPIs(
+    '-',
+    '-',
+    files.length
+  );
+
+
+  if(
+    !dia
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+    const res =
+      await verificarLimiteUpload(
+        EVENTO_FIXO,
+        dia
+      );
+
+
+    numeroPresentes =
+      res.presentes ||
+      0;
+
+
+    imagensEnviadas =
+      res.enviados ||
+      0;
+
+
+    atualizarKPIs(
+      numeroPresentes,
+      imagensEnviadas,
+      files.length
+    );
+
+  }
+  catch(err){
+
+    console.error(err);
+
+    atualizarKPIs(
+      '-',
+      '-',
+      files.length
+    );
+
+  }
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| VALIDA UMA IMAGEM
+|--------------------------------------------------------------------------
+|
+| NOVA PARTE.
+|
+| Envia arquivo + D1/D2/R1 ao PHP.
+|
+*/
+
+async function validarImagem(
+  file,
+  diaSelecionado
+){
+
+  const formData =
+    new FormData();
+
+
+  formData.append(
+    'arquivo',
+    file
+  );
+
+
+  /*
+   * Informa ao PHP o tipo selecionado.
+   *
+   * D1
+   * D2
+   * R1
+   */
+  formData.append(
+    'dia',
+    diaSelecionado
+  );
+
+
+  const controller =
+    new AbortController();
+
+
+  const timeoutId =
+    setTimeout(
+      () =>
+        controller.abort(),
+      30000
+    );
+
+
+  try{
+
+    const resp =
+      await fetch(
+        VALIDAR_IMAGEM_URL,
+        {
+
+          method:
+            'POST',
+
+          body:
+            formData,
+
+          signal:
+            controller.signal
+
+        }
+      );
+
+
+    clearTimeout(
+      timeoutId
+    );
+
+
+    const data =
+      await resp
+        .json()
+        .catch(
+          () => ({})
+        );
+
+
+    /*
+     * Imagem válida.
+     */
+    if(
+      resp.ok &&
+      data.ok
+    ){
+
+      /*
+       * O PHP identifica A4_300 ou A4_600.
+       *
+       * Mantemos dpiX/dpiY porque
+       * enviar_upload.php já trabalha
+       * com esses parâmetros.
+       */
+      const dpi =
+        data.padrao === 'A4_600'
+          ? 600
+          : 300;
+
+
+      return{
+
+        nome:
+          file.name,
+
+        ok:
+          true,
+
+        dpiX:
+          dpi,
+
+        dpiY:
+          dpi,
+
+        padrao:
+          data.padrao ||
+          '',
+
+        tipoEnvio:
+          data.tipo_envio ||
+          diaSelecionado,
+
+        codigoLido:
+          data.codigo_lido ||
+          '',
+
+        codigoEsperado:
+          data.codigo_esperado ||
+          '',
+
+        largura:
+          data.largura ||
+          0,
+
+        altura:
+          data.altura ||
+          0
+
+      };
+
+    }
+
+
+    /*
+     * Imagem recusada.
+     */
+    let erro =
+      data.erro ||
+      'Imagem recusada pela validação.';
+
+
+    /*
+     * Código da folha errado.
+     */
+    if(
+      data.motivo ===
+      'CODIGO_FOLHA'
+    ){
+
+      erro =
+        `${erro}` +
+
+        `<br>` +
+
+        `Código encontrado: <strong>${esc(data.codigo_lido || '-')}</strong>` +
+
+        ` | esperado: <strong>${esc(data.codigo_esperado || '-')}</strong>`;
+
+    }
+
+
+    return{
+
+      nome:
+        file.name,
+
+      ok:
+        false,
+
+      motivo:
+        data.motivo ||
+        'VALIDACAO',
+
+      erro:
+        `❌ <strong>${esc(file.name)}</strong> - ${erro}`,
+
+      codigoLido:
+        data.codigo_lido ||
+        '',
+
+      codigoEsperado:
+        data.codigo_esperado ||
+        '',
+
+      largura:
+        data.largura ||
+        0,
+
+      altura:
+        data.altura ||
+        0
+
+    };
+
+  }
+  catch(err){
+
+    clearTimeout(
+      timeoutId
+    );
+
+
+    return{
+
+      nome:
+        file.name,
+
+      ok:
+        false,
+
+      motivo:
+        'ERRO_VALIDACAO',
+
+      erro:
+        err.name ===
+        'AbortError'
+
+          ? `❌ <strong>${esc(file.name)}</strong> - tempo excedido ao validar a imagem.`
+
+          : `❌ <strong>${esc(file.name)}</strong> - erro ao validar a imagem.`
+
+    };
+
+  }
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Validação em blocos
+|--------------------------------------------------------------------------
+*/
+
+async function validarImagensEmBlocos(
+  arquivos,
+  diaSelecionado,
+  tamanhoBloco = 10
+){
+
+  const resultados =
+    [];
+
+
+  for(
+    let i = 0;
+    i < arquivos.length;
+    i += tamanhoBloco
+  ){
+
+    const bloco =
+      arquivos.slice(
+        i,
+        i + tamanhoBloco
+      );
+
+
+    const res =
+      await Promise.all(
+
+        bloco.map(
+
+          file =>
+            validarImagem(
+              file,
+              diaSelecionado
+            )
+
+        )
+
+      );
+
+
+    resultados.push(
+      ...res
+    );
+
+  }
+
+
+  return resultados;
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Envia arquivo
+|--------------------------------------------------------------------------
+*/
+
+async function enviarArquivo(
+  file,
+  originalFileName,
+  diaSelecionado,
+  dpiX,
+  dpiY,
+  loteId,
+  seqLote
+){
+
+  const fd =
+    new FormData();
+
+
+  fd.append(
+    'arquivo',
+    file
+  );
+
+
+  fd.append(
+    'evento',
+    EVENTO_FIXO
+  );
+
+
+  fd.append(
+    'dia',
+    diaSelecionado
+  );
+
+
+  fd.append(
+    'originalFileName',
+    originalFileName
+  );
+
+
+  fd.append(
+    'dpi_x',
+    dpiX ??
+    ''
+  );
+
+
+  fd.append(
+    'dpi_y',
+    dpiY ??
+    ''
+  );
+
+
+  fd.append(
+    'lote_id',
+    loteId ??
+    ''
+  );
+
+
+  fd.append(
+    'seq_lote',
+    String(
+      seqLote ??
+      ''
+    )
+  );
+
+
+  const resp =
+    await fetch(
+      API + 'enviar_upload.php',
+      {
+
+        method:
+          'POST',
+
+        credentials:
+          'include',
+
+        body:
+          fd
+
+      }
+    );
+
+
+  const data =
+    await resp
+      .json()
+      .catch(
+        () => ({})
+      );
+
+
+  if(
+    !resp.ok ||
+    !data.ok
+  ){
+
+    throw new Error(
+      data.error ||
+      data.msg ||
+      'Erro ao enviar arquivo.'
+    );
+
+  }
+
+
+  return data;
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Upload
+|--------------------------------------------------------------------------
+*/
+
+async function uploadFile(){
+
+  const fileInput =
+    document.getElementById(
+      'fileInput'
+    );
+
+
+  const arquivosOriginais =
+    Array.from(
+      fileInput.files ||
+      []
+    );
+
+
+  const fileNamesPreview =
+    document.getElementById(
+      'fileNamesPreview'
+    );
+
+
+  const sendButton =
+    document.getElementById(
+      'btnEnviar'
+    );
+
+
+  const diaSelecionado =
+    document.getElementById(
+      'dia'
+    ).value;
+
+
+  fileNamesPreview.innerHTML =
+    '';
+
+
+  sendButton.disabled =
+    true;
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Dia obrigatório
+  |--------------------------------------------------------------------------
+  */
+
+  if(
+    !diaSelecionado
+  ){
+
+    Swal.fire({
+
+      icon:
+        'error',
+
+      title:
+        'Dados inválidos',
+
+      text:
+        'Selecione o dia do envio.'
+
+    });
+
+
+    sendButton.disabled =
+      false;
+
+
+    return;
+
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Arquivos obrigatórios
+  |--------------------------------------------------------------------------
+  */
+
+  if(
+    arquivosOriginais.length ===
+    0
+  ){
+
+    Swal.fire({
+
+      icon:
+        'error',
+
+      title:
+        'Nenhum arquivo selecionado',
+
+      text:
+        'Escolha pelo menos um arquivo para enviar.'
+
+    });
+
+
+    sendButton.disabled =
+      false;
+
+
+    return;
+
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Extensão
+  |--------------------------------------------------------------------------
+  */
+
+  const arquivosInvalidos =
+    arquivosOriginais.filter(
+
+      f =>
+        !/\.(jpe?g)$/i
+          .test(
+            f.name
+          )
+
+    );
+
+
+  if(
+    arquivosInvalidos.length >
+    0
+  ){
+
+    Swal.fire({
+
+      icon:
+        'error',
+
+      title:
+        'Formato inválido',
+
+      html:
+
+        'Envie apenas arquivos JPG ou JPEG.<br><br>' +
+
+        arquivosInvalidos
+          .map(
+            f =>
+              `<strong>${esc(f.name)}</strong>`
+          )
+          .join(
+            '<br>'
+          )
+
+    });
+
+
+    sendButton.disabled =
+      false;
+
+
+    return;
+
+  }
+
+
+  const arquivosProcessados =
+    arquivosOriginais;
+
+
+  atualizarKPIs(
+    numeroPresentes,
+    imagensEnviadas,
+    arquivosProcessados.length
+  );
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Limite da unidade
+  |--------------------------------------------------------------------------
+  */
+
+  let resposta;
+
+
+  try{
+
+    resposta =
+      await verificarLimiteUpload(
+        EVENTO_FIXO,
+        diaSelecionado
+      );
+
+  }
+  catch(err){
+
+    Swal.fire({
+
+      icon:
+        'error',
+
+      title:
+        'Erro ao validar envio',
+
+      text:
+        err.message ||
+        String(err)
+
+    });
+
+
+    sendButton.disabled =
+      false;
+
+
+    return;
+
+  }
+
+
+  numeroPresentes =
+    resposta.presentes ||
+    0;
+
+
+  imagensEnviadas =
+    resposta.enviados ||
+    0;
+
+
+  atualizarKPIs(
+    numeroPresentes,
+    imagensEnviadas,
+    arquivosProcessados.length
+  );
+
+
+  if(
+    numeroPresentes ===
+    0
+  ){
+
+    Swal.fire({
+
+      icon:
+        'error',
+
+      title:
+        'Presença não informada',
+
+      text:
+        'Essa unidade não tem quantidade liberada para esse dia.'
+
+    });
+
+
+    sendButton.disabled =
+      false;
+
+
+    return;
+
+  }
+
+
+  if(
+    (
+      arquivosProcessados.length +
+      imagensEnviadas
+    )
+    >
+    numeroPresentes
+  ){
+
+    Swal.fire({
+
+      icon:
+        'error',
+
+      title:
+        'Excesso de arquivos',
+
+      text:
+        `Já foram enviados ${imagensEnviadas} de ${numeroPresentes} imagens permitidas.`
+
+    });
+
+
+    sendButton.disabled =
+      false;
+
+
+    return;
+
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | NOVA VALIDAÇÃO DAS IMAGENS
+  |--------------------------------------------------------------------------
+  |
+  | Antes de enviar qualquer arquivo:
+  |
+  | D1 -> exige 26081
+  | D2 -> exige 26082
+  | R1 -> exige 26083
+  |
+  | Se UMA imagem falhar, o lote inteiro para.
+  |
+  */
+
+  document
+    .getElementById(
+      'loadingOverlay'
+    )
+    .classList
+    .add(
+      'show'
+    );
+
+
+  let resultadosValidacao;
+
+
+  try{
+
+    resultadosValidacao =
+      await validarImagensEmBlocos(
+        arquivosProcessados,
+        diaSelecionado,
+        10
+      );
+
+  }
+  catch(err){
+
+    document
+      .getElementById(
+        'loadingOverlay'
+      )
+      .classList
+      .remove(
+        'show'
+      );
+
+
+    Swal.fire({
+
+      icon:
+        'error',
+
+      title:
+        'Erro na validação',
+
+      text:
+        err.message ||
+        String(err)
+
+    });
+
+
+    sendButton.disabled =
+      false;
+
+
+    return;
+
+  }
+
+
+  const falhas =
+    resultadosValidacao.filter(
+      r =>
+        !r.ok
+    );
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Bloqueia lote inteiro se alguma imagem falhar
+  |--------------------------------------------------------------------------
+  */
+
+  if(
+    falhas.length >
+    0
+  ){
+
+    document
+      .getElementById(
+        'loadingOverlay'
+      )
+      .classList
+      .remove(
+        'show'
+      );
+
+
+    Swal.fire({
+
+      icon:
+        'error',
+
+      title:
+        'Envio bloqueado',
+
+      html:
+        `
+        <div style="text-align:left;line-height:1.6">
+
+          <p>
+            Uma ou mais imagens não correspondem ao
+            <strong>tipo de envio selecionado</strong>
+            ou estão fora do padrão aceito.
+          </p>
+
+          <p>
+            Corrija ou remova as imagens abaixo antes de continuar:
+          </p>
+
+          <hr>
+
+          ${falhas
+            .map(
+              f =>
+                `
+                <div style="margin:10px 0">
+                  ${f.erro || `❌ <strong>${esc(f.nome)}</strong>`}
+                </div>
+                `
+            )
+            .join('')}
+
+        </div>
+        `,
+
+      confirmButtonColor:
+        '#0b3b78',
+
+      confirmButtonText:
+        'OK'
+
+    });
+
+
+    sendButton.disabled =
+      false;
+
+
+    return;
+
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Todas válidas: inicia envio
+  |--------------------------------------------------------------------------
+  */
+
+  let houveErro =
+    false;
+
+
+  const loteId =
+    gerarLoteId();
+
+
+  for(
+    let idx = 0;
+    idx < arquivosProcessados.length;
+    idx++
+  ){
+
+    const file =
+      arquivosProcessados[
+        idx
+      ];
+
+
+    const originalFileName =
+      file.name;
+
+
+    const validacaoInfo =
+      resultadosValidacao[
+        idx
+      ];
+
+
+    const row =
+      document.createElement(
+        'div'
+      );
+
+
+    row.className =
+      'preview-item';
+
+
+    row.innerHTML =
+      `
+      <span class="muted">
+        ${esc(originalFileName)}
+      </span>
+
+      →
+
+      <strong>
+        gerando nome...
+      </strong>
+
+      —
+
+      <span class="warn">
+        ⏳ em andamento
+      </span>
+      `;
+
+
+    fileNamesPreview
+      .appendChild(
+        row
+      );
+
+
+    row.scrollIntoView({
+      behavior:
+        'smooth',
+
+      block:
+        'end'
+    });
+
+
+    try{
+
+      const retorno =
+        await enviarArquivo(
+
+          file,
+
+          originalFileName,
+
+          diaSelecionado,
+
+          validacaoInfo?.dpiX ??
+          '',
+
+          validacaoInfo?.dpiY ??
+          '',
+
+          loteId,
+
+          idx + 1
+
+        );
+
+
+      row.innerHTML =
+        `
+        <span class="muted">
+          ${esc(originalFileName)}
+        </span>
+
+        →
+
+        <strong>
+          ${esc(retorno.arquivo)}
+        </strong>
+
+        —
+
+        <span class="ok">
+          ✔ enviado
+        </span>
+        `;
+
+    }
+    catch(err){
+
+      houveErro =
+        true;
+
+
+      row.innerHTML =
+        `
+        <span class="muted">
+          ${esc(originalFileName)}
+        </span>
+
+        —
+
+        <span class="err">
+          ✖ erro
+        </span>
+
+        <span class="muted">
+          ${esc(err.message || String(err))}
+        </span>
+        `;
+
+    }
+
+  }
+
+
+  document
+    .getElementById(
+      'loadingOverlay'
+    )
+    .classList
+    .remove(
+      'show'
+    );
+
+
+  sendButton.disabled =
+    false;
+
+
+  await atualizarResumoDoDia();
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Resultado final
+  |--------------------------------------------------------------------------
+  */
+
+  if(
+    houveErro
+  ){
+
+    Swal.fire({
+
+      icon:
+        'warning',
+
+      title:
+        'Envio concluído com ocorrências',
+
+      text:
+        'Alguns arquivos não foram enviados. Verifique a lista abaixo.'
+
+    });
+
+  }
+  else{
+
+    Swal.fire({
+
+      icon:
+        'success',
+
+      title:
+        'Sucesso',
+
+      text:
+        'Todos os arquivos foram validados e enviados com sucesso.'
+
+    });
+
+
+    fileInput.value =
+      '';
+
+
+    const filePath =
+      document.querySelector(
+        '.file-path'
+      );
+
+
+    if(
+      filePath
+    ){
+
+      filePath.value =
+        '';
+
+    }
+
+
+    atualizarKPIs(
+      numeroPresentes,
+      imagensEnviadas,
+      0
+    );
+
+  }
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Inicialização
+|--------------------------------------------------------------------------
+*/
+
+document.addEventListener(
+  'DOMContentLoaded',
+  async () => {
+
+    const ok =
+      await gatePainel();
+
+
+    if(
+      !ok
+    ){
+
+      return;
+
+    }
+
+
+    /*
+     * Materialize select.
+     */
+    M.FormSelect.init(
+      document.querySelectorAll(
+        'select'
+      )
+    );
+
+
+    /*
+     * Menu usuário.
+     */
+    setupUserMenu();
+
+
+    /*
+     * Dados da unidade.
+     */
+    await carregarUsuario();
+
+
+    /*
+     * Eventos.
+     */
+    document
+      .getElementById(
+        'fileInput'
+      )
+      .addEventListener(
+        'change',
+        atualizarResumoDoDia
+      );
+
+
+    document
+      .getElementById(
+        'dia'
+      )
+      .addEventListener(
+        'change',
+        atualizarResumoDoDia
+      );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | R1
+    |--------------------------------------------------------------------------
+    |
+    | Continua aparecendo somente quando
+    | redacao_habilitada.php liberar.
+    |
+    */
+
+    try{
+
+      const res =
+        await verificarRedacaoHabilitada(
+          EVENTO_FIXO
+        );
+
+
+      const sel =
+        document.getElementById(
+          'dia'
+        );
+
+
+      if(
+        res.habilitada &&
+        !sel.querySelector(
+          'option[value="R1"]'
+        )
+      ){
+
+        sel.insertAdjacentHTML(
+          'beforeend',
+          '<option value="R1">REDAÇÃO (R1)</option>'
+        );
+
+
+        M.FormSelect.init(
+          sel
+        );
+
+      }
+
+    }
+    catch(err){
+
+      console.error(
+        'Erro ao verificar redação:',
+        err
+      );
+
+    }
+
+
+    /*
+     * KPIs iniciais.
+     */
+    await atualizarResumoDoDia();
+
+  }
+);
 
 </script>
 
