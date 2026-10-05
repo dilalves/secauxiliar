@@ -350,6 +350,25 @@
         .filter(v => Number.isFinite(v));
       return valores.length ? Math.max(...valores) : 0;
     }
+    function totalEnem(r){
+      return [
+        r.NOTA_LINGUAGENS,
+        r.NOTA_HUMANAS,
+        r.NOTA_NATUREZA,
+        r.NOTA_MATEMATICA,
+        r.NOTA_REDACAO
+      ].reduce((soma, valor) => {
+        const numero = Number(valor);
+        return soma + (Number.isFinite(numero) ? numero : 0);
+      }, 0);
+    }
+    function mediaTotalEnem(rows){
+      if (!rows.length) return 0;
+      return rows.reduce((soma, r) => soma + totalEnem(r), 0) / rows.length;
+    }
+    function maiorTotalEnem(rows){
+      return rows.length ? Math.max(...rows.map(totalEnem)) : 0;
+    }
     function colspanAtual(){
       return isEnem() ? 11 : 16;
     }
@@ -494,8 +513,8 @@
       const resumo = data.resumo || {};
       kpiAlunos.textContent = n(resumo.total_alunos);
       kpiUnidades.textContent = n(resumo.total_unidades);
-      kpiMedia.textContent = decimal(resumo.media_total);
-      kpiMaior.textContent = isEnem() ? decimal(resumo.maior_total) : n(resumo.maior_total);
+      kpiMedia.textContent = isEnem() ? decimal(mediaTotalEnem(rowsCache)) : decimal(resumo.media_total);
+      kpiMaior.textContent = isEnem() ? decimal(maiorTotalEnem(rowsCache)) : n(resumo.maior_total);
       kpiAvulsos.textContent = n(resumo.total_avulsos);
       atualizarVisibilidadeKpisArea();
       if (isEnem()) {
@@ -566,7 +585,7 @@
             <td class="num">${decimal(r.NOTA_NATUREZA)}</td>
             <td class="num">${decimal(r.NOTA_MATEMATICA)}</td>
             <td class="num">${r.NOTA_REDACAO === null || r.NOTA_REDACAO === undefined ? '-' : decimal(r.NOTA_REDACAO)}</td>
-            <td class="num total">${decimal(r.TOTAL)}</td>
+            <td class="num total">${decimal(totalEnem(r))}</td>
             <td><span class="${origemClasse(r.ORIGEM)}">${esc(origemLabel(r.ORIGEM))}</span></td>
           </tr>
         `).join('');
@@ -641,7 +660,7 @@
       const linhas = rows.map(r => `
         <tr>
           ${cols.map(c => {
-            let valor = r[c.key];
+            let valor = (isEnem() && c.key === 'TOTAL') ? totalEnem(r) : r[c.key];
             if (c.key === 'ORIGEM') {
               valor = origemLabel(valor);
             } else if (c.dec) {
@@ -819,7 +838,8 @@
       const linhas = [
         cols.join(';'),
         ...rows.map(r => cols.map(c => {
-          const valor = String(r[c] ?? '').replaceAll('"', '""');
+          const bruto = (isEnem() && c === 'TOTAL') ? totalEnem(r) : (r[c] ?? '');
+          const valor = String(bruto).replaceAll('"', '""');
           return `"${valor}"`;
         }).join(';'))
       ];
