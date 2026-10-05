@@ -13,9 +13,7 @@
       --primary:#0b3b78;
       --soft:#f4f8fe;
     }
-
     *{ box-sizing:border-box; }
-
     body{
       margin:0;
       padding:18px;
@@ -23,7 +21,6 @@
       background:var(--bg);
       color:var(--text);
     }
-
     .top{
       display:flex;
       justify-content:space-between;
@@ -32,19 +29,16 @@
       margin-bottom:16px;
       flex-wrap:wrap;
     }
-
     h2{
       margin:0;
       font-size:24px;
       color:var(--primary);
     }
-
     .sub{
       margin:4px 0 0;
       color:var(--muted);
       font-size:14px;
     }
-
     .card{
       background:var(--card);
       border:1px solid var(--line);
@@ -54,7 +48,6 @@
       margin-bottom:18px;
       overflow:visible;
     }
-
     .filtros{
       display:flex;
       gap:12px;
@@ -62,24 +55,20 @@
       flex-wrap:wrap;
       margin-bottom:16px;
     }
-
     .campo{
       display:flex;
       flex-direction:column;
       gap:6px;
       min-width:220px;
     }
-
     .campo-menor{
       min-width:150px;
     }
-
     label{
       font-size:13px;
       color:var(--muted);
       font-weight:600;
     }
-
     select, input, button{
       height:40px;
       border-radius:10px;
@@ -88,18 +77,15 @@
       font-size:14px;
       font-family:inherit;
     }
-
     select, input{
       background:#fff;
       color:var(--text);
     }
-
     input:focus, select:focus{
       outline:none;
       border-color:#0b3b78;
       box-shadow:0 0 0 3px rgba(11,59,120,.10);
     }
-
     button{
       background:var(--primary);
       color:#fff;
@@ -107,24 +93,20 @@
       cursor:pointer;
       font-weight:600;
     }
-
     button:hover{
       filter:brightness(1.05);
     }
-
     .btn-sec{
       background:#e8f0fb;
       color:var(--primary);
       border:1px solid #cfe0f5;
     }
-
     .resumo{
       display:flex;
       gap:12px;
       flex-wrap:wrap;
       margin-bottom:14px;
     }
-
     .resumo-card{
       min-width:170px;
       background:#f4f8fe;
@@ -132,7 +114,6 @@
       border-radius:12px;
       padding:12px 14px;
     }
-
     .resumo-label{
       font-size:12px;
       color:var(--muted);
@@ -140,20 +121,20 @@
       text-transform:uppercase;
       letter-spacing:.04em;
     }
-
     .resumo-valor{
       margin-top:6px;
       font-size:26px;
       font-weight:800;
       color:var(--primary);
     }
-
+    .kpi-enem-area{
+      display:none;
+    }
     .info-bar{
       margin-bottom:12px;
       color:var(--muted);
       font-size:14px;
     }
-
     .tabela-wrap{
       overflow:auto;
       border:1px solid var(--line);
@@ -162,13 +143,11 @@
       max-height:calc(100vh - 295px);
       min-height:280px;
     }
-
     table{
       width:100%;
       border-collapse:collapse;
       min-width:1180px;
     }
-
     th, td{
       padding:8px 8px;
       border-bottom:1px solid #edf2f7;
@@ -177,7 +156,6 @@
       font-size:12px;
       white-space:nowrap;
     }
-
     th{
       position:sticky;
       top:0;
@@ -186,33 +164,27 @@
       z-index:50;
       box-shadow:0 2px 0 #d9e5f2;
     }
-
     tr:hover td{
       background:#f0f6ff;
     }
-
     .vazio{
       padding:26px;
       text-align:center;
       color:var(--muted);
     }
-
     .num{
       text-align:center;
       font-variant-numeric:tabular-nums;
     }
-
     .nome{
       min-width:220px;
       white-space:normal;
       font-weight:600;
     }
-
     .unidade{
       min-width:220px;
       white-space:normal;
     }
-
     .pill{
       display:inline-flex;
       align-items:center;
@@ -225,13 +197,11 @@
       background:#eef4ff;
       color:#17345d;
     }
-
     .pill-avulsa{
       background:#fff7ed;
       border-color:#fed7aa;
       color:#92400e;
     }
-
     .rank{
       display:inline-flex;
       align-items:center;
@@ -244,18 +214,15 @@
       font-weight:900;
       border:1px solid #cfe0f5;
     }
-
     .total{
       font-weight:900;
       color:var(--primary);
     }
-
     @media (max-width: 900px){
       .resumo-card{
         min-width:calc(50% - 6px);
       }
     }
-
     @media (max-width: 640px){
       body{ padding:12px; }
       .campo, .campo-menor{
@@ -268,14 +235,12 @@
   </style>
 </head>
 <body>
-
   <div class="top">
     <div>
       <h2>Resultado do Simulado</h2>
       <div class="sub">Relatório ADM com classificação geral e identificação de alunos/unidades</div>
     </div>
   </div>
-
   <div class="card">
     <div class="filtros">
       <div class="campo">
@@ -284,12 +249,10 @@
           <option value="">Selecione</option>
         </select>
       </div>
-
       <div class="campo">
         <label for="busca">Buscar aluno, inscrição, CPF ou unidade</label>
         <input type="search" id="busca" placeholder="Digite nome, inscrição, CPF ou unidade">
       </div>
-
       <div class="campo campo-menor">
         <label for="origem">Origem</label>
         <select id="origem">
@@ -299,42 +262,54 @@
           <option value="NAO_LOCALIZADA">Não localizada</option>
         </select>
       </div>
-
       <button id="btnBuscar">Buscar</button>
       <button id="btnLimpar" class="btn-sec">Limpar filtro</button>
       <button id="btnCsv" class="btn-sec">Exportar CSV</button>
       <button id="btnImprimir" class="btn-sec">Imprimir Top 100</button>
     </div>
-
     <div class="resumo">
       <div class="resumo-card">
         <div class="resumo-label">Alunos no resultado</div>
         <div class="resumo-valor" id="kpiAlunos">0</div>
       </div>
-
       <div class="resumo-card">
         <div class="resumo-label">Unidades</div>
         <div class="resumo-valor" id="kpiUnidades">0</div>
       </div>
-
       <div class="resumo-card">
         <div class="resumo-label">Média geral</div>
         <div class="resumo-valor" id="kpiMedia">0</div>
       </div>
-
       <div class="resumo-card">
-        <div class="resumo-label">Maior nota</div>
+        <div class="resumo-label">Maior total</div>
         <div class="resumo-valor" id="kpiMaior">0</div>
       </div>
-
       <div class="resumo-card">
         <div class="resumo-label">Avulsos</div>
         <div class="resumo-valor" id="kpiAvulsos">0</div>
       </div>
+      <div class="resumo-card kpi-enem-area">
+        <div class="resumo-label">Maior Linguagens</div>
+        <div class="resumo-valor" id="kpiMaiorLinguagens">0</div>
+      </div>
+      <div class="resumo-card kpi-enem-area">
+        <div class="resumo-label">Maior Humanas</div>
+        <div class="resumo-valor" id="kpiMaiorHumanas">0</div>
+      </div>
+      <div class="resumo-card kpi-enem-area">
+        <div class="resumo-label">Maior Natureza</div>
+        <div class="resumo-valor" id="kpiMaiorNatureza">0</div>
+      </div>
+      <div class="resumo-card kpi-enem-area">
+        <div class="resumo-label">Maior Matemática</div>
+        <div class="resumo-valor" id="kpiMaiorMatematica">0</div>
+      </div>
+      <div class="resumo-card kpi-enem-area">
+        <div class="resumo-label">Maior Redação</div>
+        <div class="resumo-valor" id="kpiMaiorRedacao">0</div>
+      </div>
     </div>
-
     <div class="info-bar" id="infoBar">Selecione um evento e clique em Buscar.</div>
-
     <div class="tabela-wrap">
       <table>
         <thead id="theadResultado"></thead>
@@ -342,33 +317,42 @@
       </table>
     </div>
   </div>
-
   <script>
     const API = 'https://apisec.secauxiliar.com.br/sim_adm/';
-
     const evento = document.getElementById('evento');
     const busca = document.getElementById('busca');
     const origem = document.getElementById('origem');
     const tbody = document.getElementById('tbody');
     const theadResultado = document.getElementById('theadResultado');
     const infoBar = document.getElementById('infoBar');
-
     const kpiAlunos = document.getElementById('kpiAlunos');
     const kpiUnidades = document.getElementById('kpiUnidades');
     const kpiMedia = document.getElementById('kpiMedia');
     const kpiMaior = document.getElementById('kpiMaior');
     const kpiAvulsos = document.getElementById('kpiAvulsos');
-
+    const kpiMaiorLinguagens = document.getElementById('kpiMaiorLinguagens');
+    const kpiMaiorHumanas = document.getElementById('kpiMaiorHumanas');
+    const kpiMaiorNatureza = document.getElementById('kpiMaiorNatureza');
+    const kpiMaiorMatematica = document.getElementById('kpiMaiorMatematica');
+    const kpiMaiorRedacao = document.getElementById('kpiMaiorRedacao');
     let rowsCache = [];
-
     function isEnem(){
       return /^ENEM/i.test(evento.value || '');
     }
-
+    function atualizarVisibilidadeKpisArea(){
+      document.querySelectorAll('.kpi-enem-area').forEach(el => {
+        el.style.display = isEnem() ? '' : 'none';
+      });
+    }
+    function maiorValor(rows, campo){
+      const valores = rows
+        .map(r => Number(r[campo]))
+        .filter(v => Number.isFinite(v));
+      return valores.length ? Math.max(...valores) : 0;
+    }
     function colspanAtual(){
       return isEnem() ? 11 : 16;
     }
-
     function esc(v){
       return String(v ?? '')
         .replaceAll('&','&amp;')
@@ -376,26 +360,21 @@
         .replaceAll('>','&gt;')
         .replaceAll('"','&quot;');
     }
-
     function n(v){
       return Number(v || 0).toLocaleString('pt-BR');
     }
-
     function decimal(v){
       if (v === null || v === undefined || v === '') {
         return '-';
       }
-
       return Number(v).toLocaleString('pt-BR', {
         minimumFractionDigits: 1,
         maximumFractionDigits: 1
       });
     }
-
     function nota(v){
       return isEnem() ? decimal(v) : n(v);
     }
-
     function normalizar(v){
       return String(v ?? '')
         .normalize('NFD')
@@ -403,18 +382,15 @@
         .toUpperCase()
         .trim();
     }
-
     function origemLabel(v){
       const o = String(v || '').toUpperCase();
       if (o === 'AVULSA') return 'AVULSA';
       if (o === 'SITE') return 'SITE';
       return 'NÃO LOCALIZADA';
     }
-
     function origemClasse(v){
       return String(v || '').toUpperCase() === 'AVULSA' ? 'pill pill-avulsa' : 'pill';
     }
-
     function renderCabecalho(){
       if (isEnem()) {
         theadResultado.innerHTML = `
@@ -428,7 +404,7 @@
             <th class="num">NATUREZA</th>
             <th class="num">MATEMÁTICA</th>
             <th class="num">REDAÇÃO</th>
-            <th class="num">TOTAL TRI</th>
+            <th class="num">TOTAL</th>
             <th>ORIGEM</th>
           </tr>
         `;
@@ -455,39 +431,37 @@
         `;
       }
     }
-
     function resetTela(){
       rowsCache = [];
       renderCabecalho();
-
       kpiAlunos.textContent = '0';
       kpiUnidades.textContent = '0';
       kpiMedia.textContent = '0';
       kpiMaior.textContent = '0';
       kpiAvulsos.textContent = '0';
+      kpiMaiorLinguagens.textContent = '0';
+      kpiMaiorHumanas.textContent = '0';
+      kpiMaiorNatureza.textContent = '0';
+      kpiMaiorMatematica.textContent = '0';
+      kpiMaiorRedacao.textContent = '0';
+      atualizarVisibilidadeKpisArea();
       infoBar.textContent = 'Selecione um evento e clique em Buscar.';
-
       tbody.innerHTML = `
         <tr>
           <td colspan="${colspanAtual()}" class="vazio">Selecione um evento para carregar o resultado.</td>
         </tr>
       `;
     }
-
     async function carregarEventos(){
       const r = await fetch(API + 'api_adesoes_eventos.php', {
         credentials: 'include',
         cache: 'no-store'
       });
-
       const data = await r.json();
-
       if (!r.ok || !data.ok) {
         throw new Error(data.error || 'Falha ao carregar eventos.');
       }
-
       evento.innerHTML = `<option value="">Selecione</option>`;
-
       (data.eventos || []).forEach(ev => {
         const opt = document.createElement('option');
         opt.value = ev;
@@ -495,59 +469,52 @@
         evento.appendChild(opt);
       });
     }
-
     async function carregarResultado(){
       if (!evento.value) {
         resetTela();
         return;
       }
-
       renderCabecalho();
-
       infoBar.textContent = 'Carregando resultado...';
       tbody.innerHTML = `<tr><td colspan="${colspanAtual()}" class="vazio">Carregando...</td></tr>`;
-
       const qs = new URLSearchParams();
       qs.set('evento', evento.value);
-
       const endpoint = isEnem()
         ? 'api_resultado_enem.php'
         : 'api_resultado_fuvestao.php';
-
       const r = await fetch(API + endpoint + '?' + qs.toString(), {
         credentials: 'include',
         cache: 'no-store'
       });
-
       const data = await r.json();
-
       if (!r.ok || !data.ok) {
         throw new Error(data.error || 'Falha ao carregar resultado.');
       }
-
       rowsCache = data.rows || [];
       const resumo = data.resumo || {};
-
       kpiAlunos.textContent = n(resumo.total_alunos);
       kpiUnidades.textContent = n(resumo.total_unidades);
       kpiMedia.textContent = decimal(resumo.media_total);
       kpiMaior.textContent = isEnem() ? decimal(resumo.maior_total) : n(resumo.maior_total);
       kpiAvulsos.textContent = n(resumo.total_avulsos);
-
+      atualizarVisibilidadeKpisArea();
+      if (isEnem()) {
+        kpiMaiorLinguagens.textContent = decimal(maiorValor(rowsCache, 'NOTA_LINGUAGENS'));
+        kpiMaiorHumanas.textContent = decimal(maiorValor(rowsCache, 'NOTA_HUMANAS'));
+        kpiMaiorNatureza.textContent = decimal(maiorValor(rowsCache, 'NOTA_NATUREZA'));
+        kpiMaiorMatematica.textContent = decimal(maiorValor(rowsCache, 'NOTA_MATEMATICA'));
+        kpiMaiorRedacao.textContent = decimal(maiorValor(rowsCache, 'NOTA_REDACAO'));
+      }
       renderTabela();
     }
-
     function getRowsFiltradas(){
       const termo = normalizar(busca.value);
       const filtroOrigem = String(origem.value || '').toUpperCase();
-
       return rowsCache.filter(r => {
         if (filtroOrigem && String(r.ORIGEM || '').toUpperCase() !== filtroOrigem) {
           return false;
         }
-
         if (!termo) return true;
-
         const texto = normalizar([
           r.INSCRICAO,
           r.CPF,
@@ -559,16 +526,13 @@
           r.CODIGO_UNIDADE,
           r.ORIGEM
         ].join(' '));
-
         return texto.includes(termo);
       });
     }
-
     function linkInscricao(r){
       if (!r.ARQUIVO_ORIGEM) {
         return esc(r.INSCRICAO || '-');
       }
-
       return `
         <a
           href="${API}buscar_imagem_pendencia.php?arquivo=${encodeURIComponent(r.ARQUIVO_ORIGEM)}&dia=${encodeURIComponent(r.DIA || 'D1')}&evento=${encodeURIComponent(evento.value)}&full=1"
@@ -577,15 +541,11 @@
         >${esc(r.INSCRICAO || '-')}</a>
       `;
     }
-
     function renderTabela(){
       renderCabecalho();
-
       const rowsFiltradas = getRowsFiltradas();
       const rows = rowsFiltradas.slice(0, 100);
-
       infoBar.textContent = `${rows.length} aluno(s) exibido(s) de ${rowsFiltradas.length} filtrado(s) / ${rowsCache.length} carregado(s). Exibição limitada aos 100 primeiros.`;
-
       if (!rows.length) {
         tbody.innerHTML = `
           <tr>
@@ -594,7 +554,6 @@
         `;
         return;
       }
-
       if (isEnem()) {
         tbody.innerHTML = rows.map(r => `
           <tr>
@@ -613,7 +572,6 @@
         `).join('');
         return;
       }
-
       tbody.innerHTML = rows.map(r => `
         <tr>
           <td class="num"><span class="rank">${esc(r.CLS_G || '-')}</span></td>
@@ -635,7 +593,6 @@
         </tr>
       `).join('');
     }
-
     function colunasRelatorio(){
       if (isEnem()) {
         return [
@@ -648,11 +605,10 @@
           {key:'NOTA_NATUREZA', label:'NATUREZA', num:true, dec:true},
           {key:'NOTA_MATEMATICA', label:'MATEMÁTICA', num:true, dec:true},
           {key:'NOTA_REDACAO', label:'REDAÇÃO', num:true, dec:true},
-          {key:'TOTAL', label:'TOTAL TRI', num:true, dec:true},
+          {key:'TOTAL', label:'TOTAL', num:true, dec:true},
           {key:'ORIGEM', label:'ORIGEM', num:true}
         ];
       }
-
       return [
         {key:'CLS_G', label:'CLS_G', num:true},
         {key:'INSCRICAO', label:'INSCRIÇÃO', num:true},
@@ -672,26 +628,20 @@
         {key:'ORIGEM', label:'ORIGEM', num:true}
       ];
     }
-
     function imprimirTop100(){
       const rows = getRowsFiltradas().slice(0, 100);
-
       if (!rows.length) {
         alert('Não há dados para imprimir.');
         return;
       }
-
       const titulo = `Top 100 - Resultado do Simulado ${evento.value || ''}`;
       const geradoEm = new Date().toLocaleString('pt-BR');
       const cols = colunasRelatorio();
-
       const ths = cols.map(c => `<th class="${c.num ? 'num' : ''}">${esc(c.label)}</th>`).join('');
-
       const linhas = rows.map(r => `
         <tr>
           ${cols.map(c => {
             let valor = r[c.key];
-
             if (c.key === 'ORIGEM') {
               valor = origemLabel(valor);
             } else if (c.dec) {
@@ -701,12 +651,10 @@
             } else {
               valor = valor || '-';
             }
-
             return `<td class="${c.num ? 'num' : ''} ${c.key === 'TOTAL' ? 'total' : ''}">${esc(valor)}</td>`;
           }).join('')}
         </tr>
       `).join('');
-
       const htmlRelatorio = `
         <!doctype html>
         <html lang="pt-br">
@@ -801,42 +749,34 @@
             </div>
             <div class="selo">Curso Objetivo • Simulado Aberto</div>
           </div>
-
           <table>
             <thead>
               <tr>${ths}</tr>
             </thead>
             <tbody>${linhas}</tbody>
           </table>
-
           <div class="rodape">Fonte: relatório ADM do Simulado Aberto</div>
-
           <script>
             window.onload = () => window.print();
           <\/script>
         </body>
         </html>
       `;
-
       const w = window.open('', '_blank');
       if (!w) {
         alert('O navegador bloqueou a janela de impressão. Permita pop-ups para esta página.');
         return;
       }
-
       w.document.open();
       w.document.write(htmlRelatorio);
       w.document.close();
     }
-
     function exportarCsv(){
       const rows = getRowsFiltradas();
-
       if (!rows.length) {
         alert('Não há dados para exportar.');
         return;
       }
-
       const cols = isEnem()
         ? [
             'INSCRICAO',
@@ -876,7 +816,6 @@
             'CLS_G',
             'ORIGEM'
           ];
-
       const linhas = [
         cols.join(';'),
         ...rows.map(r => cols.map(c => {
@@ -884,7 +823,6 @@
           return `"${valor}"`;
         }).join(';'))
       ];
-
       const blob = new Blob(['\ufeff' + linhas.join('\n')], { type:'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -895,7 +833,6 @@
       a.remove();
       URL.revokeObjectURL(url);
     }
-
     document.getElementById('btnBuscar').addEventListener('click', async () => {
       try {
         await carregarResultado();
@@ -906,26 +843,22 @@
         alert(e.message || 'Erro ao carregar resultado.');
       }
     });
-
     document.getElementById('btnLimpar').addEventListener('click', () => {
       evento.value = '';
       busca.value = '';
       origem.value = '';
       resetTela();
     });
-
     document.getElementById('btnCsv').addEventListener('click', exportarCsv);
     document.getElementById('btnImprimir').addEventListener('click', imprimirTop100);
-
     busca.addEventListener('input', renderTabela);
     origem.addEventListener('change', renderTabela);
-
     evento.addEventListener('change', () => {
       rowsCache = [];
       busca.value = '';
       origem.value = '';
       renderCabecalho();
-
+      atualizarVisibilidadeKpisArea();
       if (!evento.value) {
         resetTela();
       } else {
@@ -933,10 +866,10 @@
         tbody.innerHTML = `<tr><td colspan="${colspanAtual()}" class="vazio">Clique em Buscar para carregar o resultado.</td></tr>`;
       }
     });
-
     (async function init(){
       try{
         renderCabecalho();
+        atualizarVisibilidadeKpisArea();
         await carregarEventos();
         resetTela();
       } catch(e){
