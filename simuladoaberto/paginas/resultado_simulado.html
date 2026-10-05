@@ -351,16 +351,8 @@
       return valores.length ? Math.max(...valores) : 0;
     }
     function totalEnem(r){
-      return [
-        r.NOTA_LINGUAGENS,
-        r.NOTA_HUMANAS,
-        r.NOTA_NATUREZA,
-        r.NOTA_MATEMATICA,
-        r.NOTA_REDACAO
-      ].reduce((soma, valor) => {
-        const numero = Number(valor);
-        return soma + (Number.isFinite(numero) ? numero : 0);
-      }, 0);
+      const valor = Number(r?.TOTAL);
+      return Number.isFinite(valor) ? valor : 0;
     }
     function mediaTotalEnem(rows){
       if (!rows.length) return 0;
@@ -389,6 +381,15 @@
       return Number(v).toLocaleString('pt-BR', {
         minimumFractionDigits: 1,
         maximumFractionDigits: 1
+      });
+    }
+    function decimal2(v){
+      if (v === null || v === undefined || v === '') {
+        return '-';
+      }
+      return Number(v).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
       });
     }
     function nota(v){
@@ -513,8 +514,8 @@
       const resumo = data.resumo || {};
       kpiAlunos.textContent = n(resumo.total_alunos);
       kpiUnidades.textContent = n(resumo.total_unidades);
-      kpiMedia.textContent = isEnem() ? decimal(mediaTotalEnem(rowsCache)) : decimal(resumo.media_total);
-      kpiMaior.textContent = isEnem() ? decimal(maiorTotalEnem(rowsCache)) : n(resumo.maior_total);
+      kpiMedia.textContent = isEnem() ? decimal2(resumo.media_total) : decimal(resumo.media_total);
+      kpiMaior.textContent = isEnem() ? decimal2(resumo.maior_total) : n(resumo.maior_total);
       kpiAvulsos.textContent = n(resumo.total_avulsos);
       atualizarVisibilidadeKpisArea();
       if (isEnem()) {
@@ -585,7 +586,7 @@
             <td class="num">${decimal(r.NOTA_NATUREZA)}</td>
             <td class="num">${decimal(r.NOTA_MATEMATICA)}</td>
             <td class="num">${r.NOTA_REDACAO === null || r.NOTA_REDACAO === undefined ? '-' : decimal(r.NOTA_REDACAO)}</td>
-            <td class="num total">${decimal(totalEnem(r))}</td>
+            <td class="num total">${decimal2(r.TOTAL)}</td>
             <td><span class="${origemClasse(r.ORIGEM)}">${esc(origemLabel(r.ORIGEM))}</span></td>
           </tr>
         `).join('');
@@ -624,7 +625,7 @@
           {key:'NOTA_NATUREZA', label:'NATUREZA', num:true, dec:true},
           {key:'NOTA_MATEMATICA', label:'MATEMÁTICA', num:true, dec:true},
           {key:'NOTA_REDACAO', label:'REDAÇÃO', num:true, dec:true},
-          {key:'TOTAL', label:'TOTAL', num:true, dec:true},
+          {key:'TOTAL', label:'TOTAL', num:true, dec2:true},
           {key:'ORIGEM', label:'ORIGEM', num:true}
         ];
       }
@@ -660,9 +661,11 @@
       const linhas = rows.map(r => `
         <tr>
           ${cols.map(c => {
-            let valor = (isEnem() && c.key === 'TOTAL') ? totalEnem(r) : r[c.key];
+            let valor = r[c.key];
             if (c.key === 'ORIGEM') {
               valor = origemLabel(valor);
+            } else if (c.dec2) {
+              valor = decimal2(valor);
             } else if (c.dec) {
               valor = decimal(valor);
             } else if (c.num && c.key !== 'INSCRICAO' && c.key !== 'CLS_G') {
@@ -838,7 +841,7 @@
       const linhas = [
         cols.join(';'),
         ...rows.map(r => cols.map(c => {
-          const bruto = (isEnem() && c === 'TOTAL') ? totalEnem(r) : (r[c] ?? '');
+          const bruto = r[c] ?? '';
           const valor = String(bruto).replaceAll('"', '""');
           return `"${valor}"`;
         }).join(';'))
