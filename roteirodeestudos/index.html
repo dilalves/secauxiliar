@@ -2,359 +2,921 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Roteiro de Estudos 2027 - Curso Objetivo</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
-  <style>
-    body { background: #fafafa; font-family: 'Lato', sans-serif; }
-    header { background-color: #002776; color: white; padding: 30px 0; text-align: center; }
-    header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
-    section { padding: 40px 20px; }
-    .card { border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .card-content h5 { color: #002776; font-weight: 600; }
-    .btn-custom { background-color: #1565c0; border-radius: 20px; }
-    footer { background-color: #002776; color: #fff; text-align: center; padding: 25px; font-size: 14px; margin-top: 40px; }
-    .video-card img { height: 180px; object-fit: cover; }
-    .video-title { font-size: 18px; color: #002776; font-weight: bold; margin-bottom: 5px; }
-    .video-prof { font-size: 14px; color: #444; margin-bottom: 10px; }
 
+  <style>
+    :root {
+      --azul: #004b87;
+      --azul-escuro: #003766;
+      --azul-medio: #0b6fb8;
+      --azul-claro: #dcecf8;
+      --azul-muito-claro: #f3f8fc;
+      --texto: #243447;
+      --texto-suave: #66778a;
+      --fundo: #f5f8fb;
+      --branco: #ffffff;
+      --borda: #d8e5ef;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #eef5fa 0, #f7f9fb 320px, #f5f8fb 100%);
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--texto);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { transition: .18s ease; }
+
+    /* TOPO */
+    .topo-objetivo {
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+      padding: 22px 0 24px;
+      background:
+        radial-gradient(circle at 86% -20%, rgba(255,255,255,.13) 0 170px, transparent 171px),
+        radial-gradient(circle at 78% 145%, rgba(58,150,211,.18) 0 210px, transparent 211px),
+        linear-gradient(135deg, #003460 0%, #00569a 58%, #0a6fb8 100%);
+      box-shadow: 0 5px 18px rgba(0,55,102,.16);
+    }
+
+    .topo-objetivo::after {
+      content: "";
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      border: 30px solid rgba(255,255,255,.05);
+      border-radius: 50%;
+      right: -100px;
+      bottom: -165px;
+    }
+
+    .topo-conteudo {
+      min-height: 84px;
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .topo-logo {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .topo-logo img {
+      display: block;
+      width: 200 px;
+      max-width: 100%;
+      max-height: 88px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,.10));
+    }
+
+    .topo-texto { text-align: left; }
+
+    .topo-tag {
+      display: inline-block;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.28);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+
+    .topo-texto h1 {
+      margin: 0;
+      font-size: clamp(29px, 4vw, 40px);
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -.5px;
+    }
+
+    .topo-texto p {
+      margin: 8px 0 0;
+      font-size: 15px;
+      color: rgba(255,255,255,.90);
+    }
+
+    .faixa-azul {
+      position: absolute;
+      z-index: 3;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: #63a9d8;
+    }
+
+    main.container {
+      width: min(1180px, 92%);
+      max-width: 1180px;
+    }
+
+    section { padding: 24px 6px; }
+
+    /* ABERTURA */
+    main > section.center-align:first-child {
+      margin: 20px 0 3px;
+      padding: 26px 28px 24px;
+      background: #fff;
+      border: 1px solid var(--borda);
+      border-left: 5px solid var(--azul-medio);
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0,75,135,.055);
+    }
+
+    main > section.center-align:first-child h4,
+    main section h4 {
+      color: var(--azul) !important;
+      font-weight: 800;
+      letter-spacing: -.35px;
+      margin-top: 0;
+    }
+
+    main > section.center-align:first-child p {
+      max-width: 820px;
+      margin: 10px auto 0;
+      color: var(--texto-suave);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    /* TÍTULOS */
+    main section > h4 {
+      position: relative;
+      padding-bottom: 11px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    main section > h4::after {
+      content: "";
+      position: absolute;
+      width: 64px;
+      height: 3px;
+      border-radius: 8px;
+      background: #5fa8d6;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* CARDS DAS DISCIPLINAS */
+    .row.ead-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin: 0;
+    }
+
+    .row.ead-grid .bloco-disciplina,
+    .bloco-disciplina {
+      width: auto;
+      margin: 0;
+      min-height: 0 !important;
+      height: auto !important;
+      background: var(--branco);
+      border: 2px solid #4f98c9;
+      border-radius: 14px;
+      box-shadow: 0 4px 13px rgba(0,75,135,.055);
+      padding: 16px 15px 10px;
+      display: block;
+      overflow: hidden;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .row.ead-grid .bloco-disciplina:hover,
+    .bloco-disciplina:hover {
+      transform: translateY(-2px);
+      border-color: var(--azul-medio);
+      box-shadow: 0 8px 20px rgba(0,75,135,.10);
+    }
+
+    .disciplina-logo {
+      display: block;
+      width: 105px;
+      height: 72px;
+      object-fit: contain;
+      margin: 0 auto 8px;
+      border-radius: 7px;
+    }
+
+    .disciplina-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      text-align: left;
+    }
+
+    .disciplina-links li {
+      margin: 0;
+      padding: 0;
+      border-top: 1px solid #e6eef4;
+    }
+
+    .disciplina-links li:first-child { border-top: 0; }
+    .disciplina-links li::before { display: none; }
+
+    .disciplina-links a {
+      display: flex;
+      align-items: center;
+      min-height: 43px;
+      padding: 8px 6px;
+      color: #075680;
+      background: transparent;
+      border: 0;
+      border-radius: 7px;
+      font-weight: 700;
+      line-height: 1.3;
+      text-decoration: none;
+    }
+
+    .disciplina-links a::before {
+      content: "▶";
+      flex: 0 0 auto;
+      margin-right: 9px;
+      color: #3c8ec3;
+      font-size: 10px;
+    }
+
+    .disciplina-links a:hover {
+      background: #edf6fb;
+      color: var(--azul-escuro);
+    }
+
+    /* LEITURA OBRIGATÓRIA */
+    main > section:last-of-type {
+      margin-top: 6px;
+      margin-bottom: 22px;
+      padding: 28px 26px 24px;
+      background: #fff;
+      border: 1px solid var(--borda);
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,75,135,.055);
+    }
+
+    main > section:last-of-type .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      margin-bottom: 0;
+    }
+
+    main > section:last-of-type .col.m6 { padding: 10px 18px 5px; }
+
+    main > section:last-of-type .col.m6:first-child {
+      border-right: 1px solid #e3edf4;
+    }
+
+    main > section:last-of-type h5 {
+      display: inline-block;
+      min-width: 130px;
+      color: var(--azul) !important;
+      background: #edf6fb;
+      border: 1px solid #d8eaf5;
+      border-radius: 999px;
+      padding: 8px 18px;
+      margin: 0 auto 14px;
+      font-weight: 800 !important;
+    }
+
+    main > section:last-of-type ul {
+      margin: 0;
+      padding: 0 12px !important;
+      text-align: left !important;
+      line-height: 1.5 !important;
+    }
+
+    main > section:last-of-type li { margin: 7px 0; }
+
+    main > section:last-of-type li a {
+      display: block;
+      padding: 9px 12px 9px 34px;
+      color: var(--azul);
+      background: #f8fbfd;
+      border: 1px solid #e7eef4;
+      border-radius: 9px;
+      position: relative;
+      font-weight: 600;
+    }
+
+    main > section:last-of-type li a::before {
+      content: "PDF";
+      position: absolute;
+      left: 8px;
+      top: 10px;
+      font-size: 9px;
+      line-height: 17px;
+      width: 20px;
+      height: 17px;
+      text-align: center;
+      color: #fff;
+      background: var(--azul-medio);
+      border-radius: 4px;
+      font-weight: 800;
+    }
+
+    main > section:last-of-type li a:hover {
+      background: #edf6fb;
+      border-color: #cfe2ee;
+      transform: translateX(2px);
+    }
+
+    /* MODAL - FUNCIONAMENTO PRESERVADO */
     .modal {
-    max-height: 95vh !important; /* ocupa quase toda a altura da tela */
-    background: rgba(0,0,0,0.9); /* modo cinema */
+      max-height: 95vh !important;
+      background: rgba(0,0,0,0.9);
     }
 
     .modal-content {
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
     }
 
     .video-container iframe {
-    width: 100%;
-    height: 75vh; /* ocupa 75% da tela, ajusta conforme preferir */
-    border: none;
-    border-radius: 12px;
+      width: 100%;
+      height: 75vh;
+      border: none;
+      border-radius: 12px;
     }
 
-    .video-card {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
+    .video-card { display: flex; flex-direction: column; height: 100%; }
+    .video-card .card-content { flex-grow: 1; min-height: 180px; }
+    .video-card .card-action { margin-top: auto; }
+
+    .card {
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
     }
 
-    .video-card .card-content {
-      flex-grow: 1;
-      min-height: 180px; /* altura mínima igual para todos */
+    .card-content h5 { color: var(--azul); font-weight: 700; }
+    .btn-custom { background-color: var(--azul-medio); border-radius: 20px; }
+    .video-card img { height: 180px; object-fit: cover; }
+    .video-title { font-size: 18px; color: var(--azul); font-weight: bold; margin-bottom: 5px; }
+    .video-prof { font-size: 14px; color: #444; margin-bottom: 10px; }
+
+    footer {
+      background: linear-gradient(135deg, var(--azul-escuro), var(--azul));
+      color: #fff;
+      text-align: center;
+      padding: 23px 18px;
+      font-size: 14px;
+      margin-top: 30px;
+      border-top: 4px solid #63a9d8;
+      letter-spacing: .2px;
     }
 
-    .video-card .card-action {
-      margin-top: auto;
+    footer::before {
+      content: "Roteiro de Estudos 2027";
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: #a9d2eb;
+      margin-bottom: 4px;
     }
 
-    /* 🔹 Alinhamento exato dos 4 blocos com os 3 cards de cima */
-.row.ead-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  margin-left: -0.75rem;   /* mesmo espaçamento do Materialize */
-  margin-right: -0.75rem;
-}
+    @media (max-width: 992px) {
+      .row.ead-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .topo-logo img { width: 160px; }
+    }
 
-.row.ead-grid .bloco-disciplina {
-  flex: 0 0 calc(25% - 1.5rem);  /* 4 colunas com espaçamento proporcional */
-  margin: 0.75rem;               /* mesmo gutter do Materialize */
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.12);
-  padding: 20px;
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+    @media (max-width: 600px) {
+      .topo-objetivo { padding: 16px 0 18px; }
 
-.row.ead-grid .bloco-disciplina:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 5px 10px rgba(0,0,0,0.15);
-}
+      .topo-conteudo {
+        min-height: 0;
+        flex-direction: column;
+        text-align: center;
+        gap: 7px;
+      }
 
-/* 🔹 Bloco visual dos cards EAD */
-.bloco-disciplina {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.12);
-  padding: 20px;
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+      .topo-texto { text-align: center; }
+      .topo-logo img { width: 300px; max-height: 100px; }
+      .topo-tag { margin-bottom: 4px; padding: 4px 9px; font-size: 9px; }
+      .topo-texto h1 { font-size: 25px; }
+      .topo-texto p { margin-top: 5px; font-size: 13px; }
 
-.bloco-disciplina:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 5px 10px rgba(0,0,0,0.15);
-}
+      main.container { width: 94%; }
+      section { padding: 15px 0; }
 
-/* 🔹 Logo maior e central */
-.disciplina-logo {
-  width: 150px;
-  height: auto;
-  margin-bottom: 12px;
-}
+      main > section.center-align:first-child {
+        margin-top: 13px;
+        padding: 18px 14px 16px;
+        border-radius: 13px;
+        border-left-width: 4px;
+      }
 
-/* 🔹 Lista de links com bolinha e alinhamento à esquerda */
-.disciplina-links {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  text-align: left;
-  width: 100%;
-  max-width: 230px;
-}
+      main > section.center-align:first-child h4,
+      main section h4 { font-size: 1.55rem; }
 
-.disciplina-links li {
-  margin: 8px 0;
-  position: relative;
-  padding-left: 16px;
-}
+      main > section.center-align:first-child p {
+        margin-top: 7px;
+        font-size: 14px;
+        line-height: 1.45;
+      }
 
-.disciplina-links li::before {
-  content: "•";
-  color: #002776;
-  font-weight: bold;
-  position: absolute;
-  left: 0;
-  top: 0;
-}
+      main section > h4 {
+        margin-bottom: 13px;
+        padding-bottom: 9px;
+      }
 
-/* 🔹 Responsividade */
-@media (max-width: 992px) {
-  .row.ead-grid .bloco-disciplina {
-    flex: 0 0 calc(50% - 1.5rem); /* 2 por linha */
-  }
-}
+      .row.ead-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
 
-@media (max-width: 600px) {
-  .row.ead-grid .bloco-disciplina {
-    flex: 0 0 100%; /* 1 por linha */
-  }
-}
+      .row.ead-grid .bloco-disciplina,
+      .bloco-disciplina {
+        display: block !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 12px 13px 7px;
+        border-width: 1.5px;
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(0,75,135,.045);
+      }
 
+      .disciplina-logo {
+        width: 86px;
+        height: 59px;
+        margin: 0 auto 5px;
+      }
 
+      .disciplina-links {
+        display: block !important;
+        margin: 0 !important;
+      }
+
+      .disciplina-links li {
+        display: block !important;
+        margin: 0 !important;
+      }
+
+      .disciplina-links a {
+        min-height: 38px;
+        padding: 7px 4px;
+        font-size: 14px;
+        line-height: 1.25;
+      }
+
+      .disciplina-links a::before {
+        margin-right: 8px;
+        font-size: 9px;
+      }
+
+      main > section:last-of-type {
+        padding: 20px 13px 15px;
+        border-radius: 13px;
+      }
+
+      main > section:last-of-type .row { display: block; }
+      main > section:last-of-type .col.m6 { padding: 9px 0; }
+      main > section:last-of-type .col.m6:first-child {
+        border-right: 0;
+        border-bottom: 1px solid #e3edf4;
+        padding-bottom: 17px;
+        margin-bottom: 7px;
+      }
+
+      main > section:last-of-type li { margin: 5px 0; }
+      main > section:last-of-type li a { padding-top: 8px; padding-bottom: 8px; }
+
+      .video-container iframe { height: 62vh; }
+      footer { margin-top: 24px; padding: 20px 16px; }
+    }
   </style>
+
 </head>
 <body>
 
-  <header>
-    <h1>Roteiro de Estudos 2026</h1>
-    <p>Curso Objetivo - Preparando você para os Vestibulares</p>
+
+
+  <header class="topo-objetivo">
+    <div class="container topo-conteudo">
+      <div class="topo-logo">
+        <img src="imagens/logo-obj.png" alt="Curso Objetivo">
+      </div>
+      <div class="topo-texto">
+        <h1>Roteiro de Estudos 2027</h1>
+        <p>Conteúdos selecionados para sua preparação nos vestibulares</p>
+      </div>
+    </div>
+    <div class="faixa-azul"></div>
   </header>
 
-  <main class="container">
-
-    <section class="center-align">
-      <h4 style="color:#002776">Seleção de Aulas e Roteiros</h4>
-      <p>O Curso Objetivo preparou uma seleção especial de aulas e conteúdos para te ajudar na preparação dos vestibulares 2026.</p>
-    </section>
 
 
-    <!--Teste novo quadro - links unip -->
-      <section>
-        <h4 style="color:#002776; text-align:center;">Aulas do Curso Objetivo EAD</h4>
+  <main class="container">
 
-        <div class="row ead-grid">
-          
-          <!-- BLOCO 1 -->
-          <div class="bloco-disciplina hoverable">
-            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/bio.jpg" alt="Biologia" class="disciplina-logo">
-            <ul class="disciplina-links">
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=ddc9d802-8051-4d64-94a7-6fec356d6a23&instituto=objetivo">O tegumento dos animais</a></li>
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=ddc9d802-8051-4d64-94a7-6fec356d6a23&instituto=objetivo">A poluição</a></li>
-            </ul>
-          </div>
 
-          <!-- BLOCO 2 -->
-          <div class="bloco-disciplina hoverable">
-            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/fis.jpg" alt="Física" class="disciplina-logo">
-            <ul class="disciplina-links">
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=667ba19a-a391-46a6-93f6-24a5e13a729e&instituto=objetivo">Noções gerais de ondas</a></li>
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=6af763b8-098c-4126-ac49-907fe80024a7&instituto=objetivo">Esfera eletrizada</a></li>
-            </ul>
-          </div>
 
-          <!-- BLOCO 3 -->
-          <div class="bloco-disciplina hoverable">
-            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/geo.jpg" alt="Geografia" class="disciplina-logo">
-            <ul class="disciplina-links">
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=e05cab5a-372d-4ebd-8ec4-93f230631395&instituto=objetivo">Estrutura da população</a></li>
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.objetivo.br/player/Transmissao?id=84feb5d5-93a1-4ef4-ae5b-9ff79e662152&instituto=objetivo">Questões ambientais</a></li>
-            </ul>
-          </div>
+    <section class="center-align">
 
-          <!-- BLOCO 4 -->
-          <div class="bloco-disciplina hoverable">
-            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/his.jpg" alt="História" class="disciplina-logo">
-            <ul class="disciplina-links">
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=59e2fdd4-dd2d-488f-9810-18c6d861dbce&instituto=objetivo">Ideias e movimentos urbanos na 1ª República</a></li>
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=b70d63b7-0858-4b2b-bd3b-f2302e4bcece&instituto=objetivo">Populismo na América Latina</a></li>
-            </ul>
-          </div>
+      <h4 style="color:#002776">Seleção de Aulas e Roteiros</h4>
 
-        </div>
+      <p>O Curso Objetivo preparou uma seleção especial de aulas e conteúdos para te ajudar na preparação dos vestibulares 2027.</p>
 
-      </section>
-      <section>        
+    </section>
 
-        <div class="row ead-grid">
-          
-          <!-- BLOCO 1 -->
-          <div class="bloco-disciplina hoverable">
-            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/ing.jpg" alt="Inglês" class="disciplina-logo">
-            <ul class="disciplina-links">
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=64a0c6ea-eff8-4a15-8aa3-abe6204b79cf&instituto=objetivo">Vocabulary - Conjunctions</a></li>
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.objetivo.br/player/Transmissao?id=aa7bc2e6-907e-46a1-9ff4-f8f887483e96&instituto=objetivo&referencia=201202_SidneyCampos_Ingles_I_Curso_AD">Grammar - Reported Speech</a></li>
-            </ul>
-          </div>
 
-          <!-- BLOCO 2 -->
-          <div class="bloco-disciplina hoverable">
-            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/por.jpg" alt="Português" class="disciplina-logo">
-            <ul class="disciplina-links">
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.objetivo.br/player/Transmissao?id=5b40b6bb-4bb4-48c7-b5d0-76a63becfc50&instituto=objetivo&referencia=201019_ElainePessanha_LinguaPortuguesa_III_Curso_AD">Análise de Texto</a></li>
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=47dbe557-25be-4fe8-9ee4-8d300ea5fbd8&instituto=objetivo">Poesia concreta</a></li>
-            </ul>
-          </div>
 
-          <!-- BLOCO 3 -->
-          <div class="bloco-disciplina hoverable">
-            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/mat.jpg" alt="Matemática" class="disciplina-logo">
-            <ul class="disciplina-links">
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=4740141d-5ee9-447b-833d-e46a85094d13&instituto=objetivo">Porcentagem e juros</a></li>
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=830c0e0b-5ef6-4627-8b9f-bcecc7cb514e&instituto=objetivo">Noções de estatística</a></li>
-            </ul>
-          </div>
 
-          <!-- BLOCO 4 -->
-          <div class="bloco-disciplina hoverable">
-            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/qui.jpg" alt="Química" class="disciplina-logo">
-            <ul class="disciplina-links">
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=d2302375-90ff-4cd2-97b2-b97159563ab1&instituto=objetivo">Aquecimento e resfriamento de materiais</a></li>
-              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=229ca071-8411-4533-9436-7084807abcbb&instituto=objetivo">Metalurgia: Fe, Cu e Al, principais ligas</a></li>
-            </ul>
-          </div>
-        </div>
 
-      </section>
+    <!--Teste novo quadro - links unip -->
 
-      <!--fim do bloco - aulas EAD - links unip -->
+      <section>
 
-      <section>
-        <h4 style="color:#002776; text-align:center;">Leitura Obrigatória - Folhetos - PDF</h4>
-        <div class="row" style="margin-top:30px;">
-          <!-- Fuvest -->
-          <div class="col s12 m6">
-            <h5 style="color:#002776; font-weight:bold; text-align:center;">Fuvest</h5>
-            <ul style="list-style:none; padding-left:0; text-align:center; line-height:1.8;">
-              <li><a href="https://drive.google.com/file/d/1CHWirFwljybEddzQgcHXp8hTBtyi243A/view?usp=sharing" target="_blank">Opúsculo humanitário</a></li>
-              <li><a href="https://drive.google.com/file/d/1jONPqAiOu10ZahDEIQuDFmO9Tha43PMs/view?usp=sharing" target="_blank">Nebulosas</a></li>
-              <li><a href="https://drive.google.com/file/d/1n1A7yiFeB9DpWRUGkQe07JgOC2FG-l_A/view?usp=sharing" target="_blank">Memórias de Martha</a></li>
-              <li><a href="https://drive.google.com/file/d/11-WJcyOU8AVrmrvhq1_S_8p0jll4udT6/view?usp=sharing" target="_blank">Caminho de pedras</a></li>
-              <li><a href="https://drive.google.com/file/d/1uQd4jiie7-Twzz72_sbYocWnkWyUixda/view?usp=sharing" target="_blank">A paixão segundo G. H. (1964)</a></li>
-              <li><a href="https://drive.google.com/file/d/1keA4DiCjDz04PZfUsK6y6Lhm7M4Ekivq/view?usp=sharing" target="_blank">Geografia</a></li>
-              <li><a href="https://drive.google.com/file/d/1aLVAED3HONxrM38Vy68nvmhla0WDZ6ea/view?usp=sharing" target="_blank">Balada de amor ao vento</a></li>
-              <li><a href="https://drive.google.com/file/d/1lAGEqFUCPQrMlKDoMCEqn_0kBD2VkotR/view?usp=sharing" target="_blank">Canção para ninar menino grande</a></li>
-              <li><a href="https://drive.google.com/file/d/1aIaW92rQAr4WtyAr0pSUpFfjuYwjrHPe/view?usp=sharing" target="_blank">A visão das plantas</a></li>
-            </ul>
-          </div>
+        <h4 style="color:#002776; text-align:center;">Aulas do Curso Objetivo EAD</h4>
 
-          <!-- Unicamp -->
-          <div class="col s12 m6">
-            <h5 style="color:#002776; font-weight:bold; text-align:center;">Unicamp</h5>
-            <ul style="list-style:none; padding-left:0; text-align:center; line-height:1.8;">
-              <li><a href="https://drive.google.com/file/d/1VMsTGwINVcLDLGxe1Do0itKmk3xQ-bNZ/view?usp=sharing" target="_blank">Canções escolhidas – Paulo César Pinheiro</a></li>
-              <li><a href="https://drive.google.com/file/d/19s6KnBSyeRobccM_k90iZvifC6eZWZ5h/view?usp=drive_link" target="_blank">A Vida não é Útil</a></li>
-              <li><a href="https://drive.google.com/file/d/1yDovWB3m8j3Ph8hKA7ZUmpR707fM7pYq/view?usp=sharing" target="_blank">Memórias Póstumas de Brás Cubas</a></li>
-              <li><a href="https://drive.google.com/file/d/1zmQhbp_T9FzUo9DHxW-m_Jv03y7CBRKd/view?usp=sharing" target="_blank">Os funerais da Mamãe Grande</a></li>
-              <li><a href="https://drive.google.com/file/d/1CdtGG5P3c6R95rZNI8n2jD-f1D0TqbbL/view?usp=drive_link" target="_blank">Morangos Mofados</a></li>
-              <li><a href="https://drive.google.com/file/d/1c_Fg-pf53d44RDVNjKuJ0Y5CjcCrLDVV/view?usp=sharing" target="_blank">No seu pescoço</a></li>
-              <li><a href="https://drive.google.com/file/d/1udrSeYc2kFrP7fw9waU4dnp4o74aOsPm/view?usp=drive_link" target="_blank">Olhos d’Água</a></li>
-              <li><a href="https://drive.google.com/file/d/1Fzi1dCRaa68zvcHPo7Yak_zaY87vN4pt/view?usp=drive_link" target="_blank">Prosas Seguidas de Odes Mínimas</a></li>
-              <li><a href="https://drive.google.com/file/d/1p1gFTonFtqSHWxmYpmqEdZppjp8rNsZM/view?usp=drive_link" target="_blank">Vida e Morte de M. J. Gonzaga de Sá</a></li>
-            </ul>
-          </div>
-        </div>
-      </section>
 
-    
 
-  </main>
-  <!-- Modal Structure -->
+        <div class="row ead-grid">
+
+
+
+          <!-- BLOCO 1 -->
+
+          <div class="bloco-disciplina hoverable">
+
+            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/bio.jpg" alt="Biologia" class="disciplina-logo">
+
+            <ul class="disciplina-links">
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=ddc9d802-8051-4d64-94a7-6fec356d6a23&instituto=objetivo">O tegumento dos animais</a></li>
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=ddc9d802-8051-4d64-94a7-6fec356d6a23&instituto=objetivo">A poluição</a></li>
+
+            </ul>
+
+          </div>
+
+
+
+          <!-- BLOCO 2 -->
+
+          <div class="bloco-disciplina hoverable">
+
+            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/fis.jpg" alt="Física" class="disciplina-logo">
+
+            <ul class="disciplina-links">
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=667ba19a-a391-46a6-93f6-24a5e13a729e&instituto=objetivo">Noções gerais de ondas</a></li>
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=6af763b8-098c-4126-ac49-907fe80024a7&instituto=objetivo">Esfera eletrizada</a></li>
+
+            </ul>
+
+          </div>
+
+
+
+          <!-- BLOCO 3 -->
+
+          <div class="bloco-disciplina hoverable">
+
+            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/geo.jpg" alt="Geografia" class="disciplina-logo">
+
+            <ul class="disciplina-links">
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=e05cab5a-372d-4ebd-8ec4-93f230631395&instituto=objetivo">Estrutura da população</a></li>
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.objetivo.br/player/Transmissao?id=84feb5d5-93a1-4ef4-ae5b-9ff79e662152&instituto=objetivo">Questões ambientais</a></li>
+
+            </ul>
+
+          </div>
+
+
+
+          <!-- BLOCO 4 -->
+
+          <div class="bloco-disciplina hoverable">
+
+            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/his.jpg" alt="História" class="disciplina-logo">
+
+            <ul class="disciplina-links">
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=59e2fdd4-dd2d-488f-9810-18c6d861dbce&instituto=objetivo">Ideias e movimentos urbanos na 1ª República</a></li>
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=b70d63b7-0858-4b2b-bd3b-f2302e4bcece&instituto=objetivo">Populismo na América Latina</a></li>
+
+            </ul>
+
+          </div>
+
+
+
+
+
+
+          <!-- BLOCO 1 -->
+
+          <div class="bloco-disciplina hoverable">
+
+            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/ing.jpg" alt="Inglês" class="disciplina-logo">
+
+            <ul class="disciplina-links">
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=64a0c6ea-eff8-4a15-8aa3-abe6204b79cf&instituto=objetivo">Vocabulary - Conjunctions</a></li>
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.objetivo.br/player/Transmissao?id=aa7bc2e6-907e-46a1-9ff4-f8f887483e96&instituto=objetivo&referencia=201202_SidneyCampos_Ingles_I_Curso_AD">Grammar - Reported Speech</a></li>
+
+            </ul>
+
+          </div>
+
+
+
+          <!-- BLOCO 2 -->
+
+          <div class="bloco-disciplina hoverable">
+
+            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/por.jpg" alt="Português" class="disciplina-logo">
+
+            <ul class="disciplina-links">
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.objetivo.br/player/Transmissao?id=5b40b6bb-4bb4-48c7-b5d0-76a63becfc50&instituto=objetivo&referencia=201019_ElainePessanha_LinguaPortuguesa_III_Curso_AD">Análise de Texto</a></li>
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=47dbe557-25be-4fe8-9ee4-8d300ea5fbd8&instituto=objetivo">Poesia concreta</a></li>
+
+            </ul>
+
+          </div>
+
+
+
+          <!-- BLOCO 3 -->
+
+          <div class="bloco-disciplina hoverable">
+
+            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/mat.jpg" alt="Matemática" class="disciplina-logo">
+
+            <ul class="disciplina-links">
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=4740141d-5ee9-447b-833d-e46a85094d13&instituto=objetivo">Porcentagem e juros</a></li>
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=830c0e0b-5ef6-4627-8b9f-bcecc7cb514e&instituto=objetivo">Noções de estatística</a></li>
+
+            </ul>
+
+          </div>
+
+
+
+          <!-- BLOCO 4 -->
+
+          <div class="bloco-disciplina hoverable">
+
+            <img src="https://secauxiliar.com.br/roteirodeestudos/imagens/qui.jpg" alt="Química" class="disciplina-logo">
+
+            <ul class="disciplina-links">
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=d2302375-90ff-4cd2-97b2-b97159563ab1&instituto=objetivo">Aquecimento e resfriamento de materiais</a></li>
+
+              <li><a href="#" class="modal-trigger" data-target="videoModal" data-video="https://tvweb3.unip.br/player/Transmissao?id=229ca071-8411-4533-9436-7084807abcbb&instituto=objetivo">Metalurgia: Fe, Cu e Al, principais ligas</a></li>
+
+            </ul>
+
+          </div>
+
+        </div>
+
+
+
+      </section>
+
+
+
+      <!--fim do bloco - aulas EAD - links unip -->
+
+
+
+      <section>
+
+        <h4 style="color:#002776; text-align:center;">Leitura Obrigatória - Folhetos - PDF</h4>
+
+        <div class="row" style="margin-top:30px;">
+
+          <!-- Fuvest -->
+
+          <div class="col s12 m6">
+
+            <h5 style="color:#002776; font-weight:bold; text-align:center;">Fuvest</h5>
+
+            <ul style="list-style:none; padding-left:0; text-align:center; line-height:1.8;">
+
+              <li><a href="https://drive.google.com/file/d/1CHWirFwljybEddzQgcHXp8hTBtyi243A/view?usp=sharing" target="_blank">Opúsculo humanitário</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1jONPqAiOu10ZahDEIQuDFmO9Tha43PMs/view?usp=sharing" target="_blank">Nebulosas</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1n1A7yiFeB9DpWRUGkQe07JgOC2FG-l_A/view?usp=sharing" target="_blank">Memórias de Martha</a></li>
+
+              <li><a href="https://drive.google.com/file/d/11-WJcyOU8AVrmrvhq1_S_8p0jll4udT6/view?usp=sharing" target="_blank">Caminho de pedras</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1uQd4jiie7-Twzz72_sbYocWnkWyUixda/view?usp=sharing" target="_blank">A paixão segundo G. H. (1964)</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1keA4DiCjDz04PZfUsK6y6Lhm7M4Ekivq/view?usp=sharing" target="_blank">Geografia</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1aLVAED3HONxrM38Vy68nvmhla0WDZ6ea/view?usp=sharing" target="_blank">Balada de amor ao vento</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1lAGEqFUCPQrMlKDoMCEqn_0kBD2VkotR/view?usp=sharing" target="_blank">Canção para ninar menino grande</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1aIaW92rQAr4WtyAr0pSUpFfjuYwjrHPe/view?usp=sharing" target="_blank">A visão das plantas</a></li>
+
+            </ul>
+
+          </div>
+
+
+
+          <!-- Unicamp -->
+
+          <div class="col s12 m6">
+
+            <h5 style="color:#002776; font-weight:bold; text-align:center;">Unicamp</h5>
+
+            <ul style="list-style:none; padding-left:0; text-align:center; line-height:1.8;">
+
+              <li><a href="https://drive.google.com/file/d/1VMsTGwINVcLDLGxe1Do0itKmk3xQ-bNZ/view?usp=sharing" target="_blank">Canções escolhidas – Paulo César Pinheiro</a></li>
+
+              <li><a href="https://drive.google.com/file/d/19s6KnBSyeRobccM_k90iZvifC6eZWZ5h/view?usp=drive_link" target="_blank">A Vida não é Útil</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1yDovWB3m8j3Ph8hKA7ZUmpR707fM7pYq/view?usp=sharing" target="_blank">Memórias Póstumas de Brás Cubas</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1zmQhbp_T9FzUo9DHxW-m_Jv03y7CBRKd/view?usp=sharing" target="_blank">Os funerais da Mamãe Grande</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1CdtGG5P3c6R95rZNI8n2jD-f1D0TqbbL/view?usp=drive_link" target="_blank">Morangos Mofados</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1c_Fg-pf53d44RDVNjKuJ0Y5CjcCrLDVV/view?usp=sharing" target="_blank">No seu pescoço</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1udrSeYc2kFrP7fw9waU4dnp4o74aOsPm/view?usp=drive_link" target="_blank">Olhos d’Água</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1Fzi1dCRaa68zvcHPo7Yak_zaY87vN4pt/view?usp=drive_link" target="_blank">Prosas Seguidas de Odes Mínimas</a></li>
+
+              <li><a href="https://drive.google.com/file/d/1p1gFTonFtqSHWxmYpmqEdZppjp8rNsZM/view?usp=drive_link" target="_blank">Vida e Morte de M. J. Gonzaga de Sá</a></li>
+
+            </ul>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+
+
+
+
+
+  </main>
+
+  <!-- Modal Structure -->
+
 <div id="videoModal" class="modal">
-  <div class="modal-content center-align">
-    <h5 id="videoTitle"></h5>
-    <div class="video-container">
-      <iframe id="videoFrame" width="100%" height="400" frameborder="0"
-              allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <a href="#!" class="modal-close btn-flat">Fechar</a>
-  </div>
+
+  <div class="modal-content center-align">
+
+    <h5 id="videoTitle"></h5>
+
+    <div class="video-container">
+
+      <iframe id="videoFrame" width="100%" height="400" frameborder="0"
+
+              allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+    </div>
+
+  </div>
+
+  <div class="modal-footer">
+
+    <a href="#!" class="modal-close btn-flat">Fechar</a>
+
+  </div>
+
 </div>
 
+
+
 <!--
+
 <footer><a href="www.curso-objetivo.br" target="_blank">Curso Objetivo Vestibulares</a></footer> -->
-<footer>Curso Objetivo Vestibulares</footer> 
+
+<footer>Curso Objetivo Vestibulares</footer>&#x20;
+
+
+
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Inicializa os modais e impede fechar clicando fora
-      const elems = document.querySelectorAll('.modal');
-      const modals = M.Modal.init(elems, {
-        dismissible: false
-      });
 
-      // Ao clicar em qualquer botão/link que abre vídeo
-      document.querySelectorAll('.modal-trigger').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const videoUrl = this.getAttribute('data-video');
-          const iframe = document.getElementById('videoFrame');
-          const videoTitleEl = document.getElementById('videoTitle');
-          
-          // Tenta achar o título dentro do card (ou usa o texto do link)
-          let videoTitle = this.innerText;
-          const cardTitle = this.closest('.card')?.querySelector('.video-title');
-          if (cardTitle) videoTitle = cardTitle.innerText;
-          videoTitleEl.innerText = videoTitle;
 
-          // Verifica tipo do link e ajusta o embed
-          if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
-            // 🎥 YouTube (mantém embed já configurado com parâmetros)
-            iframe.src = videoUrl;
-          } else if (videoUrl.includes('tvweb') || videoUrl.includes('unip.br/player')) {
-            // 🎓 TVWeb UNIP / Objetivo (adiciona autoplay)
-            iframe.src = videoUrl + (videoUrl.includes('?') ? '&' : '?') + 'autoplay=true';
-          } else {
-            // fallback genérico
-            iframe.src = videoUrl;
-          }
-        });
-      });
+  <script>
 
-      // Quando o modal for fechado, para o vídeo
-      document.querySelectorAll('.modal-close').forEach(btn => {
-        btn.addEventListener('click', function() {
-          document.getElementById('videoFrame').src = '';
-        });
-      });
-    });
-  </script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+      // Inicializa os modais e impede fechar clicando fora
+
+      const elems = document.querySelectorAll('.modal');
+
+      const modals = M.Modal.init(elems, {
+
+        dismissible: false
+
+      });
+
+
+
+      // Ao clicar em qualquer botão/link que abre vídeo
+
+      document.querySelectorAll('.modal-trigger').forEach(btn => {
+
+        btn.addEventListener('click', function() {
+
+          const videoUrl = this.getAttribute('data-video');
+
+          const iframe = document.getElementById('videoFrame');
+
+          const videoTitleEl = document.getElementById('videoTitle');
+
+
+
+          // Tenta achar o título dentro do card (ou usa o texto do link)
+
+          let videoTitle = this.innerText;
+
+          const cardTitle = this.closest('.card')?.querySelector('.video-title');
+
+          if (cardTitle) videoTitle = cardTitle.innerText;
+
+          videoTitleEl.innerText = videoTitle;
+
+
+
+          // Verifica tipo do link e ajusta o embed
+
+          if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+
+            // 🎥 YouTube (mantém embed já configurado com parâmetros)
+
+            iframe.src = videoUrl;
+
+          } else if (videoUrl.includes('tvweb') || videoUrl.includes('unip.br/player')) {
+
+            // 🎓 TVWeb UNIP / Objetivo (adiciona autoplay)
+
+            iframe.src = videoUrl + (videoUrl.includes('?') ? '&' : '?') + 'autoplay=true';
+
+          } else {
+
+            // fallback genérico
+
+            iframe.src = videoUrl;
+
+          }
+
+        });
+
+      });
+
+
+
+      // Quando o modal for fechado, para o vídeo
+
+      document.querySelectorAll('.modal-close').forEach(btn => {
+
+        btn.addEventListener('click', function() {
+
+          document.getElementById('videoFrame').src = '';
+
+        });
+
+      });
+
+    });
+
+  </script>
+
 </body>
+
 </html>
