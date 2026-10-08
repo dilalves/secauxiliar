@@ -1,247 +1,145 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gerar PDF de Estatísticas - ENEM Maio</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gerar PDF de Estatísticas — ENEM</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
   <style>
-    body {
-      background: #eef5fb;
-      color: #0b3f7f;
-    }
-    .page-wrap {
-      max-width: 980px;
-      margin: 28px auto;
-      padding: 0 12px;
-    }
-    .card-panel {
-      border-radius: 18px;
-      box-shadow: 0 10px 28px rgba(11, 63, 127, 0.12);
-    }
-    .top-title {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 18px;
-    }
-    .top-title i {
-      background: #0b3f7f;
-      color: white;
-      border-radius: 14px;
-      padding: 10px;
-    }
-    .btn-azul {
-      background: #0b3f7f !important;
-      border-radius: 999px;
-      text-transform: none;
-      font-weight: 700;
-    }
-    .btn-light {
-      border-radius: 999px;
-      text-transform: none;
-      font-weight: 700;
-    }
-    .progress {
-      height: 16px;
-      border-radius: 999px;
-      background: #d8e8f8;
-      overflow: hidden;
-      margin-top: 16px;
-    }
-    .progress .determinate {
-      background: #0b3f7f;
-      transition: width .25s ease;
-    }
-    #logBox {
-      background: #071d38;
-      color: #dbeafe;
-      min-height: 260px;
-      max-height: 420px;
-      overflow: auto;
-      padding: 14px;
-      border-radius: 14px;
-      font-family: Consolas, Monaco, monospace;
-      font-size: 13px;
-      white-space: pre-wrap;
-      margin-top: 14px;
-    }
-    .status-line {
-      margin-top: 12px;
-      color: #334155;
-      font-weight: 600;
-    }
-    .download-area {
-      display: none;
-      margin-top: 18px;
-      padding: 14px;
-      border: 1px solid #cfe0f5;
-      background: #f8fbff;
-      border-radius: 14px;
-    }
-    .input-field input:focus + label {
-      color: #0b3f7f !important;
-    }
-    .input-field input:focus {
-      border-bottom: 1px solid #0b3f7f !important;
-      box-shadow: 0 1px 0 0 #0b3f7f !important;
-    }
+    body {background:#eef5fb;color:#0b3f7f}
+    .page-wrap {max-width:1000px;margin:28px auto;padding:0 12px}
+    .card-panel {border-radius:18px;box-shadow:0 10px 28px rgba(11,63,127,.12)}
+    .top-title {display:flex;gap:12px;align-items:center;margin-bottom:18px}
+    .top-title i {background:#0b3f7f;color:#fff;border-radius:14px;padding:10px}
+    .btn-azul {background:#0b3f7f!important;border-radius:999px;text-transform:none;font-weight:700}
+    .btn-light {border-radius:999px;text-transform:none;font-weight:700}
+    .progress {height:16px;border-radius:999px;background:#d8e8f8;overflow:hidden;margin-top:16px}
+    .progress .determinate {background:#0b3f7f;transition:width .25s ease}
+    #logBox {background:#071d38;color:#dbeafe;min-height:200px;max-height:420px;overflow:auto;padding:14px;border-radius:14px;font:13px Consolas,Monaco,monospace;white-space:pre-wrap;margin-top:14px}
+    .status-line {margin-top:12px;color:#334155;font-weight:600}
+    .download-area {display:none;margin-top:18px;padding:14px;border:1px solid #cfe0f5;background:#f8fbff;border-radius:14px}
+    .input-field input:focus+label {color:#0b3f7f!important}
+    .input-field input:focus {border-bottom:1px solid #0b3f7f!important;box-shadow:0 1px 0 0 #0b3f7f!important}
+    .subpanel {background:#f8fbff;border:1px solid #d5e6f7;border-radius:14px;padding:16px;margin-top:22px}
+    .subpanel h6 {font-weight:800;margin:0 0 12px}
+    .saved-item {display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px;border-bottom:1px solid #e1ecf8;flex-wrap:wrap}
+    .saved-item:last-child {border-bottom:0}
+    .saved-name {font-weight:700;color:#143b6d}
+    .hint {font-size:13px;color:#64748b}
+    .upload-grid {display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .small-input {width:100%;padding:10px;border:1px solid #cadcef;border-radius:8px;color:#15365d;background:white}
+    .field-label {display:block;font-size:12px;color:#526782;font-weight:700;margin-bottom:5px}
+    .file-input {width:100%;max-width:100%;font-size:13px}
+    #btnSalvar {margin-top:14px}
+    @media(max-width:600px){.upload-grid{grid-template-columns:1fr}.top-title h5{font-size:20px}.page-wrap{margin:12px auto}}
   </style>
 </head>
 <body>
-  <div class="page-wrap">
-    <div class="card-panel white">
-      <div class="top-title">
-        <i class="material-icons">picture_as_pdf</i>
-        <div>
-          <h5 style="margin:0;font-weight:800;">Gerar PDF de Estatísticas por Questão</h5>
-          <div style="color:#64748b;">Processamento por questão, com log na tela para não travar.</div>
-        </div>
-      </div>
-
-      <div class="row" style="margin-bottom:0;">
-        <div class="input-field col s12 m5">
-          <input id="evento" type="text" value="ENEM0926">
-          <label for="evento" class="active">Evento</label>
-        </div>
-        <div class="input-field col s12 m3">
-          <input id="dia" type="text" value="D1">
-          <label for="dia" class="active">Dia</label>
-        </div>
-        <div class="col s12 m4" style="padding-top:22px;">
-          <button id="btnStart" class="btn btn-azul waves-effect waves-light" onclick="iniciarGeracao()">
-            <i class="material-icons left">play_arrow</i>Gerar PDF completo
-          </button>
-        </div>
-      </div>
-
-      <div class="progress">
-        <div id="bar" class="determinate" style="width: 0%"></div>
-      </div>
-      <div id="statusLine" class="status-line">Aguardando início...</div>
-      <div id="logBox">Log aparecerá aqui...</div>
-
-      <div id="downloadArea" class="download-area">
-        <b>PDF pronto!</b><br>
-        <a id="btnDownload" class="btn btn-azul waves-effect waves-light" target="_blank" href="#" style="margin-top:10px;">
-          <i class="material-icons left">download</i>Baixar / abrir PDF final
-        </a>
-      </div>
+  <div class="page-wrap"><div class="card-panel white">
+    <div class="top-title"><i class="material-icons">picture_as_pdf</i><div>
+      <h5 style="margin:0;font-weight:800">Gerar PDF de Estatísticas por Questão</h5>
+      <div class="hint">Processamento por questão e textos de apoio salvos por evento.</div>
+    </div></div>
+    <div class="row" style="margin-bottom:0">
+      <div class="input-field col s12 m5"><input id="evento" type="text" value="ENEM0926"><label for="evento" class="active">Evento</label></div>
+      <div class="input-field col s12 m3"><input id="dia" type="text" value="D1"><label for="dia" class="active">Dia (D1 ou D2)</label></div>
+      <div class="col s12 m4" style="padding-top:22px"><button id="btnStart" class="btn btn-azul waves-effect waves-light" onclick="iniciarGeracao()"><i class="material-icons left">play_arrow</i>Gerar PDF completo</button></div>
     </div>
-  </div>
 
+    <section class="subpanel">
+      <h6><i class="material-icons tiny">menu_book</i> Textos de apoio</h6>
+      <p class="hint">Cadastre uma única vez. As imagens permanecem no Cloudflare R2 e serão inseridas automaticamente antes da primeira questão do intervalo. Para substituir, envie novamente com a mesma questão inicial.</p>
+      <div class="upload-grid">
+        <div><label class="field-label" for="qInicial">Questão inicial</label><input class="small-input" type="number" min="1" max="180" id="qInicial" value="6"></div>
+        <div><label class="field-label" for="qFinal">Questão final</label><input class="small-input" type="number" min="1" max="180" id="qFinal" value="9"></div>
+        <div><label class="field-label" for="tituloApoio">Título (opcional)</label><input class="small-input" id="tituloApoio" placeholder="Ex.: Texto para questões 6 a 9"></div>
+        <div><label class="field-label" for="arquivoApoio">Imagem PNG ou JPG (até 12 MB)</label><input class="file-input" type="file" id="arquivoApoio" accept="image/png,image/jpeg"></div>
+      </div>
+      <button class="btn btn-azul waves-effect waves-light" id="btnSalvar" onclick="salvarTexto()"><i class="material-icons left">cloud_upload</i>Salvar texto no R2</button>
+      <button class="btn-flat" onclick="carregarTextos()"><i class="material-icons left">refresh</i>Atualizar lista</button>
+      <p class="hint" id="statusApoio" aria-live="polite">Carregando textos...</p>
+      <div id="listaTextos"></div>
+    </section>
+
+    <div class="progress"><div id="bar" class="determinate" style="width:0%"></div></div>
+    <div id="statusLine" class="status-line">Aguardando início...</div>
+    <div id="logBox">Log aparecerá aqui...</div>
+    <div id="downloadArea" class="download-area"><b>PDF pronto!</b><br>
+      <a id="btnDownload" class="btn btn-azul waves-effect waves-light" target="_blank" href="#" style="margin-top:10px"><i class="material-icons left">download</i>Baixar / abrir PDF final</a>
+    </div>
+  </div></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script>
     const PHP_ENDPOINT = 'https://apisec.secauxiliar.com.br/enem0926/pdf_estatisticas_questoes_job.php';
-
-    let jobAtual = null;
-    let rodando = false;
-
-    function qs(params) {
-      return new URLSearchParams(params).toString();
-    }
-
-    async function chamar(params) {
-      const url = `${PHP_ENDPOINT}?${qs(params)}`;
-      const resp = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-        cache: 'no-store'
-      });
-
-      const txt = await resp.text();
-      let data;
-      try {
-        data = JSON.parse(txt);
-      } catch (e) {
-        throw new Error(txt || 'Resposta inválida do servidor.');
-      }
-
-      if (!resp.ok || data.ok === false) {
-        throw new Error(data.error || 'Erro ao processar.');
-      }
-
+    let jobAtual = null, rodando = false;
+    const $ = (id) => document.getElementById(id);
+    function dadosEvento() {return {evento:$('evento').value.trim().toUpperCase(),dia:$('dia').value.trim().toUpperCase()};}
+    function aviso(msg) {if(window.M&&M.toast)M.toast({html:msg});else alert(msg);}
+    async function chamar(params, formData=null) {
+      const url = PHP_ENDPOINT + '?' + new URLSearchParams(params);
+      const resp = await fetch(url, {method:formData?'POST':'GET',body:formData||undefined,credentials:'include',cache:'no-store'});
+      const txt = await resp.text();let data;
+      try {data=JSON.parse(txt);}catch(e){throw new Error('Resposta inválida do servidor: '+txt.slice(0,200));}
+      if(!resp.ok||data.ok===false)throw new Error(data.error||'Erro ao processar.');
       return data;
     }
-
-    function atualizarTela(st) {
-      const pct = Number(st.percentual || 0);
-      document.getElementById('bar').style.width = `${pct}%`;
-      document.getElementById('statusLine').textContent = `${pct}% - ${st.mensagem || ''}`;
-
-      const log = Array.isArray(st.log) ? st.log.join('\n') : '';
-      const logBox = document.getElementById('logBox');
-      logBox.textContent = log || 'Sem log ainda...';
-      logBox.scrollTop = logBox.scrollHeight;
-
-      if (st.finalizado) {
-        document.getElementById('downloadArea').style.display = 'block';
-
-        document.getElementById('btnDownload').href =
-          `${PHP_ENDPOINT}?modo=baixar&job=${jobAtual}`;
+    async function carregarTextos() {
+      const {evento,dia}=dadosEvento();if(!evento||!['D1','D2'].includes(dia))return;
+      $('statusApoio').textContent='Consultando textos salvos...';
+      try {const r=await chamar({modo:'listar_textos',evento,dia});mostrarTextos(r.textos||[]);}catch(e){$('statusApoio').textContent='Não foi possível carregar: '+e.message;$('listaTextos').replaceChildren();}
+    }
+    function mostrarTextos(textos) {
+      $('listaTextos').replaceChildren();
+      $('statusApoio').textContent=textos.length?textos.length+' texto(s) salvo(s) para este evento/dia.':'Nenhum texto cadastrado neste evento/dia.';
+      for(const t of textos){
+        const div=document.createElement('div');div.className='saved-item';
+        const left=document.createElement('div');
+        const name=document.createElement('div');name.className='saved-name';name.textContent='Questões '+t.questao_inicial+' a '+t.questao_final+(t.titulo?' — '+t.titulo:'');
+        const sub=document.createElement('div');sub.className='hint';sub.textContent=(t.imagem||'').split('/').pop();left.append(name,sub);
+        const btn=document.createElement('button');btn.className='btn-flat red-text';btn.textContent='Excluir';btn.disabled=rodando;
+        btn.addEventListener('click',()=>excluirTexto(t));div.append(left,btn);$('listaTextos').append(div);
       }
     }
-
-    async function iniciarGeracao() {
-      if (rodando) return;
-
-      const evento = document.getElementById('evento').value.trim();
-      const dia = document.getElementById('dia').value.trim().toUpperCase() || 'D1';
-
-      if (!evento) {
-        M.toast({ html: 'Informe o evento.' });
-        return;
-      }
-
-      rodando = true;
-      jobAtual = null;
-      document.getElementById('downloadArea').style.display = 'none';
-      document.getElementById('btnStart').disabled = true;
-      document.getElementById('logBox').textContent = 'Iniciando...';
-      document.getElementById('bar').style.width = '0%';
-      document.getElementById('statusLine').textContent = 'Criando job...';
-
-      try {
-        const st = await chamar({ modo: 'start', evento, dia });
-        jobAtual = st.job;
-        atualizarTela(st);
-        await loopProcessamento();
-      } catch (err) {
-        rodando = false;
-        document.getElementById('btnStart').disabled = false;
-        document.getElementById('statusLine').textContent = 'Erro na geração.';
-        document.getElementById('logBox').textContent += `\nERRO: ${err.message}`;
-        M.toast({ html: 'Erro: ' + err.message });
-      }
+    async function salvarTexto(){
+      if(rodando){aviso('Aguarde a conclusão do relatório.');return;}
+      const {evento,dia}=dadosEvento();const ini=Number($('qInicial').value),fim=Number($('qFinal').value),file=$('arquivoApoio').files[0];
+      const minimo=dia==='D2'?91:1,maximo=dia==='D2'?180:90;
+      if(!evento||!['D1','D2'].includes(dia)){aviso('Informe evento e D1 ou D2.');return;}
+      if(!Number.isInteger(ini)||!Number.isInteger(fim)||ini<minimo||fim>maximo||fim<ini){aviso('Intervalo inválido para '+dia+' ('+minimo+' a '+maximo+').');return;}
+      if(!file){aviso('Selecione a imagem do texto.');return;}
+      if(file.size>12*1024*1024){aviso('A imagem ultrapassa 12 MB.');return;}
+      const fd=new FormData();fd.append('modo','salvar_texto');fd.append('evento',evento);fd.append('dia',dia);fd.append('questao_inicial',String(ini));fd.append('questao_final',String(fim));fd.append('titulo',$('tituloApoio').value.trim());fd.append('imagem',file);
+      $('btnSalvar').disabled=true;$('statusApoio').textContent='Enviando imagem e gravando no R2...';
+      try {const r=await chamar({},fd);mostrarTextos(r.textos||[]);$('arquivoApoio').value='';aviso(r.mensagem||'Texto salvo!');}
+      catch(e){$('statusApoio').textContent='Erro: '+e.message;aviso('Erro ao salvar: '+e.message);}
+      finally {$('btnSalvar').disabled=false;}
     }
-
-    async function loopProcessamento() {
-      if (!jobAtual) return;
-
-      try {
-        while (rodando) {
-          const st = await chamar({ modo: 'processar', job: jobAtual });
-          atualizarTela(st);
-
-          if (st.finalizado) {
-            rodando = false;
-            document.getElementById('btnStart').disabled = false;
-            M.toast({ html: 'PDF finalizado!' });
-            break;
-          }
-
-          // Pequena pausa para o navegador respirar e a tela atualizar.
-          await new Promise(resolve => setTimeout(resolve, 250));
-        }
-      } catch (err) {
-        rodando = false;
-        document.getElementById('btnStart').disabled = false;
-        document.getElementById('statusLine').textContent = 'Erro durante o processamento.';
-        document.getElementById('logBox').textContent += `\nERRO: ${err.message}`;
-        M.toast({ html: 'Erro: ' + err.message });
-      }
+    async function excluirTexto(t){
+      if(rodando)return;
+      if(!confirm('Excluir a associação do texto das questões '+t.questao_inicial+' a '+t.questao_final+'?'))return;
+      const {evento,dia}=dadosEvento();const fd=new FormData();fd.append('modo','excluir_texto');fd.append('evento',evento);fd.append('dia',dia);fd.append('id',String(t.id));
+      try {const r=await chamar({},fd);mostrarTextos(r.textos||[]);aviso(r.mensagem||'Removido.');}catch(e){aviso(e.message);}
     }
+    function atualizarTela(st){
+      const pct=Number(st.percentual||0);$('bar').style.width=pct+'%';$('statusLine').textContent=pct+'% - '+(st.mensagem||'');
+      const log=Array.isArray(st.log)?st.log.join('\n'):'';$('logBox').textContent=log||'Sem log ainda...';$('logBox').scrollTop=$('logBox').scrollHeight;
+      if(st.finalizado){$('downloadArea').style.display='block';$('btnDownload').href=PHP_ENDPOINT+'?'+new URLSearchParams({modo:'baixar',job:jobAtual});}
+    }
+    async function iniciarGeracao(){
+      if(rodando)return;const {evento,dia}=dadosEvento();
+      if(!evento||!['D1','D2'].includes(dia)){aviso('Informe evento e dia D1/D2.');return;}
+      rodando=true;jobAtual=null;$('downloadArea').style.display='none';$('btnStart').disabled=true;$('btnSalvar').disabled=true;
+      $('logBox').textContent='Iniciando...';$('bar').style.width='0%';$('statusLine').textContent='Criando job...';
+      try {const st=await chamar({modo:'start',evento,dia});jobAtual=st.job;atualizarTela(st);await loopProcessamento();}
+      catch(e){rodando=false;$('btnStart').disabled=false;$('btnSalvar').disabled=false;$('statusLine').textContent='Erro na geração.';$('logBox').textContent+='\nERRO: '+e.message;aviso('Erro: '+e.message);}
+    }
+    async function loopProcessamento(){if(!jobAtual)return;
+      try {while(rodando){const st=await chamar({modo:'processar',job:jobAtual});atualizarTela(st);if(st.finalizado){rodando=false;$('btnStart').disabled=false;$('btnSalvar').disabled=false;aviso('PDF finalizado!');break;}await new Promise(r=>setTimeout(r,250));}}
+      catch(e){rodando=false;$('btnStart').disabled=false;$('btnSalvar').disabled=false;$('statusLine').textContent='Erro durante o processamento.';$('logBox').textContent+='\nERRO: '+e.message;aviso('Erro: '+e.message);}
+    }
+    $('evento').addEventListener('change',carregarTextos);$('dia').addEventListener('change',carregarTextos);
+    document.addEventListener('DOMContentLoaded',carregarTextos);
   </script>
 </body>
 </html>
