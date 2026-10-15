@@ -1,0 +1,540 @@
+/* ============================================
+   MAPA DE SALAS UNIP - Estilos PHP
+   ============================================ */
+
+:root {
+    --primary: #075EBD;
+    --primary-dark: #054a8f;
+    --accent: #FFED00;
+    --accent-dark: #e6d000;
+    --bg-gradient: linear-gradient(135deg, #075EBD 0%, #0a6fd1 50%, #1488e6 100%);
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --text-dark: #1a1a2e;
+    --text-muted: #6b7280;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.1);
+    --radius: 20px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-dark);
+    min-height: 100vh;
+    margin: 0;
+}
+
+.app-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.app-header {
+    background: var(--bg-gradient);
+    border-bottom: 4px solid var(--accent);
+    padding: 2rem 1rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 94, 189, 0.3);
+}
+
+.header-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.unip-logo {
+    height: 64px;
+    width: auto;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.logo-fallback {
+    width: 64px;
+    height: 64px;
+    background: var(--accent);
+    color: var(--primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    font-weight: 900;
+    box-shadow: 0 4px 12px rgba(0, 94, 189, 0.3);
+}
+
+.brand-text {
+    text-align: left;
+}
+
+.app-title {
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.app-subtitle {
+    margin: 0.25rem 0 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+    font-weight: 400;
+}
+
+.origin-chip {
+    width: 100%;
+    max-width: 420px;
+    background: var(--accent);
+    color: var(--primary);
+    padding: 0.625rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    display: inline-block;
+    box-shadow: 0 4px 12px rgba(255, 237, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 640px) {
+    .brand {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .brand-text {
+        text-align: center;
+    }
+
+    .app-title {
+        font-size: 1.5rem;
+    }
+
+    .unip-logo,
+    .logo-fallback {
+        height: 52px;
+    }
+}
+
+/* Container */
+.container-app {
+    width: 100%;
+    max-width: 720px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+/* Selection Card */
+.selection-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-icon {
+    font-size: 1.5rem;
+}
+
+.card-title {
+    margin: 0;
+    color: var(--primary);
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+}
+
+.form-select {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    border: 2px solid #e5e7eb;
+    background: #ffffff;
+    color: var(--text-dark);
+    font-size: 1rem;
+    font-weight: 500;
+    appearance: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(7, 94, 189, 0.15);
+}
+
+.form-select option {
+    background: #ffffff;
+    color: var(--text-dark);
+    padding: 0.625rem;
+}
+
+/* Result Card */
+.result-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* States */
+.state-loading,
+.state-error {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.state-loading p,
+.state-error p {
+    margin: 0;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.state-error {
+    color: #dc2626;
+}
+
+.state-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+/* Success Result */
+.result-success {
+    text-align: center;
+}
+
+.sala-badge {
+    background: var(--bg-gradient);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 1.75rem;
+    box-shadow: var(--shadow-sm);
+    display: inline-block;
+}
+
+.sala-badge .sala-nome {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-top: 0.25rem;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+}
+
+/* Video Section */
+.video-section {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.75rem;
+    border: 1px solid #e2e8f0;
+}
+
+.video-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.video-icon {
+    font-size: 1.5rem;
+}
+
+.video-title {
+    margin: 0;
+    color: var(--primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Mapa Section */
+.mapa-section {
+    margin-bottom: 1.5rem;
+}
+
+.mapa-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.mapa-icon {
+    font-size: 1.5rem;
+}
+
+.mapa-title {
+    margin: 0;
+    color: var(--primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.leaflet-map {
+    width: 100%;
+    height: 300px;
+    border-radius: 16px;
+    border: 2px solid var(--accent);
+    background-color: #0f2e53;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1rem;
+}
+
+/* Route Steps */
+.route-steps {
+    margin-top: 1rem;
+}
+
+.steps-title {
+    color: var(--primary);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.route-steps ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.step-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.step-item:last-child {
+    border-bottom: none;
+}
+
+.step-item::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(255, 237, 0, 0.6);
+}
+
+/* Leaflet container custom */
+.leaflet-container {
+    background: #0f2e53 !important;
+    border-radius: 14px !important;
+}
+
+.map-tooltip {
+    background: #075EBD !important;
+    border: 2px solid #FFED00 !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+    font-size: 0.75rem !important;
+    border-radius: 6px !important;
+    padding: 3px 7px !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+}
+
+.map-tooltip::before {
+    border-top-color: #FFED00 !important;
+    border-bottom-color: #FFED00 !important;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .container-app {
+        margin: 1rem auto;
+        padding: 0 0.75rem;
+    }
+
+    .selection-card,
+    .result-card {
+        padding: 1.5rem;
+    }
+
+    .leaflet-map {
+        height: 260px;
+    }
+
+    .app-header {
+        padding: 1.5rem 1rem 1rem;
+    }
+}
+
+/* ============================================
+   SELEÇÃO DE ANDAR + QR CODES
+   ============================================ */
+
+.andar-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.andar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.andar-item {
+    text-align: center;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1rem;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.andar-item:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+}
+
+.andar-qr {
+    margin-bottom: 0.75rem;
+}
+
+.andar-qr img {
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    background: white;
+    padding: 4px;
+}
+
+.andar-btn {
+    width: 100%;
+    padding: 0.625rem 1rem;
+    border-radius: 10px;
+    border: 2px solid var(--primary);
+    background: #ffffff;
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 0.5rem;
+}
+
+.andar-btn:hover {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.andar-link {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-top: 0.25rem;
+}
+
+.andar-link:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
