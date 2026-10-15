@@ -1,0 +1,53 @@
+name: Publicar UNIP no Secauxiliar
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar SECAUXILIAR
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Baixar projeto UNIP
+        uses: actions/checkout@v4
+        with:
+          repository: dilalves/unip
+          ref: main
+          token: ${{ secrets.UNIP_READ_TOKEN }}
+          path: _projeto_unip
+          persist-credentials: false
+
+      - name: Atualizar pasta consultarsalaunip
+        run: |
+          mkdir -p consultarsalaunip
+
+          rsync -av \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='README.md' \
+            _projeto_unip/ consultarsalaunip/
+
+          rm -rf _projeto_unip
+
+      - name: Salvar alteracoes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add consultarsalaunip/
+
+          if ! git diff --cached --quiet; then
+            git commit -m "Atualizar pagina UNIP"
+            git push
+          else
+            echo "Nenhuma alteracao encontrada."
+          fi
