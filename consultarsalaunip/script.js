@@ -10,6 +10,7 @@
     // CONFIGURAÇÃO DA API
     // ============================================
     var API_URL = 'https://apisec.secauxiliar.com.br/unip/api_salas.php';
+    var API_LISTAR_CURSOS = API_URL + '?acao=listar_cursos';
 
     // ============================================
     // ANDARES (nome, SVG, ponto de partida [svg_x, svg_y])
@@ -24,79 +25,41 @@
     };
 
     // ============================================
-    // ROTAS POR ANDAR
+    // ROTAS POR ANDAR (fallback quando API não tem coordenadas)
     // Formato: [[partida_y, partida_x], [destino_y, destino_x]] (Leaflet: [y, x])
     // ============================================
     var rotasPorAndar = {
         '2A': {
-            'CC1A - 1º Semestre': [[500, 905], [775, 830]],
-            'CC3B - 3º Semestre': [[500, 905], [775, 360]],
-            'ADM1':               [[500, 905], [220, 140]],
-            'ADM2':               [[500, 905], [220, 360]],
-            'A':                  [[500, 905], [775, 360]],
-            'B':                  [[500, 905], [580, 830]],
-            'C':                  [[500, 905], [420, 140]],
-            'default':            [[500, 905], [775, 360]]
+            'default': [[500, 905], [775, 360]]
         },
         '1A': {
-            'CC1A - 1º Semestre': [[500, 905], [775, 830]],
-            'CC3B - 3º Semestre': [[500, 905], [775, 360]],
-            'ADM1':               [[500, 905], [220, 140]],
-            'ADM2':               [[500, 905], [220, 360]],
-            'A':                  [[500, 905], [775, 360]],
-            'B':                  [[500, 905], [580, 830]],
-            'C':                  [[500, 905], [420, 140]],
-            'default':            [[500, 905], [775, 360]]
+            'default': [[500, 905], [775, 360]]
         },
         'TA': {
-            'CC1A - 1º Semestre': [[500, 140], [775, 830]],
-            'CC3B - 3º Semestre': [[500, 140], [775, 360]],
-            'ADM1':               [[500, 140], [220, 140]],
-            'ADM2':               [[500, 140], [220, 360]],
-            'A':                  [[500, 140], [775, 360]],
-            'B':                  [[500, 140], [580, 830]],
-            'C':                  [[500, 140], [420, 140]],
-            'default':            [[500, 140], [775, 360]]
+            'default': [[500, 140], [775, 360]]
         },
         'TB': {
-            'CC1A - 1º Semestre': [[500, 860], [775, 830]],
-            'CC3B - 3º Semestre': [[500, 860], [775, 360]],
-            'ADM1':               [[500, 860], [220, 140]],
-            'ADM2':               [[500, 860], [220, 360]],
-            'A':                  [[500, 860], [775, 360]],
-            'B':                  [[500, 860], [580, 830]],
-            'C':                  [[500, 860], [420, 140]],
-            'default':            [[500, 860], [775, 360]]
+            'default': [[500, 860], [775, 360]]
         },
         '1S': {
-            'CC1A - 1º Semestre': [[100, 500], [775, 830]],
-            'CC3B - 3º Semestre': [[100, 500], [775, 360]],
-            'ADM1':               [[100, 500], [220, 140]],
-            'ADM2':               [[100, 500], [220, 360]],
-            'A':                  [[100, 500], [775, 360]],
-            'B':                  [[100, 500], [580, 830]],
-            'C':                  [[100, 500], [420, 140]],
-            'default':            [[100, 500], [775, 360]]
+            'default': [[100, 500], [775, 360]]
         },
         'PP': {
-            'CC1A - 1º Semestre': [[900, 500], [775, 830]],
-            'CC3B - 3º Semestre': [[900, 500], [775, 360]],
-            'ADM1':               [[900, 500], [220, 140]],
-            'ADM2':               [[900, 500], [220, 360]],
-            'A':                  [[900, 500], [775, 360]],
-            'B':                  [[900, 500], [580, 830]],
-            'C':                  [[900, 500], [420, 140]],
-            'default':            [[900, 500], [775, 360]]
+            'default': [[900, 500], [775, 360]]
         }
     };
 
     // ============================================
-    // CURSOS E TURMAS (mock)
+    // CURSOS E TURMAS (fallback caso API não responda)
     // ============================================
-    var cursosDisponiveis = [
+    var cursosDisponiveis = [];
+    var turmasPorCurso = {};
+    var dadosDaAPI = false; // true quando a API retornou os cursos
+
+    var cursosFallback = [
         'Ciência da Computação', 'Administração', 'Direito', 'Engenharia Civil', 'Extensivo'
     ];
-    var turmasPorCurso = {
+    var turmasFallback = {
         'Ciência da Computação': ['CC1A - 1º Semestre', 'CC3B - 3º Semestre'],
         'Administração': ['ADM1', 'ADM2'],
         'Direito': ['Direito Único'],
@@ -116,7 +79,7 @@
     var svgAtual = 'planta_simulada.svg';
 
     // ============================================
-    // UTILIDADES
+    // UTILITÁRIOS
     // ============================================
     function obterUrlEmbedYouTube(url) {
         if (!url) return '';
@@ -141,6 +104,70 @@
         document.getElementById('erro-msg').textContent = msg;
         mostrar('state-error');
         mostrar('result-card');
+    }
+
+    // ============================================
+    // CARREGAR CURSOS E TURMAS DA API
+    // ============================================
+    function carregarCursos() {
+        // Tenta buscar da API (endpoint público, sem login)
+        return fetch(API_LISTAR_CURSOS, { headers: { 'Accept': 'application/json' } })
+            .then(function (resp) {
+                if (!resp.ok) throw new Error('http');
+                return resp.json();
+            })
+            .then(function (dados) {
+                if (dados && dados.sucesso && dados.cursos && dados.cursos.length > 0) {
+                    // API respondeu — usa os dados reais
+                    cursosDisponiveis = [];
+                    turmasPorCurso = {};
+
+                    dados.cursos.forEach(function (c) {
+                        if (c.curso) {
+                            cursosDisponiveis.push(c.curso);
+                            turmasPorCurso[c.curso] = (c.turmas || []).map(function (t) {
+                                return typeof t === 'string' ? t : t.turma;
+                            });
+                        }
+                    });
+
+                    dadosDaAPI = true;
+                    // Cacheia por 1 hora
+                    try {
+                        localStorage.setItem('unip_cursos_cache', JSON.stringify({
+                            timestamp: Date.now(),
+                            cursos: cursosDisponiveis,
+                            turmas: turmasPorCurso
+                        }));
+                    } catch (e) { /* sem storage */ }
+
+                } else {
+                    usarFallback();
+                }
+            })
+            .catch(function () {
+                // Endpoint não existe ou erro de rede/CORS — usa fallback
+                usarFallback();
+            });
+    }
+
+    function usarFallback() {
+        cursosDisponiveis = cursosFallback.slice();
+        turmasPorCurso = turmasFallback;
+        dadosDaAPI = false;
+    }
+
+    function tentarCache() {
+        try {
+            var cache = JSON.parse(localStorage.getItem('unip_cursos_cache'));
+            if (cache && cache.timestamp && (Date.now() - cache.timestamp) < 3600000) {
+                cursosDisponiveis = cache.cursos;
+                turmasPorCurso = cache.turmas;
+                dadosDaAPI = true;
+                return true;
+            }
+        } catch (e) { /* sem storage */ }
+        return false;
     }
 
     // ============================================
@@ -213,12 +240,21 @@
         // Preenche cursos
         var selectCurso = document.getElementById('curso');
         selectCurso.innerHTML = '<option value="">-- Escolha o Curso --</option>';
-        cursosDisponiveis.forEach(function (curso) {
+
+        if (cursosDisponiveis.length === 0) {
             var opt = document.createElement('option');
-            opt.value = curso;
-            opt.textContent = curso;
+            opt.value = '';
+            opt.textContent = 'Carregando cursos...';
+            opt.disabled = true;
             selectCurso.appendChild(opt);
-        });
+        } else {
+            cursosDisponiveis.forEach(function (curso) {
+                var opt = document.createElement('option');
+                opt.value = curso;
+                opt.textContent = curso;
+                selectCurso.appendChild(opt);
+            });
+        }
         selectCurso.value = '';
 
         ocultar('turma-group');
@@ -285,12 +321,8 @@
 
         fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(function (resp) {
-                if (resp.status === 404) {
-                    throw new Error('404');
-                }
-                if (!resp.ok) {
-                    throw new Error('http');
-                }
+                if (resp.status === 404) throw new Error('404');
+                if (!resp.ok) throw new Error('http');
                 return resp.json();
             })
             .then(function (dados) {
@@ -304,8 +336,7 @@
                 if (err && err.message === '404') {
                     mostrarErro('Não foi possível encontrar a sala para este curso e turma.');
                 } else if (err instanceof TypeError) {
-                    // Falha de rede ou CORS bloqueado pelo navegador
-                    mostrarErro('Não foi possível conectar à API de salas (rede ou CORS bloqueado). Verifique sua conexão e tente novamente.');
+                    mostrarErro('Não foi possível conectar à API de salas. Verifique sua conexão e tente novamente.');
                 } else {
                     mostrarErro('Erro ao consultar a API de salas. Tente novamente em instantes.');
                 }
@@ -329,7 +360,7 @@
             document.getElementById('video-iframe').src = '';
         }
 
-        // Rota por andar
+        // Rota por andar (fallback local)
         var andarRotas = rotasPorAndar[andarAtual] || {};
         var rota = andarRotas[turma] || andarRotas['default'] || [[500, 905], [775, 360]];
 
@@ -359,7 +390,6 @@
         if (markerStart !== null) map.removeLayer(markerStart);
         if (markerEnd !== null) map.removeLayer(markerEnd);
 
-        // Linha tracejada amarela
         polyline = L.polyline(rota, {
             color: '#FFED00',
             weight: 7,
@@ -369,7 +399,6 @@
             lineCap: 'round'
         }).addTo(map);
 
-        // Converte SVG [x, y] para Leaflet [1000 - y, x]
         var startPoint = [1000 - partidaSvg[1], partidaSvg[0]];
         var endPoint = rota[rota.length - 1];
 
@@ -405,6 +434,11 @@
         // Selects
         document.getElementById('curso').addEventListener('change', aoSelecionarCurso);
         document.getElementById('turma').addEventListener('change', aoSelecionarTurma);
+
+        // Tenta cache primeiro, senão busca da API
+        if (!tentarCache()) {
+            carregarCursos();
+        }
 
         // ?Origem=XX no URL (QR code escaneado)
         var params = new URLSearchParams(window.location.search);

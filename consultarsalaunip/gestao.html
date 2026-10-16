@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Salas - UNIP</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="wwwroot/favicon.png">
+</head>
+<body>
+
+<div class="gestao-shell">
+
+    <!-- ============================================
+         HEADER / TOPO
+         ============================================ -->
+    <header class="gestao-header">
+        <div class="gestao-header-conteudo">
+            <div class="gestao-brand">
+                <img src="wwwroot/unip-logo.png" alt="UNIP" class="gestao-logo"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="logo-fallback logo-fallback-sm" style="display:none;">UNIP</div>
+                <h1 class="gestao-titulo">Gestão de Salas</h1>
+            </div>
+            <div class="gestao-usuario">
+                <span id="usuario-nome"></span>
+                <span class="usuario-perfil" id="usuario-perfil"></span>
+                <button type="button" class="btn-sair" id="btn-sair">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================
+         NAVEGAÇÃO POR ABAS
+         ============================================ -->
+    <nav class="gestao-nav">
+        <div class="gestao-nav-conteudo">
+            <button class="nav-btn active" data-aba="salas">🏫 Salas e Links</button>
+            <button class="nav-btn" data-aba="turmas">🎓 Cursos e Turmas</button>
+            <button class="nav-btn" data-aba="usuarios" id="nav-usuarios" style="display:none;">👥 Usuários</button>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         CONTEÚDO
+         ============================================ -->
+    <main class="gestao-main">
+
+        <!-- ABA: SALAS -->
+        <section id="aba-salas" class="aba-conteudo active">
+            <div class="aba-header">
+                <h2>Salas e Links</h2>
+                <button type="button" class="btn-novo" id="btn-nova-sala">+ Nova Sala</button>
+            </div>
+
+            <!-- Formulário sala (hidden por padrão) -->
+            <div id="form-sala" class="gestao-form" style="display:none;">
+                <h3 id="form-sala-titulo">Nova Sala</h3>
+                <input type="hidden" id="sala-id">
+                <div class="form-group">
+                    <label class="form-label" for="sala-nome">Código da Sala</label>
+                    <input type="text" id="sala-nome" class="form-input" placeholder="Ex: TB-10, PI-2, Lab 205">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="sala-link">Link (HTTPS)</label>
+                    <input type="url" id="sala-link" class="form-input" placeholder="https://exemplo.com/percurso (opcional)">
+                </div>
+                <div class="form-acoes">
+                    <button type="button" class="btn-salvar" id="btn-salvar-sala">Salvar</button>
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-sala">Cancelar</button>
+                </div>
+            </div>
+
+            <!-- Tabela de salas -->
+            <div class="tabela-wrapper">
+                <table class="tabela" id="tabela-salas">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Sala</th>
+                            <th>Link</th>
+                            <th class="acoes-col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div id="salas-vazio" class="tabela-vazio" style="display:none;">Nenhuma sala cadastrada.</div>
+            </div>
+        </section>
+
+        <!-- ABA: TURMAS -->
+        <section id="aba-turmas" class="aba-conteudo">
+            <div class="aba-header">
+                <h2>Cursos e Turmas</h2>
+                <button type="button" class="btn-novo" id="btn-nova-turma">+ Nova Turma</button>
+            </div>
+
+            <!-- Formulário turma (hidden) -->
+            <div id="form-turma" class="gestao-form" style="display:none;">
+                <h3 id="form-turma-titulo">Nova Turma</h3>
+                <input type="hidden" id="turma-id">
+                <div class="form-group">
+                    <label class="form-label" for="turma-curso">Curso</label>
+                    <input type="text" id="turma-curso" class="form-input" placeholder="Ex: Administração">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="turma-nome">Turma / Período</label>
+                    <input type="text" id="turma-nome" class="form-input" placeholder="Ex: 3ºP/4ºP, CC1A - 1º Semestre">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="turma-sala">Sala</label>
+                    <select id="turma-sala" class="form-select">
+                        <option value="">-- Escolha a Sala --</option>
+                    </select>
+                </div>
+                <div class="form-acoes">
+                    <button type="button" class="btn-salvar" id="btn-salvar-turma">Salvar</button>
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-turma">Cancelar</button>
+                </div>
+            </div>
+
+            <!-- Tabela de turmas -->
+            <div class="tabela-wrapper">
+                <table class="tabela" id="tabela-turmas">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Curso</th>
+                            <th>Turma</th>
+                            <th>Sala</th>
+                            <th class="acoes-col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div id="turmas-vazio" class="tabela-vazio" style="display:none;">Nenhuma turma cadastrada.</div>
+            </div>
+        </section>
+
+        <!-- ABA: USUÁRIOS (só ADMIN) -->
+        <section id="aba-usuarios" class="aba-conteudo">
+            <div class="aba-header">
+                <h2>Usuários</h2>
+                <button type="button" class="btn-novo" id="btn-novo-usuario">+ Novo Usuário</button>
+            </div>
+
+            <!-- Formulário usuário (hidden) -->
+            <div id="form-usuario" class="gestao-form" style="display:none;">
+                <h3 id="form-usuario-titulo">Novo Usuário</h3>
+                <input type="hidden" id="usuario-id">
+                <div class="form-group">
+                    <label class="form-label" for="usuario-nome-input">Nome Completo</label>
+                    <input type="text" id="usuario-nome-input" class="form-input" placeholder="Ex: Raphael Silva">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="usuario-login">Usuário (login)</label>
+                    <input type="text" id="usuario-login" class="form-input" placeholder="Ex: raphael">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="usuario-senha">Senha</label>
+                    <input type="password" id="usuario-senha" class="form-input" placeholder="Mínimo 12 caracteres">
+                    <small class="form-dica" id="senha-dica">Deixe em branco para manter a senha atual (na edição).</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="usuario-perfil-select">Perfil</label>
+                    <select id="usuario-perfil-select" class="form-select">
+                        <option value="OPERADOR">Operador</option>
+                        <option value="ADMIN">Administrador</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="usuario-ativo">Status</label>
+                    <select id="usuario-ativo" class="form-select">
+                        <option value="1">Ativo</option>
+                        <option value="0">Inativo</option>
+                    </select>
+                </div>
+                <div class="form-acoes">
+                    <button type="button" class="btn-salvar" id="btn-salvar-usuario">Salvar</button>
+                    <button type="button" class="btn-cancelar" id="btn-cancelar-usuario">Cancelar</button>
+                </div>
+            </div>
+
+            <!-- Tabela de usuários -->
+            <div class="tabela-wrapper">
+                <table class="tabela" id="tabela-usuarios">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Usuário</th>
+                            <th>Perfil</th>
+                            <th>Status</th>
+                            <th class="acoes-col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div id="usuarios-vazio" class="tabela-vazio" style="display:none;">Nenhum usuário cadastrado.</div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- Modal de confirmação -->
+<div id="modal-confirmacao" class="modal-overlay" style="display:none;">
+    <div class="modal">
+        <h3 id="modal-titulo">Confirmar exclusão</h3>
+        <p id="modal-texto">Tem certeza que deseja excluir?</p>
+        <div class="modal-acoes">
+            <button type="button" class="btn-excluir" id="modal-confirmar">Sim, excluir</button>
+            <button type="button" class="btn-cancelar" id="modal-cancelar">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast de notificação -->
+<div id="toast" class="toast" style="display:none;"></div>
+
+<script src="gestao.js"></script>
+
+</body>
+</html>
