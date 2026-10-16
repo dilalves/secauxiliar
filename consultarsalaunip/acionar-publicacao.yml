@@ -1,0 +1,26 @@
+
+name: Acionar publicacao UNIP
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Acionar publicacao no SECAUXILIAR
+        env:
+          TOKEN: ${{ secrets.UNIP_DEPLOY_TRIGGER }}
+        run: |
+          curl --fail-with-body -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/repos/dilalves/secauxiliar/actions/workflows/publicar-unip.yml/dispatches \
+            -d '{"ref":"main"}'

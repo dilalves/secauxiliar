@@ -3,419 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa de Salas - UNIP (demo estática)</title>
+    <title>Mapa de Salas - UNIP</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <link rel="icon" type="image/png" href="wwwroot/favicon.png">
-    <style>
-        /* Avisos do modo demo (estático) */
-        .demo-banner {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
-            border-radius: 12px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
-        }
-        .demo-banner code { background: #fde68a; padding: 0 4px; border-radius: 4px; }
-    </style>
 </head>
 <body>
 
-    <div class="app-shell">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-container">
-                <div class="brand">
-                    <img src="wwwroot/unip-logo.png" alt="UNIP" class="unip-logo"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="logo-fallback" style="display:none;">UNIP</div>
-                    <div class="brand-text">
-                        <h1 class="app-title">Mapa de Salas</h1>
-                        <p class="app-subtitle">Localize sua sala e veja como chegar pelo campus</p>
+<div class="app-shell">
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand">
+                <img src="wwwroot/unip-logo.png" alt="UNIP" class="unip-logo"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="logo-fallback" style="display:none;">UNIP</div>
+                <div class="brand-text">
+                    <h1 class="app-title">Mapa de Salas</h1>
+                    <p class="app-subtitle">Localize sua sala e veja como chegar pelo campus</p>
+                </div>
+            </div>
+            <div id="origin-chip" class="origin-chip" style="display:none;"></div>
+        </div>
+    </header>
+
+    <div class="container-app">
+
+        <!-- ============================================
+             SELEÇÃO DE ANDAR (QR Codes)
+             ============================================ -->
+        <div id="andar-card" class="selection-card andar-card">
+            <div class="card-header">
+                <span class="card-icon">🏢</span>
+                <h2 class="card-title">Escolha o Andar</h2>
+                <p style="margin:0.5rem 0 0; font-size:0.9rem; color:var(--text-muted);">
+                    Escaneie o QR Code do seu andar ou selecione abaixo:
+                </p>
+            </div>
+            <div class="andar-grid" id="andar-grid"></div>
+        </div>
+
+        <!-- ============================================
+             SELEÇÃO DE CURSO E TURMA
+             ============================================ -->
+        <div id="selection-card" class="selection-card" style="display:none;">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Sua Turma</h2>
+                <button type="button" id="btn-trocar-andar" class="btn-trocar">Trocar andar</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="curso">Curso</label>
+                <select id="curso" class="form-select">
+                    <option value="">-- Escolha o Curso --</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="turma-group" style="display:none;">
+                <label class="form-label" for="turma">Turma</label>
+                <select id="turma" class="form-select">
+                    <option value="">-- Escolha a Turma --</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- ============================================
+             RESULTADO (loading / erro / sucesso)
+             ============================================ -->
+        <div id="result-card" class="result-card" style="display:none;">
+
+            <!-- Loading -->
+            <div id="state-loading" class="state-loading" style="display:none;">
+                <div class="spinner"></div>
+                <p>Consultando a sala no servidor...</p>
+            </div>
+
+            <!-- Erro -->
+            <div id="state-error" class="state-error" style="display:none;">
+                <span class="state-icon">⚠️</span>
+                <p id="erro-msg"></p>
+            </div>
+
+            <!-- Sucesso -->
+            <div id="result-success" class="result-success" style="display:none;">
+                <div class="sala-badge">
+                    🏫 Sua sala é a:
+                    <span class="sala-nome" id="sala-nome"></span>
+                </div>
+
+                <div id="video-section" class="video-section" style="display:none;">
+                    <div class="video-header">
+                        <span class="video-icon">📹</span>
+                        <h3 class="video-title">Aula / Vídeo da Sala</h3>
+                    </div>
+                    <div class="video-wrapper">
+                        <iframe id="video-iframe"
+                            width="100%"
+                            height="220"
+                            src=""
+                            title="Vídeo da sala"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
                     </div>
                 </div>
-                <div id="origin-chip" class="origin-chip" style="display:none;"></div>
-            </div>
-        </header>
 
-        <div class="container-app">
-
-            <div class="demo-banner">
-                ⚠️ <strong>Modo demonstração (HTML estático)</strong> — esta página mostra a interface e o mapa usando
-                dados de exemplo. A versão completa em PHP (<code>index.php</code>) é a que consome a API e consulta
-                a sala de verdade.
-            </div>
-
-            <!-- ============================================
-                 QR CODES / SELEÇÃO POR ANDAR
-                 ============================================ -->
-            <div id="andar-card" class="selection-card andar-card">
-                <div class="card-header">
-                    <span class="card-icon">🏢</span>
-                    <h2 class="card-title">Escolha o Andar</h2>
-                    <p style="margin:0.5rem 0 0; font-size:0.9rem; color:var(--text-muted);">
-                        Escaneie o QR Code do seu andar ou selecione abaixo:
-                    </p>
-                </div>
-
-                <div class="andar-grid" id="andar-grid"></div>
-            </div>
-
-            <!-- ============================================
-                 SELEÇÃO DE CURSO E TURMA
-                 ============================================ -->
-            <div id="selection-card" class="selection-card" style="display:none;">
-                <div class="card-header">
-                    <span class="card-icon">🎓</span>
-                    <h2 class="card-title">Sua Turma</h2>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="curso">Curso</label>
-                    <select id="curso" class="form-select">
-                        <option value="">-- Escolha o Curso --</option>
-                    </select>
-                </div>
-
-                <div class="form-group" id="turma-group" style="display:none;">
-                    <label class="form-label" for<rfl:parameter name="="turma">Turma</label>
-                    <select id="turma" class<rfl:parameter name="="form-select">
-                        <option value="">-- Escolha a Turma --</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- ============================================
-                 RESULTADO
-                 ============================================ -->
-            <div id="result-card" class="result-card" style="display:none;">
-                <div class="result-success">
-                    <div class="sala-badge">
-                        🏫 Sua sala é a:
-                        <span class="sala-nome" id="sala-nome"></span>
+                <div class="mapa-section">
+                    <div class="mapa-header">
+                        <span class="mapa-icon">🗺️</span>
+                        <h3 class="mapa-title">Como chegar</h3>
                     </div>
+                    <div id="leaflet-map" class="leaflet-map"></div>
 
-                    <div id="video-section" class="video-section" style="display:none;">
-                        <div class="video-header">
-                            <span class="video-icon">📹</span>
-                            <h3 class="video-title">Aula / Vídeo da Sala</h3>
-                        </div>
-                        <div class="video-wrapper">
-                            <iframe id="video-iframe"
-                                width="100%"
-                                height="220"
-                                src=""
-                                title="Vídeo da sala"
-                                frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowfullscreen>
-                            </iframe>
-                        </div>
-                    </div>
-
-                    <div class="mapa-section">
-                        <div class="mapa-header">
-                            <span class="mapa-icon">🗺️</span>
-                            <h3 class="mapa-title">Como chegar</h3>
-                        </div>
-                        <div id="leaflet-map" class="leaflet-map"></div>
-
-                        <div class="route-steps">
-                            <h4 class="steps-title">Passo a passo:</h4>
-                            <ul>
-                                <li class="step-item">Você está no <span id="nome-origem">local desconhecido</span>.</li>
-                                <li class="step-item">Siga a linha amarela tracejada no mapa acima.</li>
-                                <li class="step-item">Destino alcançado!</li>
-                            </ul>
-                        </div>
+                    <div class="route-steps">
+                        <h4 class="steps-title">Passo a passo:</h4>
+                        <ul>
+                            <li class="step-item">Você está no <span id="nome-origem">local desconhecido</span>.</li>
+                            <li class="step-item">Siga a linha amarela tracejada no mapa acima.</li>
+                            <li class="step-item">Destino alcançado!</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Bibliotecas -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+<!-- Bibliotecas -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script>
-    /* ============================================
-       DADOS DE EXEMPLO (mock) - equivalente ao PHP
-       ============================================ */
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="script.js"></script>
 
-    // andares
-    const andares = {
-        '2A': { nome: '2º Andar',            svg: 'planta_simulada.svg', partida: [905, 500] },
-        '1A': { nome: '1º Andar',            svg: 'planta_simulada.svg', partida: [905, 500] },
-        'TA': { nome: 'Térreo Alto',          svg: 'planta_simulada.svg', partida: [860, 500] },
-        'TB': { nome: 'Térreo Baixo',         svg: 'planta_simulada.svg', partida: [100, 500] },
-        '1S': { nome: 'Integrado - 1º Subsolo', svg: 'planta_simulada.svg', partida: [500, 900] },
-        'PP': { nome: 'Praça Paulista',       svg: 'planta_simulada.svg', partida: [500, 100] },
-    };
-
-    // cursos + turmas (mock)
-    const cursosDisponiveis = [
-        'Ciência da Computação', 'Administração', 'Direito', 'Engenharia Civil', 'Extensivo'
-    ];
-    const turmasPorCurso = {
-        'Ciência da Computação': ['CC1A - 1º Semestre', 'CC3B - 3º Semestre'],
-        'Administração': ['ADM1', 'ADM2'],
-        'Direito': ['Direito Único'],
-        'Engenharia Civil': ['Engenharia Única'],
-        'Extensivo': ['A', 'B', 'C'],
-    };
-
-    // salas + links por turma (mock da API)
-    const salasPorTurma = {
-        'CC1A - 1º Semestre': { sala: 'Laboratório 205', link: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-        'CC3B - 3º Semestre': { sala: 'Sala 102',         link: '' },
-        'ADM1':               { sala: 'Sala 104',         link: '' },
-        'ADM2':               { sala: 'Sala 105',         link: '' },
-        'Direito Único':      { sala: 'Sala 101',         link: '' },
-        'Engenharia Única':   { sala: 'Laboratório 205',  link: '' },
-        'A':                  { sala: 'Sala 102',         link: '' },
-        'B':                  { sala: 'Sala 106',         link: '' },
-        'C':                  { sala: 'Sala 101',         link: '' },
-    };
-
-    // rotas por andar (mesmas do PHP)
-    const rotasPorAndar = {
-        '2A': {
-            'CC1A - 1º Semestre': [[500, 905], [775, 830]],
-            'CC3B - 3º Semestre': [[500, 905], [775, 360]],
-            'ADM1':               [[500, 905], [220, 140]],
-            'ADM2':               [[500, 905], [220, 360]],
-            'A':                  [[500, 905], [775, 360]],
-            'B':                  [[500, 905], [580, 830]],
-            'C':                  [[500, 905], [420, 140]],
-            'default':            [[500, 905], [775, 360]],
-        },
-        '1A': {
-            'CC1A - 1º Semestre': [[500, 905], [775, 830]],
-            'CC3B - 3º Semestre': [[500, 905], [775, 360]],
-            'ADM1':               [[500, 905], [220, 140]],
-            'ADM2':               [[500, 905], [220, 360]],
-            'A':                  [[500, 905], [775, 360]],
-            'B':                  [[500, 905], [580, 830]],
-            'C':                  [[500, 905], [420, 140]],
-            'default':            [[500, 905], [775, 360]],
-        },
-        'TA': {
-            'CC1A - 1º Semestre': [[500, 140], [775, 830]],
-            'CC3B - 3º Semestre': [[500, 140], [775, 360]],
-            'ADM1':               [[500, 140], [220, 140]],
-            'ADM2':               [[500, 140], [220, 360]],
-            'A':                  [[500, 140], [775, 360]],
-            'B':                  [[500, 140], [580, 830]],
-            'C':                  [[500, 140], [420, 140]],
-            'default':            [[500, 140], [775, 360]],
-        },
-        'TB': {
-            'CC1A - 1º Semestre': [[500, 860], [775, 830]],
-            'CC3B - 3º Semestre': [[500, 860], [775, 360]],
-            'ADM1':               [[500, 860], [220, 140]],
-            'ADM2':               [[500, 860], [220, 360]],
-            'A':                  [[500, 860], [775, 360]],
-            'B':                  [[500, 860], [580, 830]],
-            'C':                  [[500, 860], [420, 140]],
-            'default':            [[500, 860], [775, 360]],
-        },
-        '1S': {
-            'CC1A - 1º Semestre': [[100, 500], [775, 830]],
-            'CC3B - 3º Semestre': [[100, 500], [775, 360]],
-            'ADM1':               [[100, 500], [220, 140]],
-            'ADM2':               [[100, 500], [220, 360]],
-            'A':                  [[100, 500], [775, 360]],
-            'B':                  [[100, 500], [580, 830]],
-            'C':                  [[100, 500], [420, 140]],
-            'default':            [[100, 500], [775, 360]],
-        },
-        'PP': {
-            'CC1A - 1º Semestre': [[900, 500], [775, 830]],
-            'CC3B - 3º Semestre': [[900, 500], [775, 360]],
-            'ADM1':               [[900, 500], [220, 140]],
-            'ADM2':               [[900, 500], [220, 360]],
-            'A':                  [[900, 500], [775, 360]],
-            'B':                  [[900, 500], [580, 830]],
-            'C':                  [[900, 500], [420, 140]],
-            'default':            [[900, 500], [775, 360]],
-        },
-    };
-
-    /* ============================================
-       FUNÇÕES DE INTERFACE
-       ============================================ */
-
-    let andarSelecionado = null;
-    let leafletMap = null;
-
-    function obterUrlEmbedYouTube(url) {
-        if (!url) return '';
-        if (url.includes('/embed/')) return url;
-        const m = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/) || url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
-        return m ? 'https://www.youtube.com/embed/' + m[1] : '';
-    }
-
-    function montarQRCodes() {
-        const grid = document.getElementById('andar-grid');
-        grid.innerHTML = '';
-        Object.keys(andares).forEach(sigla => {
-            const info = andares[sigla];
-            const urlQr = window.location.href.split('?')[0] + '?Origem=' + sigla;
-            const qrUrl = 'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=' + encodeURIComponent(urlQr);
-
-            const div = document.createElement('div');
-            div.className = 'andar-item';
-            div.innerHTML = `
-                <div class="andar-qr">
-                    <img src="${qrUrl}" alt="QR Code ${info.nome}" width="140" height="140">
-                </div>
-                <button type="button" class="andar-btn" data-andar="${sigla}">${info.nome}</button>
-                <a class="andar-link" href="${urlQr}" target="_blank" rel="noopener">Abrir link direto ↗</a>
-            `;
-            div.querySelector('button').addEventListener('click', () => {
-                selecionarAndar(sigla);
-            });
-            grid.appendChild(div);
-        });
-    }
-
-    function selecionarAndar(sigla) {
-        andarSelecionado = sigla;
-        const info = andares[sigla];
-
-        // Esconde a tela de seleção de andar
-        document.getElementById('andar-card').style.display = 'none';
-
-        const chip = document.getElementById('origin-chip');
-        chip.style.display = 'block';
-        chip.innerHTML = '📍 Você está em: <strong>' + info.nome + '</strong>';
-
-        // Mostra card do curso/turma
-        const selectionCard = document.getElementById('selection-card');
-        selectionCard.style.display = 'block';
-
-        const nomeOrigem = document.getElementById('nome-origem');
-        nomeOrigem.textContent = info.nome;
-
-        // Preenche select de cursos
-        const selectCurso = document.getElementById('curso');
-        selectCurso.innerHTML = '<option value="">-- Escolha o Curso --</option>';
-        cursosDisponiveis.forEach(curso => {
-            const opt = document.createElement('option');
-            opt.value = curso;
-            opt.textContent = curso;
-            selectCurso.appendChild(opt);
-        });
-
-        selectCurso.onchange = aoSelecionarCurso;
-    }
-
-    function aoSelecionarCurso() {
-        const curso = document.getElementById('curso').value;
-        const selectTurma = document.getElementById('turma');
-
-        const turmaGroup = document.getElementById('turma-group');
-        selectTurma.innerHTML = '<option value="">-- Escolha a Turma --</option>';
-
-        if (curso && turmasPorCurso[curso]) {
-            turmaGroup.style.display = 'block';
-            turmasPorCurso[curso].forEach(turma => {
-                const opt = document.createElement('option');
-                opt.value = turma;
-                opt.textContent = turma;
-                selectTurma.appendChild(opt);
-            });
-            selectTurma.onchange = aoSelecionarTurma;
-        } else {
-            turmaGroup.style.display = 'none';
-        }
-
-        // Esconde resultado anterior
-        document.getElementById('result-card').style.display = 'none';
-    }
-
-    function aoSelecionarTurma() {
-        const turma = document.getElementById('turma').value;
-        if (!turma) {
-            document.getElementById('result-card').style.display = 'none';
-            return;
-        }
-
-        const salaInfo = salasPorTurma[turma] || { sala: 'Sala não encontrada', link: '' };
-        const infoAndar = andares[andarSelecionado];
-
-        // Passo 1: sala
-        document.getElementById('sala-nome').textContent = salaInfo.sala;
-        const resultCard = document.getElementById('result-card');
-        resultCard.style.display = 'block';
-
-        // Passo 2: video
-        const videoSection = document.getElementById('video-section');
-        const embed = obterUrlEmbedYouTube(salaInfo.link);
-        if (embed) {
-            videoSection.style.display = 'block';
-            document.getElementById('video-iframe').src = embed;
-        } else {
-            videoSection.style.display = 'none';
-            document.getElementById('video-iframe').src = '';
-        }
-
-        // Passo 3: mapa
-        const rota = rotasPorAndar[andarSelecionado][turma] || rotasPorAndar[andarSelecionado]['default'];
-        if (!leafletMap) {
-            leafletMap = L.map('leaflet-map', {
-                crs: L.CRS.Simple,
-                minZoom: -2,
-                maxZoom: 2,
-                zoomControl: true,
-                attributionControl: false
-            });
-            L.imageOverlay(infoAndar.svg, [[0,0],[1000,1000]]).addTo(leafletMap);
-            leafletMap.fitBounds([[0,0],[1000,1000]], { padding: [10,10] });
-        }
-
-        // Remove camadas anteriores
-        if (leafletMap.polyline) leafletMap.removeLayer(leafletMap.polyline);
-        if (leafletMap.markerStart) leafletMap.removeLayer(leafletMap.markerStart);
-        if (leafletMap.markerEnd) leafletMap.removeLayer(leafletMap.markerEnd);
-
-        leafletMap.polyline = L.polyline(rota, {
-            color: '#FFED00', weight: 7, opacity: 1,
-            dashArray: '12, 14', lineJoin: 'round', lineCap: 'round'
-        }).addTo(leafletMap);
-
-        const endPoint = rota[rota.length - 1];
-        const startPoint = [1000 - infoAndar.partida[1], infoAndar.partida[0]];
-
-        leafletMap.markerStart = L.circleMarker(startPoint, {
-            color: '#FFED00', fillColor: '#075EBD', fillOpacity: 1, radius: 10, weight: 3
-        }).addTo(leafletMap).bindTooltip('📍 Você está aqui', { permanent: true, direction: 'left', className: 'map-tooltip' });
-
-        leafletMap.markerEnd = L.circleMarker(endPoint, {
-            color: '#075EBD', fillColor: '#FFED00', fillOpacity: 1, radius: 10, weight: 3
-        }).addTo(leafletMap).bindTooltip('🏁 Destino', { permanent: true, direction: 'right', className: 'map-tooltip' });
-
-        leafletMap.fitBounds([[0,0],[1000,1000]], { padding: [10,10] });
-    }
-
-    /* ============================================
-       INIT
-       ============================================ */
-
-    window.addEventListener('load', () => {
-        montarQRCodes();
-
-        // Se veio com ?Origem= no URL, seleciona o andar automaticamente
-        const params = new URLSearchParams(window.location.search);
-        const origem = (params.get('Origem') || '').toUpperCase();
-        if (andares[origem]) {
-            selecionarAndar(origem);
-        }
-    });
-    </script>
 </body>
 </html>
