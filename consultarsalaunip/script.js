@@ -314,6 +314,8 @@
     // ============================================
     // CURSO E TURMA
     // ============================================
+    var API_LISTAR_TURMAS = API_URL + '?acao=listar_turmas';
+
     function aoSelecionarCurso() {
         var curso = document.getElementById('curso').value;
         var selectTurma = document.getElementById('turma');
@@ -323,29 +325,54 @@
         selectTurma.innerHTML = '<option value="">-- Escolha a Turma --</option>';
         inputTurma.value = '';
 
-        if (curso) {
-            turmaGroup.style.display = 'block';
+        if (!curso) {
+            turmaGroup.style.display = 'none';
+            limparResultado();
+            return;
+        }
 
-            var temTurmas = turmasPorCurso[curso] && turmasPorCurso[curso].length > 0;
+        turmaGroup.style.display = 'block';
+        selectTurma.style.display = 'block';
+        inputTurma.style.display = 'none';
 
-            if (temTurmas) {
-                // Tem lista de turmas — mostra select
-                selectTurma.style.display = 'block';
-                inputTurma.style.display = 'none';
-                turmasPorCurso[curso].forEach(function (turma) {
-                    var opt = document.createElement('option');
-                    opt.value = turma;
-                    opt.textContent = turma;
-                    selectTurma.appendChild(opt);
-                });
-            } else {
-                // Sem lista — mostra campo de texto
+        // Mostra loading no select
+        selectTurma.innerHTML = '<option value="">Carregando turmas...</option>';
+        selectTurma.disabled = true;
+
+        // Busca turmas do curso na API
+        fetch(API_LISTAR_TURMAS + '&curso=' + encodeURIComponent(curso), {
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(function (resp) {
+                if (!resp.ok) throw new Error('http');
+                return resp.json();
+            })
+            .then(function (dados) {
+                selectTurma.disabled = false;
+                selectTurma.innerHTML = '<option value="">-- Escolha a Turma --</option>';
+
+                if (dados && dados.sucesso && dados.turmas && dados.turmas.length > 0) {
+                    // Tem turmas — mostra select
+                    dados.turmas.forEach(function (turma) {
+                        var opt = document.createElement('option');
+                        opt.value = turma;
+                        opt.textContent = turma;
+                        selectTurma.appendChild(opt);
+                    });
+                } else {
+                    // Sem turmas no banco — mostra campo de texto
+                    selectTurma.style.display = 'none';
+                    inputTurma.style.display = 'block';
+                    inputTurma.focus();
+                }
+            })
+            .catch(function () {
+                // Erro — mostra campo de texto como alternativa
+                selectTurma.disabled = false;
                 selectTurma.style.display = 'none';
                 inputTurma.style.display = 'block';
-            }
-        } else {
-            turmaGroup.style.display = 'none';
-        }
+                inputTurma.focus();
+            });
 
         limparResultado();
     }
