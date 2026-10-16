@@ -11,6 +11,7 @@
     // ============================================
     var API_URL = 'https://apisec.secauxiliar.com.br/unip/api_salas.php';
     var API_LISTAR_CURSOS = API_URL + '?acao=listar_cursos';
+    var CACHE_KEY = 'unip_cursos_cache_v2'; // v2 invalida cache antigo com dados hardcoded
 
     // ============================================
     // ANDARES (nome, SVG, ponto de partida [svg_x, svg_y])
@@ -50,22 +51,11 @@
     };
 
     // ============================================
-    // CURSOS E TURMAS (fallback caso API não responda)
+    // CURSOS E TURMAS (vindos da API)
     // ============================================
     var cursosDisponiveis = [];
     var turmasPorCurso = {};
-    var dadosDaAPI = false; // true quando a API retornou os cursos
-
-    var cursosFallback = [
-        'Ciência da Computação', 'Administração', 'Direito', 'Engenharia Civil', 'Extensivo'
-    ];
-    var turmasFallback = {
-        'Ciência da Computação': ['CC1A - 1º Semestre', 'CC3B - 3º Semestre'],
-        'Administração': ['ADM1', 'ADM2'],
-        'Direito': ['Direito Único'],
-        'Engenharia Civil': ['Engenharia Única'],
-        'Extensivo': ['A', 'B', 'C']
-    };
+    var dadosDaAPI = false;
 
     // ============================================
     // ESTADO
@@ -123,7 +113,12 @@
                     turmasPorCurso = {};
 
                     dados.cursos.forEach(function (c) {
-                        if (c.curso) {
+                        if (typeof c === 'string') {
+                            // Formato simples: ["Administração", "Direito", ...]
+                            cursosDisponiveis.push(c);
+                            turmasPorCurso[c] = [];
+                        } else if (c.curso) {
+                            // Formato objeto: [{ curso: "...", turmas: [...] }]
                             cursosDisponiveis.push(c.curso);
                             turmasPorCurso[c.curso] = (c.turmas || []).map(function (t) {
                                 return typeof t === 'string' ? t : t.turma;
@@ -134,7 +129,7 @@
                     dadosDaAPI = true;
                     // Cacheia por 1 hora
                     try {
-                        localStorage.setItem('unip_cursos_cache', JSON.stringify({
+                        localStorage.setItem(CACHE_KEY, JSON.stringify({
                             timestamp: Date.now(),
                             cursos: cursosDisponiveis,
                             turmas: turmasPorCurso
@@ -144,30 +139,88 @@
                 } else {
                     usarFallback();
                 }
+                atualizarSelectCursos();
             })
             .catch(function () {
                 // Endpoint não existe ou erro de rede/CORS — usa fallback
                 usarFallback();
+                atualizarSelectCursos();
             });
     }
 
     function usarFallback() {
-        cursosDisponiveis = cursosFallback.slice();
-        turmasPorCurso = turmasFallback;
+        cursosDisponiveis = [];
+        turmasPorCurso = {};
         dadosDaAPI = false;
     }
 
     function tentarCache() {
         try {
-            var cache = JSON.parse(localStorage.getItem('unip_cursos_cache'));
+            // Remove cache antigo (versões anteriores)
+            localStorage.removeItem('unip_cursos_cache');
+
+            var cache = JSON.parse(localStorage.getItem(CACHE_KEY));
             if (cache && cache.timestamp && (Date.now() - cache.timestamp) < 3600000) {
-                cursosDisponiveis = cache.cursos;
-                turmasPorCurso = cache.turmas;
-                dadosDaAPI = true;
-                return true;
+                // Só usa cache se tiver dados reais (não vazio)
+                if (cache.cursos && cache.cursos.length > 0) {
+                    cursosDisponiveis = cache.cursos;
+                    turmasPorCurso = cache.turmas;
+                    dadosDaAPI = true;
+                    return true;
+                }
             }
+            // Cache inválido ou vazio — remove
+            localStorage.removeItem(CACHE_KEY);
         } catch (e) { /* sem storage */ }
         return false;
+    }
+
+    // ============================================
+    // PREENCHER SELECT DE CURSOS
+    // ============================================
+    function atualizarSelectCursos() {
+        var selectCurso = document.getElementById('curso');
+        if (!selectCurso) return;
+
+        // Se o card de seleção não está visível, não faz nada
+        if (document.getElementById('selection-card').style.display === 'none') return;
+
+        var valorAtual = selectCurso.value;
+        selectCurso.innerHTML = '<option value="">-- Escolha o Curso --</option>';
+
+        if (cursosDisponiveis.length === 0) {
+            var opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'Nenhum curso disponível no momento';
+            opt.disabled = true;
+            selectCurso.appendChild(opt);
+            selectCurso.disabled = true;
+
+            // Mostra aviso explicando o problema
+            var aviso = document.getElementById('aviso-api');
+            if (!aviso) {
+                aviso = document.createElement('div');
+                aviso.id = 'aviso-api';
+                aviso.className = 'login-erro';
+                aviso.style.marginTop = '0.5rem';
+                selectCurso.parentNode.appendChild(aviso);
+            }
+            aviso.textContent = '⚠️ A API de cursos ainda não está disponível. Aguarde a configuração do servidor.';
+            aviso.style.display = 'block';
+        } else {
+            selectCurso.disabled = false;
+            var avisoExistente = document.getElementById('aviso-api');
+            if (avisoExistente) avisoExistente.style.display = 'none';
+            cursosDisponiveis.forEach(function (curso) {
+                var opt = document.createElement('option');
+                opt.value = curso;
+                opt.textContent = curso;
+                selectCurso.appendChild(opt);
+            });
+            if (valorAtual && cursosDisponiveis.indexOf(valorAtual) !== -1) {
+                selectCurso.value = valorAtual;
+            }
+        }
     }
 
     // ============================================
@@ -237,25 +290,8 @@
 
         document.getElementById('nome-origem').textContent = andares[sigla].nome;
 
-        // Preenche cursos
-        var selectCurso = document.getElementById('curso');
-        selectCurso.innerHTML = '<option value="">-- Escolha o Curso --</option>';
-
-        if (cursosDisponiveis.length === 0) {
-            var opt = document.createElement('option');
-            opt.value = '';
-            opt.textContent = 'Carregando cursos...';
-            opt.disabled = true;
-            selectCurso.appendChild(opt);
-        } else {
-            cursosDisponiveis.forEach(function (curso) {
-                var opt = document.createElement('option');
-                opt.value = curso;
-                opt.textContent = curso;
-                selectCurso.appendChild(opt);
-            });
-        }
-        selectCurso.value = '';
+        // Preenche cursos (usa a função que já trata loading/fallback)
+        atualizarSelectCursos();
 
         ocultar('turma-group');
         limparResultado();
@@ -272,6 +308,7 @@
 
         document.getElementById('curso').value = '';
         document.getElementById('turma').value = '';
+        document.getElementById('turma-texto').value = '';
     }
 
     // ============================================
@@ -280,18 +317,32 @@
     function aoSelecionarCurso() {
         var curso = document.getElementById('curso').value;
         var selectTurma = document.getElementById('turma');
+        var inputTurma = document.getElementById('turma-texto');
         var turmaGroup = document.getElementById('turma-group');
 
         selectTurma.innerHTML = '<option value="">-- Escolha a Turma --</option>';
+        inputTurma.value = '';
 
-        if (curso && turmasPorCurso[curso]) {
+        if (curso) {
             turmaGroup.style.display = 'block';
-            turmasPorCurso[curso].forEach(function (turma) {
-                var opt = document.createElement('option');
-                opt.value = turma;
-                opt.textContent = turma;
-                selectTurma.appendChild(opt);
-            });
+
+            var temTurmas = turmasPorCurso[curso] && turmasPorCurso[curso].length > 0;
+
+            if (temTurmas) {
+                // Tem lista de turmas — mostra select
+                selectTurma.style.display = 'block';
+                inputTurma.style.display = 'none';
+                turmasPorCurso[curso].forEach(function (turma) {
+                    var opt = document.createElement('option');
+                    opt.value = turma;
+                    opt.textContent = turma;
+                    selectTurma.appendChild(opt);
+                });
+            } else {
+                // Sem lista — mostra campo de texto
+                selectTurma.style.display = 'none';
+                inputTurma.style.display = 'block';
+            }
         } else {
             turmaGroup.style.display = 'none';
         }
@@ -304,7 +355,12 @@
     // ============================================
     function aoSelecionarTurma() {
         var curso = document.getElementById('curso').value;
-        var turma = document.getElementById('turma').value;
+        var selectTurma = document.getElementById('turma');
+        var inputTurma = document.getElementById('turma-texto');
+        // Lê do select ou do campo de texto, dependendo de qual está visível
+        var turma = (inputTurma.style.display !== 'none')
+            ? inputTurma.value.trim()
+            : selectTurma.value;
 
         if (!andarAtual || !curso || !turma) {
             limparResultado();
@@ -434,6 +490,13 @@
         // Selects
         document.getElementById('curso').addEventListener('change', aoSelecionarCurso);
         document.getElementById('turma').addEventListener('change', aoSelecionarTurma);
+
+        // Campo de texto de turma — busca ao digitar e pressionar Enter ou sair do campo
+        var inputTurma = document.getElementById('turma-texto');
+        inputTurma.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); aoSelecionarTurma(); }
+        });
+        inputTurma.addEventListener('change', aoSelecionarTurma);
 
         // Tenta cache primeiro, senão busca da API
         if (!tentarCache()) {
