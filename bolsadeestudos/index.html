@@ -43,6 +43,14 @@
 .document-upload-button:hover{background:#d96f08}
 .document-file-name{font-size:13px;color:#52657b;overflow-wrap:anywhere}
 .visually-hidden-file{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.result-actions{justify-content:center;margin:18px 0 28px;padding:0;border:0}
+.registered-results{border-top:1px solid #e8edf3;padding-top:8px}
+.registered-results h3{margin:18px 0 12px}
+.result-record{display:grid;grid-template-columns:minmax(130px,1.2fr) minmax(90px,.5fr) minmax(140px,1fr) auto;gap:12px;align-items:center;padding:13px 15px;border:1px solid #dce6f1;border-radius:10px;background:#fbfcff;margin:9px 0}
+.result-record strong{display:block;color:#173d73;font-size:13px}
+.result-record span{display:block;color:#617085;font-size:12px;margin-top:3px;overflow-wrap:anywhere}
+.remove-result{border:0;background:transparent;color:#a33d2b;font-weight:700;cursor:pointer;padding:8px}
+@media(max-width:650px){.result-record{grid-template-columns:1fr auto;gap:8px}.result-record .result-file-label{grid-column:1}.remove-result{grid-column:2;grid-row:1/3}}
 
 </style>
   
@@ -72,8 +80,10 @@
           <div id="result-vestibular" data-result-fields hidden><h3>Dados do vestibular</h3><div class="grid"><label>Acertos na primeira fase<input name="acertos_primeira_fase" type="number" min="0" max="100" step="1" inputmode="numeric"></label><label>Categoria<select name="categoria_vestibular"><option value="">Selecione...</option><option value="AC">Ampla concorrência (AC)</option><option value="EP">Escola pública (EP)</option><option value="PPI">Pretos, pardos e indígenas (PPI)</option></select></label><label class="wide">Curso<select name="curso_resultado"><option value="">Selecione...</option></select></label></div></div>
           <div id="result-etec" data-result-fields hidden><h3>Notas por disciplina</h3><label class="wide">Disciplinas e notas<textarea name="notas_disciplinas" rows="5" maxlength="3000" placeholder="Ex.: Português: 8,5; Matemática: 9,0; História: 7,5"></textarea></label><p class="hint">Confira os nomes das disciplinas e as notas lidas do boletim. Você pode corrigir ou completar o texto.</p></div>
           <div id="result-olimpiadas" data-result-fields hidden><h3>Resultado da olimpíada</h3><div class="grid"><label>Pontuação ou nota<input name="pontuacao" type="text" inputmode="decimal" maxlength="40"></label><label>Classificação<input name="classificacao" type="text" maxlength="100" placeholder="Ex.: 12º lugar, finalista"></label><label>Medalha<select name="medalha"><option value="">Selecione...</option><option>Ouro</option><option>Prata</option><option>Bronze</option><option>Menção honrosa</option><option>Sem medalha</option></select></label><label>Menção honrosa<input name="mencao_honrosa" type="text" maxlength="160" placeholder="Informe se recebeu menção honrosa"></label></div></div>
-          <label class="upload">Comprovante do resultado<input id="result-file" name="comprovantes" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required><span>Envie até 2 arquivos PDF, JPG ou PNG, com até 10 MB cada. Ao selecionar, o sistema iniciará a leitura do primeiro arquivo.</span></label>
-          <div class="ocr-box"><strong>Leitura automática</strong><p class="hint" style="margin:5px 0 0">A leitura é uma sugestão: revise e complete os dados. O arquivo só será enviado com a candidatura.</p><p id="ocr-status" class="ocr-status" role="status" aria-live="polite"></p></div>
+          <label class="upload">Comprovante deste resultado<input id="result-file" name="comprovantes" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required><span>Envie um PDF, JPG ou PNG de até 10 MB. Cada comprovante é registrado separadamente.</span></label>
+          <div class="ocr-box"><strong>Leitura automática</strong><p class="hint" style="margin:5px 0 0">A leitura é uma sugestão. Confira os campos e complete o que faltar antes de registrar.</p><p id="ocr-status" class="ocr-status" role="status" aria-live="polite"></p></div>
+          <div class="actions result-actions"><button type="button" id="register-result" class="button">Registrar nota</button></div>
+          <div class="registered-results"><h3>Notas registradas</h3><div id="registered-results-list" class="registered-results-list"><p class="hint">Nenhum comprovante registrado ainda.</p></div></div>
         </section>
         <section class="panel" data-step="3" hidden><span class="eyebrow">ETAPA 04 DE 04</span><h2>Confirme seus dados</h2><p class="hint">Confira o resumo. Para corrigir algo, volte à etapa correspondente.</p><div id="summary" class="summary"></div>
           <div class="terms"><h3>Declarações e consentimento</h3>
@@ -105,6 +115,8 @@ let csrf;
 let documentReadId = 0;
 let lastOcrValues = {nome:'', cpf:'', nascimento:''};
 let resultReadId = 0;
+let resultEntries = [];
+let resultOcrPending = false;
 const CURSOS_VESTIBULAR = ['Administração','Arquitetura','Artes Cênicas','Artes Visuais','Astronomia','Audiovisual','Biblioteconomia e Ciência da Informação','Biotecnologia','Ciências Biológicas','Ciências Contábeis','Ciências da Natureza','Ciências dos Alimentos','Ciências Econômicas','Ciências Exatas','Ciências Sociais','Computação','Design','Direito','Editoração','Educação Física','Educomunicação','Enfermagem','Engenharia','Estatística','Farmácia','Filosofia','Finanças e Negócios','Física','Física Biomolecular','Física Computacional','Física Médica','Fisioterapia','Fonoaudiologia','Geociências e Educação Ambiental','Geofísica','Geografia','Geologia','Gerontologia','Gestão Ambiental','Gestão de Políticas Públicas','História','Informática Biomédica','Jornalismo','Letras','Marketing','Matemática','Matemática Aplicada','Medicina','Medicina Veterinária','Meteorologia','Música','Nutrição','Obstetrícia','Oceanografia','Odontologia','Pedagogia','Psicologia','Publicidade e Propaganda','Química','Relações Internacionais','Relações Públicas','Saúde Pública','Sistemas de Informação','Terapia Ocupacional','Têxtil e Moda','Treinamento (Biológicas)','Treinamento (Exatas)','Turismo','Zootecnia'];
 
 const $ = name => form.elements.namedItem(name);
@@ -136,9 +148,11 @@ function validate() {
     if (!documento) { error('Clique em “Enviar documento” e anexe seu CPF, RG, CNH ou comprovante de CPF.'); document.querySelector('#choose-document').focus(); return false; }
     if (documento.size > 10 * 1024 * 1024) { error('O documento de identificação deve ter até 10 MB.'); document.querySelector('#choose-document').focus(); return false; }
   }
-  const controls = [...panels[step].querySelectorAll('input,select,textarea')];
-  for (const control of controls) {
-    if (!control.checkValidity()) { control.reportValidity(); control.focus(); return false; }
+  if (step !== 2) {
+    const controls = [...panels[step].querySelectorAll('input,select,textarea')];
+    for (const control of controls) {
+      if (!control.checkValidity()) { control.reportValidity(); control.focus(); return false; }
+    }
   }
   if (step === 0) {
     if (!validCpf(digits(value('cpf')))) { error('Confira o CPF informado.'); $('cpf').focus(); return false; }
@@ -147,10 +161,9 @@ function validate() {
   }
   if (step === 2) {
     if (+value('ano') > new Date().getFullYear()) { error('Confira o ano do resultado.'); return false; }
-    const files = [...$('comprovantes').files];
-    if (files.length < 1 || files.length > 2 || files.some(file => file.size > 10 * 1024 * 1024)) { error('Anexe de 1 a 2 comprovantes, com até 10 MB cada.'); return false; }
-    const exame = value('exame');
-    if (exame === 'OLIMPIADAS' && !['pontuacao','classificacao','medalha','mencao_honrosa'].some(n => value(n))) { error('Informe ao menos a pontuação, classificação, medalha ou menção honrosa.'); return false; }
+    const iniciouOutro = value('exame') || $('comprovantes').files.length || [...document.querySelectorAll('#result-enem input,#result-enem select,#result-vestibular input,#result-vestibular select,#result-etec textarea,#result-olimpiadas input,#result-olimpiadas select')].some(c=>!c.disabled && c.value.trim());
+    if (iniciouOutro) { error('Você começou outro comprovante. Clique em “Registrar nota” ou limpe esse rascunho antes de continuar.'); document.querySelector('#register-result').focus(); return false; }
+    if (resultEntries.length < 1) { error('Registre pelo menos um resultado antes de continuar.'); document.querySelector('#register-result').focus(); return false; }
   }
   return true;
 }
@@ -251,6 +264,7 @@ async function lerComprovanteResultado(file) {
   const status = document.querySelector('#ocr-status');
   const requestId = ++resultReadId;
   if (file.size > 10 * 1024 * 1024) { status.className='ocr-status error'; status.textContent='Cada comprovante deve ter até 10 MB.'; return; }
+  resultOcrPending = true; document.querySelector('#register-result').disabled = true;
   status.className='ocr-status'; status.textContent='Arquivo recebido. Identificando os dados do resultado...';
   const body = new FormData(); body.set('exame', value('exame')); body.set('comprovante', file, file.name);
   try {
@@ -263,6 +277,8 @@ async function lerComprovanteResultado(file) {
   } catch (e) {
     if (requestId !== resultReadId) return;
     status.className='ocr-status error'; status.textContent=(e.message || 'Falha na leitura.') + ' Você pode preencher os campos manualmente.';
+  } finally {
+    if (requestId === resultReadId) { resultOcrPending = false; document.querySelector('#register-result').disabled = false; }
   }
 }
 $('documento_identificacao').addEventListener('change', event => {
@@ -274,15 +290,53 @@ $('documento_identificacao').addEventListener('change', event => {
  $('cpf').addEventListener('input', event => { const start = event.target.selectionStart; event.target.value = formatCpf(event.target.value); try { event.target.setSelectionRange(start, start); } catch (_) {} });
 $('exame').addEventListener('change', () => { showResultFields(true); atualizarLeitura(); });
 $('comprovantes').addEventListener('change', atualizarLeitura);
-function pair(label, val) { return `<div><dt>${label}</dt><dd>${escapeHtml(val || '—')}</dd></div>`; }
+document.querySelector('#register-result').addEventListener('click',registrarResultado);
+function pair(label, val) { const text=val===0?'0':String(val ?? '').trim(); return `<div><dt>${label}</dt><dd>${escapeHtml(text || '—')}</dd></div>`; }
 function escapeHtml(v) { return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function examLabel(exam) { return ({ENEM:'ENEM',FUVEST:'FUVEST',UNICAMP:'UNICAMP',UNESP:'UNESP',UNIFESP:'UNIFESP',ETEC:'ETECs',OLIMPIADAS:'Olimpíadas Científicas'})[exam] || exam; }
+function resultDescription(item) {
+  if (item.exame === 'ENEM') return Object.entries(item.notas || {}).map(([k,v]) => `${k}: ${v || '—'}`).join(' · ') + ` · Categoria: ${item.categoria || '—'}`;
+  if (['FUVEST','UNICAMP','UNESP','UNIFESP'].includes(item.exame)) return `Acertos: ${item.acertos_primeira_fase || '—'} · Categoria: ${item.categoria || '—'} · Curso: ${item.curso || '—'}`;
+  if (item.exame === 'ETEC') return item.notas_disciplinas || 'Notas por disciplina';
+  return [item.pontuacao && `Pontuação: ${item.pontuacao}`,item.classificacao && `Classificação: ${item.classificacao}`,item.medalha && `Medalha: ${item.medalha}`,item.mencao_honrosa && `Menção: ${item.mencao_honrosa}`].filter(Boolean).join(' · ') || 'Resultado de olimpíada';
+}
+function renderRegisteredResults() {
+  const list=document.querySelector('#registered-results-list');
+  if (!resultEntries.length) { list.innerHTML='<p class="hint">Nenhum comprovante registrado ainda.</p>'; return; }
+  list.innerHTML=resultEntries.map((item,index)=>`<div class="result-record"><div><strong>${escapeHtml(examLabel(item.exame))}</strong><span>Ano ${escapeHtml(item.ano)}</span></div><div><strong>Dados</strong><span>${escapeHtml(resultDescription(item))}</span></div><div class="result-file-label"><strong>Comprovante</strong><span>${escapeHtml(item.arquivo.name)}</span></div><button type="button" class="remove-result" data-remove-result="${index}" aria-label="Remover ${escapeHtml(examLabel(item.exame))} de ${escapeHtml(item.ano)}">Remover</button></div>`).join('');
+  list.querySelectorAll('[data-remove-result]').forEach(button=>button.addEventListener('click',()=>{resultEntries.splice(Number(button.dataset.removeResult),1);renderRegisteredResults();}));
+}
+function capturarResultadoAtual() {
+  const exam=value('exame');
+  const item={exame:exam,ano:value('ano'),arquivo:$('comprovantes').files[0],categoria:exam==='ENEM'?value('categoria_enem'):value('categoria_vestibular')};
+  if (exam==='ENEM') item.notas=Object.fromEntries(['linguagens','humanas','natureza','matematica','redacao'].map(n=>[n,value(n)]));
+  if (['FUVEST','UNICAMP','UNESP','UNIFESP'].includes(exam)) {item.acertos_primeira_fase=value('acertos_primeira_fase');item.curso=value('curso_resultado');}
+  if (exam==='ETEC') item.notas_disciplinas=value('notas_disciplinas');
+  if (exam==='OLIMPIADAS') {item.pontuacao=value('pontuacao');item.classificacao=value('classificacao');item.medalha=value('medalha');item.mencao_honrosa=value('mencao_honrosa');}
+  return item;
+}
+function registrarResultado() {
+  if (resultOcrPending) { error('Aguarde a leitura do comprovante terminar.'); return; }
+  const controls=[...panels[2].querySelectorAll('input,select,textarea')].filter(control=>!control.disabled);
+  for (const control of controls) { if (!control.checkValidity()) {control.reportValidity();control.focus();return;} }
+  const exam=value('exame');
+  if (exam==='OLIMPIADAS' && !['pontuacao','classificacao','medalha','mencao_honrosa'].some(n=>value(n))) {error('Informe ao menos pontuação, classificação, medalha ou menção honrosa.');return;}
+  const item=capturarResultadoAtual();
+  if (!item.arquivo) {error('Anexe o comprovante deste resultado antes de registrar.');return;}
+  if (item.arquivo.size>10*1024*1024) {error('O comprovante deve ter até 10 MB.');return;}
+  resultEntries.push(item); renderRegisteredResults();
+  $('exame').value=''; $('comprovantes').value='';
+  showResultFields(true); resultReadId++; resultOcrPending=false;
+  const status=document.querySelector('#ocr-status'); status.className='ocr-status'; status.textContent='Resultado registrado. Você pode selecionar outro exame e anexar o próximo comprovante.';
+  clearError(); window.scrollTo({top:0,behavior:'smooth'});
+}
 function summary() {
-  const exam = value('exame');
+  const resultsHtml=resultEntries.map((item,index)=>`<h3>Resultado ${index+1} — ${escapeHtml(examLabel(item.exame))}</h3><dl>${pair('Ano',item.ano)}${pair('Comprovante',item.arquivo.name)}${pair('Dados identificados',resultDescription(item))}</dl>`).join('');
   document.querySelector('#summary').innerHTML = `
     <h3>Dados pessoais</h3><dl>${pair('Nome', value('nome'))}${pair('CPF', value('cpf'))}${pair('Nascimento', value('nascimento'))}${pair('E-mail', value('email'))}${pair('Celular', value('celular'))}${pair('Localidade', `${value('cidade')} / ${value('estado')}`)}</dl>
     <h3>Curso de interesse</h3><dl>${pair('Unidade', catalog.units[value('unidade')])}${pair('Curso', catalog.courses[value('curso')])}${pair('Período', catalog.periods[value('periodo')])}</dl>
     <h3>Documento de identificação</h3><dl>${pair('Arquivo', $('documento_identificacao').files[0]?.name || '')}</dl>
-    <h3>Resultado apresentado</h3><dl>${pair('Exame', ({ENEM:'ENEM',FUVEST:'FUVEST',UNICAMP:'UNICAMP',UNESP:'UNESP',UNIFESP:'UNIFESP',ETEC:'ETECs',OLIMPIADAS:'Olimpíadas Científicas'})[exam] || exam)}${pair('Ano', value('ano'))}${pair('Comprovantes do resultado', [...$('comprovantes').files].map(file => file.name).join(', '))}${exam === 'ENEM' ? pair('Notas: Linguagens / Humanas / Natureza / Matemática / Redação', ['linguagens','humanas','natureza','matematica','redacao'].map(value).join(' / ')) : ''}${['FUVEST','UNICAMP','UNESP','UNIFESP'].includes(exam) ? pair('Acertos na primeira fase', value('acertos_primeira_fase')) + pair('Categoria', value('categoria_vestibular')) + pair('Curso do vestibular', value('curso_resultado')) : ''}${exam === 'ENEM' ? pair('Categoria', value('categoria_enem')) : ''}${exam === 'ETEC' ? pair('Notas por disciplina', value('notas_disciplinas')) : ''}${exam === 'OLIMPIADAS' ? pair('Pontuação', value('pontuacao')) + pair('Classificação', value('classificacao')) + pair('Medalha', value('medalha')) + pair('Menção honrosa', value('mencao_honrosa')) : ''}</dl>`;
+    <h3>Resultados e comprovantes</h3>${resultsHtml}`;
 }
 document.querySelector('#next').addEventListener('click', () => { if (validate()) { step++; render(); window.scrollTo({top:0,behavior:'smooth'}); } });
 document.querySelector('#back').addEventListener('click', () => { step--; render(); window.scrollTo({top:0,behavior:'smooth'}); });
@@ -291,17 +345,20 @@ form.addEventListener('submit', async event => {
   if (!validate()) return;
   const button = document.querySelector('#send');
   button.disabled = true; button.textContent = 'Enviando...'; clearError();
+  const primeiroResultado=resultEntries[0];
+  const {arquivo:arquivoPrimeiro,...dadosPrimeiroResultado}=primeiroResultado;
   const payload = {
     nome:value('nome'), cpf:value('cpf'), nascimento:value('nascimento'), email:value('email'), celular:value('celular'),
     estado:value('estado'), cidade:value('cidade'), unidade:value('unidade'), curso:value('curso'), periodo:value('periodo'),
-    exame:value('exame'), ano:value('ano'), notas:Object.fromEntries(['linguagens','humanas','natureza','matematica','redacao'].map(n => [n,value(n)])), dados_resultado:{categoria:value(value('exame')==='ENEM'?'categoria_enem':'categoria_vestibular'),acertos_primeira_fase:value('acertos_primeira_fase'),curso:value('curso_resultado'),notas_disciplinas:value('notas_disciplinas'),pontuacao:value('pontuacao'),classificacao:value('classificacao'),medalha:value('medalha'),mencao_honrosa:value('mencao_honrosa')},
+    exame:primeiroResultado.exame, ano:primeiroResultado.ano, notas:primeiroResultado.notas || {}, dados_resultado:{...dadosPrimeiroResultado,arquivo_nome:arquivoPrimeiro.name},
+    resultados:resultEntries.map(({arquivo,...item})=>({...item,arquivo_nome:arquivo.name})),
     veracidade:$('veracidade').checked, manual:$('manual').checked, privacidade:$('privacidade').checked, marketing:$('marketing').checked
   };
   const body = new FormData();
   body.set('csrf',csrf); body.set('payload',JSON.stringify(payload));
   const documento = $('documento_identificacao').files[0];
   if (documento) body.append('comprovantes[]', documento, documento.name);
-  [...$('comprovantes').files].forEach(file => body.append('comprovantes[]',file));
+  resultEntries.forEach(item => body.append('comprovantes[]',item.arquivo,item.arquivo.name));
   try {
     const response = await fetch(API_BASE + 'bolsa_inserir.php',{method:'POST',body,credentials:'include'});
     const result = await response.json();
@@ -324,7 +381,7 @@ form.addEventListener('submit', async event => {
     document.querySelector('#manual-link').href = catalog.legal.manual_url;
     document.querySelector('#privacy-link').href = catalog.legal.privacy_url;
     $('ano').max = String(new Date().getFullYear()); $('ano').value = String(new Date().getFullYear());
-    showResultFields(); atualizarLeitura(); render();
+    showResultFields(); renderRegisteredResults(); atualizarLeitura(); render();
   } catch (e) { error(e.message); form.querySelectorAll('button').forEach(b => b.disabled = true); }
 })();
 
