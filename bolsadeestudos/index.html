@@ -52,6 +52,21 @@
 .remove-result{border:0;background:transparent;color:#a33d2b;font-weight:700;cursor:pointer;padding:8px}
 @media(max-width:650px){.result-record{grid-template-columns:1fr auto;gap:8px}.result-record .result-file-label{grid-column:1}.remove-result{grid-column:2;grid-row:1/3}}
 
+/* Aviso visual durante o processamento dos comprovantes */
+.processing-overlay{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:20px;background:rgba(9,31,60,.62);backdrop-filter:blur(3px)}
+.processing-overlay[hidden]{display:none!important}
+.processing-card{width:min(100%,440px);padding:30px 28px 26px;border:1px solid #e3eaf3;border-radius:18px;background:#fff;box-shadow:0 24px 80px rgba(7,25,50,.28);text-align:center}
+.processing-spinner{width:56px;height:56px;margin:0 auto 18px;border:5px solid #e5edf7;border-top-color:#1758a7;border-right-color:#f28a18;border-radius:50%;animation:processing-spin .85s linear infinite}
+.processing-card h2{margin:0 0 9px;color:#173d73;font-size:22px}
+.processing-message{margin:0;color:#52657b;font-size:14px;line-height:1.55}
+.processing-filename{display:block;max-width:100%;margin:12px auto 0;color:#718096;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.processing-progress{height:7px;margin:22px 0 12px;overflow:hidden;border-radius:99px;background:#eaf0f7}
+.processing-progress span{display:block;width:36%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#1758a7,#f28a18);animation:processing-progress 1.5s ease-in-out infinite}
+.processing-note{margin:0;color:#8794a5;font-size:12px}
+@keyframes processing-spin{to{transform:rotate(360deg)}}
+@keyframes processing-progress{0%{transform:translateX(-110%)}50%{transform:translateX(175%)}100%{transform:translateX(380%)}}
+@media(prefers-reduced-motion:reduce){.processing-spinner,.processing-progress span{animation:none}.processing-progress span{width:72%;margin:auto}}
+
 </style>
   
 </head>
@@ -99,6 +114,16 @@
     </section>
     <section id="success" class="card success" hidden><div class="success-icon">✓</div><h2>Candidatura recebida</h2><p>Seu pedido está <strong>em análise</strong>. Guarde este protocolo:</p><div id="protocol" class="protocol"></div><p id="email-message"></p></section>
   </main>
+  <div id="ocr-processing" class="processing-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="processing-title" aria-describedby="processing-message" tabindex="-1">
+    <div class="processing-card">
+      <div class="processing-spinner" aria-hidden="true"></div>
+      <h2 id="processing-title">Lendo o documento</h2>
+      <p id="processing-message" class="processing-message">Estamos identificando as informações do arquivo.</p>
+      <span id="processing-filename" class="processing-filename"></span>
+      <div class="processing-progress" role="progressbar" aria-label="Leitura em andamento" aria-valuetext="Processando o arquivo"><span></span></div>
+      <p class="processing-note">Aguarde alguns instantes e mantenha esta página aberta.</p>
+    </div>
+  </div>
   <footer class="objective-footer">
     Copyright © 1997–2026 Colégio Objetivo. Todos os direitos reservados.
   </footer>
@@ -113,6 +138,8 @@ let step = 0;
 let catalog;
 let csrf;
 let documentReadId = 0;
+let activeProcessingToken = null;
+let processingReturnFocus = null;
 let lastOcrValues = {nome:'', cpf:'', nascimento:''};
 let resultReadId = 0;
 let resultEntries = [];
@@ -178,15 +205,38 @@ function validCpf(cpf) {
   }
   return true;
 }
+function showProcessing(title, message, filename, token) {
+  const layer = document.querySelector('#ocr-processing');
+  if (layer.hidden) processingReturnFocus = document.activeElement;
+  activeProcessingToken = token;
+  document.querySelector('#processing-title').textContent = title;
+  document.querySelector('#processing-message').textContent = message;
+  document.querySelector('#processing-filename').textContent = filename || '';
+  layer.hidden = false;
+  document.querySelector('#flow').inert = true;
+  layer.focus({preventScroll:true});
+}
+function hideProcessing(token = null) {
+  if (token && token !== activeProcessingToken) return;
+  if (token && !activeProcessingToken) return;
+  const layer = document.querySelector('#ocr-processing');
+  if (layer.hidden) return;
+  layer.hidden = true;
+  document.querySelector('#flow').inert = false;
+  activeProcessingToken = null;
+  const target = processingReturnFocus;
+  processingReturnFocus = null;
+  if (target && target.isConnected && typeof target.focus === 'function') target.focus({preventScroll:true});
+}
 function formatCpf(cpf) { const d = digits(cpf).slice(0,11); return d.replace(/^(\d{3})(\d)/,'$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d{1,2})$/,'$1-$2'); }
 async function lerDocumentoIdentificacao() {
   const input = $('documento_identificacao');
   const file = input.files && input.files[0];
   const status = document.querySelector('#document-status');
   const requestId = ++documentReadId;
-  if (!file) { status.textContent = ''; status.className = 'document-status'; return; }
+  if (!file) { status.textContent = ''; status.className = 'document-status'; if (activeProcessingToken && activeProcessingToken.startsWith('documento:')) hideProcessing(activeProcessingToken); return; }
   if (file.size > 10 * 1024 * 1024) {
-    status.className = 'document-status error'; status.textContent = 'O documento deve ter até 10 MB.'; input.value = ''; return;
+    status.className = 'document-status error'; status.textContent = 'O documento deve ter até 10 MB.'; input.value = ''; if (activeProcessingToken && activeProcessingToken.startsWith('documento:')) hideProcessing(activeProcessingToken); return;
   }
   // Ao trocar o arquivo, limpa apenas os valores que ainda são os preenchidos pela leitura anterior.
   ['nome','cpf','nascimento'].forEach(campo => {
@@ -196,6 +246,8 @@ async function lerDocumentoIdentificacao() {
   lastOcrValues = {nome:'', cpf:'', nascimento:''};
   status.className = 'document-status';
   status.textContent = 'Documento recebido. Lendo os dados...';
+  const processingToken = `documento:${requestId}`;
+  showProcessing('Lendo seu documento','Estamos identificando nome, CPF e data de nascimento.',file.name,processingToken);
   const body = new FormData();
   body.set('documento', file, file.name);
   try {
@@ -213,6 +265,8 @@ async function lerDocumentoIdentificacao() {
     if (requestId !== documentReadId) return;
     status.className = 'document-status error';
     status.textContent = (erro.message || 'Falha ao ler o documento.') + ' Você ainda pode preencher os dados manualmente.';
+  } finally {
+    hideProcessing(processingToken);
   }
 }
 function showResultFields(clear = false) {
@@ -235,8 +289,9 @@ function preencherCursosVestibular() {
 function atualizarLeitura() {
   const file = [...$('comprovantes').files][0];
   const status = document.querySelector('#ocr-status');
-  if (!file) { resultReadId++; status.className='ocr-status'; status.textContent=''; return; }
+  if (!file) { resultReadId++; resultOcrPending=false; document.querySelector('#register-result').disabled=false; status.className='ocr-status'; status.textContent=''; if (activeProcessingToken && activeProcessingToken.startsWith('resultado:')) hideProcessing(activeProcessingToken); return; }
   if (value('exame')) lerComprovanteResultado(file);
+  else { resultReadId++; resultOcrPending=false; document.querySelector('#register-result').disabled=false; status.className='ocr-status'; status.textContent='Selecione o exame ou a modalidade para iniciar a leitura.'; if (activeProcessingToken && activeProcessingToken.startsWith('resultado:')) hideProcessing(activeProcessingToken); }
 }
 function normalizarBusca(texto) { return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim(); }
 function aplicarLeituraResultado(result) {
@@ -263,9 +318,11 @@ function aplicarLeituraResultado(result) {
 async function lerComprovanteResultado(file) {
   const status = document.querySelector('#ocr-status');
   const requestId = ++resultReadId;
-  if (file.size > 10 * 1024 * 1024) { status.className='ocr-status error'; status.textContent='Cada comprovante deve ter até 10 MB.'; return; }
+  if (file.size > 10 * 1024 * 1024) { resultOcrPending=false; document.querySelector('#register-result').disabled=false; status.className='ocr-status error'; status.textContent='Cada comprovante deve ter até 10 MB.'; if (activeProcessingToken && activeProcessingToken.startsWith('resultado:')) hideProcessing(activeProcessingToken); return; }
   resultOcrPending = true; document.querySelector('#register-result').disabled = true;
   status.className='ocr-status'; status.textContent='Arquivo recebido. Identificando os dados do resultado...';
+  const processingToken = `resultado:${requestId}`;
+  showProcessing('Lendo comprovante do resultado',`Estamos procurando os dados de ${examLabel(value('exame'))} para preencher os campos.`,file.name,processingToken);
   const body = new FormData(); body.set('exame', value('exame')); body.set('comprovante', file, file.name);
   try {
     const response = await fetch(OCR_API, {method:'POST',body,credentials:'include'});
@@ -279,6 +336,7 @@ async function lerComprovanteResultado(file) {
     status.className='ocr-status error'; status.textContent=(e.message || 'Falha na leitura.') + ' Você pode preencher os campos manualmente.';
   } finally {
     if (requestId === resultReadId) { resultOcrPending = false; document.querySelector('#register-result').disabled = false; }
+    hideProcessing(processingToken);
   }
 }
 $('documento_identificacao').addEventListener('change', event => {
