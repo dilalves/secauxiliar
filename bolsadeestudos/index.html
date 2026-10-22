@@ -34,15 +34,6 @@
 .ocr-status.success{padding:0;text-align:left;background:transparent;color:#23734f}
 .ocr-read:disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:650px){.ocr-controls{align-items:stretch;flex-direction:column}.ocr-controls .button{width:100%}}
-.document-status{margin:10px 0 0;color:#365677;font-size:13px;line-height:1.45}
-.document-status:empty{display:none}
-.document-status.error{color:#963a27}
-.document-status.success{padding:0;text-align:left;color:#23734f}
-.document-upload{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}
-.document-upload-button{background:#f28a18;color:#fff;border:0;border-radius:8px;padding:12px 20px;font-weight:750;cursor:pointer}
-.document-upload-button:hover{background:#d96f08}
-.document-file-name{font-size:13px;color:#52657b;overflow-wrap:anywhere}
-.visually-hidden-file{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .result-actions{justify-content:center;margin:18px 0 28px;padding:0;border:0}
 .registered-results{border-top:1px solid #e8edf3;padding-top:8px}
 .registered-results h3{margin:18px 0 12px}
@@ -78,14 +69,12 @@
     </div>
   </header>
   <main class="shell">
-    <div class="intro"><span class="eyebrow">CADASTRO</span><h1>Conte seus resultados para a gente</h1><p>Preencha seus dados, envie um comprovante e confira tudo antes de concluir. Nossa equipe analisará sua candidatura.</p></div>
+    <div class="intro"><span class="eyebrow">CADASTRO</span><h1>Conte seus resultados para a gente</h1><p>Preencha seus dados, informe seus resultados e confira tudo antes de concluir. Nossa equipe analisará sua candidatura.</p></div>
     <div id="error" class="alert" role="alert" hidden></div>
     <section id="flow" class="card" aria-label="Inscrição">
       <nav class="steps" aria-label="Etapas da inscrição"><span data-step-label="0">1 <b>Seus dados</b></span><span data-step-label="1">2 <b>Seu curso</b></span><span data-step-label="2">3 <b>Resultado</b></span><span data-step-label="3">4 <b>Conferência</b></span></nav>
       <form id="application" enctype="multipart/form-data" novalidate>
-        <section class="panel" data-step="0"><span class="eyebrow">ETAPA 01 DE 04</span><h2>Preencha seus dados pessoais</h2><p class="hint">Envie um documento de identificação. Assim que o arquivo for selecionado, o sistema fará a leitura e preencherá os dados encontrados para você conferir.</p>
-          <div class="upload"><label for="documento-identificacao">Documento de identificação</label><input id="documento-identificacao" name="documento_identificacao" class="visually-hidden-file" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"><div class="document-upload"><button type="button" id="choose-document" class="document-upload-button">Enviar documento</button><span id="document-file-name" class="document-file-name">Nenhum documento selecionado</span></div><span>Envie CPF, RG, CNH ou comprovante de CPF · PDF, JPG ou PNG · até 10 MB. Ao selecionar o arquivo, a leitura começa automaticamente.</span></div>
-          <p id="document-status" class="document-status" role="status" aria-live="polite"></p>
+        <section class="panel" data-step="0"><span class="eyebrow">ETAPA 01 DE 04</span><h2>Preencha seus dados pessoais</h2><p class="hint">Informe seus dados pessoais e de contato para iniciar a candidatura.</p>
           <div class="grid"><label class="wide">Nome completo<input name="nome" autocomplete="name" required minlength="3" maxlength="160"></label><label>CPF<input name="cpf" inputmode="numeric" autocomplete="off" required placeholder="000.000.000-00"></label><label>Data de nascimento<input name="nascimento" type="date" required></label><label>E-mail<input name="email" type="email" autocomplete="email" required></label><label>Celular com DDD<input name="celular" type="tel" inputmode="tel" autocomplete="tel" required placeholder="(11) 99999-9999"></label><label>Estado (UF)<input name="estado" maxlength="2" required placeholder="SP"></label><label>Cidade<input name="cidade" required maxlength="120"></label></div>
         </section>
         <section class="panel" data-step="1" hidden><span class="eyebrow">ETAPA 02 DE 04</span><h2>Escolha seu curso</h2><p class="hint">Selecione a unidade, o curso e o período de seu interesse. A disponibilidade será confirmada na análise.</p><div class="grid"><label>Unidade<select name="unidade" required></select></label><label>Curso de interesse<select name="curso" required></select></label><label>Período<select name="periodo" required></select></label></div></section>
@@ -102,7 +91,7 @@
         </section>
         <section class="panel" data-step="3" hidden><span class="eyebrow">ETAPA 04 DE 04</span><h2>Confirme seus dados</h2><p class="hint">Confira o resumo. Para corrigir algo, volte à etapa correspondente.</p><div id="summary" class="summary"></div>
           <div class="terms"><h3>Declarações e consentimento</h3>
-            <label class="check"><input type="checkbox" name="veracidade" required><span>Declaro que as informações e o comprovante apresentados são verdadeiros e poderão ser conferidos durante a análise.</span></label>
+            <label class="check"><input type="checkbox" name="veracidade" required><span>Declaro que as informações e os comprovantes apresentados são verdadeiros e poderão ser conferidos durante a análise.</span></label>
             <label class="check"><input type="checkbox" name="manual" required><span>Li e concordo com o <a id="manual-link" target="_blank" rel="noopener noreferrer">manual de bolsas</a>.</span></label>
             <label class="check"><input type="checkbox" name="privacidade" required><span>Li a <a id="privacy-link" target="_blank" rel="noopener noreferrer">política de privacidade</a> e estou ciente do tratamento dos meus dados para esta candidatura.</span></label>
             <label class="check"><input type="checkbox" name="marketing"><span>Quero receber comunicações sobre cursos e oportunidades por e-mail ou celular. Opcional.</span></label>
@@ -117,8 +106,8 @@
   <div id="ocr-processing" class="processing-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="processing-title" aria-describedby="processing-message" tabindex="-1">
     <div class="processing-card">
       <div class="processing-spinner" aria-hidden="true"></div>
-      <h2 id="processing-title">Lendo o documento</h2>
-      <p id="processing-message" class="processing-message">Estamos identificando as informações do arquivo.</p>
+      <h2 id="processing-title">Lendo o comprovante</h2>
+      <p id="processing-message" class="processing-message">Estamos identificando as informações do resultado.</p>
       <span id="processing-filename" class="processing-filename"></span>
       <div class="processing-progress" role="progressbar" aria-label="Leitura em andamento" aria-valuetext="Processando o arquivo"><span></span></div>
       <p class="processing-note">Aguarde alguns instantes e mantenha esta página aberta.</p>
@@ -133,14 +122,11 @@ const panels = [...document.querySelectorAll('.panel')];
 const errorBox = document.querySelector('#error');
 const API_BASE = 'https://apisec.secauxiliar.com.br/bolsadeestudo/';
 const OCR_API = API_BASE + 'bolsa_ler_resultado.php';
-const DOCUMENT_OCR_API = API_BASE + 'bolsa_ler_documento.php';
 let step = 0;
 let catalog;
 let csrf;
-let documentReadId = 0;
 let activeProcessingToken = null;
 let processingReturnFocus = null;
-let lastOcrValues = {nome:'', cpf:'', nascimento:''};
 let resultReadId = 0;
 let resultEntries = [];
 let resultOcrPending = false;
@@ -170,11 +156,6 @@ function render() {
   clearError();
 }
 function validate() {
-  if (step === 0) {
-    const documento = $('documento_identificacao').files[0];
-    if (!documento) { error('Clique em “Enviar documento” e anexe seu CPF, RG, CNH ou comprovante de CPF.'); document.querySelector('#choose-document').focus(); return false; }
-    if (documento.size > 10 * 1024 * 1024) { error('O documento de identificação deve ter até 10 MB.'); document.querySelector('#choose-document').focus(); return false; }
-  }
   if (step !== 2) {
     const controls = [...panels[step].querySelectorAll('input,select,textarea')];
     for (const control of controls) {
@@ -229,46 +210,6 @@ function hideProcessing(token = null) {
   if (target && target.isConnected && typeof target.focus === 'function') target.focus({preventScroll:true});
 }
 function formatCpf(cpf) { const d = digits(cpf).slice(0,11); return d.replace(/^(\d{3})(\d)/,'$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d{1,2})$/,'$1-$2'); }
-async function lerDocumentoIdentificacao() {
-  const input = $('documento_identificacao');
-  const file = input.files && input.files[0];
-  const status = document.querySelector('#document-status');
-  const requestId = ++documentReadId;
-  if (!file) { status.textContent = ''; status.className = 'document-status'; if (activeProcessingToken && activeProcessingToken.startsWith('documento:')) hideProcessing(activeProcessingToken); return; }
-  if (file.size > 10 * 1024 * 1024) {
-    status.className = 'document-status error'; status.textContent = 'O documento deve ter até 10 MB.'; input.value = ''; if (activeProcessingToken && activeProcessingToken.startsWith('documento:')) hideProcessing(activeProcessingToken); return;
-  }
-  // Ao trocar o arquivo, limpa apenas os valores que ainda são os preenchidos pela leitura anterior.
-  ['nome','cpf','nascimento'].forEach(campo => {
-    const atual = $(campo).value;
-    if (lastOcrValues[campo] && (campo === 'cpf' ? digits(atual) === lastOcrValues[campo] : atual === lastOcrValues[campo])) $(campo).value = '';
-  });
-  lastOcrValues = {nome:'', cpf:'', nascimento:''};
-  status.className = 'document-status';
-  status.textContent = 'Documento recebido. Lendo os dados...';
-  const processingToken = `documento:${requestId}`;
-  showProcessing('Lendo seu documento','Estamos identificando nome, CPF e data de nascimento.',file.name,processingToken);
-  const body = new FormData();
-  body.set('documento', file, file.name);
-  try {
-    const response = await fetch(DOCUMENT_OCR_API, {method:'POST', body, credentials:'include'});
-    const result = await response.json();
-    if (requestId !== documentReadId || input.files[0] !== file) return;
-    if (!response.ok || !result.sucesso) throw new Error(result.erro || 'Não foi possível ler o documento.');
-    const dados = result.documento || {};
-    if (dados.nome) { $('nome').value = dados.nome; lastOcrValues.nome = dados.nome; }
-    if (dados.cpf) { $('cpf').value = formatCpf(dados.cpf); lastOcrValues.cpf = digits(dados.cpf); }
-    if (dados.nascimento) { $('nascimento').value = dados.nascimento; lastOcrValues.nascimento = dados.nascimento; }
-    status.className = 'document-status success';
-    status.textContent = result.mensagem || 'Leitura concluída. Confira os dados preenchidos.';
-  } catch (erro) {
-    if (requestId !== documentReadId) return;
-    status.className = 'document-status error';
-    status.textContent = (erro.message || 'Falha ao ler o documento.') + ' Você ainda pode preencher os dados manualmente.';
-  } finally {
-    hideProcessing(processingToken);
-  }
-}
 function showResultFields(clear = false) {
   const exam = value('exame');
   const map = {ENEM:'#result-enem',FUVEST:'#result-vestibular',UNICAMP:'#result-vestibular',UNESP:'#result-vestibular',UNIFESP:'#result-vestibular',ETEC:'#result-etec',OLIMPIADAS:'#result-olimpiadas'};
@@ -339,12 +280,6 @@ async function lerComprovanteResultado(file) {
     hideProcessing(processingToken);
   }
 }
-$('documento_identificacao').addEventListener('change', event => {
-   const file = event.target.files[0];
-   document.querySelector('#document-file-name').textContent = file ? file.name : 'Nenhum documento selecionado';
-   lerDocumentoIdentificacao();
- });
- document.querySelector('#choose-document').addEventListener('click', () => $('documento_identificacao').click());
  $('cpf').addEventListener('input', event => { const start = event.target.selectionStart; event.target.value = formatCpf(event.target.value); try { event.target.setSelectionRange(start, start); } catch (_) {} });
 $('exame').addEventListener('change', () => { showResultFields(true); atualizarLeitura(); });
 $('comprovantes').addEventListener('change', atualizarLeitura);
@@ -393,7 +328,6 @@ function summary() {
   document.querySelector('#summary').innerHTML = `
     <h3>Dados pessoais</h3><dl>${pair('Nome', value('nome'))}${pair('CPF', value('cpf'))}${pair('Nascimento', value('nascimento'))}${pair('E-mail', value('email'))}${pair('Celular', value('celular'))}${pair('Localidade', `${value('cidade')} / ${value('estado')}`)}</dl>
     <h3>Curso de interesse</h3><dl>${pair('Unidade', catalog.units[value('unidade')])}${pair('Curso', catalog.courses[value('curso')])}${pair('Período', catalog.periods[value('periodo')])}</dl>
-    <h3>Documento de identificação</h3><dl>${pair('Arquivo', $('documento_identificacao').files[0]?.name || '')}</dl>
     <h3>Resultados e comprovantes</h3>${resultsHtml}`;
 }
 document.querySelector('#next').addEventListener('click', () => { if (validate()) { step++; render(); window.scrollTo({top:0,behavior:'smooth'}); } });
@@ -414,8 +348,6 @@ form.addEventListener('submit', async event => {
   };
   const body = new FormData();
   body.set('csrf',csrf); body.set('payload',JSON.stringify(payload));
-  const documento = $('documento_identificacao').files[0];
-  if (documento) body.append('comprovantes[]', documento, documento.name);
   resultEntries.forEach(item => body.append('comprovantes[]',item.arquivo,item.arquivo.name));
   try {
     const response = await fetch(API_BASE + 'bolsa_inserir.php',{method:'POST',body,credentials:'include'});
