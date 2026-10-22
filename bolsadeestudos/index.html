@@ -153,7 +153,29 @@ function validCpf(cpf) {
   }
   return true;
 }
-function formatCpf(cpf) { const d = digits(cpf).slice(0,11); return d.replace(/^(\d{3})(\d)/,'$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d{1,2})$/,'$1-$2'); }
+function formatCpf(cpf) {
+  const d=digits(cpf).slice(0,11);
+  if (d.length>9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
+  if (d.length>6) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`;
+  if (d.length>3) return `${d.slice(0,3)}.${d.slice(3)}`;
+  return d;
+}
+function cpfCaretPosition(formatted, digitCount) {
+  if (digitCount <= 0) return 0;
+  let seen=0, position=0;
+  while (position<formatted.length && seen<digitCount) {
+    if (/\d/.test(formatted[position])) seen++;
+    position++;
+  }
+  while (position<formatted.length && !/\d/.test(formatted[position])) position++;
+  return position;
+}
+function applyCpfMask(input, digitCount) {
+  const formatted=formatCpf(input.value);
+  input.value=formatted;
+  const position=cpfCaretPosition(formatted,Math.min(digitCount,digits(formatted).length));
+  input.setSelectionRange(position,position);
+}
 function showResultFields(clear = false) {
   const exam = $('exame').value;
   const map = {ENEM:'#result-enem',FUVEST:'#result-vestibular',UNICAMP:'#result-vestibular'};
@@ -175,7 +197,29 @@ function preencherCursosVestibular() {
   select.replaceChildren(new Option('Selecione...', ''));
   CURSOS_VESTIBULAR.forEach(curso => select.add(new Option(curso, curso)));
 }
-$('cpf').addEventListener('input', event => { const start = event.target.selectionStart; event.target.value = formatCpf(event.target.value); try { event.target.setSelectionRange(start, start); } catch (_) {} });
+const cpfInput=$('cpf');
+cpfInput.addEventListener('input', event => {
+  const input=event.target;
+  const caret=input.selectionStart ?? input.value.length;
+  const digitsBefore=digits(input.value.slice(0,caret)).length;
+  try { applyCpfMask(input,digitsBefore); } catch (_) { input.value=formatCpf(input.value); }
+});
+cpfInput.addEventListener('keydown', event => {
+  const input=event.target;
+  const start=input.selectionStart, end=input.selectionEnd;
+  if (start!==end) return;
+  const text=input.value;
+  let digitIndex=-1;
+  if (event.key==='Backspace' && start>0 && !/\d/.test(text[start-1])) digitIndex=digits(text.slice(0,start)).length-1;
+  if (event.key==='Delete' && start<text.length && !/\d/.test(text[start])) digitIndex=digits(text.slice(0,start)).length;
+  if (digitIndex<0) return;
+  const raw=digits(text);
+  if (digitIndex>=raw.length) return;
+  event.preventDefault();
+  input.value=formatCpf(raw.slice(0,digitIndex)+raw.slice(digitIndex+1));
+  const position=cpfCaretPosition(input.value,digitIndex);
+  input.setSelectionRange(position,position);
+});
 $('exame').addEventListener('change', () => { showResultFields(true); clearError(); });
 function pair(label, val) { const text=val===0?'0':String(val ?? '').trim(); return `<div><dt>${label}</dt><dd>${escapeHtml(text || '—')}</dd></div>`; }
 function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
