@@ -43,21 +43,6 @@
 .remove-result{border:0;background:transparent;color:#a33d2b;font-weight:700;cursor:pointer;padding:8px}
 @media(max-width:650px){.result-record{grid-template-columns:1fr auto;gap:8px}.result-record .result-file-label{grid-column:1}.remove-result{grid-column:2;grid-row:1/3}}
 
-/* Aviso visual durante o processamento dos comprovantes */
-.processing-overlay{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:20px;background:rgba(9,31,60,.62);backdrop-filter:blur(3px)}
-.processing-overlay[hidden]{display:none!important}
-.processing-card{width:min(100%,440px);padding:30px 28px 26px;border:1px solid #e3eaf3;border-radius:18px;background:#fff;box-shadow:0 24px 80px rgba(7,25,50,.28);text-align:center}
-.processing-spinner{width:56px;height:56px;margin:0 auto 18px;border:5px solid #e5edf7;border-top-color:#1758a7;border-right-color:#f28a18;border-radius:50%;animation:processing-spin .85s linear infinite}
-.processing-card h2{margin:0 0 9px;color:#173d73;font-size:22px}
-.processing-message{margin:0;color:#52657b;font-size:14px;line-height:1.55}
-.processing-filename{display:block;max-width:100%;margin:12px auto 0;color:#718096;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.processing-progress{height:7px;margin:22px 0 12px;overflow:hidden;border-radius:99px;background:#eaf0f7}
-.processing-progress span{display:block;width:36%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#1758a7,#f28a18);animation:processing-progress 1.5s ease-in-out infinite}
-.processing-note{margin:0;color:#8794a5;font-size:12px}
-@keyframes processing-spin{to{transform:rotate(360deg)}}
-@keyframes processing-progress{0%{transform:translateX(-110%)}50%{transform:translateX(175%)}100%{transform:translateX(380%)}}
-@media(prefers-reduced-motion:reduce){.processing-spinner,.processing-progress span{animation:none}.processing-progress span{width:72%;margin:auto}}
-
 </style>
   
 </head>
@@ -78,16 +63,15 @@
           <div class="grid"><label class="wide">Nome completo<input name="nome" autocomplete="name" required minlength="3" maxlength="160"></label><label>CPF<input name="cpf" inputmode="numeric" autocomplete="off" required placeholder="000.000.000-00"></label><label>Data de nascimento<input name="nascimento" type="date" required></label><label>E-mail<input name="email" type="email" autocomplete="email" required></label><label>Celular com DDD<input name="celular" type="tel" inputmode="tel" autocomplete="tel" required placeholder="(11) 99999-9999"></label><label>Estado (UF)<input name="estado" maxlength="2" required placeholder="SP"></label><label>Cidade<input name="cidade" required maxlength="120"></label></div>
         </section>
         <section class="panel" data-step="1" hidden><span class="eyebrow">ETAPA 02 DE 04</span><h2>Escolha seu curso</h2><p class="hint">Selecione a unidade, o curso e o período de seu interesse. A disponibilidade será confirmada na análise.</p><div class="grid"><label>Unidade<select name="unidade" required></select></label><label>Curso de interesse<select name="curso" required></select></label><label>Período<select name="periodo" required></select></label></div></section>
-        <section class="panel" data-step="2" hidden><span class="eyebrow">ETAPA 03 DE 04</span><h2>Anexe seu resultado</h2><p class="hint">Escolha o exame ou modalidade e envie o comprovante. A leitura automática tenta identificar os dados e preencher os campos; confira tudo antes de continuar.</p>
-          <div class="grid"><label class="wide">Exame ou modalidade<select name="exame" required><option value="">Selecione...</option><option value="ENEM">ENEM</option><option value="FUVEST">FUVEST</option><option value="UNICAMP">UNICAMP</option><option value="UNESP">UNESP</option><option value="UNIFESP">UNIFESP</option><option value="ETEC">ETECs</option><option value="OLIMPIADAS">Olimpíadas Científicas</option></select></label><label>Ano do resultado<input name="ano" type="number" min="2000" max="2100" required></label></div>
+        <section class="panel" data-step="2" hidden><span class="eyebrow">ETAPA 03 DE 04</span><h2>Envie seus comprovantes</h2><p class="hint">Escolha um tipo de resultado, informe as notas quando solicitado, anexe o comprovante e clique em “Enviar comprovante”. Cada tipo pode ser enviado uma vez.</p>
+          <div class="grid"><label class="wide">Resultado ou modalidade<select name="exame" required><option value="">Selecione...</option><option value="ENEM">ENEM</option><option value="FUVEST">FUVEST</option><option value="UNICAMP">UNICAMP</option><option value="ETEC">ETEC</option><option value="ESCOLA_PUBLICA">Escolas públicas</option><option value="ESCOLA_PARTICULAR">Escolas particulares</option><option value="OLIMPIADAS">Olimpíadas científicas</option></select></label><label id="year-field">Ano do resultado<input name="ano" type="number" min="2000" max="2100"></label></div>
           <div id="result-enem" data-result-fields hidden><h3>Notas do ENEM e categoria</h3><div class="grid"><label>Linguagens<input name="linguagens" type="number" min="0" max="1000" step="0.1" inputmode="decimal"></label><label>Ciências Humanas<input name="humanas" type="number" min="0" max="1000" step="0.1" inputmode="decimal"></label><label>Ciências da Natureza<input name="natureza" type="number" min="0" max="1000" step="0.1" inputmode="decimal"></label><label>Matemática<input name="matematica" type="number" min="0" max="1000" step="0.1" inputmode="decimal"></label><label>Redação<input name="redacao" type="number" min="0" max="1000" step="0.1" inputmode="decimal"></label><label>Categoria<select name="categoria_enem"><option value="">Selecione...</option><option value="AC">Ampla concorrência (AC)</option><option value="EP">Escola pública (EP)</option><option value="PPI">Pretos, pardos e indígenas (PPI)</option></select></label></div></div>
           <div id="result-vestibular" data-result-fields hidden><h3>Dados do vestibular</h3><div class="grid"><label>Acertos na primeira fase<input name="acertos_primeira_fase" type="number" min="0" max="100" step="1" inputmode="numeric"></label><label>Categoria<select name="categoria_vestibular"><option value="">Selecione...</option><option value="AC">Ampla concorrência (AC)</option><option value="EP">Escola pública (EP)</option><option value="PPI">Pretos, pardos e indígenas (PPI)</option></select></label><label class="wide">Curso<select name="curso_resultado"><option value="">Selecione...</option></select></label></div></div>
-          <div id="result-etec" data-result-fields hidden><h3>Notas por disciplina</h3><label class="wide">Disciplinas e notas<textarea name="notas_disciplinas" rows="5" maxlength="3000" placeholder="Ex.: Português: 8,5; Matemática: 9,0; História: 7,5"></textarea></label><p class="hint">Confira os nomes das disciplinas e as notas lidas do boletim. Você pode corrigir ou completar o texto.</p></div>
-          <div id="result-olimpiadas" data-result-fields hidden><h3>Resultado da olimpíada</h3><div class="grid"><label>Pontuação ou nota<input name="pontuacao" type="text" inputmode="decimal" maxlength="40"></label><label>Classificação<input name="classificacao" type="text" maxlength="100" placeholder="Ex.: 12º lugar, finalista"></label><label>Medalha<select name="medalha"><option value="">Selecione...</option><option>Ouro</option><option>Prata</option><option>Bronze</option><option>Menção honrosa</option><option>Sem medalha</option></select></label><label>Menção honrosa<input name="mencao_honrosa" type="text" maxlength="160" placeholder="Informe se recebeu menção honrosa"></label></div></div>
-          <label class="upload">Comprovante deste resultado<input id="result-file" name="comprovantes" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required><span>Envie um PDF, JPG ou PNG de até 10 MB. Cada comprovante é registrado separadamente.</span></label>
-          <div class="ocr-box"><strong>Leitura automática</strong><p class="hint" style="margin:5px 0 0">A leitura é uma sugestão. Confira os campos e complete o que faltar antes de registrar.</p><p id="ocr-status" class="ocr-status" role="status" aria-live="polite"></p></div>
-          <div class="actions result-actions"><button type="button" id="register-result" class="button">Registrar nota</button></div>
-          <div class="registered-results"><h3>Notas registradas</h3><div id="registered-results-list" class="registered-results-list"><p class="hint">Nenhum comprovante registrado ainda.</p></div></div>
+          <p id="no-grade-help" class="hint" hidden>Para esta modalidade, não é necessário digitar notas. Basta anexar o comprovante e enviar.</p>
+          <label class="upload">Comprovante<input id="result-file" name="comprovante" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required><span>Envie um PDF, JPG ou PNG de até 10 MB. O arquivo será guardado junto à sua candidatura.</span></label>
+          <p id="upload-status" class="ocr-status" role="status" aria-live="polite"></p>
+          <div class="actions result-actions"><button type="button" id="register-result" class="button">Enviar comprovante</button></div>
+          <div class="registered-results"><h3>Comprovantes enviados</h3><div id="registered-results-list" class="registered-results-list"><p class="hint">Nenhum comprovante enviado ainda.</p></div></div>
         </section>
         <section class="panel" data-step="3" hidden><span class="eyebrow">ETAPA 04 DE 04</span><h2>Confirme seus dados</h2><p class="hint">Confira o resumo. Para corrigir algo, volte à etapa correspondente.</p><div id="summary" class="summary"></div>
           <div class="terms"><h3>Declarações e consentimento</h3>
@@ -103,16 +87,6 @@
     </section>
     <section id="success" class="card success" hidden><div class="success-icon">✓</div><h2>Candidatura recebida</h2><p>Seu pedido está <strong>em análise</strong>. Guarde este protocolo:</p><div id="protocol" class="protocol"></div><p id="email-message"></p></section>
   </main>
-  <div id="ocr-processing" class="processing-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="processing-title" aria-describedby="processing-message" tabindex="-1">
-    <div class="processing-card">
-      <div class="processing-spinner" aria-hidden="true"></div>
-      <h2 id="processing-title">Lendo o comprovante</h2>
-      <p id="processing-message" class="processing-message">Estamos identificando as informações do resultado.</p>
-      <span id="processing-filename" class="processing-filename"></span>
-      <div class="processing-progress" role="progressbar" aria-label="Leitura em andamento" aria-valuetext="Processando o arquivo"><span></span></div>
-      <p class="processing-note">Aguarde alguns instantes e mantenha esta página aberta.</p>
-    </div>
-  </div>
   <footer class="objective-footer">
     Copyright © 1997–2026 Colégio Objetivo. Todos os direitos reservados.
   </footer>
@@ -121,15 +95,10 @@ const form = document.querySelector('#application');
 const panels = [...document.querySelectorAll('.panel')];
 const errorBox = document.querySelector('#error');
 const API_BASE = 'https://apisec.secauxiliar.com.br/bolsadeestudo/';
-const OCR_API = API_BASE + 'bolsa_ler_resultado.php';
 let step = 0;
 let catalog;
 let csrf;
-let activeProcessingToken = null;
-let processingReturnFocus = null;
-let resultReadId = 0;
 let resultEntries = [];
-let resultOcrPending = false;
 const CURSOS_VESTIBULAR = ['Administração','Arquitetura','Artes Cênicas','Artes Visuais','Astronomia','Audiovisual','Biblioteconomia e Ciência da Informação','Biotecnologia','Ciências Biológicas','Ciências Contábeis','Ciências da Natureza','Ciências dos Alimentos','Ciências Econômicas','Ciências Exatas','Ciências Sociais','Computação','Design','Direito','Editoração','Educação Física','Educomunicação','Enfermagem','Engenharia','Estatística','Farmácia','Filosofia','Finanças e Negócios','Física','Física Biomolecular','Física Computacional','Física Médica','Fisioterapia','Fonoaudiologia','Geociências e Educação Ambiental','Geofísica','Geografia','Geologia','Gerontologia','Gestão Ambiental','Gestão de Políticas Públicas','História','Informática Biomédica','Jornalismo','Letras','Marketing','Matemática','Matemática Aplicada','Medicina','Medicina Veterinária','Meteorologia','Música','Nutrição','Obstetrícia','Oceanografia','Odontologia','Pedagogia','Psicologia','Publicidade e Propaganda','Química','Relações Internacionais','Relações Públicas','Saúde Pública','Sistemas de Informação','Terapia Ocupacional','Têxtil e Moda','Treinamento (Biológicas)','Treinamento (Exatas)','Turismo','Zootecnia'];
 
 const $ = name => form.elements.namedItem(name);
@@ -168,10 +137,8 @@ function validate() {
     if (phone.length < 10 || phone.length > 11) { error('Informe o celular com DDD.'); $('celular').focus(); return false; }
   }
   if (step === 2) {
-    if (+value('ano') > new Date().getFullYear()) { error('Confira o ano do resultado.'); return false; }
-    const iniciouOutro = value('exame') || $('comprovantes').files.length || [...document.querySelectorAll('#result-enem input,#result-enem select,#result-vestibular input,#result-vestibular select,#result-etec textarea,#result-olimpiadas input,#result-olimpiadas select')].some(c=>!c.disabled && c.value.trim());
-    if (iniciouOutro) { error('Você começou outro comprovante. Clique em “Registrar nota” ou limpe esse rascunho antes de continuar.'); document.querySelector('#register-result').focus(); return false; }
-    if (resultEntries.length < 1) { error('Registre pelo menos um resultado antes de continuar.'); document.querySelector('#register-result').focus(); return false; }
+    if ($('exame').value || $('comprovante').files.length || [...document.querySelectorAll('#result-enem input,#result-enem select,#result-vestibular input,#result-vestibular select')].some(c=>!c.disabled && c.value.trim())) { error('Você começou um envio. Clique em “Enviar comprovante” antes de continuar.'); document.querySelector('#register-result').focus(); return false; }
+    if (resultEntries.length < 1) { error('Envie pelo menos um comprovante antes de continuar.'); document.querySelector('#register-result').focus(); return false; }
   }
   return true;
 }
@@ -186,39 +153,20 @@ function validCpf(cpf) {
   }
   return true;
 }
-function showProcessing(title, message, filename, token) {
-  const layer = document.querySelector('#ocr-processing');
-  if (layer.hidden) processingReturnFocus = document.activeElement;
-  activeProcessingToken = token;
-  document.querySelector('#processing-title').textContent = title;
-  document.querySelector('#processing-message').textContent = message;
-  document.querySelector('#processing-filename').textContent = filename || '';
-  layer.hidden = false;
-  document.querySelector('#flow').inert = true;
-  layer.focus({preventScroll:true});
-}
-function hideProcessing(token = null) {
-  if (token && token !== activeProcessingToken) return;
-  if (token && !activeProcessingToken) return;
-  const layer = document.querySelector('#ocr-processing');
-  if (layer.hidden) return;
-  layer.hidden = true;
-  document.querySelector('#flow').inert = false;
-  activeProcessingToken = null;
-  const target = processingReturnFocus;
-  processingReturnFocus = null;
-  if (target && target.isConnected && typeof target.focus === 'function') target.focus({preventScroll:true});
-}
 function formatCpf(cpf) { const d = digits(cpf).slice(0,11); return d.replace(/^(\d{3})(\d)/,'$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d{1,2})$/,'$1-$2'); }
 function showResultFields(clear = false) {
-  const exam = value('exame');
-  const map = {ENEM:'#result-enem',FUVEST:'#result-vestibular',UNICAMP:'#result-vestibular',UNESP:'#result-vestibular',UNIFESP:'#result-vestibular',ETEC:'#result-etec',OLIMPIADAS:'#result-olimpiadas'};
+  const exam = $('exame').value;
+  const map = {ENEM:'#result-enem',FUVEST:'#result-vestibular',UNICAMP:'#result-vestibular'};
   document.querySelectorAll('[data-result-fields]').forEach(box => {
     const active = box.matches(map[exam] || '__never__');
     box.hidden = !active;
-    box.querySelectorAll('input,select,textarea').forEach(control => { control.disabled = !active; if (clear) control.value = ''; control.required = false; });
+    box.querySelectorAll('input,select').forEach(control => { control.disabled = !active; control.required = false; if (clear) control.value = ''; });
   });
-  const requiredByExam = {ENEM:['linguagens','humanas','natureza','matematica','redacao','categoria_enem'],FUVEST:['acertos_primeira_fase','categoria_vestibular','curso_resultado'],UNICAMP:['acertos_primeira_fase','categoria_vestibular','curso_resultado'],UNESP:['acertos_primeira_fase','categoria_vestibular','curso_resultado'],UNIFESP:['acertos_primeira_fase','categoria_vestibular','curso_resultado'],ETEC:['notas_disciplinas']};
+  const noGrade = ['ETEC','ESCOLA_PUBLICA','ESCOLA_PARTICULAR','OLIMPIADAS'].includes(exam);
+  document.querySelector('#no-grade-help').hidden = !noGrade;
+  document.querySelector('#year-field').hidden = noGrade || !['ENEM','FUVEST','UNICAMP'].includes(exam);
+  $('ano').required = ['ENEM','FUVEST','UNICAMP'].includes(exam);
+  const requiredByExam = {ENEM:['linguagens','humanas','natureza','matematica','redacao','categoria_enem'],FUVEST:['acertos_primeira_fase','categoria_vestibular','curso_resultado'],UNICAMP:['acertos_primeira_fase','categoria_vestibular','curso_resultado']};
   (requiredByExam[exam] || []).forEach(name => { const control = $(name); if (control) control.required = true; });
   if (clear) $('ano').value = '';
 }
@@ -227,104 +175,59 @@ function preencherCursosVestibular() {
   select.replaceChildren(new Option('Selecione...', ''));
   CURSOS_VESTIBULAR.forEach(curso => select.add(new Option(curso, curso)));
 }
-function atualizarLeitura() {
-  const file = [...$('comprovantes').files][0];
-  const status = document.querySelector('#ocr-status');
-  if (!file) { resultReadId++; resultOcrPending=false; document.querySelector('#register-result').disabled=false; status.className='ocr-status'; status.textContent=''; if (activeProcessingToken && activeProcessingToken.startsWith('resultado:')) hideProcessing(activeProcessingToken); return; }
-  if (value('exame')) lerComprovanteResultado(file);
-  else { resultReadId++; resultOcrPending=false; document.querySelector('#register-result').disabled=false; status.className='ocr-status'; status.textContent='Selecione o exame ou a modalidade para iniciar a leitura.'; if (activeProcessingToken && activeProcessingToken.startsWith('resultado:')) hideProcessing(activeProcessingToken); }
-}
-function normalizarBusca(texto) { return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim(); }
-function aplicarLeituraResultado(result) {
-  const dados = result.dados || result.resultado || {};
-  if (dados.ano) $('ano').value = String(dados.ano);
-  if (dados.categoria) {
-    const campo = ['ENEM'].includes(value('exame')) ? 'categoria_enem' : 'categoria_vestibular';
-    if ($(campo) && !$(campo).disabled) $(campo).value = dados.categoria;
-  }
-  if (dados.notas) Object.entries(dados.notas).forEach(([key,val]) => { if ($(key) && !$(key).disabled && val !== null && val !== '') $(key).value = String(val); });
-  if (dados.acertos_primeira_fase !== null && dados.acertos_primeira_fase !== undefined && !$('acertos_primeira_fase').disabled) $('acertos_primeira_fase').value = String(dados.acertos_primeira_fase);
-  if (dados.curso) {
-    const wanted = normalizarBusca(dados.curso);
-    const option = [...$('curso_resultado').options].find(o => normalizarBusca(o.value) === wanted || normalizarBusca(o.text) === wanted);
-    if (option) $('curso_resultado').value = option.value;
-  }
-  if (dados.notas_disciplinas_texto && !$('notas_disciplinas').disabled) $('notas_disciplinas').value = dados.notas_disciplinas_texto;
-  ['pontuacao','classificacao','mencao_honrosa'].forEach(name => { if (dados[name] && $(name) && !$(name).disabled) $(name).value = String(dados[name]); });
-  if (dados.medalha && !$('medalha').disabled) {
-    const medalha = [...$('medalha').options].find(option => normalizarBusca(option.value || option.text) === normalizarBusca(dados.medalha));
-    if (medalha) $('medalha').value = medalha.value;
-  }
-}
-async function lerComprovanteResultado(file) {
-  const status = document.querySelector('#ocr-status');
-  const requestId = ++resultReadId;
-  if (file.size > 10 * 1024 * 1024) { resultOcrPending=false; document.querySelector('#register-result').disabled=false; status.className='ocr-status error'; status.textContent='Cada comprovante deve ter até 10 MB.'; if (activeProcessingToken && activeProcessingToken.startsWith('resultado:')) hideProcessing(activeProcessingToken); return; }
-  resultOcrPending = true; document.querySelector('#register-result').disabled = true;
-  status.className='ocr-status'; status.textContent='Arquivo recebido. Identificando os dados do resultado...';
-  const processingToken = `resultado:${requestId}`;
-  showProcessing('Lendo comprovante do resultado',`Estamos procurando os dados de ${examLabel(value('exame'))} para preencher os campos.`,file.name,processingToken);
-  const body = new FormData(); body.set('exame', value('exame')); body.set('comprovante', file, file.name);
-  try {
-    const response = await fetch(OCR_API, {method:'POST',body,credentials:'include'});
-    const result = await response.json();
-    if (requestId !== resultReadId || $('comprovantes').files[0] !== file) return;
-    if (!response.ok || !result.sucesso) throw new Error(result.erro || 'Não foi possível ler o comprovante.');
-    aplicarLeituraResultado(result);
-    status.className=result.parcial ? 'ocr-status error' : 'ocr-status success'; status.textContent=result.mensagem || result.erro || 'Leitura concluída. Confira e complete os campos.';
-  } catch (e) {
-    if (requestId !== resultReadId) return;
-    status.className='ocr-status error'; status.textContent=(e.message || 'Falha na leitura.') + ' Você pode preencher os campos manualmente.';
-  } finally {
-    if (requestId === resultReadId) { resultOcrPending = false; document.querySelector('#register-result').disabled = false; }
-    hideProcessing(processingToken);
-  }
-}
- $('cpf').addEventListener('input', event => { const start = event.target.selectionStart; event.target.value = formatCpf(event.target.value); try { event.target.setSelectionRange(start, start); } catch (_) {} });
-$('exame').addEventListener('change', () => { showResultFields(true); atualizarLeitura(); });
-$('comprovantes').addEventListener('change', atualizarLeitura);
-document.querySelector('#register-result').addEventListener('click',registrarResultado);
+$('cpf').addEventListener('input', event => { const start = event.target.selectionStart; event.target.value = formatCpf(event.target.value); try { event.target.setSelectionRange(start, start); } catch (_) {} });
+$('exame').addEventListener('change', () => { showResultFields(true); clearError(); });
 function pair(label, val) { const text=val===0?'0':String(val ?? '').trim(); return `<div><dt>${label}</dt><dd>${escapeHtml(text || '—')}</dd></div>`; }
-function escapeHtml(v) { return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function examLabel(exam) { return ({ENEM:'ENEM',FUVEST:'FUVEST',UNICAMP:'UNICAMP',UNESP:'UNESP',UNIFESP:'UNIFESP',ETEC:'ETECs',OLIMPIADAS:'Olimpíadas Científicas'})[exam] || exam; }
+function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function examLabel(exam) { return ({ENEM:'ENEM',FUVEST:'FUVEST',UNICAMP:'UNICAMP',ETEC:'ETEC',ESCOLA_PUBLICA:'Escolas públicas',ESCOLA_PARTICULAR:'Escolas particulares',OLIMPIADAS:'Olimpíadas científicas'})[exam] || exam; }
 function resultDescription(item) {
-  if (item.exame === 'ENEM') return Object.entries(item.notas || {}).map(([k,v]) => `${k}: ${v || '—'}`).join(' · ') + ` · Categoria: ${item.categoria || '—'}`;
-  if (['FUVEST','UNICAMP','UNESP','UNIFESP'].includes(item.exame)) return `Acertos: ${item.acertos_primeira_fase || '—'} · Categoria: ${item.categoria || '—'} · Curso: ${item.curso || '—'}`;
-  if (item.exame === 'ETEC') return item.notas_disciplinas || 'Notas por disciplina';
-  return [item.pontuacao && `Pontuação: ${item.pontuacao}`,item.classificacao && `Classificação: ${item.classificacao}`,item.medalha && `Medalha: ${item.medalha}`,item.mencao_honrosa && `Menção: ${item.mencao_honrosa}`].filter(Boolean).join(' · ') || 'Resultado de olimpíada';
+  if (item.exame === 'ENEM') { const labels={linguagens:'Linguagens',humanas:'Ciências Humanas',natureza:'Ciências da Natureza',matematica:'Matemática',redacao:'Redação'}; return Object.entries(item.notas || {}).map(([k,v]) => `${labels[k] || k}: ${v}`).join(' · ') + ` · Categoria: ${item.categoria || '—'}`; }
+  if (['FUVEST','UNICAMP'].includes(item.exame)) return `Acertos: ${item.acertos_primeira_fase} · Categoria: ${item.categoria} · Curso: ${item.curso}`;
+  return 'Comprovante anexado';
+}
+function updateExamOptions() {
+  const sent=new Set(resultEntries.map(item=>item.exame));
+  [...$('exame').options].forEach(option=>{if(option.value) option.disabled=sent.has(option.value);});
 }
 function renderRegisteredResults() {
   const list=document.querySelector('#registered-results-list');
-  if (!resultEntries.length) { list.innerHTML='<p class="hint">Nenhum comprovante registrado ainda.</p>'; return; }
-  list.innerHTML=resultEntries.map((item,index)=>`<div class="result-record"><div><strong>${escapeHtml(examLabel(item.exame))}</strong><span>Ano ${escapeHtml(item.ano)}</span></div><div><strong>Dados</strong><span>${escapeHtml(resultDescription(item))}</span></div><div class="result-file-label"><strong>Comprovante</strong><span>${escapeHtml(item.arquivo.name)}</span></div><button type="button" class="remove-result" data-remove-result="${index}" aria-label="Remover ${escapeHtml(examLabel(item.exame))} de ${escapeHtml(item.ano)}">Remover</button></div>`).join('');
-  list.querySelectorAll('[data-remove-result]').forEach(button=>button.addEventListener('click',()=>{resultEntries.splice(Number(button.dataset.removeResult),1);renderRegisteredResults();}));
+  if (!resultEntries.length) { list.innerHTML='<p class="hint">Nenhum comprovante enviado ainda.</p>'; updateExamOptions(); return; }
+  list.innerHTML=resultEntries.map(item=>`<div class="result-record"><div><strong>${escapeHtml(examLabel(item.exame))}</strong><span>${item.ano ? `Ano ${escapeHtml(item.ano)}` : 'Resultado anexado'}</span></div><div><strong>Informações</strong><span>${escapeHtml(resultDescription(item))}</span></div><div class="result-file-label"><strong>Comprovante</strong><span>${escapeHtml(item.arquivo_nome)}</span></div></div>`).join('');
+  updateExamOptions();
 }
 function capturarResultadoAtual() {
-  const exam=value('exame');
-  const item={exame:exam,ano:value('ano'),arquivo:$('comprovantes').files[0],categoria:exam==='ENEM'?value('categoria_enem'):value('categoria_vestibular')};
-  if (exam==='ENEM') item.notas=Object.fromEntries(['linguagens','humanas','natureza','matematica','redacao'].map(n=>[n,value(n)]));
-  if (['FUVEST','UNICAMP','UNESP','UNIFESP'].includes(exam)) {item.acertos_primeira_fase=value('acertos_primeira_fase');item.curso=value('curso_resultado');}
-  if (exam==='ETEC') item.notas_disciplinas=value('notas_disciplinas');
-  if (exam==='OLIMPIADAS') {item.pontuacao=value('pontuacao');item.classificacao=value('classificacao');item.medalha=value('medalha');item.mencao_honrosa=value('mencao_honrosa');}
+  const exam=$('exame').value;
+  const item={exame:exam,ano:$('ano').value || null};
+  if (exam==='ENEM') { item.categoria=$('categoria_enem').value; item.notas=Object.fromEntries(['linguagens','humanas','natureza','matematica','redacao'].map(n=>[n,$(n).value])); }
+  if (['FUVEST','UNICAMP'].includes(exam)) { item.acertos_primeira_fase=$('acertos_primeira_fase').value; item.categoria=$('categoria_vestibular').value; item.curso=$('curso_resultado').value; }
   return item;
 }
-function registrarResultado() {
-  if (resultOcrPending) { error('Aguarde a leitura do comprovante terminar.'); return; }
-  const controls=[...panels[2].querySelectorAll('input,select,textarea')].filter(control=>!control.disabled);
+async function registrarResultado() {
+  const button=document.querySelector('#register-result');
+  const controls=[...panels[2].querySelectorAll('input,select')].filter(control=>!control.disabled && !control.closest('[hidden]'));
   for (const control of controls) { if (!control.checkValidity()) {control.reportValidity();control.focus();return;} }
-  const exam=value('exame');
-  if (exam==='OLIMPIADAS' && !['pontuacao','classificacao','medalha','mencao_honrosa'].some(n=>value(n))) {error('Informe ao menos pontuação, classificação, medalha ou menção honrosa.');return;}
-  const item=capturarResultadoAtual();
-  if (!item.arquivo) {error('Anexe o comprovante deste resultado antes de registrar.');return;}
-  if (item.arquivo.size>10*1024*1024) {error('O comprovante deve ter até 10 MB.');return;}
-  resultEntries.push(item); renderRegisteredResults();
-  $('exame').value=''; $('comprovantes').value='';
-  showResultFields(true); resultReadId++; resultOcrPending=false;
-  const status=document.querySelector('#ocr-status'); status.className='ocr-status'; status.textContent='Resultado registrado. Você pode selecionar outro exame e anexar o próximo comprovante.';
-  clearError(); window.scrollTo({top:0,behavior:'smooth'});
+  const exam=$('exame').value;
+  if (resultEntries.some(item=>item.exame===exam)) {error('Este tipo de resultado já foi enviado. Escolha outra modalidade.');return;}
+  const file=$('comprovante').files[0];
+  if (!file) {error('Anexe o comprovante antes de enviar.');return;}
+  if (file.size>10*1024*1024) {error('O comprovante deve ter até 10 MB.');return;}
+  const data=capturarResultadoAtual();
+  const body=new FormData(); body.set('csrf',csrf); body.set('exame',data.exame); if(data.ano) body.set('ano',data.ano); body.set('dados',JSON.stringify(data)); body.set('comprovante',file,file.name);
+  button.disabled=true; button.textContent='Enviando...';
+  const status=document.querySelector('#upload-status'); status.className='ocr-status'; status.textContent='Enviando e armazenando o comprovante...'; clearError();
+  try {
+    const response=await fetch(API_BASE+'bolsa_registrar_resultado.php',{method:'POST',body,credentials:'include'});
+    const result=await response.json();
+    if(!response.ok || !result.sucesso) throw new Error(result.erro || 'Não foi possível enviar o comprovante.');
+    resultEntries.push(result.item); renderRegisteredResults();
+    $('exame').value=''; $('comprovante').value=''; showResultFields(true);
+    status.className='ocr-status success'; status.textContent='Comprovante enviado e armazenado. Você pode enviar outro tipo de resultado.';
+    window.scrollTo({top:0,behavior:'smooth'});
+  } catch(e) { status.className='ocr-status error'; status.textContent=''; error(e.message || 'Falha de conexão ao enviar o comprovante.'); }
+  finally {button.disabled=false;button.textContent='Enviar comprovante';}
 }
 function summary() {
-  const resultsHtml=resultEntries.map((item,index)=>`<h3>Resultado ${index+1} — ${escapeHtml(examLabel(item.exame))}</h3><dl>${pair('Ano',item.ano)}${pair('Comprovante',item.arquivo.name)}${pair('Dados identificados',resultDescription(item))}</dl>`).join('');
+  const resultsHtml=resultEntries.map((item,index)=>`<h3>Resultado ${index+1} — ${escapeHtml(examLabel(item.exame))}</h3><dl>${pair('Ano',item.ano)}${pair('Comprovante',item.arquivo_nome)}${pair('Dados identificados',resultDescription(item))}</dl>`).join('');
   document.querySelector('#summary').innerHTML = `
     <h3>Dados pessoais</h3><dl>${pair('Nome', value('nome'))}${pair('CPF', value('cpf'))}${pair('Nascimento', value('nascimento'))}${pair('E-mail', value('email'))}${pair('Celular', value('celular'))}${pair('Localidade', `${value('cidade')} / ${value('estado')}`)}</dl>
     <h3>Curso de interesse</h3><dl>${pair('Unidade', catalog.units[value('unidade')])}${pair('Curso', catalog.courses[value('curso')])}${pair('Período', catalog.periods[value('periodo')])}</dl>
@@ -338,17 +241,15 @@ form.addEventListener('submit', async event => {
   const button = document.querySelector('#send');
   button.disabled = true; button.textContent = 'Enviando...'; clearError();
   const primeiroResultado=resultEntries[0];
-  const {arquivo:arquivoPrimeiro,...dadosPrimeiroResultado}=primeiroResultado;
   const payload = {
     nome:value('nome'), cpf:value('cpf'), nascimento:value('nascimento'), email:value('email'), celular:value('celular'),
     estado:value('estado'), cidade:value('cidade'), unidade:value('unidade'), curso:value('curso'), periodo:value('periodo'),
-    exame:primeiroResultado.exame, ano:primeiroResultado.ano, notas:primeiroResultado.notas || {}, dados_resultado:{...dadosPrimeiroResultado,arquivo_nome:arquivoPrimeiro.name},
-    resultados:resultEntries.map(({arquivo,...item})=>({...item,arquivo_nome:arquivo.name})),
+    exame:primeiroResultado.exame, ano:primeiroResultado.ano || new Date().getFullYear(), notas:primeiroResultado.notas || {},
+    resultados:resultEntries.map(item=>({id:item.id})),
     veracidade:$('veracidade').checked, manual:$('manual').checked, privacidade:$('privacidade').checked, marketing:$('marketing').checked
   };
   const body = new FormData();
   body.set('csrf',csrf); body.set('payload',JSON.stringify(payload));
-  resultEntries.forEach(item => body.append('comprovantes[]',item.arquivo,item.arquivo.name));
   try {
     const response = await fetch(API_BASE + 'bolsa_inserir.php',{method:'POST',body,credentials:'include'});
     const result = await response.json();
@@ -370,8 +271,12 @@ form.addEventListener('submit', async event => {
     options('unidade',catalog.units); options('curso',catalog.courses); options('periodo',catalog.periods); preencherCursosVestibular();
     document.querySelector('#manual-link').href = catalog.legal.manual_url;
     document.querySelector('#privacy-link').href = catalog.legal.privacy_url;
-    $('ano').max = String(new Date().getFullYear()); $('ano').value = String(new Date().getFullYear());
-    showResultFields(); renderRegisteredResults(); atualizarLeitura(); render();
+    $('ano').max = String(new Date().getFullYear());
+    const staged=await fetch(API_BASE+'bolsa_registrar_resultado.php',{credentials:'include'});
+    const stagedData=await staged.json(); if(!staged.ok) throw new Error(stagedData.erro || 'Não foi possível carregar os comprovantes.');
+    resultEntries=stagedData.itens || [];
+    document.querySelector('#register-result').addEventListener('click',registrarResultado);
+    showResultFields(); renderRegisteredResults(); render();
   } catch (e) { error(e.message); form.querySelectorAll('button').forEach(b => b.disabled = true); }
 })();
 
