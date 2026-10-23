@@ -110,6 +110,7 @@
         </div>
         <button type="button" class="btn-primary" id="btnNovaTabela">+ Nova tabela</button>
         <button type="button" class="btn-light" id="btnEditarTabela">Editar tabela</button>
+        <button type="button" class="btn-light" id="btnDuplicarTabela">Duplicar tabela</button>
         <button type="button" class="btn-danger" id="btnArquivarTabela">Arquivar tabela</button>
         <button type="button" class="btn-light" id="btnFaixas">Consultar faixas</button>
         <div class="check"><input type="checkbox" id="mostrarArquivadas"><label for="mostrarArquivadas">Mostrar arquivadas</label></div>
@@ -170,6 +171,24 @@
             </div>
         </div>
         <div class="modal-footer"><button type="button" class="btn-light fechar">Cancelar</button><button type="submit" class="btn-primary" id="btnSalvarTabela">Salvar</button></div>
+    </form>
+</dialog>
+
+<dialog id="modalDuplicarTabela" style="width:min(650px,calc(100% - 26px))">
+    <form id="formDuplicarTabela">
+        <div class="modal-header"><h2>Duplicar tabela de preços</h2><button type="button" class="btn-light fechar">Fechar</button></div>
+        <div class="modal-body">
+            <input type="hidden" id="DuplicarIdOrigem" name="IdTabelaOrigem">
+            <p class="hint" style="margin-top:0">Origem: <strong id="DuplicarNomeOrigem"></strong>. A tabela original não será alterada.</p>
+            <label for="DuplicarDescricao">Descrição da nova tabela *</label>
+            <input id="DuplicarDescricao" name="Descricao" maxlength="100" required placeholder="Ex.: CAPITAL 2027">
+            <div class="checks" style="margin-top:18px">
+                <div class="check"><input type="checkbox" id="DuplicarPrecos" name="CopiarPrecos" value="1" checked><label for="DuplicarPrecos">Copiar cursos, preços e descontos</label></div>
+                <div class="check"><input type="checkbox" id="DuplicarUnidades" name="CopiarUnidades" value="1"><label for="DuplicarUnidades">Copiar vínculos das unidades</label></div>
+            </div>
+            <p class="hint">A nova tabela será criada <b>inativa</b>, para evitar utilização prematura em matrículas. Copiar unidades só funcionará se o banco permitir mais de uma tabela por unidade; isso também requer adequar a seleção de tabela nos processos de matrícula. Em caso de incompatibilidade, toda a duplicação será cancelada.</p>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn-light fechar">Cancelar</button><button type="submit" class="btn-primary" id="btnConfirmarDuplicacao">Criar cópia</button></div>
     </form>
 </dialog>
 
@@ -242,7 +261,7 @@
 <script>
 const API_BASE = 'https://apisec.secauxiliar.com.br/sec/';
 const API = {
-    tabelas: API_BASE+'listar_tabelas_precos.php', salvarTabela: API_BASE+'salvar_tabela_precos.php', arquivarTabela: API_BASE+'arquivar_tabela_precos.php',
+    tabelas: API_BASE+'listar_tabelas_precos.php', duplicarTabela: API_BASE+'duplicar_tabela_precos.php', salvarTabela: API_BASE+'salvar_tabela_precos.php', arquivarTabela: API_BASE+'arquivar_tabela_precos.php',
     precos: API_BASE+'listar_precos.php', salvarPreco: API_BASE+'salvar_preco.php', excluirPreco: API_BASE+'excluir_preco.php', copiarPreco: API_BASE+'copiar_preco.php',
     unidades: API_BASE+'listar_unidades_tabela_preco.php', adicionarUnidade: API_BASE+'adicionar_unidade_tabela_preco.php', excluirUnidade: API_BASE+'excluir_unidade_tabela_preco.php'
 };
@@ -273,7 +292,7 @@ async function trocarTabela(){
     $('nomeTabelaPrecos').textContent=nome; $('nomeTabelaUnidades').textContent=nome;
     const arquivada=Number(t?.Arquivada)===1;
     const disabled=!t||arquivada;
-    ['btnEditarTabela','btnNovoPreco','btnAdicionarUnidade','IdUnidade'].forEach(id=>$(id).disabled=disabled);
+    ['btnEditarTabela','btnDuplicarTabela','btnNovoPreco','btnAdicionarUnidade','IdUnidade'].forEach(id=>$(id).disabled=disabled);
     ['buscaPreco','btnBuscarPreco'].forEach(id=>$(id).disabled=!t);
     $('btnArquivarTabela').disabled=!t;
     $('btnArquivarTabela').textContent=arquivada?'Restaurar tabela':'Arquivar tabela';
@@ -310,6 +329,26 @@ function renderUnidades(){
 }
 function abrirNovaTabela(){ $('formTabela').reset();$('TabelaId').value='';$('TabelaAtivo').checked=true;$('tituloTabela').textContent='Nova tabela de preços';$('modalTabela').showModal();$('TabelaDescricao').focus(); }
 function abrirEditarTabela(){const t=atual();if(!t)return;$('TabelaId').value=t.IdTabela;$('TabelaDescricao').value=t.Descricao;$('TabelaAtivo').checked=Number(t.Ativo)===1;$('tituloTabela').textContent='Editar tabela de preços';$('modalTabela').showModal();}
+function abrirDuplicarTabela(){
+    const t=atual(); if(!t || Number(t.Arquivada)===1)return;
+    $('formDuplicarTabela').reset();
+    $('DuplicarIdOrigem').value=t.IdTabela;
+    $('DuplicarNomeOrigem').textContent=t.Descricao;
+    $('DuplicarDescricao').value=/\b20\d{2}\b/.test(t.Descricao)?t.Descricao.replace(/\b20\d{2}\b/,'2027'):t.Descricao+' 2027';
+    $('DuplicarPrecos').checked=true;
+    $('DuplicarUnidades').checked=false;
+    $('modalDuplicarTabela').showModal();$('DuplicarDescricao').focus();
+}
+$('formDuplicarTabela').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const botao=$('btnConfirmarDuplicacao'); botao.disabled=true;
+    try{
+        const d=await post(API.duplicarTabela,new FormData(e.currentTarget));
+        fechar($('modalDuplicarTabela'));
+        status(d.message||'Tabela duplicada.');
+        await carregarTabelas(d.IdTabela);
+    }catch(err){status(err.message,'error');}finally{botao.disabled=false;}
+});
 function nomeTurno(turno){return {MANHA:'Manhã',TARDE:'Tarde',VESPERTINO:'Vespertino',NOITE:'Noite'}[turno]||turno||'';}
 function ajustarTipo(){const opcional=$('Tipo').value==='OPCIONAL';$('campoCurso').hidden=false;$('Curso').required=true;$('labelCurso').textContent=opcional?'Nome do curso opcional *':'Nome do curso regular *';}
 function abrirNovoPreco(){const t=atual();if(!t||Number(t.Arquivada)===1)return;$('formPreco').reset();$('PrecoId').value='';$('PrecoTabelaId').value=t.IdTabela;$('Tipo').value='REGULAR';$('Turno').value='MANHA';['TemDesc','Mostrar','Ativo'].forEach(id=>$(id).checked=true);ajustarTipo();$('tituloPreco').textContent=`Novo preço — ${t.Descricao}`;$('modalPreco').showModal();$('Tipo').focus();}
@@ -323,7 +362,7 @@ $('formPreco').addEventListener('submit',async e=>{e.preventDefault();const b=$(
 $('formCopiar').addEventListener('submit',async e=>{e.preventDefault();const b=$('btnConfirmarCopia');b.disabled=true;try{const d=await post(API.copiarPreco,new FormData(e.currentTarget));fechar($('modalCopiar'));status(d.message);await carregarTabelas(atual()?.IdTabela);}catch(x){status(x.message,'error');}finally{b.disabled=false;}});
 $('formUnidade').addEventListener('submit',async e=>{e.preventDefault();const t=atual(),b=$('btnAdicionarUnidade');if(!t)return;b.disabled=true;try{const d=await post(API.adicionarUnidade,{IdTabela:t.IdTabela,IdUnidade:$('IdUnidade').value.trim()});$('IdUnidade').value='';status(d.message);await carregarTabelas(t.IdTabela);$('IdUnidade').focus();}catch(x){status(x.message,'error');}finally{b.disabled=false;}});
 $('Tipo').addEventListener('change',ajustarTipo);$('mostrarArquivadas').addEventListener('change',()=>carregarTabelas());
-$('tabelaAtual').addEventListener('change',trocarTabela);$('btnNovaTabela').addEventListener('click',abrirNovaTabela);$('btnEditarTabela').addEventListener('click',abrirEditarTabela);$('btnNovoPreco').addEventListener('click',abrirNovoPreco);$('btnBuscarPreco').addEventListener('click',carregarPrecos);$('buscaPreco').addEventListener('keydown',e=>{if(e.key==='Enter')carregarPrecos();});$('btnFaixas').addEventListener('click',()=>$('modalFaixas').showModal());
+$('tabelaAtual').addEventListener('change',trocarTabela);$('btnNovaTabela').addEventListener('click',abrirNovaTabela);$('btnEditarTabela').addEventListener('click',abrirEditarTabela);$('btnDuplicarTabela').addEventListener('click',abrirDuplicarTabela);$('btnNovoPreco').addEventListener('click',abrirNovoPreco);$('btnBuscarPreco').addEventListener('click',carregarPrecos);$('buscaPreco').addEventListener('keydown',e=>{if(e.key==='Enter')carregarPrecos();});$('btnFaixas').addEventListener('click',()=>$('modalFaixas').showModal());
 $('btnArquivarTabela').addEventListener('click',async()=>{const t=atual();if(!t)return;const arquivada=Number(t.Arquivada)===1;const acao=arquivada?'restaurar':'arquivar';if(!confirm(`Deseja ${acao} a tabela ${t.Descricao}?`))return;try{const d=await post(API.arquivarTabela,{IdTabela:t.IdTabela,Arquivada:arquivada?0:1});status(d.message);if(!arquivada)$('mostrarArquivadas').checked=true;await carregarTabelas(t.IdTabela);}catch(e){status(e.message,'error');}});
 document.querySelectorAll('dialog .fechar').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}));
