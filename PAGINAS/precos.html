@@ -365,7 +365,9 @@ $('Tipo').addEventListener('change',ajustarTipo);$('mostrarArquivadas').addEvent
 $('tabelaAtual').addEventListener('change',trocarTabela);$('btnNovaTabela').addEventListener('click',abrirNovaTabela);$('btnEditarTabela').addEventListener('click',abrirEditarTabela);$('btnDuplicarTabela').addEventListener('click',abrirDuplicarTabela);$('btnNovoPreco').addEventListener('click',abrirNovoPreco);$('btnBuscarPreco').addEventListener('click',carregarPrecos);$('buscaPreco').addEventListener('keydown',e=>{if(e.key==='Enter')carregarPrecos();});$('btnFaixas').addEventListener('click',()=>$('modalFaixas').showModal());
 $('btnArquivarTabela').addEventListener('click',async()=>{const t=atual();if(!t)return;const arquivada=Number(t.Arquivada)===1;const acao=arquivada?'restaurar':'arquivar';if(!confirm(`Deseja ${acao} a tabela ${t.Descricao}?`))return;try{const d=await post(API.arquivarTabela,{IdTabela:t.IdTabela,Arquivada:arquivada?0:1});status(d.message);if(!arquivada)$('mostrarArquivadas').checked=true;await carregarTabelas(t.IdTabela);}catch(e){status(e.message,'error');}});
 document.querySelectorAll('dialog .fechar').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
-document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}));
+// Não fechar diálogos por coordenadas de clique: menus nativos de <select>
+// podem gerar eventos fora dos limites visuais do dialog.
+// Fechamento somente pelos botões Fechar/Cancelar ou pela tecla Esc.
 carregarTabelas();
 </script>
 </body>
