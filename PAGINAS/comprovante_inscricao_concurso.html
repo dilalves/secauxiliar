@@ -1,7 +1,388 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Comprovante de inscrição — Concurso de Bolsa</title><style>
-*{box-sizing:border-box}body{margin:0;background:#e8eef5;color:#172d48;font:13px Arial,sans-serif}.bar{padding:12px 20px;background:#143e7a;color:white;display:flex;justify-content:space-between;align-items:center}.bar button{padding:9px 14px;border:0;border-radius:5px;cursor:pointer}.paper{background:white;width:210mm;min-height:297mm;margin:15px auto;padding:17mm;box-shadow:0 5px 20px #1234}.head{display:flex;justify-content:space-between;align-items:center;gap:18px;border-bottom:3px solid #184b8b;padding-bottom:16px}.head img{width:95mm;max-height:33mm;object-fit:contain;object-position:left center}.head h1{text-align:right;font-size:19px;color:#123f79;margin:0}.head p{text-align:right;color:#667a90;font-size:11px}.number{background:#edf4fc;margin:20px 0;padding:18px;border-left:5px solid #164e94}.number small{display:block;font-weight:bold;color:#556d86}.number strong{display:block;margin-top:4px;color:#113f7b;font-size:29px;letter-spacing:2px}.section{margin-top:22px}.section h2{font-size:13px;color:#174579;border-bottom:1px solid #d3dfeb;padding-bottom:7px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 22px}.item small{display:block;color:#607489;font-size:10px;margin-bottom:5px}.item strong{font-size:12px;overflow-wrap:anywhere}.info{background:#f4f8fc;border:1px solid #dce5ef;padding:15px;line-height:1.6;margin-top:25px}.footer{text-align:center;border-top:1px solid #d4deeb;padding-top:12px;margin-top:30px;color:#63788b;font-size:10px}.error{color:#a12929;padding:20px;background:#fff1f0;margin:30px}.hidden{display:none}@page{size:A4 portrait;margin:0}@media print{body{background:white}.bar{display:none}.paper{margin:0;box-shadow:none;width:210mm;min-height:297mm;page-break-after:auto}}@media(max-width:850px){.paper{width:100%;min-height:auto;padding:24px}.head img{width:45%}.grid{grid-template-columns:1fr}}
-</style></head><body><div class="bar"><strong>Comprovante de inscrição</strong><button id="print" disabled>Imprimir / Salvar PDF</button></div><div id="error" class="error hidden"></div><div id="paper" class="paper">Carregando comprovante...</div><script>
-'use strict';const P=new URLSearchParams(location.search);const q={acao:'comprovante',IdConcurso:P.get('IdConcurso')||'',inscricao:P.get('inscricao')||''};const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const fmt=s=>{const d=String(s||'').slice(0,10).split('-');return d.length===3?d.reverse().join('/'): '—'};const item=(l,v)=>`<div class="item"><small>${esc(l)}</small><strong>${esc(v||'—')}</strong></div>`;
-async function carregar(){try{if(!/^[A-Za-z0-9_-]{1,50}$/.test(q.IdConcurso)||!/^[0-9]{7}$/.test(q.inscricao))throw Error('Endereço de comprovante inválido.');const r=await fetch('https://apisec.secauxiliar.com.br/sec/inscricao_avulsa_concurso.php?'+new URLSearchParams(q),{credentials:'include',cache:'no-store'});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Erro ao carregar comprovante.');const i=d.inscricao,c=d.concurso,u=d.unidade;document.getElementById('paper').innerHTML=`<div class="head"><img src="objetivo_logo.png" alt="Curso Objetivo"><div><h1>COMPROVANTE DE INSCRIÇÃO</h1><p>CONCURSO DE BOLSA</p></div></div><div class="number"><small>NÚMERO DA INSCRIÇÃO</small><strong>${esc(i.NumeroInscricao)}</strong></div><div class="section"><h2>DADOS DO CANDIDATO</h2><div class="grid">${item('Nome',String(i.NomeCand||'').toLocaleUpperCase('pt-BR'))}${item('CPF',i.Cpf)}${item('Nascimento',fmt(i.DataDeNascimento))}${item('Carreira pretendida',i.Carreira)}${item('Celular',i.TelefoneCelular)}${item('Telefone',i.TelefoneResidencial)}${item('E-mail',i.Email)}</div></div><div class="section"><h2>DADOS DO CONCURSO</h2><div class="grid">${item('Concurso',c.IdConcurso+' — '+c.Descricao)}${item('Data da prova',fmt(c.Data))}${item('Horário',c.Hora+'h')}${item('Código da prova',c.CodProva)}${item('Faixa',c.Faixa)}${item('Unidade',u.idund+' — '+u.nome)}${item('Data de inscrição',fmt(i.DataInscricao))}</div></div><div class="info"><strong>ATENÇÃO</strong><p>Este comprovante confirma a inscrição no concurso indicado. O candidato deve observar as orientações e condições previstas no regulamento oficial do concurso, bem como os horários e instruções fornecidos pela unidade.</p><p>Conserve este documento para identificação e consulta da inscrição.</p></div><div class="footer">SEC-AUXILIAR · CURSO OBJETIVO · Documento emitido eletronicamente</div>`;document.getElementById('print').disabled=false;if(P.get('imprimir')==='1')setTimeout(()=>window.print(),400);}catch(e){document.getElementById('paper').classList.add('hidden');const el=document.getElementById('error');el.classList.remove('hidden');el.textContent=e.message;}}
-document.getElementById('print').addEventListener('click',()=>window.print());carregar();
-</script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comprovante de inscrição — Concurso de Bolsa</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:#e8eef5;
+    color:#172d48;
+    font:12px Arial, sans-serif;
+}
+
+.bar{
+    padding:12px 20px;
+    background:#143e7a;
+    color:#fff;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.bar button{
+    padding:9px 14px;
+    border:0;
+    border-radius:5px;
+    cursor:pointer;
+    background:#fff;
+    color:#143e7a;
+    font-weight:bold;
+}
+
+.paper{
+    background:#fff;
+    width:210mm;
+    min-height:297mm;
+    margin:10px auto;
+    padding:12mm 14mm;
+    box-shadow:0 5px 20px rgba(17,51,102,.18);
+}
+
+.head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:18px;
+    border-bottom:2px solid #184b8b;
+    padding-bottom:10px;
+}
+
+.head img{
+    width:78mm;
+    max-height:24mm;
+    object-fit:contain;
+    object-position:left center;
+}
+
+.head-right{
+    text-align:right;
+}
+
+.head-right h1{
+    margin:0;
+    font-size:18px;
+    color:#123f79;
+    line-height:1.15;
+}
+
+.head-right p{
+    margin:4px 0 0;
+    color:#667a90;
+    font-size:11px;
+}
+
+.number{
+    margin:12px 0 14px;
+    padding:10px 12px;
+    border:2px solid #184b8b;
+    background:#f6faff;
+    text-align:center;
+    border-radius:4px;
+}
+
+.number small{
+    display:block;
+    font-weight:bold;
+    color:#556d86;
+    font-size:10px;
+    letter-spacing:.6px;
+}
+
+.number strong{
+    display:block;
+    margin-top:4px;
+    color:#113f7b;
+    font-size:24px;
+    letter-spacing:2px;
+    text-align:center;
+}
+
+.section{
+    margin-top:12px;
+}
+
+.section h2{
+    font-size:12px;
+    color:#174579;
+    border-bottom:1px solid #d3dfeb;
+    padding-bottom:5px;
+    margin:0 0 8px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px 18px;
+}
+
+.item{
+    min-height:30px;
+}
+
+.item small{
+    display:block;
+    color:#607489;
+    font-size:10px;
+    margin-bottom:3px;
+    text-transform:uppercase;
+}
+
+.item strong{
+    font-size:12px;
+    overflow-wrap:anywhere;
+}
+
+.legal{
+    margin-top:16px;
+    border:1px solid #dce5ef;
+    background:#f9fbfd;
+    padding:14px 18px;
+    line-height:1.45;
+    font-size:11px;
+    text-align:center;
+}
+
+.legal p{
+    margin:0 0 12px;
+}
+
+.legal p:last-child{
+    margin-bottom:0;
+}
+
+.footer{
+    text-align:center;
+    border-top:1px solid #d4deeb;
+    padding-top:10px;
+    margin-top:16px;
+    color:#63788b;
+    font-size:10px;
+}
+
+.error{
+    color:#a12929;
+    padding:20px;
+    background:#fff1f0;
+    margin:30px;
+}
+
+.hidden{
+    display:none;
+}
+
+@page{
+    size:A4 portrait;
+    margin:0;
+}
+
+@media print{
+    body{
+        background:#fff;
+    }
+
+    .bar{
+        display:none;
+    }
+
+    .paper{
+        margin:0;
+        box-shadow:none;
+        width:210mm;
+        min-height:297mm;
+        page-break-after:auto;
+    }
+}
+
+@media (max-width:850px){
+    .paper{
+        width:100%;
+        min-height:auto;
+        padding:24px;
+    }
+
+    .head{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .head img{
+        width:60%;
+    }
+
+    .head-right{
+        text-align:left;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+    <strong>Comprovante de inscrição</strong>
+    <button id="print" disabled>Imprimir / Salvar PDF</button>
+</div>
+
+<div id="error" class="error hidden"></div>
+<div id="paper" class="paper">Carregando comprovante...</div>
+
+<script>
+'use strict';
+
+const P = new URLSearchParams(location.search);
+
+const q = {
+    acao: 'comprovante',
+    IdConcurso: P.get('IdConcurso') || '',
+    inscricao: P.get('inscricao') || ''
+};
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+}[c]));
+
+const fmtData = s => {
+    const txt = String(s || '').trim();
+    if (!txt) return '—';
+
+    const parte = txt.slice(0, 10).split('-');
+    return parte.length === 3 ? parte.reverse().join('/') : txt;
+};
+
+const fmtDataHora = s => {
+    const txt = String(s || '').trim();
+    if (!txt) return '—';
+
+    const data = txt.slice(0, 10).split('-');
+    const hora = txt.length >= 16 ? txt.slice(11, 16) : '';
+
+    if (data.length === 3) {
+        return data.reverse().join('/') + (hora ? ' ' + hora : '');
+    }
+    return txt;
+};
+
+const item = (l, v) => `
+    <div class="item">
+        <small>${esc(l)}</small>
+        <strong>${esc(v || '—')}</strong>
+    </div>
+`;
+
+async function carregar(){
+    try{
+        if(!/^[A-Za-z0-9_-]{1,50}$/.test(q.IdConcurso) || !/^[0-9]{7}$/.test(q.inscricao)){
+            throw Error('Endereço de comprovante inválido.');
+        }
+
+        const r = await fetch(
+            'https://apisec.secauxiliar.com.br/sec/inscricao_avulsa_concurso.php?' + new URLSearchParams(q),
+            {
+                credentials:'include',
+                cache:'no-store'
+            }
+        );
+
+        const d = await r.json();
+
+        if(!r.ok || !d.ok){
+            throw Error(d.error || 'Erro ao carregar comprovante.');
+        }
+
+        const i = d.inscricao;
+        const c = d.concurso;
+        const u = d.unidade;
+
+        document.getElementById('paper').innerHTML = `
+            <div class="head">
+                <img src="objetivo_logo.png" alt="Curso Objetivo">
+                <div class="head-right">
+                    <h1>COMPROVANTE DE INSCRIÇÃO</h1>
+                    <p>CONCURSO DE BOLSA / SIMULADO</p>
+                </div>
+            </div>
+
+            <div class="number">
+                <small>NÚMERO DA INSCRIÇÃO</small>
+                <strong>${esc(i.NumeroInscricao)}</strong>
+            </div>
+
+            <div class="section">
+                <h2>DADOS DO CANDIDATO</h2>
+                <div class="grid">
+                    ${item('Nome', String(i.NomeCand || '').toLocaleUpperCase('pt-BR'))}
+                    ${item('CPF', i.Cpf)}
+                    ${item('Nascimento', fmtData(i.DataDeNascimento))}
+                    ${item('Carreira pretendida', String(i.Carreira || '').toLocaleUpperCase('pt-BR'))}
+                    ${item('Celular', i.TelefoneCelular)}
+                    ${item('Telefone', i.TelefoneResidencial)}
+                    ${item('E-mail', i.Email)}
+                    ${item('Data de inscrição', fmtDataHora(i.DataInscricao))}
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>DADOS DO CONCURSO</h2>
+                <div class="grid">
+                    ${item('Concurso', c.IdConcurso + ' — ' + c.Descricao)}
+                    ${item('Data da prova', fmtData(c.Data))}
+                    ${item('Horário', (c.Hora || '—') + 'h')}
+                    ${item('Código da prova', c.CodProva)}
+                    ${item('Faixa', c.Faixa)}
+                    ${item('Unidade', u.idund + ' — ' + u.nome)}
+                </div>
+            </div>
+
+            <div class="legal">
+                <p>
+                    Declaro estar de acordo com as normas descritas no regulamento do concurso de bolsa/simulado,
+                    disponível em https://www.curso-objetivo.br, que vigorarão durante todo o período de Concurso
+                    de Bolsa de Estudo, nada tendo a objetar à sua aplicação nem ao critério de apuração/pontuação da prova.
+                </p>
+
+                <p>
+                    Estou ciente ainda de que, se qualquer dado aqui fornecido não corresponder à realidade,
+                    minha prova será anulada e não terei direito aos descontos relativos a este concurso
+                    e/ou acesso ao resultado do simulado.
+                </p>
+            </div>
+
+            <div class="footer">
+                SEC-AUXILIAR · CURSO OBJETIVO · Documento emitido eletronicamente
+            </div>
+        `;
+
+        document.getElementById('print').disabled = false;
+
+        if(P.get('imprimir') === '1'){
+            setTimeout(() => window.print(), 400);
+        }
+
+    }catch(e){
+        document.getElementById('paper').classList.add('hidden');
+        const el = document.getElementById('error');
+        el.classList.remove('hidden');
+        el.textContent = e.message;
+    }
+}
+
+document.getElementById('print').addEventListener('click', () => window.print());
+carregar();
+</script>
+
+</body>
+</html>
