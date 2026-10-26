@@ -4,414 +4,152 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Comprovante de inscrição — Concurso de Bolsa</title>
-
 <style>
-*{ box-sizing:border-box; }
-
-body{
-    margin:0;
-    background:#e8eef5;
-    color:#172d48;
-    font:12px Arial, sans-serif;
+* { box-sizing:border-box; }
+body { margin:0; background:#e8eef5; color:#172d48; font:12px Arial,sans-serif; }
+.bar { padding:12px 20px; background:#143e7a; color:#fff; display:flex; justify-content:space-between; align-items:center; }
+.bar button { padding:9px 14px; border:0; border-radius:5px; background:#fff; color:#143e7a; font-weight:700; cursor:pointer; }
+.bar button:disabled { opacity:.5; cursor:default; }
+.paper { background:#fff; width:210mm; min-height:297mm; margin:10px auto; padding:12mm 14mm; box-shadow:0 5px 20px rgba(17,51,102,.18); }
+.head { display:flex; justify-content:space-between; align-items:center; gap:8mm; border-bottom:2px solid #184b8b; padding-bottom:8px; }
+.head img { width:78mm; max-height:24mm; object-fit:contain; object-position:left center; display:block; flex-shrink:0; }
+.head-right { flex:1; text-align:right; min-width:0; }
+.head-right h1 { margin:0; color:#123f79; font-size:17px; line-height:1.16; }
+.head-right p { margin:5px 0 0; font-size:10px; color:#667a90; font-weight:600; }
+.number { margin:12px 0; padding:9px 12px; border:2px solid #184b8b; border-radius:4px; background:#f8fbff; text-align:center; }
+.number small { display:block; font-size:10px; font-weight:700; color:#556d86; letter-spacing:.5px; }
+.number strong { display:block; margin-top:4px; color:#113f7b; font-size:24px; letter-spacing:2px; }
+.section { margin-top:11px; }
+.section h2 { margin:0 0 9px; padding-bottom:5px; font-size:12px; color:#174579; border-bottom:1px solid #d3dfeb; }
+.section-body { padding:0 8mm; }
+.grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:12mm; row-gap:8px; }
+.item { min-height:29px; }
+.item small { display:block; margin-bottom:3px; color:#607489; font-size:10px; text-transform:uppercase; }
+.item strong { display:block; padding-left:3mm; font-size:12px; overflow-wrap:anywhere; }
+.legal { margin-top:16px; border:1px solid #dce5ef; background:#f9fbfd; padding:12px 16px; line-height:1.44; font-size:10.5px; text-align:center; }
+.legal p { margin:0 0 10px; }
+.legal p:last-child { margin-bottom:0; }
+.footer { text-align:center; border-top:1px solid #d4deeb; padding-top:8px; margin-top:12px; color:#63788b; font-size:10px; }
+.error { color:#a12929; padding:20px; background:#fff1f0; margin:30px; }
+.hidden { display:none; }
+@page { size:A4 portrait; margin:0; }
+@media print {
+  html,body { width:210mm; margin:0; padding:0; background:#fff; }
+  .bar { display:none; }
+  .paper { margin:0; padding:12mm 14mm; width:210mm; min-height:0; box-shadow:none; }
+  .head { flex-direction:row; align-items:center; }
+  .head-right { text-align:right; }
+  .grid { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+  .section-body { padding:0 8mm; }
+  .number,.section,.legal,.footer { break-inside:avoid; }
+  * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 }
-
-.bar{
-    padding:12px 20px;
-    background:#143e7a;
-    color:#fff;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-.bar button{
-    padding:9px 14px;
-    border:0;
-    border-radius:5px;
-    cursor:pointer;
-    background:#fff;
-    color:#143e7a;
-    font-weight:bold;
-}
-
-.paper{
-    background:#fff;
-    width:210mm;
-    min-height:297mm;
-    margin:10px auto;
-    padding:12mm 14mm;
-    box-shadow:0 5px 20px rgba(17,51,102,.18);
-}
-
-.head{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:18px;
-    border-bottom:2px solid #184b8b;
-    padding-bottom:8px;
-}
-
-.head img{
-    width:72mm;
-    max-height:22mm;
-    object-fit:contain;
-    object-position:left center;
-}
-
-.head-right{
-    text-align:right;
-    padding-top:4px;
-}
-
-.head-right h1{
-    margin:0;
-    font-size:16px;
-    color:#123f79;
-    line-height:1.15;
-}
-
-.head-right p{
-    margin:3px 0 0;
-    color:#667a90;
-    font-size:10px;
-}
-
-.number{
-    margin:10px 0 12px;
-    padding:8px 12px;
-    border:2px solid #184b8b;
-    background:#f8fbff;
-    text-align:center;
-    border-radius:4px;
-}
-
-.number small{
-    display:block;
-    font-weight:bold;
-    color:#556d86;
-    font-size:10px;
-    letter-spacing:.6px;
-}
-
-.number strong{
-    display:block;
-    margin-top:3px;
-    color:#113f7b;
-    font-size:22px;
-    letter-spacing:2px;
-    text-align:center;
-}
-
-.section{
-    margin-top:10px;
-}
-
-.section h2{
-    font-size:12px;
-    color:#174579;
-    border-bottom:1px solid #d3dfeb;
-    padding-bottom:5px;
-    margin:0 0 8px;
-}
-
-.section-body{
-    padding-left:16px; /* recuo visual */
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px 18px;
-}
-
-.item{
-    min-height:28px;
-}
-
-.item small{
-    display:block;
-    color:#607489;
-    font-size:10px;
-    margin-bottom:2px;
-    text-transform:uppercase;
-}
-
-.item strong{
-    display:block;
-    font-size:12px;
-    padding-left:10px; /* valor deslocado para a direita */
-    overflow-wrap:anywhere;
-}
-
-.legal{
-    margin-top:14px;
-    border:1px solid #dce5ef;
-    background:#f9fbfd;
-    padding:12px 18px;
-    line-height:1.42;
-    font-size:10.8px;
-    text-align:center;
-}
-
-.legal p{
-    margin:0 0 10px;
-}
-
-.legal p:last-child{
-    margin-bottom:0;
-}
-
-.footer{
-    text-align:center;
-    border-top:1px solid #d4deeb;
-    padding-top:8px;
-    margin-top:12px;
-    color:#63788b;
-    font-size:10px;
-}
-
-.error{
-    color:#a12929;
-    padding:20px;
-    background:#fff1f0;
-    margin:30px;
-}
-
-.hidden{
-    display:none;
-}
-
-@page{
-    size:A4 portrait;
-    margin:0;
-}
-
-@media print{
-    body{
-        background:#fff;
-    }
-
-    .bar{
-        display:none;
-    }
-
-    .paper{
-        margin:0;
-        box-shadow:none;
-        width:210mm;
-        min-height:297mm;
-        page-break-after:auto;
-    }
-}
-
-@media (max-width:850px){
-    .paper{
-        width:100%;
-        min-height:auto;
-        padding:24px;
-    }
-
-    .head{
-        flex-direction:column;
-        align-items:flex-start;
-    }
-
-    .head img{
-        width:60%;
-    }
-
-    .head-right{
-        text-align:left;
-    }
-
-    .grid{
-        grid-template-columns:1fr;
-    }
-
-    .section-body{
-        padding-left:0;
-    }
+@media screen and (max-width:850px) {
+  .paper { width:100%; min-height:auto; padding:20px; }
+  .head img { width:43%; }
+  .head-right h1 { font-size:14px; }
+  .grid { grid-template-columns:1fr; }
+  .section-body { padding:0 10px; }
 }
 </style>
 </head>
 <body>
-
-<div class="bar">
-    <strong>Comprovante de inscrição</strong>
-    <button id="print" disabled>Imprimir / Salvar PDF</button>
-</div>
-
+<div class="bar"><strong>Comprovante de inscrição</strong><button id="print" disabled>Imprimir / Salvar PDF</button></div>
 <div id="error" class="error hidden"></div>
 <div id="paper" class="paper">Carregando comprovante...</div>
-
 <script>
 'use strict';
-
 const P = new URLSearchParams(location.search);
-
-const q = {
-    acao: 'comprovante',
-    IdConcurso: P.get('IdConcurso') || '',
-    inscricao: P.get('inscricao') || ''
+const q = { acao:'comprovante', IdConcurso:P.get('IdConcurso') || '', inscricao:P.get('inscricao') || '' };
+const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const first = (...values) => values.find(value => value !== null && value !== undefined && String(value).trim() !== '' && String(value) !== 'undefined') ?? '';
+const fmtData = value => {
+  const text = String(value ?? '').trim();
+  if (!text) return '—';
+  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : text;
 };
-
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    '"':'&quot;',
-    "'":'&#39;'
-}[c]));
-
-const fmtData = s => {
-    const txt = String(s || '').trim();
-    if (!txt) return '—';
-
-    const parte = txt.slice(0, 10).split('-');
-    return parte.length === 3 ? parte.reverse().join('/') : txt;
+const fmtDataHora = value => {
+  const text = String(value ?? '').trim();
+  if (!text) return '—';
+  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+  return match ? `${match[3]}/${match[2]}/${match[1]}${match[4] ? ` ${match[4]}:${match[5]}` : ''}` : text;
 };
+const item = (label, value) => `<div class="item"><small>${esc(label)}</small><strong>${esc(value === '' || value == null ? '—' : value)}</strong></div>`;
 
-const fmtDataHora = s => {
-    const txt = String(s || '').trim();
-    if (!txt) return '—';
-
-    const data = txt.slice(0, 10).split('-');
-    const hora = txt.length >= 16 ? txt.slice(11, 16) : '';
-
-    if (data.length === 3) {
-        return data.reverse().join('/') + (hora ? ' ' + hora : '');
+async function carregar() {
+  try {
+    if (!/^[A-Za-z0-9_-]{1,50}$/.test(q.IdConcurso) || !/^[0-9]{7}$/.test(q.inscricao)) {
+      throw new Error('Endereço de comprovante inválido.');
     }
-    return txt;
-};
+    const url = 'https://apisec.secauxiliar.com.br/sec/inscricao_avulsa_concurso.php?' + new URLSearchParams(q);
+    const resposta = await fetch(url, { credentials:'include', cache:'no-store' });
+    const dados = await resposta.json();
+    if (!resposta.ok || !dados.ok) throw new Error(dados.error || 'Erro ao carregar comprovante.');
 
-const item = (l, v) => `
-    <div class="item">
-        <small>${esc(l)}</small>
-        <strong>${esc(v || '—')}</strong>
-    </div>
-`;
+    const i = dados.inscricao || {};
+    const c = dados.concurso || {};
+    const u = dados.unidade || {};
 
-async function carregar(){
-    try{
-        if(!/^[A-Za-z0-9_-]{1,50}$/.test(q.IdConcurso) || !/^[0-9]{7}$/.test(q.inscricao)){
-            throw Error('Endereço de comprovante inválido.');
-        }
+    const codigoUnidade = String(first(u.idund, u.IdUnidade, u.cod_und, dados.idUnidade, dados.IdUnidade, i.CodUnidade, i.cod_und, '')).trim();
+    const nomesConhecidos = { '1501': 'CURSO PAULISTA' };
+    const nomeUnidade = String(first(u.nome, u.Nome, u.NomeUnidade, u.nomeUnidade,
+      u.unidade, u.Unidade, dados.NomeUnidade, dados.nomeUnidade, dados.unidade_nome,
+      i.NomeUnidade, c.NomeUnidade, nomesConhecidos[codigoUnidade], '')).toLocaleUpperCase('pt-BR');
+    const textoUnidade = [codigoUnidade, nomeUnidade].filter(Boolean).join(' — ') || '—';
 
-        const r = await fetch(
-            'https://apisec.secauxiliar.com.br/sec/inscricao_avulsa_concurso.php?' + new URLSearchParams(q),
-            {
-                credentials:'include',
-                cache:'no-store'
-            }
-        );
+    const numero = String(first(i.NumeroInscricao, q.inscricao)).padStart(7,'0');
+    document.getElementById('paper').innerHTML = `
+      <div class="head">
+        <img src="objetivo_logo.png" alt="Curso Objetivo">
+        <div class="head-right"><h1>COMPROVANTE DE INSCRIÇÃO</h1><p>CONCURSO DE BOLSA / SIMULADO</p></div>
+      </div>
+      <div class="number"><small>NÚMERO DA INSCRIÇÃO</small><strong>${esc(numero)}</strong></div>
+      <div class="section">
+        <h2>DADOS DO CANDIDATO</h2>
+        <div class="section-body"><div class="grid">
+          ${item('Nome', String(i.NomeCand || '').toLocaleUpperCase('pt-BR'))}
+          ${item('CPF', i.Cpf)}
+          ${item('Nascimento', fmtData(i.DataDeNascimento))}
+          ${item('Carreira pretendida', String(first(i.Carreira, i.CursoPret, '')).toLocaleUpperCase('pt-BR'))}
+          ${item('Celular', i.TelefoneCelular)}
+          ${item('Telefone', i.TelefoneResidencial)}
+          ${item('E-mail', i.Email)}
+          ${item('Data de inscrição', fmtDataHora(i.DataInscricao))}
+        </div></div>
+      </div>
+      <div class="section">
+        <h2>DADOS DO CONCURSO</h2>
+        <div class="section-body"><div class="grid">
+          ${item('Concurso', [c.IdConcurso, c.Descricao].filter(Boolean).join(' — '))}
+          ${item('Data da prova', fmtData(c.Data))}
+          ${item('Horário', c.Hora ? `${c.Hora}h` : '—')}
+          ${item('Código da prova', c.CodProva)}
+          ${item('Faixa', c.Faixa)}
+          ${item('Unidade', textoUnidade)}
+        </div></div>
+      </div>
+      <div class="legal">
+        <p>Declaro estar de acordo com as normas descritas no regulamento do concurso de bolsa/simulado, disponível em https://www.curso-objetivo.br, que vigorarão durante todo o período de Concurso de Bolsa de Estudo, nada tendo a objetar à sua aplicação nem ao critério de apuração/pontuação da prova.</p>
+        <p>Estou ciente ainda de que, se qualquer dado aqui fornecido não corresponder à realidade, minha prova será anulada e não terei direito aos descontos relativos a este concurso e/ou acesso ao resultado do simulado.</p>
+      </div>
+      <div class="footer">SEC-AUXILIAR · CURSO OBJETIVO · Documento emitido eletronicamente</div>`;
 
-        const d = await r.json();
-
-        if(!r.ok || !d.ok){
-            throw Error(d.error || 'Erro ao carregar comprovante.');
-        }
-
-        const i = d.inscricao || {};
-        const c = d.concurso || {};
-        const u = d.unidade || {};
-
-        const nomeUnidade =
-            u.nome ||
-            u.Nome ||
-            u.unidade ||
-            u.Unidade ||
-            i.NomeUnidade ||
-            c.NomeUnidade ||
-            '—';
-
-        const codigoUnidade =
-            u.idund ||
-            u.IdUnidade ||
-            i.IdUnidade ||
-            c.IdUnidade ||
-            '—';
-
-        document.getElementById('paper').innerHTML = `
-            <div class="head">
-                <img src="objetivo_logo.png" alt="Curso Objetivo">
-                <div class="head-right">
-                    <h1>COMPROVANTE DE INSCRIÇÃO</h1>
-                    <p>CONCURSO DE BOLSA / SIMULADO</p>
-                </div>
-            </div>
-
-            <div class="number">
-                <small>NÚMERO DA INSCRIÇÃO</small>
-                <strong>${esc(i.NumeroInscricao)}</strong>
-            </div>
-
-            <div class="section">
-                <h2>DADOS DO CANDIDATO</h2>
-                <div class="section-body">
-                    <div class="grid">
-                        ${item('Nome', String(i.NomeCand || '').toLocaleUpperCase('pt-BR'))}
-                        ${item('CPF', i.Cpf)}
-                        ${item('Nascimento', fmtData(i.DataDeNascimento))}
-                        ${item('Carreira pretendida', String(i.Carreira || '').toLocaleUpperCase('pt-BR'))}
-                        ${item('Celular', i.TelefoneCelular)}
-                        ${item('Telefone', i.TelefoneResidencial)}
-                        ${item('E-mail', i.Email)}
-                        ${item('Data de inscrição', fmtDataHora(i.DataInscricao))}
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2>DADOS DO CONCURSO</h2>
-                <div class="section-body">
-                    <div class="grid">
-                        ${item('Concurso', c.IdConcurso + ' — ' + c.Descricao)}
-                        ${item('Data da prova', fmtData(c.Data))}
-                        ${item('Horário', (c.Hora || '—') + 'h')}
-                        ${item('Código da prova', c.CodProva)}
-                        ${item('Faixa', c.Faixa)}
-                        ${item('Unidade', codigoUnidade + ' — ' + nomeUnidade)}
-                    </div>
-                </div>
-            </div>
-
-            <div class="legal">
-                <p>
-                    Declaro estar de acordo com as normas descritas no regulamento do concurso de bolsa/simulado,
-                    disponível em https://www.curso-objetivo.br, que vigorarão durante todo o período de Concurso
-                    de Bolsa de Estudo, nada tendo a objetar à sua aplicação nem ao critério de apuração/pontuação da prova.
-                </p>
-
-                <p>
-                    Estou ciente ainda de que, se qualquer dado aqui fornecido não corresponder à realidade,
-                    minha prova será anulada e não terei direito aos descontos relativos a este concurso
-                    e/ou acesso ao resultado do simulado.
-                </p>
-            </div>
-
-            <div class="footer">
-                SEC-AUXILIAR · CURSO OBJETIVO · Documento emitido eletronicamente
-            </div>
-        `;
-
-        document.getElementById('print').disabled = false;
-
-        if(P.get('imprimir') === '1'){
-            setTimeout(() => window.print(), 400);
-        }
-
-    }catch(e){
-        document.getElementById('paper').classList.add('hidden');
-        const el = document.getElementById('error');
-        el.classList.remove('hidden');
-        el.textContent = e.message;
+    document.getElementById('print').disabled = false;
+    if (P.get('imprimir') === '1') {
+      const logo = document.querySelector('.head img');
+      if (logo && !logo.complete) await new Promise(resolve => { logo.onload = resolve; logo.onerror = resolve; });
+      window.print();
     }
+  } catch (error) {
+    document.getElementById('paper').classList.add('hidden');
+    const aviso = document.getElementById('error');
+    aviso.classList.remove('hidden');
+    aviso.textContent = error.message;
+  }
 }
-
 document.getElementById('print').addEventListener('click', () => window.print());
 carregar();
 </script>
-
 </body>
 </html>
