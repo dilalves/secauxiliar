@@ -13,14 +13,15 @@
 <form id="av-form" class="hide" style="margin-top:16px"><div class="av-grid"><label class="field">Nome completo *<input id="av-nome" maxlength="60" required></label><label class="field">Data de nascimento<input type="date" id="av-nascimento"></label><label class="field">Celular<input id="av-celular" maxlength="15"></label><label class="field">Telefone<input id="av-telefone" maxlength="15"></label><label class="field">E-mail<input id="av-email" type="email" maxlength="60"></label><label class="field">Carreira pretendida<input id="av-carreira" maxlength="12" placeholder="Ex.: MEDICINA"></label></div><div class="row" style="margin-top:16px"><button type="submit" class="btn" id="av-salvar">Confirmar inscrição</button><span class="muted">O número é gerado somente após salvar, sempre com 7 posições iniciando em zero.</span></div></form>
 <div id="av-confirmado" class="hide" style="margin-top:14px"><div class="notice" id="av-detalhes"></div><div class="row" style="margin-top:12px"><button id="av-imprimir" type="button" class="btn">Imprimir comprovante</button><button id="av-novo" type="button" class="btn secondary">Nova inscrição</button></div></div>
 </div></section>
-<section class="panel hide" id="panel-folhas"><div class="panel-heading"><h2>Enviar folhas de resposta</h2></div><div class="panel-body"><iframe id="frame-folhas" title="Enviar folhas" loading="lazy" style="width:100%;min-height:690px;border:0;border-radius:10px" src="enviar_folhas_concurso.html?IdConcurso=" ></iframe></div></section>
+<section class="panel hide" id="panel-folhas"><div class="panel-heading"><h2>Enviar folhas de resposta</h2></div><div class="panel-body"><iframe id="frame-folhas" title="Enviar folhas" loading="lazy" style="width:100%;min-height:690px;border:0;border-radius:10px" ></iframe></div></section>
 <section class="panel hide" id="panel-lotes"><div class="panel-heading"><h2>Controle de lotes</h2></div><div class="panel-body"><div class="notice"><strong>Área reservada para os lotes.</strong><p>Aqui aparecerão lote, data, usuário responsável, total de imagens, processadas, pendentes e situação.</p>Nenhum lote fictício é exibido como real.</div></div></section>
 <section class="panel hide" id="panel-conferencia"><div class="panel-heading"><h2>Conferência e resultados</h2></div><div class="panel-body"><div class="notice"><strong>Área reservada para conferência.</strong><p>Identificação da inscrição, código da prova, respostas das 50 questões, comparação com gabarito e confirmação da pontuação em <code>tb_inscricoes.pontos</code>.</p>Não há atualização de pontuações nem conclusão da unidade nesta versão.</div></div></section>
 </main></div>
 <script>
 'use strict';
 const API='https://apisec.secauxiliar.com.br/sec/consultar_concursos_unidade.php', $=id=>document.getElementById(id);
-const idConcurso=new URLSearchParams(window.location.search).get('IdConcurso')||'';document.getElementById('frame-folhas').src='enviar_folhas_concurso.html?IdConcurso='+encodeURIComponent(idConcurso);let candidatos=[];
+const idConcurso=new URLSearchParams(window.location.search).get('IdConcurso')||'';let candidatos=[];
+function carregarEnvioFolhas(){const frame=$('frame-folhas');if(!frame.dataset.carregado && /^[A-Za-z0-9_-]{1,50}$/.test(idConcurso)){frame.src='enviar_folhas_concurso.html?'+new URLSearchParams({IdConcurso:idConcurso,v:'20261026b'}).toString();frame.dataset.carregado='1';}}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function dateBR(v){let t=String(v||'').split(' ')[0].split('-');return t.length===3?`${t[2]}/${t[1]}/${t[0]}`:'—';}
 function showError(s){$('error').textContent=s;$('error').classList.remove('hide');}
@@ -30,7 +31,7 @@ function presencaURL(autoPrint=false){const p=new URLSearchParams({IdConcurso:id
 $('presence-preview').addEventListener('click',()=>{$('presence-placeholder').classList.add('hide');$('presence-frame').classList.remove('hide');$('presence-frame').src=presencaURL();});
 $('presence-print').addEventListener('click',()=>{window.open(presencaURL(true),'_blank','noopener');});
 $('back').addEventListener('click',()=>{window.location.href='concursos_unidade.html';});$('refresh').addEventListener('click',load);$('search').addEventListener('input',render);
-document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.setAttribute('aria-selected',String(x===b)));document.querySelectorAll('[id^="panel-"]').forEach(x=>x.classList.toggle('hide',x.id!=='panel-'+t));}));
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.setAttribute('aria-selected',String(x===b)));document.querySelectorAll('[id^="panel-"]').forEach(x=>x.classList.toggle('hide',x.id!=='panel-'+t));if(t==='folhas')carregarEnvioFolhas();}));
 
 // Inscrição avulsa: o código da unidade é validado exclusivamente na API.
 const AV_API='https://apisec.secauxiliar.com.br/sec/inscricao_avulsa_concurso.php';
