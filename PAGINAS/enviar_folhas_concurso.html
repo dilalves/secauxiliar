@@ -1,72 +1,902 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Enviar folhas — Concurso de Bolsa</title><style>
-:root{font-family:Arial,sans-serif;color:#173c68;background:#f5f8fd}*{box-sizing:border-box}body{margin:0;padding:18px}.card{background:#fff;border:1px solid #dbe5f0;border-radius:11px;padding:18px;max-width:1000px;margin:auto;box-shadow:0 3px 15px #1234  }h2{margin:0 0 8px}p{color:#58708b}button{background:#10457f;border:0;color:white;border-radius:7px;padding:11px 18px;font-weight:bold;cursor:pointer}button:disabled{opacity:.6}.small{font-size:12px}#message{padding:10px;margin:10px 0;white-space:pre-wrap}#message:empty{display:none}.error{background:#fff0ef;color:#9d2b23}.success{background:#eaf9ed;color:#236b3c}#files{padding:18px;border:2px dashed #b5cae1;border-radius:8px;margin:14px 0;width:100%}#log{line-height:1.7;max-height:240px;overflow:auto;border-top:1px solid #e0e8f0;margin-top:16px}table{border-collapse:collapse;width:100%;margin-top:12px}td,th{border-bottom:1px solid #dbe5f0;padding:9px;text-align:left}th{background:#eaf0f8}@media(max-width:600px){body{padding:7px}.card{padding:12px}}
-.link{font-weight:600;color:#0e4b91;text-decoration:underline}.files-panel{margin-top:15px;padding:12px;border:1px solid #d6e2ef;border-radius:9px;background:#f8fbff}.files-panel h3{margin:0 0 6px}.muted{color:#64748b;font-size:12px}.selected{background:#e9f3ff}td{overflow-wrap:anywhere}tbody tr{cursor:default}.small-btn{padding:6px 10px;font-size:12px} .file-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 100px;gap:8px;padding:7px;border-bottom:1px solid #e1e7f0;font-size:13px}@media(max-width:600px){.file-row{grid-template-columns:1fr;gap:3px}} </style></head><body><div class="card"><h2>Enviar folhas de resposta</h2><p id="info">Carregando concurso...</p><p>Selecione de 1 a 10 arquivos JPG/JPEG, digitalizados em A5, A4 ou A3, orientação retrato e aproximadamente 300 DPI. A contagem dos presentes só será confirmada na conferência.</p><input type="file" id="files" accept=".jpg,.jpeg,image/jpeg" multiple><button id="send" disabled>Validar e enviar lote</button><div id="message"></div><div id="log"></div><h3>Lotes recebidos</h3><button id="refresh">Atualizar lotes</button><table><thead><tr><th>Lote</th><th>Data</th><th>Arquivos</th><th>Situação</th><th>Conferir</th></tr></thead><tbody id="lotes"><tr><td colspan="5">—</td></tr></tbody></table><section id="files-panel" class="files-panel" hidden><h3 id="files-title">Arquivos do lote</h3><p class="muted">Nome original • nome salvo no R2 • imagem</p><div id="files-list"></div></section></div>
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Enviar folhas — Concurso de Bolsa</title>
+
+<style>
+:root {
+    font-family: Arial, sans-serif;
+    color: #173c68;
+    background: #f5f8fd;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 18px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #dbe5f0;
+    border-radius: 11px;
+    padding: 18px;
+    max-width: 1000px;
+    margin: auto;
+    box-shadow: 0 3px 15px rgba(18, 52, 86, .12);
+}
+
+h2 { margin: 0 0 8px; }
+
+p {
+    color: #58708b;
+    line-height: 1.5;
+}
+
+button {
+    background: #10457f;
+    border: 0;
+    color: white;
+    border-radius: 7px;
+    padding: 11px 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+    background: #1760a5;
+}
+
+.small { font-size: 12px; }
+
+#files {
+    padding: 18px;
+    border: 2px dashed #b5cae1;
+    border-radius: 8px;
+    margin: 14px 0;
+    width: 100%;
+}
+
+#message {
+    padding: 10px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    border-radius: 5px;
+}
+
+#message:empty { display: none; }
+
+.error {
+    background: #fff0ef;
+    color: #9d2b23;
+}
+
+.success {
+    background: #eaf9ed;
+    color: #236b3c;
+}
+
+#log {
+    line-height: 1.7;
+    max-height: 240px;
+    overflow: auto;
+    border-top: 1px solid #e0e8f0;
+    margin-top: 16px;
+}
+
+.log-ok { color: #236b3c; }
+.log-error { color: #9d2b23; }
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 12px;
+}
+
+td, th {
+    border-bottom: 1px solid #dbe5f0;
+    padding: 9px;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+th {
+    background: #eaf0f8;
+}
+
+.link {
+    font-weight: 600;
+    color: #0e4b91;
+    text-decoration: underline;
+}
+
+.files-panel {
+    margin-top: 15px;
+    padding: 12px;
+    border: 1px solid #d6e2ef;
+    border-radius: 9px;
+    background: #f8fbff;
+}
+
+.files-panel h3 { margin: 0 0 6px; }
+
+.muted {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.small-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.file-row {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        110px;
+    gap: 8px;
+    padding: 7px;
+    border-bottom: 1px solid #e1e7f0;
+    font-size: 13px;
+}
+
+.progress-panel {
+    margin-top: 16px;
+    padding: 14px;
+    background: #f8fbff;
+    border: 1px solid #d6e2ef;
+    border-radius: 8px;
+}
+
+.progress-panel[hidden],
+.files-panel[hidden] {
+    display: none;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.progress-track {
+    height: 14px;
+    background: #dfe9f5;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #1760a5;
+    transition: width .2s;
+}
+
+.progress-detail {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #58708b;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#cancel {
+    background: #edf2f8;
+    color: #173c68;
+}
+
+@media(max-width:600px) {
+    body { padding: 7px; }
+    .card { padding: 12px; }
+
+    .file-row {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+
+    .progress-info {
+        flex-direction: column;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <h2>Enviar folhas de resposta</h2>
+
+    <p id="info">Carregando concurso...</p>
+
+    <p>
+        Selecione as folhas de resposta em formato
+        <strong>JPG, digitalizadas em A4, com resolução de 300 DPI.</strong>
+        A quantidade de presentes será confirmada
+        após a conferência das folhas.
+    </p>
+
+    <input
+        type="file"
+        id="files"
+        accept=".jpg,.jpeg,image/jpeg"
+        multiple
+    >
+
+    <div class="actions">
+        <button id="send" disabled>
+            Validar e enviar lote
+        </button>
+
+        <button id="cancel" hidden>
+            Interromper envio
+        </button>
+    </div>
+
+    <section id="progress-panel"
+             class="progress-panel"
+             hidden>
+
+        <div class="progress-info">
+            <span id="progress-label">
+                Preparando envio...
+            </span>
+
+            <span id="progress-percent">0%</span>
+        </div>
+
+        <div class="progress-track">
+            <div id="progress-bar"
+                 class="progress-bar"></div>
+        </div>
+
+        <div id="progress-detail"
+             class="progress-detail"></div>
+
+    </section>
+
+    <div id="message" role="status"
+         aria-live="polite"></div>
+
+    <div id="log"></div>
+
+    <h3>Lotes recebidos</h3>
+
+    <button id="refresh">
+        Atualizar lotes
+    </button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Lote</th>
+                <th>Data</th>
+                <th>Arquivos</th>
+                <th>Situação</th>
+                <th>Conferir</th>
+            </tr>
+        </thead>
+
+        <tbody id="lotes">
+            <tr>
+                <td colspan="5">—</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <section id="files-panel"
+             class="files-panel"
+             hidden>
+
+        <h3 id="files-title">
+            Arquivos do lote
+        </h3>
+
+        <p class="muted">
+            Nome original • Nome salvo no R2 • Imagem
+        </p>
+
+        <div id="files-list"></div>
+    </section>
+
+</div>
+
 <script>
-const API='https://apisec.secauxiliar.com.br/sec/conc_folhas_api.php';
-const concurso=new URLSearchParams(location.search).get('IdConcurso')||'';
-const $=id=>document.getElementById(id);
-function say(t,bad=false){$('message').textContent=t;$('message').className=bad?'error':'success'}
-async function call(acao,data){const body=new FormData();for(const [k,v] of Object.entries(data||{}))body.append(k,v);body.append('acao',acao);const r=await fetch(API,{method:'POST',credentials:'include',body});let j;try{j=await r.json()}catch{throw Error('Resposta inválida do PHP ('+r.status+').')}if(!r.ok||!j.ok)throw Error(j.error||'Falha no servidor');return j}
-function imagemUrl(lote,id){return API+'?'+new URLSearchParams({acao:'imagem',lote_id:lote,arquivo_id:id});}
-async function arquivosDoLote(loteId){
- const panel=$('files-panel');panel.hidden=false;$('files-title').textContent='Arquivos — Lote '+loteId;
- $('files-list').textContent='Carregando...';
- try{
-  const r=await fetch(API+'?'+new URLSearchParams({acao:'arquivos',lote_id:loteId}),{credentials:'include',cache:'no-store'});
-  const j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'Erro ao consultar imagens.');
-  $('files-list').replaceChildren();
-  if(!j.arquivos.length){$('files-list').textContent='Nenhuma imagem registrada neste lote.';return;}
-  for(const f of j.arquivos){
-   const row=document.createElement('div');row.className='file-row';
-   const original=document.createElement('span');original.textContent=f.sequencia+' · '+f.arquivo_original;
-   const saved=document.createElement('span');saved.textContent=f.nome_salvo;
-   const link=document.createElement('a');link.className='link';link.textContent='Abrir imagem';
-   link.href=imagemUrl(loteId,f.id);link.target='_blank';link.rel='noopener noreferrer';
-   row.append(original,saved,link);$('files-list').append(row);
-  }
- }catch(e){$('files-list').textContent=e.message;}
+'use strict';
+
+// ===========================================
+// CONFIGURAÇÃO
+// ===========================================
+
+const API =
+    'https://apisec.secauxiliar.com.br/sec/conc_folhas_api.php';
+
+const concurso =
+    new URLSearchParams(location.search)
+        .get('IdConcurso') || '';
+
+const $ = id => document.getElementById(id);
+
+let enviando = false;
+let interromper = false;
+let apiDisponivel = false;
+
+// ===========================================
+// MENSAGENS
+// ===========================================
+
+function say(texto, erro = false) {
+    const el = $('message');
+
+    el.textContent = texto;
+    el.className = erro ? 'error' : 'success';
 }
-async function listar(){try{
- let r=await fetch(API+'?acao=listar&IdConcurso='+encodeURIComponent(concurso),{credentials:'include',cache:'no-store'});
- let j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'Não autorizado');
- $('lotes').replaceChildren();
- for(const l of j.lotes){
-  const tr=document.createElement('tr');
-  for(const k of ['id','criado_em','quantidade','status']){let td=document.createElement('td');td.textContent=l[k];tr.appendChild(td)}
-  let td=document.createElement('td'),btn=document.createElement('button');btn.textContent='Ver imagens';btn.className='small-btn';
-  btn.onclick=()=>arquivosDoLote(l.id);td.appendChild(btn);tr.appendChild(td);$('lotes').appendChild(tr);
- }
- if(!j.lotes.length)$('lotes').innerHTML='<tr><td colspan="5">Nenhum lote enviado ainda.</td></tr>';
- $('info').textContent='Concurso '+concurso+' — unidade obtida automaticamente do login';$('send').disabled=false;
- }catch(e){say(e.message,true)}}
-$('refresh').onclick=listar;
-$('send').onclick=async()=>{
- const files=[...$('files').files];
- if(!files.length||files.length>10){say('Selecione de 1 a 10 imagens.',true);return}
- if(!files.every(f=>/\.(jpe?g)$/i.test(f.name))){
-  say('Somente JPG/JPEG.',true);
-  return;
+
+// ===========================================
+// COMUNICAÇÃO COM A API
+// ===========================================
+
+async function call(acao, data = {}) {
+
+    const body = new FormData();
+
+    for (const [chave, valor] of Object.entries(data)) {
+        body.append(chave, valor);
+    }
+
+    body.append('acao', acao);
+
+    let resposta;
+
+    try {
+        resposta = await fetch(API, {
+            method: 'POST',
+            credentials: 'include',
+            body
+        });
+    } catch (e) {
+        throw new Error(
+            'Falha de conexão. O envio pode ter sido recebido. ' +
+            'Confira os lotes antes de tentar novamente.'
+        );
+    }
+
+    let json;
+
+    try {
+        json = await resposta.json();
+    } catch {
+        throw new Error(
+            'Resposta inválida do PHP (HTTP ' +
+            resposta.status + '). Confira os lotes.'
+        );
+    }
+
+    if (!resposta.ok || !json.ok) {
+        throw new Error(
+            json.error || 'Falha no servidor.'
+        );
+    }
+
+    return json;
 }
- if(!confirm('Confirma o envio de '+files.length+' folhas para o concurso '+concurso+'?'))return;
- $('send').disabled=true;$('log').replaceChildren();let lote=null,ok=0;
- try{
-  // Não chamar iniciar: a API cria o lote apenas quando a primeira imagem passar na validação.
-  for(let i=0;i<files.length;i++){
-   const row=document.createElement('div');row.textContent='Enviando '+files[i].name+'...';$('log').appendChild(row);
-   try{
-    const campos={seq:i+1,arquivo:files[i]};
-    if(lote)campos.lote_id=lote;else campos.IdConcurso=concurso;
-    const up=await call('enviar',campos);lote=up.lote_id;ok++;
-    row.textContent='✔ '+files[i].name+' — salvo: '+(up.nome_salvo||up.arquivo?.split('/').pop()||'registrado');
-   }catch(e){row.textContent='✖ '+files[i].name+': '+e.message}
-  }
-  if(lote){
-   const fim=await call('finalizar',{lote_id:lote,esperadas:files.length});
-   say('Lote '+lote+' — '+ok+' de '+files.length+' imagens recebidas. Situação: '+fim.status+'.',ok!==files.length);
-   $('files').value='';
-  }else say('Nenhuma imagem válida recebida. Nenhum lote foi criado.',true);
- }catch(e){say('Falha no lote '+(lote||'não criado')+': '+e.message,true)}
- finally{$('send').disabled=false;await listar();if(lote)await arquivosDoLote(lote)}
+
+// ===========================================
+// URL DA IMAGEM
+// ===========================================
+
+function imagemUrl(lote, id) {
+
+    return API + '?' + new URLSearchParams({
+        acao: 'imagem',
+        lote_id: lote,
+        arquivo_id: id
+    });
+}
+
+// ===========================================
+// ARQUIVOS DE UM LOTE
+// ===========================================
+
+async function arquivosDoLote(loteId) {
+
+    const panel = $('files-panel');
+
+    panel.hidden = false;
+
+    $('files-title').textContent =
+        'Arquivos — Lote ' + loteId;
+
+    $('files-list').textContent = 'Carregando...';
+
+    try {
+
+        const url = API + '?' + new URLSearchParams({
+            acao: 'arquivos',
+            lote_id: loteId
+        });
+
+        const resposta = await fetch(url, {
+            credentials: 'include',
+            cache: 'no-store'
+        });
+
+        const json = await resposta.json();
+
+        if (!resposta.ok || !json.ok) {
+            throw new Error(
+                json.error || 'Erro ao consultar imagens.'
+            );
+        }
+
+        $('files-list').replaceChildren();
+
+        if (!json.arquivos.length) {
+            $('files-list').textContent =
+                'Nenhuma imagem registrada neste lote.';
+            return;
+        }
+
+        for (const arquivo of json.arquivos) {
+
+            const row = document.createElement('div');
+            row.className = 'file-row';
+
+            const original = document.createElement('span');
+
+            original.textContent =
+                arquivo.sequencia + ' · ' +
+                arquivo.arquivo_original;
+
+            const salvo = document.createElement('span');
+
+            salvo.textContent =
+                arquivo.nome_salvo || '—';
+
+            const link = document.createElement('a');
+
+            link.className = 'link';
+            link.textContent = 'Abrir imagem';
+
+            link.href = imagemUrl(
+                loteId,
+                arquivo.id
+            );
+
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+
+            row.append(original, salvo, link);
+
+            $('files-list').appendChild(row);
+        }
+
+    } catch (erro) {
+        $('files-list').textContent = erro.message;
+    }
+}
+
+// ===========================================
+// LISTAR LOTES
+// ===========================================
+
+async function listar() {
+
+    try {
+
+        const url = API + '?' + new URLSearchParams({
+            acao: 'listar',
+            IdConcurso: concurso
+        });
+
+        const resposta = await fetch(url, {
+            credentials: 'include',
+            cache: 'no-store'
+        });
+
+        const json = await resposta.json();
+
+        if (!resposta.ok || !json.ok) {
+            throw new Error(
+                json.error || 'Não autorizado.'
+            );
+        }
+
+        apiDisponivel = true;
+
+        $('lotes').replaceChildren();
+
+        for (const lote of json.lotes) {
+
+            const tr = document.createElement('tr');
+
+            for (const campo of [
+                'id',
+                'criado_em',
+                'quantidade',
+                'status'
+            ]) {
+
+                const td = document.createElement('td');
+
+                td.textContent = lote[campo] ?? '';
+
+                tr.appendChild(td);
+            }
+
+            const td = document.createElement('td');
+
+            const botao = document.createElement('button');
+
+            botao.textContent = 'Ver imagens';
+            botao.className = 'small-btn';
+
+            botao.onclick = () => {
+                arquivosDoLote(lote.id);
+            };
+
+            td.appendChild(botao);
+
+            tr.appendChild(td);
+
+            $('lotes').appendChild(tr);
+        }
+
+        if (!json.lotes.length) {
+
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+
+            td.colSpan = 5;
+            td.textContent = 'Nenhum lote enviado ainda.';
+
+            tr.appendChild(td);
+            $('lotes').appendChild(tr);
+        }
+
+        $('info').textContent =
+            'Concurso ' + concurso +
+            ' — unidade obtida automaticamente do login';
+
+    } catch (erro) {
+
+        apiDisponivel = false;
+
+        if (!enviando) {
+            say(erro.message, true);
+        }
+
+    } finally {
+
+        if (!enviando) {
+            $('send').disabled = !apiDisponivel;
+        }
+    }
+}
+
+// ===========================================
+// PROGRESSO
+// ===========================================
+
+function atualizarProgresso(processadas, total, recebidas) {
+
+    const percentual = total
+        ? Math.round((processadas / total) * 100)
+        : 0;
+
+    $('progress-bar').style.width =
+        percentual + '%';
+
+    $('progress-percent').textContent =
+        percentual + '%';
+
+    $('progress-label').textContent =
+        'Processadas ' + processadas +
+        ' de ' + total + ' imagens';
+
+    $('progress-detail').textContent =
+        recebidas + ' recebidas • ' +
+        (processadas - recebidas) + ' não recebidas • ' +
+        (total - processadas) + ' restantes';
+}
+
+// ===========================================
+// LOG DAS IMAGENS
+// ===========================================
+
+function criarLinhaLog(nome) {
+
+    const linha = document.createElement('div');
+
+    linha.textContent = 'Enviando ' + nome + '...';
+
+    $('log').appendChild(linha);
+
+    $('log').scrollTop = $('log').scrollHeight;
+
+    return linha;
+}
+
+// ===========================================
+// INTERRUPÇÃO
+// ===========================================
+
+$('cancel').onclick = () => {
+
+    interromper = true;
+
+    $('cancel').disabled = true;
+
+    $('progress-label').textContent =
+        'Interrupção solicitada...';
+
+    $('progress-detail').textContent =
+        'O arquivo atual será concluído antes da interrupção.';
 };
-if(!/^[A-Za-z0-9_-]{1,50}$/.test(concurso))say('Concurso inválido.',true);else listar();
-</script></body></html>
+
+// ===========================================
+// ATUALIZAR LISTA
+// ===========================================
+
+$('refresh').onclick = listar;
+
+// ===========================================
+// ENVIO DAS IMAGENS
+// ===========================================
+
+$('send').onclick = async () => {
+
+    if (enviando || !apiDisponivel) return;
+
+    const files = Array.from($('files').files);
+
+    if (!files.length) {
+
+        say('Selecione pelo menos uma imagem.', true);
+        return;
+    }
+
+    if (!files.every(
+        arquivo => /\.jpe?g$/i.test(arquivo.name)
+    )) {
+
+        say(
+            'Somente arquivos JPG/JPEG são permitidos.',
+            true
+        );
+
+        return;
+    }
+
+    if (!confirm(
+        'Confirma o envio de ' +
+        files.length +
+        ' folhas para o concurso ' +
+        concurso + '?'
+    )) {
+        return;
+    }
+
+    enviando = true;
+    interromper = false;
+
+    $('send').disabled = true;
+    $('files').disabled = true;
+
+    $('cancel').hidden = false;
+    $('cancel').disabled = false;
+
+    $('progress-panel').hidden = false;
+
+    $('message').textContent = '';
+    $('log').replaceChildren();
+
+    let lote = null;
+    let recebidas = 0;
+    let processadas = 0;
+    let erroEnvio = false;
+    let finalizado = false;
+
+    atualizarProgresso(0, files.length, 0);
+
+    try {
+
+        for (let i = 0; i < files.length; i++) {
+
+            if (interromper) {
+                break;
+            }
+
+            const arquivo = files[i];
+
+            const linha = criarLinhaLog(arquivo.name);
+
+            try {
+
+                // Sequência contínua dos envios confirmados.
+                // Se houver erro, o processamento para.
+                // Isso evita reutilizar uma sequência cujo
+                // envio possa ter sido gravado sem confirmação.
+
+                const campos = {
+                    seq: recebidas + 1,
+                    arquivo: arquivo
+                };
+
+                if (lote) {
+                    campos.lote_id = lote;
+                } else {
+                    campos.IdConcurso = concurso;
+                }
+
+                const resultado = await call(
+                    'enviar',
+                    campos
+                );
+
+                lote = resultado.lote_id;
+
+                recebidas++;
+
+                linha.textContent =
+                    '✔ ' + arquivo.name +
+                    ' — salvo: ' +
+                    (
+                        resultado.nome_salvo ||
+                        resultado.arquivo?.split('/').pop() ||
+                        'registrado'
+                    );
+
+                linha.className = 'log-ok';
+
+            } catch (erro) {
+
+                linha.textContent =
+                    '✖ ' + arquivo.name +
+                    ': ' + erro.message;
+
+                linha.className = 'log-error';
+
+                erroEnvio = true;
+
+                // Não avançar automaticamente após falha.
+                // O servidor pode ter recebido o arquivo
+                // mesmo que a confirmação tenha falhado.
+                break;
+            }
+
+            processadas++;
+
+            atualizarProgresso(
+                processadas,
+                files.length,
+                recebidas
+            );
+        }
+
+        // ===================================
+        // FINALIZAÇÃO
+        // ===================================
+
+        if (lote) {
+
+            // Em caso de falha ambígua, não finalizar
+            // automaticamente. Manter para conferência.
+
+            if (erroEnvio) {
+
+                say(
+                    'Envio interrompido após uma falha. ' +
+                    recebidas + ' imagem(ns) confirmada(s). ' +
+                    'Confira o lote ' + lote +
+                    ' antes de tentar novo envio.',
+                    true
+                );
+
+            } else {
+
+                const resultado = await call(
+                    'finalizar',
+                    {
+                        lote_id: lote,
+                        esperadas: files.length
+                    }
+                );
+
+                finalizado = true;
+
+                const completo =
+                    resultado.status === 'RECEBIDO';
+
+                say(
+                    'Lote ' + lote +
+                    ' — ' + resultado.quantidade +
+                    ' de ' + files.length +
+                    ' imagens recebidas. ' +
+                    'Situação: ' + resultado.status + '.',
+                    !completo
+                );
+
+                if (completo) {
+                    $('files').value = '';
+                }
+            }
+
+        } else {
+
+            say(
+                erroEnvio
+                    ? 'Envio não confirmado. Confira a lista ' +
+                      'de lotes antes de repetir a operação.'
+                    : 'Nenhuma imagem recebida.',
+                true
+            );
+        }
+
+    } catch (erro) {
+
+        say(
+            'Falha no lote ' +
+            (lote || 'não identificado') +
+            ': ' + erro.message,
+            true
+        );
+
+    } finally {
+
+        enviando = false;
+
+        $('files').disabled = false;
+        $('cancel').hidden = true;
+
+        await listar();
+
+        if (lote) {
+            await arquivosDoLote(lote);
+        }
+
+        if (!finalizado && (erroEnvio || interromper)) {
+            $('progress-label').textContent =
+                'Envio interrompido';
+        }
+
+        $('send').disabled = !apiDisponivel;
+    }
+};
+
+// ===========================================
+// INICIALIZAÇÃO
+// ===========================================
+
+if (!/^[A-Za-z0-9_-]{1,50}$/.test(concurso)) {
+
+    say('Concurso inválido.', true);
+
+} else {
+
+    listar();
+}
+</script>
+
+</body>
+</html>
