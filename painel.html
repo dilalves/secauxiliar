@@ -1199,16 +1199,16 @@
         );
       }
       moduleDropdown.innerHTML = `
-        <div class="dropdown-title">
-          ${escapeHtml(module.label)}
-        </div>
         ${module.groups.map(
           (group, groupIndex) => `
             <div class="dropdown-group">
-              <div class="dropdown-group-title">
-                ${escapeHtml(group.title)}
-              </div>
-              ${group.actions.map(
+                ${group.title ? `
+                    <div class="dropdown-group-title">
+                        ${escapeHtml(group.title)}
+                    </div>
+                ` : ''}
+
+                ${group.actions.map(
                 (action, actionIndex) => `
                   <button
                     class="dropdown-action"
