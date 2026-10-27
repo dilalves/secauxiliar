@@ -43,7 +43,10 @@ $('refresh').onclick=listar;
 $('send').onclick=async()=>{
  const files=[...$('files').files];
  if(!files.length||files.length>10){say('Selecione de 1 a 10 imagens.',true);return}
- if(!files.every(f=>/\.jpe?g$/i.test(f.name))){say('Somente JPG/JPEG.',true);return}
+ if(!files.every(f=>/\.(jpe?g)$/i.test(f.name))){
+  say('Somente JPG/JPEG.',true);
+  return;
+}
  if(!confirm('Confirma o envio de '+files.length+' folhas para o concurso '+concurso+'?'))return;
  $('send').disabled=true;$('log').replaceChildren();let lote=null,ok=0;
  try{
@@ -51,7 +54,7 @@ $('send').onclick=async()=>{
   for(let i=0;i<files.length;i++){
    const row=document.createElement('div');row.textContent='Enviando '+files[i].name+'...';$('log').appendChild(row);
    try{
-    const campos={seq:ok+1,arquivo:files[i]};
+    const campos={seq:i+1,arquivo:files[i]};
     if(lote)campos.lote_id=lote;else campos.IdConcurso=concurso;
     const up=await call('enviar',campos);lote=up.lote_id;ok++;
     row.textContent='✔ '+files[i].name+' — salvo: '+(up.nome_salvo||up.arquivo?.split('/').pop()||'registrado');
