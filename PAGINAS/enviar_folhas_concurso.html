@@ -1,6 +1,6 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Enviar folhas — Concurso de Bolsa</title><style>
 :root{font-family:Arial,sans-serif;color:#173c68;background:#f5f8fd}*{box-sizing:border-box}body{margin:0;padding:18px}.card{background:#fff;border:1px solid #dbe5f0;border-radius:11px;padding:18px;max-width:1000px;margin:auto;box-shadow:0 3px 15px #1234  }h2{margin:0 0 8px}p{color:#58708b}button{background:#10457f;border:0;color:white;border-radius:7px;padding:11px 18px;font-weight:bold;cursor:pointer}button:disabled{opacity:.6}.small{font-size:12px}#message{padding:10px;margin:10px 0;white-space:pre-wrap}#message:empty{display:none}.error{background:#fff0ef;color:#9d2b23}.success{background:#eaf9ed;color:#236b3c}#files{padding:18px;border:2px dashed #b5cae1;border-radius:8px;margin:14px 0;width:100%}#log{line-height:1.7;max-height:240px;overflow:auto;border-top:1px solid #e0e8f0;margin-top:16px}table{border-collapse:collapse;width:100%;margin-top:12px}td,th{border-bottom:1px solid #dbe5f0;padding:9px;text-align:left}th{background:#eaf0f8}@media(max-width:600px){body{padding:7px}.card{padding:12px}}
-.link{font-weight:600;color:#0e4b91;text-decoration:underline}.files-panel{margin-top:15px;padding:12px;border:1px solid #d6e2ef;border-radius:9px;background:#f8fbff}.files-panel h3{margin:0 0 6px}.muted{color:#64748b;font-size:12px}.selected{background:#e9f3ff}td{overflow-wrap:anywhere}tbody tr{cursor:default}.small-btn{padding:6px 10px;font-size:12px} .file-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 100px;gap:8px;padding:7px;border-bottom:1px solid #e1e7f0;font-size:13px}@media(max-width:600px){.file-row{grid-template-columns:1fr;gap:3px}} </style></head><body><div class="card"><h2>Enviar folhas de resposta</h2><p id="info">Carregando concurso...</p><p>Selecione de 1 a 10 arquivos JPG/JPEG, digitalizados em A5, orientação retrato e aproximadamente 300 DPI. A contagem dos presentes só será confirmada na conferência.</p><input type="file" id="files" accept=".jpg,.jpeg,image/jpeg" multiple><button id="send" disabled>Validar e enviar lote</button><div id="message"></div><div id="log"></div><h3>Lotes recebidos</h3><button id="refresh">Atualizar lotes</button><table><thead><tr><th>Lote</th><th>Data</th><th>Arquivos</th><th>Situação</th><th>Conferir</th></tr></thead><tbody id="lotes"><tr><td colspan="5">—</td></tr></tbody></table><section id="files-panel" class="files-panel" hidden><h3 id="files-title">Arquivos do lote</h3><p class="muted">Nome original • nome salvo no R2 • imagem</p><div id="files-list"></div></section></div>
+.link{font-weight:600;color:#0e4b91;text-decoration:underline}.files-panel{margin-top:15px;padding:12px;border:1px solid #d6e2ef;border-radius:9px;background:#f8fbff}.files-panel h3{margin:0 0 6px}.muted{color:#64748b;font-size:12px}.selected{background:#e9f3ff}td{overflow-wrap:anywhere}tbody tr{cursor:default}.small-btn{padding:6px 10px;font-size:12px} .file-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 100px;gap:8px;padding:7px;border-bottom:1px solid #e1e7f0;font-size:13px}@media(max-width:600px){.file-row{grid-template-columns:1fr;gap:3px}} </style></head><body><div class="card"><h2>Enviar folhas de resposta</h2><p id="info">Carregando concurso...</p><p>Selecione de 1 a 10 arquivos JPG/JPEG, digitalizados em A5, A4 ou A3, orientação retrato e aproximadamente 300 DPI. A contagem dos presentes só será confirmada na conferência.</p><input type="file" id="files" accept=".jpg,.jpeg,image/jpeg" multiple><button id="send" disabled>Validar e enviar lote</button><div id="message"></div><div id="log"></div><h3>Lotes recebidos</h3><button id="refresh">Atualizar lotes</button><table><thead><tr><th>Lote</th><th>Data</th><th>Arquivos</th><th>Situação</th><th>Conferir</th></tr></thead><tbody id="lotes"><tr><td colspan="5">—</td></tr></tbody></table><section id="files-panel" class="files-panel" hidden><h3 id="files-title">Arquivos do lote</h3><p class="muted">Nome original • nome salvo no R2 • imagem</p><div id="files-list"></div></section></div>
 <script>
 const API='https://apisec.secauxiliar.com.br/sec/conc_folhas_api.php';
 const concurso=new URLSearchParams(location.search).get('IdConcurso')||'';
@@ -40,8 +40,30 @@ async function listar(){try{
  $('info').textContent='Concurso '+concurso+' — unidade obtida automaticamente do login';$('send').disabled=false;
  }catch(e){say(e.message,true)}}
 $('refresh').onclick=listar;
-$('send').onclick=async()=>{const files=[...$('files').files];if(!files.length||files.length>10){say('Selecione de 1 a 10 imagens.',true);return}if(!files.every(f=>/\.jpe?g$/i.test(f.name))){say('Somente JPG/JPEG.',true);return}if(!confirm('Confirma o envio de '+files.length+' folhas para o concurso '+concurso+'?'))return;
- $('send').disabled=true;$('log').replaceChildren();let lote=null;let ok=0;
- try{const start=await call('iniciar',{IdConcurso:concurso});lote=start.lote_id;for(let i=0;i<files.length;i++){const row=document.createElement('div');row.textContent='Enviando '+files[i].name+'...';$('log').appendChild(row);try{const up=await call('enviar',{lote_id:lote,seq:i+1,arquivo:files[i]});ok++;row.textContent='✔ '+files[i].name+' — salvo: '+(up.nome_salvo||up.arquivo?.split('/').pop()||'registrado')}catch(e){row.textContent='✖ '+files[i].name+': '+e.message}}if(ok===files.length){await call('finalizar',{lote_id:lote});say('Lote '+lote+' recebido: '+ok+' imagens.');$('files').value=''}else{say('Lote '+lote+' permanece ABERTO: '+ok+' de '+files.length+' enviadas. Não reenvie as folhas já recebidas. Procure a administração para concluir o lote parcial.',true)}}catch(e){say('Falha no lote '+(lote||'não criado')+': '+e.message,true)}finally{$('send').disabled=false;await listar();if(lote)await arquivosDoLote(lote)}}
+$('send').onclick=async()=>{
+ const files=[...$('files').files];
+ if(!files.length||files.length>10){say('Selecione de 1 a 10 imagens.',true);return}
+ if(!files.every(f=>/\.jpe?g$/i.test(f.name))){say('Somente JPG/JPEG.',true);return}
+ if(!confirm('Confirma o envio de '+files.length+' folhas para o concurso '+concurso+'?'))return;
+ $('send').disabled=true;$('log').replaceChildren();let lote=null,ok=0;
+ try{
+  // Não chamar iniciar: a API cria o lote apenas quando a primeira imagem passar na validação.
+  for(let i=0;i<files.length;i++){
+   const row=document.createElement('div');row.textContent='Enviando '+files[i].name+'...';$('log').appendChild(row);
+   try{
+    const campos={seq:ok+1,arquivo:files[i]};
+    if(lote)campos.lote_id=lote;else campos.IdConcurso=concurso;
+    const up=await call('enviar',campos);lote=up.lote_id;ok++;
+    row.textContent='✔ '+files[i].name+' — salvo: '+(up.nome_salvo||up.arquivo?.split('/').pop()||'registrado');
+   }catch(e){row.textContent='✖ '+files[i].name+': '+e.message}
+  }
+  if(lote){
+   const fim=await call('finalizar',{lote_id:lote,esperadas:files.length});
+   say('Lote '+lote+' — '+ok+' de '+files.length+' imagens recebidas. Situação: '+fim.status+'.',ok!==files.length);
+   $('files').value='';
+  }else say('Nenhuma imagem válida recebida. Nenhum lote foi criado.',true);
+ }catch(e){say('Falha no lote '+(lote||'não criado')+': '+e.message,true)}
+ finally{$('send').disabled=false;await listar();if(lote)await arquivosDoLote(lote)}
+};
 if(!/^[A-Za-z0-9_-]{1,50}$/.test(concurso))say('Concurso inválido.',true);else listar();
 </script></body></html>
