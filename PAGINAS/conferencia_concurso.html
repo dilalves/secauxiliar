@@ -15,8 +15,22 @@
 #ident-edit{font:700 13px Consolas,monospace}
 #find-inscricao{width:100%;margin:5px 0 0}
 @media(min-width:900px){.top{padding:5px 10px}.toolbarline{padding:4px 10px}.sheetbar{padding:4px 10px}.zoom{height:122px}.right h3{margin-bottom:5px}}
+
+/* Estação dedicada: ocupa toda a janela, sem KPIs ou menus do painel. */
+html,body{height:100%;overflow:hidden}body{display:flex;flex-direction:column;min-height:0}
+.top{flex:0 0 auto;padding:6px 12px}.queuearea{flex:0 0 auto;max-height:116px;min-height:0;overflow-y:auto}
+.toolbarline{flex:0 0 auto;gap:6px;padding:5px 10px}
+.station{flex:1 1 auto;min-height:0;height:auto;grid-template-columns:minmax(0,1fr) 322px}
+.viewer{min-height:0;overflow:auto;padding:10px;align-items:flex-start}
+.right{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.sheetbar{flex:0 0 auto;padding:5px 10px}
+.footer{flex:0 0 auto;padding:4px 10px}
+.feedback{flex:0 0 auto;margin:3px 10px;min-height:16px;font-size:11px}
+.queue th,.queue td{padding:3px 7px;font-size:11px;line-height:1.2}
+#exit-station{background:#174b88;color:#fff;font-weight:700}
+@media(max-width:800px){html,body{height:auto;overflow:auto}.station{height:auto;grid-template-columns:1fr}.viewer{height:60vh}.right{max-height:none}}
 </style></head><body>
-<div class="top"><div><b>Verificação de folhas — Concurso de Bolsa</b><div class="sub" id="subtitle">Fila de pendências · somente a unidade autorizada</div></div><div class="mini"><span class="pill" id="total">Carregando...</span><button id="refresh">Atualizar</button><button id="fullscreen">Abrir em aba inteira</button></div></div>
+<div class="top"><div><b>Verificação de folhas — Concurso de Bolsa</b><div class="sub" id="subtitle">Estação de verificação · pendências do concurso/unidade</div></div><div class="mini"><span class="pill" id="total">Carregando...</span><button id="refresh">Atualizar</button><button id="fullscreen" type="button">Tela cheia (F11)</button><button id="exit-station" type="button" class="primary">✕ Fechar conferência</button></div></div>
 <div class="queuearea"><table class="queue"><thead><tr><th>#</th><th>Lote</th><th>Imagem</th><th>Inscrição</th><th>Conferência</th><th>Status</th><th>Ação</th></tr></thead><tbody id="queue"></tbody></table></div>
 <div class="toolbarline"><span class="status" id="current">Selecione uma folha para começar.</span><span class="muted" id="reason"></span><span class="spacer"></span><button id="minus">−</button><button id="fit">Ajustar imagem</button><button id="plus">+</button><span class="pill" id="scale">100%</span><button id="release">Fechar folha</button></div>
 <div class="station" id="station"><div class="viewer" id="viewer"><div class="paper" id="paper"><img id="image" alt="Folha de resposta digitalizada"><div class="marker" id="marker" hidden></div></div></div><aside class="right"><div class="identline">OMR — inscrição: <span id="ident-read">—</span><div>Conferindo: <span id="ident-edit">—</span></div><button type="button" id="find-inscricao">Pesquisar inscrição por nome</button></div><h3 id="step">Campo em conferência</h3><div class="hint" id="info">Selecione uma imagem na lista superior.</div><img class="zoom" id="zoom" alt="Ampliação do campo em conferência"><label class="field" id="value-label" for="value">Valor correto</label><input id="value" autocomplete="off" spellcheck="false" disabled><div id="choices" class="choices"></div><div class="controls"><button id="prev">← Anterior</button><button id="next" class="primary">F4 · Próximo</button></div><div class="hint" id="progress"></div><div class="hint">F4 avança pelos campos; TAB vai ao próximo. Para resolver uma dúvida, selecione ou digite o valor correto. Ao concluir todas, salva e passa para a próxima folha automaticamente.</div><div class="fields" id="fields"></div><div style="margin-top:12px"><button id="save" class="primary">Salvar folha revisada</button></div></aside></div>
@@ -115,7 +129,8 @@ $('fields').onclick=e=>{const b=e.target.closest('button[data-step]');if(b&&atua
 $('choices').onclick=e=>{const b=e.target.closest('button[data-v]');if(b)setVal(b.dataset.v)};
 $('value').oninput=()=>{if(atual){const v=$('value').value;if(tipo()==='questao'||tipo().endsWith('_completa')||/^\d$/.test(v))setVal(v)}};
 $('minus').onclick=()=>{scale=Math.max(.09,scale*.8);drawScale()};$('plus').onclick=()=>{scale=Math.min(1.5,scale*1.25);drawScale()};$('fit').onclick=ajustar;
-$('fullscreen').onclick=()=>{if(window.self!==window.top)window.open(location.href,'_blank','noopener');else{const root=document.documentElement;if(!document.fullscreenElement&&root.requestFullscreen)root.requestFullscreen();else if(document.exitFullscreen)document.exitFullscreen()}};
+$('fullscreen').onclick=()=>{const root=document.documentElement;if(!document.fullscreenElement&&root.requestFullscreen)root.requestFullscreen();else if(document.exitFullscreen)document.exitFullscreen()};
+$('exit-station').onclick=async()=>{if(busy)return;if(atual){const old=atual;cleanup();try{await api('liberar',{leitura_id:old.id,token:old.token})}catch{}}window.close();setTimeout(()=>{if(!window.closed)location.href='operacao_concurso.html?'+new URLSearchParams({IdConcurso:contest}).toString()},150)};
 window.addEventListener('keydown',e=>{if(!atual||busy)return;if(e.key==='F4'){e.preventDefault();avancar();return}if(e.key==='Tab'){e.preventDefault();avancar();return}if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&opts().length){e.preventDefault();const o=opts();let i=o.indexOf($('value').value.toUpperCase());if(i<0)i=0;setVal(o[(i+(e.key==='ArrowRight'?1:-1)+o.length)%o.length]);return}if(e.key==='Enter'&&e.target.id==='value'){e.preventDefault();avancar()}});
 window.addEventListener('pagehide',stopRenew);window.addEventListener('resize',()=>{if(atual&&scale<1)ajustar()});carregar();
 
