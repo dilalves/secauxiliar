@@ -66,4 +66,24 @@ $('av-imprimir').addEventListener('click',()=>{if(!avRegistro)return;const q=new
 $('av-novo').addEventListener('click',()=>{$('av-cpf').value='';avRegistro=null;$('av-form').classList.add('hide');$('av-confirmado').classList.add('hide');avAviso('Informe o CPF do próximo candidato.');$('av-cpf').focus();});
 
 load();
+</script><script src="conc_autoprocessar.js?v=20261028_omar1"></script>
+<script>
+(function(){
+ const c=new URLSearchParams(location.search).get('IdConcurso');
+ if(!/^[A-Za-z0-9_-]{1,50}$/.test(c||''))return;
+ const run=()=>window.SECConcAuto?.resume(c);
+ window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.source==='sec-omr-request'){window.SECConcAuto?.resetErrors();run();}});
+ window.addEventListener('sec:omr',e=>{
+   const z=e.detail;
+   if(z.type==='finish'){
+     const el=document.getElementById('frame-lotes');
+     if(el?.contentWindow)el.contentWindow.postMessage({source:'sec-omr',type:'refresh'},location.origin);
+     if(typeof load==='function')load();
+   }
+ });
+ // On entry, after any late uploads, and while the operator remains in this page.
+ document.addEventListener('DOMContentLoaded',run);
+ setInterval(run,12000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)run()});
+})();
 </script></body></html>
