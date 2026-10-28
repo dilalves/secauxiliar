@@ -97,7 +97,7 @@
             <th>Cód. prova</th>
             <th>Descrição</th>
             <th>Respondidas</th>
-            <th>Link da prova</th>
+            <th>PDF da prova</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -134,9 +134,11 @@
           <input id="Descricao" name="Descricao" maxlength="50">
         </div>
 
-        <div>
-          <label for="link_prova">Link da prova</label>
-          <input id="link_prova" name="link_prova" maxlength="200" type="url">
+        <div class="full">
+          <label for="arquivo_prova">Prova completa (PDF) — Cloudflare R2</label>
+          <input id="arquivo_prova" type="file" accept="application/pdf,.pdf">
+          <small id="provaInfo" style="display:block;margin-top:6px;color:#68758a">Selecione um PDF (máximo 30 MB). O envio acontece após salvar os dados do gabarito.</small>
+          <a id="provaAtual" href="#" target="_blank" rel="noopener" style="display:none;margin-top:8px">Baixar PDF atual</a>
         </div>
       </div>
 
@@ -160,7 +162,9 @@ const API = {
   listar: API_BASE + 'listar_gabaritos.php',
   salvar: API_BASE + 'salvar_gabarito.php',
   alterar: API_BASE + 'alterar_gabarito.php',
-  excluir: API_BASE + 'excluir_gabarito.php'
+  excluir: API_BASE + 'excluir_gabarito.php',
+  upload: API_BASE + 'gabarito_prova_upload.php',
+  download: API_BASE + 'gabarito_prova_download.php'
 };
 
 const tbody = document.getElementById('tbody');
@@ -258,9 +262,9 @@ function renderizar() {
   }
 
   tbody.innerHTML = dados.map((item, index) => {
-    const link = item.link_prova
-      ? `<a href="${escapeHtml(item.link_prova)}" target="_blank" rel="noopener">Abrir prova</a>`
-      : '';
+    const link = item.prova_r2_key
+      ? `<a href="${API.download}?IdGabarito=${encodeURIComponent(item.IdGabarito)}" target="_blank" rel="noopener">Baixar PDF (R2)</a>`
+      : (item.link_prova ? `<a href="${escapeHtml(item.link_prova)}" target="_blank" rel="noopener">Link antigo</a>` : '—');
 
     return `
       <tr>
@@ -299,6 +303,9 @@ function novo() {
   form.reset();
   document.getElementById('IdGabarito').value = '';
   document.getElementById('titulo').textContent = 'Novo gabarito';
+  document.getElementById('arquivo_prova').value = '';
+  document.getElementById('provaAtual').style.display = 'none';
+  document.getElementById('provaInfo').textContent = 'Selecione um PDF (máximo 30 MB).';
 
   for (let i=1; i<=50; i++) {
     document.getElementById('Q'+i).value = '';
@@ -318,7 +325,13 @@ window.editar = function(index) {
   document.getElementById('IdGabarito').value = item.IdGabarito;
   document.getElementById('CodProva').value = item.CodProva ?? '';
   document.getElementById('Descricao').value = item.Descricao ?? '';
-  document.getElementById('link_prova').value = item.link_prova ?? '';
+  document.getElementById('arquivo_prova').value = '';
+  const atual = document.getElementById('provaAtual');
+  atual.style.display = item.prova_r2_key ? 'inline-block' : 'none';
+  atual.href = API.download + '?IdGabarito=' + encodeURIComponent(item.IdGabarito);
+  document.getElementById('provaInfo').textContent = item.prova_r2_key
+    ? 'Já existe uma prova no R2. Selecione outro PDF apenas para substituí-la.'
+    : 'Nenhum PDF no R2. Selecione um arquivo para anexar.';
 
   for (let i=1; i<=50; i++) {
     document.getElementById('Q'+i).value = item['Q'+i] ?? '';
@@ -330,7 +343,7 @@ window.editar = function(index) {
 window.excluir = async function(index) {
   const item = dados[index];
 
-  if (!confirm(`Excluir o gabarito da prova ${item.CodProva}?`)) return;
+  if (!confirm(`Excluir o gabarito da prova ${item.CodProva}? O PDF já enviado permanecerá no R2 para evitar perda acidental.`)) return;
 
   try {
     const body = new URLSearchParams({
@@ -359,6 +372,13 @@ form.addEventListener('submit', async event => {
   btnSalvar.textContent = 'Salvando...';
 
   try {
+    const pdf = document.getElementById('arquivo_prova').files[0] || null;
+    if (pdf && (pdf.size > 30 * 1024 * 1024 || pdf.size === 0 || !pdf.name.toLowerCase().endsWith('.pdf'))) {
+      throw new Error('Selecione um PDF válido de até 30 MB.');
+    }
+    if (pdf && editando && dados.some(x => String(x.IdGabarito) === document.getElementById('IdGabarito').value && x.prova_r2_key)) {
+      if (!confirm('Substituir o PDF atual desta prova?')) return;
+    }
     const body = new URLSearchParams(new FormData(form));
     const endpoint = editando ? API.alterar : API.salvar;
 
@@ -370,8 +390,20 @@ form.addEventListener('submit', async event => {
       body
     });
 
+    if (pdf) {
+      btnSalvar.textContent = 'Enviando PDF...';
+      const envio = new FormData();
+      envio.append('IdGabarito', editando ? document.getElementById('IdGabarito').value : retorno.IdGabarito);
+      envio.append('arquivo', pdf);
+      try {
+        await api(API.upload, {method:'POST', body:envio});
+      } catch (erroUpload) {
+        await carregar();
+        throw new Error('Gabarito salvo, MAS o PDF não foi enviado: ' + erroUpload.message + '. Abra Editar e tente novamente.');
+      }
+    }
     modal.close();
-    mensagem(retorno.message);
+    mensagem(pdf ? 'Gabarito salvo e PDF enviado ao R2.' : retorno.message);
     await carregar();
   } catch (erro) {
     mensagem(erro.message, 'error');
