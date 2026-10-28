@@ -1,6 +1,24 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+<script data-sec-auth-guard>
+(function () {
+  'use strict';
+  document.documentElement.style.visibility = 'hidden';
+  const login = 'https://www.secauxiliar.com.br/';
+  const redirect = () => { window.location.replace(login); };
+  fetch('https://apisec.secauxiliar.com.br/sec/auth_me.php', {
+    method: 'GET', credentials: 'include', cache: 'no-store',
+    headers: { 'Accept': 'application/json' }
+  }).then(async (response) => {
+    if (!response.ok) throw new Error('Sessão inválida');
+    const data = await response.json();
+    if (!data.ok || !data.user) throw new Error('Sessão inválida');
+    document.documentElement.style.visibility = '';
+  }).catch(redirect);
+})();
+</script>
+
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">

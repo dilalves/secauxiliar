@@ -1,6 +1,24 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+<script data-sec-auth-guard>
+(function () {
+  'use strict';
+  document.documentElement.style.visibility = 'hidden';
+  const login = 'https://www.secauxiliar.com.br/';
+  const redirect = () => { window.location.replace(login); };
+  fetch('https://apisec.secauxiliar.com.br/sec/auth_me.php', {
+    method: 'GET', credentials: 'include', cache: 'no-store',
+    headers: { 'Accept': 'application/json' }
+  }).then(async (response) => {
+    if (!response.ok) throw new Error('Sessão inválida');
+    const data = await response.json();
+    if (!data.ok || !data.user) throw new Error('Sessão inválida');
+    document.documentElement.style.visibility = '';
+  }).catch(redirect);
+})();
+</script>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SEC-AUXILIAR — Tabelas de preços</title>
@@ -256,7 +274,7 @@ function num(v){ return v===null||v===undefined?'':v; }
 function inteiro(v){ if(v===null||v===undefined||v==='')return ''; return String(Math.round(Number(v))); }
 function badge(v){ return String(v).toUpperCase()==='S'||Number(v)===1?'<span class="badge yes">Sim</span>':'<span class="badge no">Não</span>'; }
 function status(msg,tipo='ok'){ const b=$('status'); b.className='status '+tipo; b.textContent=msg; clearTimeout(status.timer); status.timer=setTimeout(()=>{b.className='status';b.textContent='';},5000); }
-async function api(url,opt={}){ const r=await fetch(url,{cache:'no-store',...opt}); let d; try{d=await r.json();}catch{throw new Error('Resposta inválida do servidor.');} if(!r.ok||d.ok===false)throw new Error(d.message||'Erro na operação.'); return d; }
+async function api(url,opt={}){ const r=await fetch(url,{credentials:'include',cache:'no-store',...opt}); let d; try{d=await r.json();}catch{throw new Error('Resposta inválida do servidor.');} if(!r.ok||d.ok===false)throw new Error(d.message||'Erro na operação.'); return d; }
 function post(url,data){ return api(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'},body:new URLSearchParams(data)}); }
 function fechar(dialog){ dialog.close(); }
 

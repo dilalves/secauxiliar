@@ -1,5 +1,23 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Concursos de Bolsa — Unidade</title>
+<html lang="pt-BR"><head>
+<script data-sec-auth-guard>
+(function () {
+  'use strict';
+  document.documentElement.style.visibility = 'hidden';
+  const login = 'https://www.secauxiliar.com.br/';
+  const redirect = () => { window.location.replace(login); };
+  fetch('https://apisec.secauxiliar.com.br/sec/auth_me.php', {
+    method: 'GET', credentials: 'include', cache: 'no-store',
+    headers: { 'Accept': 'application/json' }
+  }).then(async (response) => {
+    if (!response.ok) throw new Error('Sessão inválida');
+    const data = await response.json();
+    if (!data.ok || !data.user) throw new Error('Sessão inválida');
+    document.documentElement.style.visibility = '';
+  }).catch(redirect);
+})();
+</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Concursos de Bolsa — Unidade</title>
 <style>
 :root{--blue:#103f7d;--ink:#142943;--muted:#637791;--border:#d9e5f0}*{box-sizing:border-box}body{margin:0;background:#f3f7fc;color:var(--ink);font:13px 'Segoe UI',Arial,sans-serif}.wrap{padding:8px}.header{background:linear-gradient(100deg,#103f7d,#2160a7);padding:18px 22px;color:white;border-radius:6px 6px 0 0}.header h1{font-size:21px;margin:0 0 4px}.surface{border:1px solid var(--border);border-radius:0 0 7px 7px;background:#f5f8fc;min-height:72vh;padding:15px}.panel{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 5px 22px #12385e10}.bar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px;flex-wrap:wrap}.bar h2{margin:0;font-size:16px}.muted{color:var(--muted);font-size:12px;margin-top:4px}.search{padding:10px 12px;border:1px solid #cbd8e8;border-radius:7px;font:inherit;width:330px;max-width:100%}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:950px}th{padding:12px;background:#e9f1f9;text-align:left;font-size:12px;white-space:nowrap}td{padding:12px;border-top:1px solid #e8eef5}tbody tr:hover{background:#f6faff}.title{font-weight:700}.btn{background:#10437f;color:#fff;border:0;border-radius:7px;padding:9px 12px;font:600 12px 'Segoe UI',Arial;cursor:pointer}.btn:hover{background:#2060a8}.chip{display:inline-block;border-radius:15px;background:#e8f7ef;color:#17724a;padding:4px 8px;font-weight:600}.chip.pending{background:#fff0dd;color:#986111}.footer{padding:12px 15px;color:var(--muted);border-top:1px solid var(--border)}.alert{padding:13px;border-radius:7px;background:#ffeded;color:#992d2d;margin-bottom:12px}.hide{display:none}.empty{text-align:center;color:var(--muted);padding:30px}
 </style></head><body><div class="wrap"><div class="header"><h1>Concursos de Bolsa</h1><small>Concursos participantes e acompanhamento por unidade</small></div><main class="surface"><div id="error" class="alert hide" role="alert"></div><section class="panel"><div class="bar"><div><h2>Concursos participantes</h2><div class="muted" id="unit">Consultando a unidade do login...</div></div><input id="search" class="search" type="search" placeholder="Buscar concurso, descrição ou código da prova" aria-label="Pesquisar concursos"></div><div class="scroll"><table><thead><tr><th>Concurso</th><th>Data</th><th>Hora</th><th>Faixa</th><th>Cód. prova</th><th>Inscritos</th><th>Presentes</th><th>Com pontos</th><th>Concluído</th><th>Ação</th></tr></thead><tbody id="rows"><tr><td class="empty" colspan="10">Carregando...</td></tr></tbody></table></div><div id="count" class="footer"></div></section></main></div>
