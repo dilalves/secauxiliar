@@ -18,7 +18,7 @@
 .bolsa-modal-shell iframe{display:block;width:100%;height:100%;border:0}
 .bolsa-close{position:absolute;right:14px;top:12px;z-index:2;background:white;color:#10437f;border:1px solid #ced8e4;padding:8px 12px}
 @media(max-width:700px){.bolsa-backdrop{padding:0}.bolsa-modal-shell{width:100vw;height:100dvh;border-radius:0}.bolsa-close{right:7px;top:7px}}
-</style></head><body><main class="main"><section class="panel"><h1 class="title">Pesquisa de candidatos</h1><div class="muted">Localize inscrições de Concursos de Bolsa e solicitações de Bolsa Desempenho. O acesso aos detalhes depende da unidade logada.</div><div class="bar"><div class="tabs"><button id="cpfTab" type="button">Por CPF</button><button id="nomeTab" type="button">Por nome</button></div><form id="form" class="bar" style="margin:0"><label id="label">CPF<input id="q" autocomplete="off" required></label><button id="pesquisar" type="submit">Pesquisar</button></form></div><div id="msg" class="notice" role="status">Informe o CPF ou nome para começar.</div></section><section class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 style="font-size:15px;margin:0 0 12px">Candidatos encontrados</h2><span class="muted" id="total"></span></div><div class="table-wrap"><table><thead><tr><th>Candidato</th><th>Origem</th><th>Inscrição / Protocolo</th><th>Concurso / Solicitação</th><th>Unidade</th><th>Acesso</th><th>Ação</th></tr></thead><tbody id="rows"><tr><td colspan="7">Nenhuma pesquisa realizada.</td></tr></tbody></table></div><div class="foot" id="bolsa-aviso">A pesquisa apresenta ambas as origens. Detalhes permanecem sujeitos à autorização da unidade no servidor.</div></section></main>
+</style></head><body><main class="main"><section class="panel"><h1 class="title">Pesquisa de candidatos</h1><div class="muted">Localize inscrições de Concursos de Bolsa e solicitações de Bolsa Desempenho. O acesso aos detalhes depende da unidade logada.</div><div class="bar"><div class="tabs"><button id="cpfTab" type="button">Por CPF</button><button id="nomeTab" type="button">Por nome</button></div><form id="form" class="bar" style="margin:0"><label id="label">CPF<input id="q" autocomplete="off" required></label><button id="pesquisar" type="submit">Pesquisar</button></form></div><div style="margin-top:12px"><button id="abrir-cadastro" type="button" style="background:#e9eff7;color:#10437f">＋ Cadastrar interessado presencial</button></div><div id="msg" class="notice" role="status">Informe o CPF ou nome para começar.</div></section><section class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 style="font-size:15px;margin:0 0 12px">Candidatos encontrados</h2><span class="muted" id="total"></span></div><div class="table-wrap"><table><thead><tr><th>Candidato</th><th>Origem</th><th>Inscrição / Protocolo</th><th>Concurso / Solicitação</th><th>Unidade</th><th>Acesso</th><th>Ação</th></tr></thead><tbody id="rows"><tr><td colspan="7">Nenhuma pesquisa realizada.</td></tr></tbody></table></div><div class="foot" id="bolsa-aviso">A pesquisa apresenta ambas as origens. Detalhes permanecem sujeitos à autorização da unidade no servidor.</div></section></main>
 <div class="result-overlay" id="resultado-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="resultado-title">
 <div class="result-shell"><header class="result-header"><h2 id="resultado-title">Resultado — Concurso de Bolsa</h2><button type="button" id="resultado-fechar">✕ Fechar</button></header>
 <div class="result-body"><div id="resultado-estado" class="result-card">Carregando resultado...</div>
@@ -28,6 +28,7 @@
 <div class="result-form"><label>Faixa<select id="res-faixa"><option value="1">Faixa 1</option></select></label><label>Grupo / período<select id="res-grupo"><option value="1">Manhã</option><option value="2">Tarde</option><option value="3">Noite</option></select></label><label>Quantidade de parcelas<input id="res-parcelas" type="number" min="1" max="60" value="14"></label><button id="res-calcular" type="button">Consultar valores</button></div>
 <div class="result-note" id="res-precos-estado">Selecione as condições e consulte os valores cadastrados.</div><div class="table-wrap"><table class="result-table"><thead><tr><th>Curso / turno</th><th>Valor contratual</th><th>Tipo de desconto</th><th>Desconto</th><th>Total com desconto</th><th>Valor da parcela</th></tr></thead><tbody id="res-precos-linhas"><tr><td colspan="6">Aguardando consulta.</td></tr></tbody></table></div><p class="result-note">Simulação informativa; não registra proposta, matrícula ou condições comerciais. Os horários específicos serão cadastrados em outra etapa.</p></section>
 </div></div></div>
+<div class="result-overlay" id="cadastro-overlay" hidden role="dialog" aria-modal="true" aria-label="Cadastro de interessado presencial"><div class="result-shell" style="height:auto;max-height:98dvh"><header class="result-header"><h2>Cadastrar interessado — Atendimento presencial</h2><button id="cadastro-fechar" type="button">✕ Fechar</button></header><div class="result-body"><section class="result-card"><p class="result-note">Sem concurso e sem prova. A unidade será obtida automaticamente do usuário logado. Após gravar, o interessado poderá consultar valores com o desconto KEA.</p><form id="cadastro-form"><div class="result-form" style="grid-template-columns:repeat(2,minmax(0,1fr))"><label>CPF *<input name="cpf" maxlength="14" required placeholder="000.000.000-00" autocomplete="off"></label><label>Nome completo *<input name="nome" maxlength="60" required></label><label>Celular *<input name="celular" maxlength="20" required></label><label>E-mail (opcional)<input name="email" type="email" maxlength="120"></label><label>Curso pretendido (opcional)<input name="curso" maxlength="60" placeholder="Exatas, Medicina, Extensivo..."></label><button type="submit" id="cadastro-salvar">Cadastrar e abrir ficha</button></div></form><p id="cadastro-status" class="result-note" role="status"></p></section></div></div></div>
 <div id="bolsa-overlay" class="bolsa-backdrop" hidden role="dialog" aria-modal="true" aria-label="Detalhes do pedido de Bolsa Desempenho"><div class="bolsa-modal-shell"><button id="bolsa-fechar" type="button" class="bolsa-close" aria-label="Fechar detalhes">✕ Fechar</button><iframe id="bolsa-frame" title="Detalhes de Bolsa Desempenho"></iframe></div></div>
 <script>
 'use strict';
@@ -88,18 +89,18 @@ async function abrirResultado(inscricao,concurso){
   ficha=d.candidato;const x=ficha;
   $('resultado-campos').innerHTML=[['Nome',x.NomeCand],['CPF',x.Cpf],['Inscrição',x.NumeroInscricao],['Telefone',x.TelefoneCelular||x.TelefoneResidencial],['Concurso',x.Descricao],['Data da prova',x.DataProva],['Horário',x.Hora],['Código da prova',x.CodProva],['Faixa do concurso',x.Faixa],['Unidade',x.UnidadeNome],['Curso pretendido',x.Curso||x.Carreira],['Período pretendido',x.Periodo]].map(a=>resultCell(...a)).join('');
   $('resultado-dados').hidden=false;
-  if(!x.liberado){$('resultado-estado').className='result-card result-alert';$('resultado-estado').textContent=x.situacao+' — Resultado ainda não liberado.';return;}
-  $('resultado-estado').hidden=true;$('resultado-estado').className='result-card';
-  $('resultado-kpis').innerHTML=[['Pontos',x.pontos],['Média (MD)',numero(x.Md)],['Desvio (DP)',numero(x.Dp)],['Nota',numero(x.nota)]].map(a=>resultCell(...a)).join('');
-  $('resultado-resultado').hidden=false;$('resultado-proposta').hidden=false;
-  const faixa=String(x.Faixa??'1');$('res-faixa').replaceChildren(new Option('Faixa '+faixa,faixa));
+  if(!x.liberado){$('resultado-estado').className='result-card result-alert';$('resultado-estado').textContent=x.kea_permitido?'Sem pontuação registrada. A ficha permanece disponível para simulação comercial KEA.':x.situacao+' — Resultado ainda não liberado.';}
+  if(x.liberado){$('resultado-estado').hidden=true;$('resultado-estado').className='result-card';}
+  $('resultado-kpis').innerHTML=[['Pontos',x.liberado?x.pontos:'—'],['Média (MD)',x.liberado?numero(x.Md):'—'],['Desvio (DP)',x.liberado?numero(x.Dp):'—'],['Nota',x.liberado?numero(x.nota):'—']].map(a=>resultCell(...a)).join('');
+  $('resultado-resultado').hidden=false;$('resultado-proposta').hidden=(!x.liberado&&!x.kea_permitido);
+  const faixa=String(x.Faixa??'1');$('res-faixa').replaceChildren(new Option(x.kea_permitido?'Condição KEA':'Faixa '+faixa,faixa));
   const turno=String(x.Periodo||'').toLowerCase();$('res-grupo').value=turno.includes('manh')?'1':turno.includes('noit')?'3':'2';
   $('res-precos-estado').textContent='Clique em Consultar valores para buscar os preços da sua unidade.';
   $('res-precos-linhas').innerHTML='<tr><td colspan="6">Aguardando consulta.</td></tr>';
  }catch(e){$('resultado-estado').hidden=false;$('resultado-estado').className='result-card result-alert';$('resultado-estado').textContent=e.message;}
 }
 async function consultarValores(){
- if(!ficha?.liberado)return;
+ if(!ficha)return;
  const faixa=$('res-faixa').value;const parcelas=Number($('res-parcelas').value);
  if(!Number.isInteger(parcelas)||parcelas<1||parcelas>60){$('res-precos-estado').textContent='Parcelas devem estar entre 1 e 60.';return;}
  $('res-calcular').disabled=true;$('res-precos-estado').textContent='Consultando tabela de preços...';
@@ -109,7 +110,7 @@ async function consultarValores(){
   const grupos={'1':['MANH','MATUT'],'2':['TARDE','VESPERT'],'3':['NOIT']};
   const normal=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
   const selecionadas=(d.precos||[]).filter(p=>grupos[$('res-grupo').value].some(t=>normal(p.Turno).includes(t)));
-  const campos=[['Faixa A','Fa'],['Faixa B','Fb'],['Faixa C','Fc'],['Faixa D','Fd'],['Faixa E','Fe'],['Faixa 100','F100'],['Promoção','F0']];
+  const campos=ficha.kea_permitido?[['KEA','Ea']]:[['Faixa A','Fa'],['Faixa B','Fb'],['Faixa C','Fc'],['Faixa D','Fd'],['Faixa E','Fe'],['Faixa 100','F100'],['Promoção','F0']];
   const saida=[];
   for(const p of selecionadas){for(const [titulo,chave] of campos){
    if(p[chave]===null||p[chave]===undefined||String(p[chave]).trim()==='')continue;
@@ -124,5 +125,22 @@ async function consultarValores(){
  finally{$('res-calcular').disabled=false;}
 }
 $('res-calcular').addEventListener('click',consultarValores);
+const CADAPI='https://apisec.secauxiliar.com.br/sec/cadastrar_interessado_api.php';
+function fecharCadastro(){$('cadastro-overlay').hidden=true;document.body.style.overflow='';}
+$('abrir-cadastro').addEventListener('click',()=>{$('cadastro-overlay').hidden=false;document.body.style.overflow='hidden';$('cadastro-status').textContent='';});
+$('cadastro-fechar').addEventListener('click',fecharCadastro);
+$('cadastro-form').addEventListener('submit',async e=>{
+ e.preventDefault(); const f=e.currentTarget,b=$('cadastro-salvar');b.disabled=true;$('cadastro-status').textContent='Salvando interessado...';
+ try{const params=Object.fromEntries(new FormData(f));const r=await fetch(CADAPI,{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(params)});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Não foi possível cadastrar.');$('cadastro-status').textContent='Cadastro realizado.';fecharCadastro();await abrirResultadoPresencial(d.candidato);f.reset();}
+ catch(err){$('cadastro-status').textContent=err.message;}finally{b.disabled=false;}
+});
+async function abrirResultadoPresencial(x){
+ $('resultado-overlay').hidden=false;document.body.style.overflow='hidden';ficha={...x,pontos:null,liberado:false,kea_permitido:true};
+ $('resultado-dados').hidden=false;$('resultado-resultado').hidden=false;$('resultado-proposta').hidden=(!x.liberado&&!x.kea_permitido);
+ $('resultado-estado').hidden=false;$('resultado-estado').className='result-card result-alert';$('resultado-estado').textContent='Atendimento presencial — sem prova. Condição comercial KEA.';
+ $('resultado-campos').innerHTML=[['Nome',x.NomeCand],['CPF',x.Cpf],['Telefone',x.TelefoneCelular],['Curso pretendido',x.Curso],['Unidade',x.UnidadeNome],['Inscrição','0 — Cadastro presencial'],['Data da prova','Não se aplica'],['Horário','Não se aplica']].map(a=>resultCell(...a)).join('');
+ $('resultado-kpis').innerHTML=[['Pontos','—'],['Média (MD)','—'],['Desvio (DP)','—'],['Nota','—']].map(a=>resultCell(...a)).join('');
+ $('res-faixa').replaceChildren(new Option('Condição KEA','1'));$('res-grupo').value='1';$('res-precos-estado').textContent='Selecione período e parcelas, depois consulte os preços KEA.';$('res-precos-linhas').innerHTML='<tr><td colspan="6">Aguardando consulta.</td></tr>';
+}
 setTipo(tipo);
 </script></body></html>
