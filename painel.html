@@ -1,1073 +1,2166 @@
 <!doctype html>
+
 <html lang="pt-BR">
+
 <head>
+
   <meta charset="utf-8">
+
   <meta name="viewport" content="width=device-width,initial-scale=1">
+
   <link
+
     rel="icon"
+
     href="https://www.curso-objetivo.br/assets/img/favicon.ico"
+
   >
+
   <title>SEC-AUXILIAR — Painel</title>
+
   <style>
+
     :root {
+
       --primary: #0b3b78;
+
       --primary-2: #154f92;
+
       --primary-soft: #e8f1fc;
+
       --bg: #eaf1f8;
+
       --surface: #ffffff;
+
       --surface-2: #f7f9fc;
+
       --line: #ccd8e7;
+
       --line-strong: #afc0d4;
+
       --ink: #142033;
+
       --muted: #66758a;
+
       --danger: #9f2f2f;
+
       --top-h: 56px;
+
       --tabs-h: 42px;
+
       --status-h: 28px;
+
     }
+
     * {
+
       box-sizing: border-box;
+
     }
+
     html,
+
     body {
+
       width: 100%;
+
       height: 100%;
+
       margin: 0;
+
       overflow: hidden;
+
       font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+
       color: var(--ink);
+
       background: var(--bg);
+
     }
+
     button {
+
       font: inherit;
+
     }
+
     .hidden {
+
       display: none !important;
+
     }
+
     /* =========================================================
+
        CARREGAMENTO
+
        ========================================================= */
+
     .loading {
+
       width: 100%;
+
       height: 100vh;
+
       display: grid;
+
       place-items: center;
+
       color: var(--muted);
+
       background: var(--bg);
+
       font-size: 15px;
+
     }
+
     /* =========================================================
+
        APLICAÇÃO
+
        ========================================================= */
+
     .app {
+
       width: 100%;
+
       height: 100vh;
+
       display: flex;
+
       flex-direction: column;
+
       overflow: hidden;
+
     }
+
     /* =========================================================
+
        BARRA SUPERIOR
+
        ========================================================= */
+
     .titlebar {
+
       height: var(--top-h);
+
       flex: 0 0 var(--top-h);
+
       display: flex;
+
       align-items: center;
+
       justify-content: space-between;
+
       padding: 0 14px 0 18px;
+
       color: #ffffff;
+
       background:
+
         linear-gradient(
+
           90deg,
+
           var(--primary),
+
           var(--primary-2)
+
         );
+
       border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+
       box-shadow:
+
         0 2px 8px rgba(15, 35, 60, 0.18);
+
       position: relative;
+
       z-index: 30;
+
     }
+
     .brand {
+
       min-width: 0;
+
       display: flex;
+
       align-items: center;
+
       gap: 11px;
+
     }
+
     .brand img {
+
       height: 29px;
+
       display: block;
+
     }
+
     .brand-name {
+
       font-size: 16px;
+
       font-weight: 700;
+
       letter-spacing: 0.01em;
+
       white-space: nowrap;
+
     }
+
     .brand-version {
+
       margin-left: 3px;
+
       font-size: 11px;
+
       opacity: 0.72;
+
       white-space: nowrap;
+
     }
+
     .title-actions {
+
       display: flex;
+
       align-items: center;
+
       gap: 8px;
+
     }
+
     .user-info {
+
       margin-right: 4px;
+
       text-align: right;
+
       line-height: 1.15;
+
     }
+
     .user-name {
+
       font-size: 13px;
+
       font-weight: 600;
+
     }
+
     .user-detail {
+
       margin-top: 3px;
+
       font-size: 11px;
+
       opacity: 0.78;
+
     }
+
     .avatar {
+
       width: 32px;
+
       height: 32px;
+
       display: grid;
+
       place-items: center;
+
       border: 1px solid rgba(255, 255, 255, 0.24);
+
       border-radius: 50%;
+
       color: #ffffff;
+
       background: rgba(255, 255, 255, 0.17);
+
       font-size: 13px;
+
       font-weight: 700;
+
     }
+
     .window-btn {
+
       width: 34px;
+
       height: 30px;
+
       border: 0;
+
       border-radius: 5px;
+
       color: #ffffff;
+
       background: transparent;
+
       cursor: pointer;
+
       font-size: 17px;
+
     }
+
     .window-btn:hover {
+
       background: rgba(255, 255, 255, 0.14);
+
     }
+
     .window-btn:focus-visible {
+
       outline: 2px solid rgba(255, 255, 255, 0.75);
+
       outline-offset: 1px;
+
     }
+
     /* =========================================================
+
        MENU SUPERIOR
+
        ========================================================= */
+
     .tabs-row {
+
       height: var(--tabs-h);
+
       flex: 0 0 var(--tabs-h);
+
       display: flex;
+
       align-items: stretch;
+
       background: #f5f7fa;
+
       border-bottom: 1px solid var(--line);
+
       position: relative;
+
       z-index: 25;
+
     }
+
     .module-tabs {
+
       min-width: 0;
+
       flex: 1;
+
       display: flex;
+
       align-items: flex-end;
+
       gap: 2px;
+
       padding: 5px 10px 0;
+
       overflow-x: auto;
+
       overflow-y: hidden;
+
       scrollbar-width: thin;
+
     }
+
     .module-tab {
+
       height: 36px;
+
       padding: 0 14px;
+
       border: 1px solid transparent;
+
       border-bottom: 0;
+
       border-radius: 6px 6px 0 0;
+
       color: #30435d;
+
       background: transparent;
+
       font-size: 12.5px;
+
       font-weight: 600;
+
       cursor: pointer;
+
       white-space: nowrap;
+
       transition:
+
         background 0.12s ease,
+
         color 0.12s ease,
+
         border-color 0.12s ease;
+
     }
+
     .module-tab:hover {
+
       background: #eaf0f7;
+
     }
+
     .module-tab.active {
+
       color: var(--primary);
+
       background: #ffffff;
+
       border-color: var(--line);
+
       box-shadow:
+
         0 -2px 5px rgba(20, 50, 85, 0.04);
+
     }
+
     .module-tab:focus-visible {
+
       outline: 2px solid #7aa7dc;
+
       outline-offset: -2px;
+
     }
+
     /* =========================================================
+
        MENU SUSPENSO DOS MÓDULOS
+
        ========================================================= */
+
     .module-dropdown {
+
       position: fixed;
+
       z-index: 2000;
+
       display: none;
+
       min-width: 250px;
+
       max-width: min(420px, calc(100vw - 20px));
+
       max-height: min(560px, calc(100vh - 120px));
+
       overflow: auto;
+
       padding: 7px;
+
       background: #ffffff;
+
       border: 1px solid var(--line-strong);
+
       border-radius: 0 0 7px 7px;
+
       box-shadow:
+
         0 12px 28px rgba(20, 45, 75, 0.20);
+
     }
+
     .module-dropdown.open {
+
       display: block;
+
     }
+
     .dropdown-title {
+
       margin-bottom: 4px;
+
       padding: 6px 9px 7px;
+
       color: var(--primary);
+
       border-bottom: 1px solid #e3e9f1;
+
       font-size: 12px;
+
       font-weight: 700;
+
     }
+
     .dropdown-group {
+
       padding: 4px 0 5px;
+
     }
+
     .dropdown-group + .dropdown-group {
+
       border-top: 1px solid #e7ecf3;
+
     }
+
     .dropdown-group-title {
+
       padding: 5px 9px 3px;
+
       color: #78879a;
+
       font-size: 10px;
+
       font-weight: 700;
+
       letter-spacing: 0.05em;
+
       text-transform: uppercase;
+
     }
+
     .dropdown-action {
+
       width: 100%;
+
       min-height: 35px;
+
       display: flex;
+
       align-items: center;
+
       gap: 9px;
+
       padding: 7px 9px;
+
       border: 0;
+
       border-radius: 5px;
+
       color: #253a55;
+
       background: transparent;
+
       text-align: left;
+
       font-size: 12px;
+
       cursor: pointer;
+
     }
+
     .dropdown-action:hover,
+
     .dropdown-action:focus-visible {
+
       background: #edf4fc;
+
       outline: none;
+
     }
+
     .dropdown-action:active {
+
       background: #dfeafa;
+
     }
+
     /* =========================================================
+
        ÁREA DE TRABALHO
+
        ========================================================= */
+
     .workspace-shell {
+
       flex: 1;
+
       min-height: 0;
+
       padding: 10px 10px 8px;
+
       background: var(--bg);
+
     }
+
     .workspace {
+
       width: 100%;
+
       height: 100%;
+
       padding: 9px;
+
       background: #f8fbff;
+
       border: 1px solid var(--line);
+
       border-radius: 7px;
+
       box-shadow:
+
         inset 0 0 0 1px rgba(255, 255, 255, 0.75),
+
         0 4px 16px rgba(18, 45, 75, 0.05);
+
     }
+
     iframe {
+
       width: 100%;
+
       height: 100%;
+
       display: block;
+
       border: 0;
+
       border-radius: 4px;
+
       background: #ffffff;
+
     }
+
     /* =========================================================
+
        BARRA DE STATUS
+
        ========================================================= */
+
     .statusbar {
+
       height: var(--status-h);
+
       flex: 0 0 var(--status-h);
+
       display: flex;
+
       align-items: center;
+
       justify-content: space-between;
+
       padding: 0 10px;
+
       color: #536277;
+
       background: #f7f8fa;
+
       border-top: 1px solid var(--line);
+
       font-size: 11px;
+
     }
+
     .status-left,
+
     .status-right {
+
       display: flex;
+
       align-items: center;
+
       gap: 14px;
+
       white-space: nowrap;
+
     }
+
     .status-dot {
+
       width: 7px;
+
       height: 7px;
+
       display: inline-block;
+
       margin-right: 5px;
+
       border-radius: 50%;
+
       background: #26945c;
+
     }
+
     .sep {
+
       width: 1px;
+
       height: 14px;
+
       background: #d7dfe9;
+
     }
+
     .logout-link {
+
       padding: 4px 6px;
+
       border: 0;
+
       border-radius: 4px;
+
       color: var(--danger);
+
       background: transparent;
+
       cursor: pointer;
+
       font-weight: 600;
+
     }
+
     .logout-link:hover {
+
       background: #fdeaea;
+
     }
+
     /* =========================================================
+
        RESPONSIVO
+
        ========================================================= */
+
     @media (max-width: 850px) {
+
       .brand-version,
+
       .user-detail {
+
         display: none;
+
       }
+
       .user-name {
+
         max-width: 120px;
+
         overflow: hidden;
+
         text-overflow: ellipsis;
+
         white-space: nowrap;
+
       }
+
       .module-tab {
+
         padding: 0 10px;
+
       }
+
       .status-right .hide-mobile {
+
         display: none;
+
       }
+
     }
+
     @media (max-width: 520px) {
+
       .titlebar {
+
         padding-left: 10px;
+
       }
+
       .brand-name {
+
         font-size: 14px;
+
       }
+
       .brand img {
+
         height: 25px;
+
       }
+
       .user-info {
+
         display: none;
+
       }
+
       .workspace-shell {
+
         padding: 6px;
+
       }
+
       .workspace {
+
         padding: 5px;
+
       }
+
       .status-left {
+
         gap: 7px;
+
       }
+
       .status-left .sep {
+
         display: none;
+
       }
+
     }
+
   </style>
+
 </head>
+
 <body>
+
   <div id="loading" class="loading">
+
     Verificando acesso...
+
   </div>
+
   <div id="app" class="app hidden">
+
     <!-- BARRA SUPERIOR -->
+
     <header class="titlebar">
+
       <div class="brand">
+
         <img
+
           src="/optativos/logo-mini.png"
+
           alt="Objetivo"
+
         >
+
         <span class="brand-name">
+
           SEC-AUXILIAR
+
         </span>
+
         <span class="brand-version">
+
           v8.0 web
+
         </span>
+
       </div>
+
       <div class="title-actions">
+
         <div class="user-info">
+
           <div class="user-name" id="userName">
+
             Usuário
+
           </div>
+
           <div class="user-detail" id="userDetail">
+
             Painel administrativo
+
           </div>
+
         </div>
+
         <div class="avatar" id="avatar">
+
           U
+
         </div>
+
         <button
+
           class="window-btn"
+
           id="btnHome"
+
           type="button"
+
           title="Tela inicial"
+
           aria-label="Abrir tela inicial"
+
         >
+
           ⌂
+
         </button>
+
       </div>
+
     </header>
+
     <!-- MENU SUPERIOR -->
+
     <div class="tabs-row">
+
       <nav
+
         class="module-tabs"
+
         id="moduleTabs"
+
         aria-label="Módulos do sistema"
+
       ></nav>
+
     </div>
+
     <!-- MENU SUSPENSO -->
+
     <div
+
       class="module-dropdown"
+
       id="moduleDropdown"
+
       role="menu"
+
       aria-label="Opções do módulo"
+
     ></div>
+
     <!-- ÁREA CENTRAL -->
+
     <main class="workspace-shell">
+
       <div class="workspace">
+
         <iframe
+
           id="frame"
+
           src="paginas/dashboard.html"
+
           title="Área de trabalho"
+
         ></iframe>
+
       </div>
+
     </main>
+
     <!-- BARRA INFERIOR -->
+
     <footer class="statusbar">
+
       <div class="status-left">
+
         <span>
+
           <span class="status-dot"></span>
+
           Sistema on-line
+
         </span>
+
         <span class="sep"></span>
+
         <span id="statusModule">
+
           Visão geral
+
         </span>
+
       </div>
+
       <div class="status-right">
+
         <span
+
           class="hide-mobile"
+
           id="statusUser"
+
         >
+
           Usuário conectado
+
         </span>
+
         <span class="sep hide-mobile"></span>
+
         <span
+
           class="hide-mobile"
+
           id="clock"
+
         ></span>
+
         <button
+
           class="logout-link"
+
           id="logout"
+
           type="button"
+
         >
+
           Sair
+
         </button>
+
       </div>
+
     </footer>
+
   </div>
+
   <script>
+
     'use strict';
+
     const API = 'https://apisec.secauxiliar.com.br/sec/';
+
     /* =========================================================
+
        MÓDULOS E OPÇÕES DO SISTEMA
+
        ========================================================= */
+
     const modules = [
+
       {
+
         id: 'atendimento',
+
         label: 'Atendimento',
+
         groups: [
+
           {
+
             title: 'Consultas',
+
             actions: [
+
               {
+
                 label: 'Pesquisa por CPF',
+
                 icon: '⌕',
+
                 module: 'Pesquisa por CPF'
+
               },
+
               {
+
                 label: 'Pesquisa por nome',
+
                 icon: '♙',
+
                 module: 'Pesquisa por nome'
+
               }
+
             ]
+
           },
+
           {
+
             title: 'Interessados',
+
             actions: [
+
               {
+
                 label: 'Cadastrar interessado',
+
                 icon: '＋',
+
                 module: 'Cadastrar interessado'
+
               },
+
               {
+
                 label: 'Transferir interessado',
+
                 icon: '⇄',
+
                 module: 'Transferir interessado'
+
               }
+
             ]
+
           },
+
           {
+
             title: 'Tabelas',
+
             actions: [
+
               {
+
                 label: 'Tabela de preços',
+
                 icon: '▤',
+
                 page: 'PAGINAS/tabela_precos_atendimento.html'
+
               },
+
               {
+
                 label: 'Preços fora de uso',
+
                 icon: '▧',
+
                 module: 'Tabela de preços fora de uso'
+
               }
+
             ]
+
           }
+
         ]
+
       },
+
       {
+
         id: 'concurso',
+
         label: 'Concurso de Bolsa',
+
         groups: [
+
           {
+
           //  title: 'Concurso',
+
             actions: [
+
               {
+
                 label: 'Consultar',
+
                 icon: '⌕',
+
                 page: 'PAGINAS/concursos_unidade.html'
+
               }
+
             ]
+
           }
+
         ]
+
       },
+
       {
+
         id: 'telemarketing',
+
         label: 'Telemarketing',
+
         groups: [
+
           {
+
             title: 'Concursos',
+
             actions: [
+
               {
+
                 label: 'Listar concursos',
+
                 icon: '☷',
+
                 module: 'Listar concursos'
+
               }
+
             ]
+
           },
+
           {
+
             title: 'Bolsa desempenho',
+
             actions: [
+
               {
+
                 label: 'Novos',
+
                 icon: '✦',
+
                 page: 'PAGINAS/painel_bolsas_unidade.html'
+
               },
+
               {
+
                 label: 'Em andamento',
+
                 icon: '◴',
+
                 module: 'Bolsa Desempenho — Em andamento'
+
               },
+
               {
+
                 label: 'Concluídos',
+
                 icon: '✓',
+
                 module: 'Bolsa Desempenho — Concluídos'
+
               }
+
             ]
+
           }
+
         ]
+
       },
+
       {
+
         id: 'matricula',
+
         label: 'Matrícula',
+
         groups: [
+
           {
+
             title: 'Agenda',
+
             actions: [
+
               {
+
                 label: 'Agenda geral',
+
                 icon: '▣',
+
                 module: 'Agenda geral'
+
               },
+
               {
+
                 label: 'Agenda de hoje',
+
                 icon: '◫',
+
                 module: 'Agenda de hoje'
+
               },
+
               {
+
                 label: 'Pendentes',
+
                 icon: '!',
+
                 module: 'Pendentes'
+
               }
+
             ]
+
           },
+
           {
+
             title: 'Contagem',
+
             actions: [
+
               {
+
                 label: 'Registrar',
+
                 icon: '＋',
+
                 module: 'Contagem — Registrar'
+
               },
+
               {
+
                 label: 'Listar',
+
                 icon: '☷',
+
                 module: 'Contagem — Listar'
+
               },
+
               {
+
                 label: 'Contagem do dia',
+
                 icon: '▥',
+
                 module: 'Contagem do dia'
+
               }
+
             ]
+
           }
+
         ]
+
       },
+
       {
+
         id: 'cancelamento',
+
         label: 'Cancelamento',
+
         groups: [
+
           {
+
             title: 'Operações',
+
             actions: [
+
               {
+
                 label: 'Listar',
+
                 icon: '☷',
+
                 module: 'Cancelamento — Listar'
+
               },
+
               {
+
                 label: 'Conferir',
+
                 icon: '✓',
+
                 module: 'Cancelamento — Conferir'
+
               }
+
             ]
+
           },
+
           {
+
             title: 'Documentos',
+
             actions: [
+
               {
+
                 label: 'Relatório',
+
                 icon: '▤',
+
                 module: 'Cancelamento — Relatório'
+
               },
+
               {
+
                 label: 'Reimprimir',
+
                 icon: '▣',
+
                 module: 'Cancelamento — Reimprimir'
+
               }
+
             ]
+
           }
+
         ]
+
       },
+
       {
+
         id: 'bolsa',
+
         label: 'Bolsa',
+
         groups: [
+
           {
+
             title: 'Bolsa',
+
             actions: [
+
               {
+
                 label: 'Cadastrar',
+
                 icon: '＋',
+
                 module: 'Bolsa — Cadastrar'
+
               },
+
               {
+
                 label: 'Consultar',
+
                 icon: '⌕',
+
                 module: 'Bolsa — Consultar'
+
               },
+
               {
+
                 label: 'Listar',
+
                 icon: '☷',
+
                 module: 'Bolsa — Listar'
+
               }
+
             ]
+
           }
+
         ]
+
       },
+
       {
+
         id: 'ftp',
+
         label: 'FTP',
+
         groups: [
+
           {
+
             title: 'Arquivos',
+
             actions: [
+
               {
+
                 label: 'Transferências',
+
                 icon: '⇅',
+
                 module: 'FTP — Transferências'
+
               },
+
               {
+
                 label: 'Histórico',
+
                 icon: '◷',
+
                 module: 'FTP — Histórico'
+
               }
+
             ]
+
           }
+
         ]
+
       },
+
       {
+
         id: 'aluno',
+
         label: 'Aluno',
+
         groups: [
+
           {
+
             title: 'Consultas',
+
             actions: [
+
               {
+
                 label: 'Consultar aluno',
+
                 icon: '♙',
+
                 module: 'Consultar aluno'
+
               },
+
               {
+
                 label: 'Melhores alunos',
+
                 icon: '★',
+
                 module: 'Melhores alunos'
+
               },
+
               {
+
                 label: 'Melhores alunos — Discursivos',
+
                 icon: '✎',
+
                 module: 'Melhores alunos — Discursivos'
+
               },
+
               {
+
                 label: 'CLS — Testes',
+
                 icon: '✓',
+
                 module: 'CLS — Testes — Geral'
+
               }
+
             ]
+
           },
+
           {
+
             title: 'Notas e redações',
+
             actions: [
+
               {
+
                 label: 'Últimas notas dissertativas',
+
                 icon: '▤',
+
                 module: 'Últimas notas dissertativas'
+
               },
+
               {
+
                 label: 'Últimas redações',
+
                 icon: '✎',
+
                 module: 'Últimas redações'
+
               },
+
               {
+
                 label: 'Simulados abertos',
+
                 icon: '◫',
+
                 module: 'Simulados Abertos — Geral'
+
               }
+
             ]
+
           },
+
           {
+
             title: 'Aulas especiais',
+
             actions: [
+
               {
+
                 label: 'Aulas especiais',
+
                 icon: '▣',
+
                 module: 'Aulas especiais'
+
               },
+
               {
+
                 label: 'Cadastrar/alterar aulas',
+
                 icon: '＋',
+
                 module: 'Cadastrar/alterar aulas'
+
               },
+
               {
+
                 label: 'Liberar on-line',
+
                 icon: '▶',
+
                 module: 'Liberar on-line'
+
               },
+
               {
+
                 label: 'Histórico de liberações',
+
                 icon: '◷',
+
                 module: 'Histórico de liberações'
+
               }
+
             ]
+
           },
+
           {
+
             title: 'Reembolso',
+
             actions: [
+
               {
+
                 label: 'Reembolso',
+
                 icon: '$',
+
                 module: 'Reembolso'
+
               },
+
               {
+
                 label: 'Consulta reembolso',
+
                 icon: '⌕',
+
                 module: 'Consulta reembolso'
+
               },
+
               {
+
                 label: 'Controle',
+
                 icon: '✓',
+
                 module: 'Reembolso — Controle'
+
               }
+
             ]
+
           },
+
           {
+
             title: 'Livros',
+
             actions: [
+
               {
+
                 label: 'Entrega',
+
                 icon: '▦',
+
                 module: 'Livros — Entrega'
+
               },
+
               {
+
                 label: 'Liberados',
+
                 icon: '✓',
+
                 module: 'Livros — Liberados'
+
               },
+
               {
+
                 label: 'Compartilhamento',
+
                 icon: '⇄',
+
                 module: 'Livros — Compartilhamento'
+
               }
+
             ]
+
           }
+
         ]
+
       },
+
       {
+
         id: 'professor',
+
         label: 'Professor',
+
         groups: [
+
           {
+
             title: 'Frequência',
+
             actions: [
+
               {
+
                 label: 'Faltas de hoje',
+
                 icon: '!',
+
                 module: 'Professores — Faltas de hoje'
+
               }
+
             ]
+
           }
+
         ]
+
       },
+
       {
+
         id: 'pagamentos',
+
         label: 'Pagamentos',
+
         groups: [
+
           {
+
             title: 'Solicitações',
+
             actions: [
+
               {
+
                 label: 'Solicitações — 90 dias',
+
                 icon: '▤',
+
                 module: 'Solicitações de pagamento — 90 dias'
+
               }
+
             ]
+
           },
+
           {
+
             title: 'Consultas',
+
             actions: [
+
               {
+
                 label: 'Consulta por CPF',
+
                 icon: '⌕',
+
                 module: 'Pagamentos — Consulta por CPF'
+
               },
+
               {
+
                 label: 'Consulta por matrícula',
+
                 icon: '♙',
+
                 module: 'Pagamentos — Consulta por matrícula'
+
               },
+
               {
+
                 label: 'Filtrar recibos',
+
                 icon: '⌗',
+
                 module: 'Pagamentos — Filtrar recibos'
+
               }
+
             ]
+
           }
+
         ]
+
       },
+
       {
+
         id: 'unidade',
+
         label: 'Unidade',
+
         groups: [
+
           {
+
             title: 'Indicadores',
+
             actions: [
+
               {
+
                 label: 'Valores médios',
+
                 icon: '▥',
+
                 module: 'Unidade — Valores médios'
+
               }
+
             ]
+
           },
+
           {
+
             title: 'Professores',
+
             actions: [
+
               {
+
                 label: 'Professores — Faltas',
+
                 icon: '!',
+
                 module: 'Unidade — Professores — Faltas'
+
               }
+
             ]
+
           }
+
         ]
+
       },
+
       //modulo adm - configurações
+
             {
+
         id: 'Administração',
+
         label: 'Administração',
+
         groups: [
+
           {
+
             title: 'Concursos',
+
             actions: [
+
               {
+
                 label: 'Concurso de Bolsa',
+
                 page: 'PAGINAS/concursos.html',
+
                 nivel: 'admin'
+
               },
+
               {
+
                 label: 'Gabarito',
+
                 page: 'PAGINAS/gabaritos.html',
+
                 nivel: 'admin'
+
               }
+
             ]
+
           },
+
           {
+
             title: 'Tabelas',
+
             actions: [
+
               {
+
                 label: 'Tabelas',          
+
                 page: 'PAGINAS/precos.html',
+
                 nivel: 'admin'
+
               },
+
               {
+
                 label: 'Tabelas por unidade',          
+
                 module: 'Administração - tabelas por unidade'
+
               }
+
             ]
+
           }
+
         ]
+
       }
+
     ];
+
     /* =========================================================
+
        ELEMENTOS DA TELA
+
        ========================================================= */
+
     const loading = document.getElementById('loading');
+
     const app = document.getElementById('app');
+
     const tabsEl = document.getElementById('moduleTabs');
+
     const moduleDropdown = document.getElementById('moduleDropdown');
+
     const frame = document.getElementById('frame');
+
     const statusModule = document.getElementById('statusModule');
+
     let activeModule = 'inicio';
+
     let dropdownAnchor = null;
+
     /* =========================================================
+
        FUNÇÕES AUXILIARES
+
        ========================================================= */
+
     function escapeHtml(value) {
+
       return String(value ?? '')
+
         .replaceAll('&', '&amp;')
+
         .replaceAll('<', '&lt;')
+
         .replaceAll('>', '&gt;')
+
         .replaceAll('"', '&quot;')
+
         .replaceAll("'", '&#039;');
+
     }
+
     function getModuleById(moduleId) {
+
       return modules.find(module => module.id === moduleId) || null;
+
     }
+
     /* =========================================================
+
        ABERTURA DAS PÁGINAS
+
        ========================================================= */
+
     function openPage(page, label = '') {
+
       const separator = page.includes('?') ? '&' : '?';
+
       frame.src =
+
         page +
+
         separator +
+
         'v=' +
+
         Date.now();
+
       statusModule.textContent =
+
         label || 'Área de trabalho';
+
     }
+
     function openPlaceholder(label) {
+
       openPage(
+
         'paginas/em_construcao.html?modulo=' +
+
         encodeURIComponent(label),
+
         label
+
       );
+
     }
+
     function executeAction(action) {
+
       if (!action) {
+
         return;
+
       }
+
       // Controle de permissão
+
       if (action.nivel) {
+
         const nivelUsuario = String(
+
           window.usuario?.nivel || ''
+
         )
+
           .trim()
+
           .toLowerCase();
+
         const nivelNecessario = String(
+
           action.nivel
+
         )
+
           .trim()
+
           .toLowerCase();
+
         if (nivelUsuario !== nivelNecessario) {
+
           openPage(
+
             'paginas/sem_permissao.html',
+
             'Acesso negado'
+
           );
+
           return;
+
         }
+
       }
+
       if (action.action === 'reload') {
+
         const currentUrl = frame.src;
+
         const separator = currentUrl.includes('?') ? '&' : '?';
+
         frame.src =
+
           currentUrl +
+
           separator +
+
           'r=' +
+
           Date.now();
+
         return;
+
       }
+
       if (action.page) {
+
         openPage(
+
           action.page,
+
           action.label
+
         );
+
         return;
+
       }
+
       openPlaceholder(
+
         action.module || action.label
+
       );
+
     }
+
     /* =========================================================
+
        MENU SUPERIOR
+
        ========================================================= */
+
+    // Menu sob o mouse em desktops; clique permanece disponível no toque/teclado.
+    const hasHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+    let menuCloseTimer = null;
+    function cancelMenuClose() {
+      if (menuCloseTimer !== null) { clearTimeout(menuCloseTimer); menuCloseTimer = null; }
+    }
+    function scheduleMenuClose() {
+      if (!hasHover.matches) return;
+      cancelMenuClose();
+      menuCloseTimer = setTimeout(() => {
+        menuCloseTimer = null;
+        closeModuleDropdown();
+      }, 160);
+    }
+    function selectModuleTab(button) {
+      if (!button) return;
+      cancelMenuClose();
+      activeModule = button.dataset.module;
+      tabsEl.querySelectorAll('[data-module]').forEach(tab => {
+        tab.classList.toggle('active', tab === button);
+      });
+      openModuleDropdown(button);
+    }
     function renderTabs() {
       tabsEl.innerHTML = modules.map(module => `
         <button
@@ -1076,319 +2169,597 @@
           data-module="${escapeHtml(module.id)}"
           aria-haspopup="menu"
           aria-expanded="false"
-        >
-          ${escapeHtml(module.label)}
-        </button>
+        >${escapeHtml(module.label)}</button>
       `).join('');
-      tabsEl
-        .querySelectorAll('[data-module]')
-        .forEach(button => {
-          button.addEventListener('click', event => {
-            event.stopPropagation();
-            const clickedModuleId =
-              button.dataset.module;
-            const isSameOpen =
-              moduleDropdown.classList.contains('open') &&
-              dropdownAnchor?.dataset.module === clickedModuleId;
-            if (isSameOpen) {
-              closeModuleDropdown();
-              return;
-            }
-            activeModule = clickedModuleId;
-            renderTabs();
-            const module =
-              getModuleById(activeModule);
-            statusModule.textContent =
-              module?.label || 'Módulo';
-            const freshButton =
-              tabsEl.querySelector(
-                `[data-module="${CSS.escape(activeModule)}"]`
-              );
-            openModuleDropdown(freshButton);
-          });
+      tabsEl.querySelectorAll('[data-module]').forEach(button => {
+        button.addEventListener('mouseenter', () => {
+          if (hasHover.matches) selectModuleTab(button);
         });
+        button.addEventListener('click', event => {
+          event.stopPropagation();
+          const isSameOpen = moduleDropdown.classList.contains('open') && dropdownAnchor === button;
+          if (isSameOpen && !hasHover.matches) {
+            closeModuleDropdown();
+            return;
+          }
+          selectModuleTab(button);
+        });
+        button.addEventListener('focus', () => {
+          // Teclado abre via Enter/Espaço, sem deslocamentos involuntários de foco.
+          cancelMenuClose();
+        });
+      });
     }
+    tabsEl.addEventListener('mouseleave', scheduleMenuClose);
+    tabsEl.addEventListener('mouseenter', cancelMenuClose);
+    moduleDropdown.addEventListener('mouseenter', cancelMenuClose);
+    moduleDropdown.addEventListener('mouseleave', scheduleMenuClose);
+
     /* =========================================================
+
        MENU SUSPENSO
+
        ========================================================= */
+
     function closeModuleDropdown() {
+      cancelMenuClose();
+
       moduleDropdown.classList.remove('open');
+
       moduleDropdown.innerHTML = '';
+
       if (dropdownAnchor) {
+
         dropdownAnchor.setAttribute(
+
           'aria-expanded',
+
           'false'
+
         );
+
       }
+
       dropdownAnchor = null;
+
     }
+
     function positionModuleDropdown(anchor) {
+
       if (!anchor) {
+
         return;
+
       }
+
       const anchorRect =
+
         anchor.getBoundingClientRect();
+
       const menuWidth =
+
         moduleDropdown.offsetWidth || 280;
+
       const maxLeft =
+
         Math.max(
+
           10,
+
           window.innerWidth - menuWidth - 10
+
         );
+
       const desiredLeft =
+
         Math.min(
+
           Math.max(10, anchorRect.left),
+
           maxLeft
+
         );
+
       moduleDropdown.style.left =
+
         desiredLeft + 'px';
+
       moduleDropdown.style.top =
+
         anchorRect.bottom + 'px';
+
     }
+
     function openModuleDropdown(anchor) {
+
       const module =
+
         getModuleById(activeModule) ||
+
         modules[0];
+
       closeModuleDropdown();
+
       dropdownAnchor = anchor;
+
       if (dropdownAnchor) {
+
         dropdownAnchor.setAttribute(
+
           'aria-expanded',
+
           'true'
+
         );
+
       }
+
       moduleDropdown.innerHTML = `
+
         ${module.groups.map(
+
           (group, groupIndex) => `
+
             <div class="dropdown-group">
+
                 ${group.title ? `
+
                     <div class="dropdown-group-title">
+
                         ${escapeHtml(group.title)}
+
                     </div>
+
                 ` : ''}
 
+
+
                 ${group.actions.map(
+
                 (action, actionIndex) => `
+
                   <button
+
                     class="dropdown-action"
+
                     type="button"
+
                     role="menuitem"
+
                     data-group="${groupIndex}"
+
                     data-action-index="${actionIndex}"
+
                   >
+
                     <span>
+
                       ${escapeHtml(action.label)}
+
                     </span>
+
                   </button>
+
                 `
+
               ).join('')}
+
             </div>
+
           `
+
         ).join('')}
+
       `;
+
       moduleDropdown.classList.add('open');
+
       positionModuleDropdown(anchor);
+
       moduleDropdown
+
         .querySelectorAll('.dropdown-action')
+
         .forEach(button => {
+
           button.addEventListener('click', event => {
+
             event.stopPropagation();
+
             const groupIndex =
+
               Number(button.dataset.group);
+
             const actionIndex =
+
               Number(button.dataset.actionIndex);
+
             const action =
+
               module
+
                 .groups[groupIndex]
+
                 .actions[actionIndex];
+
             closeModuleDropdown();
+
             executeAction(action);
+
           });
+
         });
+
     }
+
     /* =========================================================
+
        AUTENTICAÇÃO
+
        ========================================================= */
+
     async function verifySession() {
+
       try {
+
         const response = await fetch(
+
           API + 'auth_me.php',
+
           {
+
             method: 'GET',
+
             credentials: 'include',
+
             cache: 'no-store'
+
           }
+
         );
+
         const data =
+
           await response.json();
+
         if (!response.ok || !data.ok) {
+
           throw new Error(
+
             data.msg ||
+
             data.error ||
+
             'Sessão inválida'
+
           );
+
         }
+
         const user =
+
           data.user || {};
+
           window.usuario = user;
+
         const nivel =
+
           String(user.nivel || '')
+
             .trim()
+
             .toLowerCase();
+
         const nome =
+
           user.nome ||
+
           user.login ||
+
           'Usuário';
+
         document
+
           .getElementById('userName')
+
           .textContent = nome;
+
         document
+
           .getElementById('userDetail')
+
           .textContent =
+
             nivel +
+
             ' • painel administrativo';
+
         document
+
           .getElementById('avatar')
+
           .textContent =
+
             nome
+
               .trim()
+
               .charAt(0)
+
               .toUpperCase();
+
         document
+
           .getElementById('statusUser')
+
           .textContent =
+
             (user.cod_und ? String(user.cod_und).trim() + ' - ' : '') + nome;
+
         renderTabs();
+
         loading.classList.add('hidden');
+
         app.classList.remove('hidden');
+
       }
+
       catch (error) {
+
         console.error(
+
           'Falha ao validar sessão:',
+
           error
+
         );
+
         location.replace('./index.html');
+
       }
+
     }
+
     /* =========================================================
+
        LOGOUT
+
        ========================================================= */
+
     async function logout() {
+
       try {
+
         await fetch(
+
           API + 'auth_logout.php',
+
           {
+
             method: 'POST',
+
             credentials: 'include',
+
             cache: 'no-store'
+
           }
+
         );
+
       }
+
       catch (error) {
+
         console.warn(
+
           'Não foi possível confirmar o logout na API.'
+
         );
+
       }
+
       localStorage.removeItem(
+
         'PRESENCA_token'
+
       );
+
       sessionStorage.clear();
+
       location.replace('./index.html');
+
     }
+
     /* =========================================================
+
        RELÓGIO
+
        ========================================================= */
+
     function updateClock() {
+
       document
+
         .getElementById('clock')
+
         .textContent =
+
           new Intl.DateTimeFormat(
+
             'pt-BR',
+
             {
+
               dateStyle: 'short',
+
               timeStyle: 'short'
+
             }
+
           ).format(new Date());
+
     }
+
     /* =========================================================
+
        EVENTOS GERAIS
+
        ========================================================= */
+
     document
+
       .getElementById('logout')
+
       .addEventListener(
+
         'click',
+
         logout
+
       );
+
     document
+
       .getElementById('btnHome')
+
       .addEventListener(
+
         'click',
+
         () => {
+
           closeModuleDropdown();
+
           activeModule = 'inicio';
+
           renderTabs();
+
           openPage(
+
             'paginas/dashboard.html',
+
             'Visão geral'
+
           );
+
         }
+
       );
+
     document.addEventListener(
+
       'click',
+
       event => {
+
         const clickedInsideDropdown =
+
           moduleDropdown.contains(event.target);
+
         const clickedTab =
+
           event.target.closest('.module-tab');
+
         if (
+
           !clickedInsideDropdown &&
+
           !clickedTab
+
         ) {
+
           closeModuleDropdown();
+
         }
+
       }
+
     );
+
     document.addEventListener(
+
       'keydown',
+
       event => {
+
         if (event.key === 'Escape') {
+
           closeModuleDropdown();
+
         }
+
       }
+
     );
+
     window.addEventListener(
+
       'resize',
+
       () => {
+
         if (
+
           moduleDropdown.classList.contains('open')
+
         ) {
+
           positionModuleDropdown(
+
             dropdownAnchor
+
           );
+
         }
+
       }
+
     );
+
     tabsEl.addEventListener(
+
       'scroll',
+
       () => {
+
         if (
+
           moduleDropdown.classList.contains('open')
+
         ) {
+
           positionModuleDropdown(
+
             dropdownAnchor
+
           );
+
         }
+
       }
+
     );
+
     /* =========================================================
+
        INICIALIZAÇÃO
+
        ========================================================= */
+
     updateClock();
+
     setInterval(
+
       updateClock,
+
       30000
+
     );
+
     verifySession();
+
   </script>
+
 </body>
+
 </html>
