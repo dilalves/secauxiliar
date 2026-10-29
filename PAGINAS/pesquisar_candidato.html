@@ -109,7 +109,17 @@ async function consultarValores(){
   const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Falha na consulta de preços.');
   const grupos={'1':['MANH','MATUT'],'2':['TARDE','VESPERT'],'3':['NOIT']};
   const normal=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
-  const selecionadas=(d.precos||[]).filter(p=>grupos[$('res-grupo').value].some(t=>normal(p.Turno).includes(t)));
+  // REGULAR: somente o turno selecionado. OPCIONAL: todos os turnos,
+  // exceto opcional TARDE quando o regular escolhido for TARDE.
+  // A regra de compatibilidade vale tambem para a futura ficha impressa.
+  const turnoEscolhido=$('res-grupo').value;
+  const selecionadas=(d.precos||[]).filter(p=>{
+   const tipo=normal(p.Tipo).trim();
+   const turno=normal(p.Turno).trim();
+   if(tipo==='REGULAR')return grupos[turnoEscolhido].some(t=>turno.includes(t));
+   if(tipo==='OPCIONAL')return !(turnoEscolhido==='2' && turno==='TARDE');
+   return false; // Nao exibir categorias desconhecidas por engano.
+  });
   // A nota oficial define uma unica letra. KEA permanece independente do resultado.
   // Limites equivalentes a tabela de referencia do Access (2 casas decimais).
   const nota=Number(ficha.nota);
