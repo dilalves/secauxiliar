@@ -128,6 +128,7 @@ $('res-calcular').addEventListener('click',consultarValores);
 const CADAPI='https://apisec.secauxiliar.com.br/sec/cadastrar_interessado_api.php';
 function fecharCadastro(){$('cadastro-overlay').hidden=true;document.body.style.overflow='';}
 $('abrir-cadastro').addEventListener('click',()=>{$('cadastro-overlay').hidden=false;document.body.style.overflow='hidden';$('cadastro-status').textContent='';});
+if(new URLSearchParams(location.search).get('cadastro')==='1') $('abrir-cadastro').click();
 $('cadastro-fechar').addEventListener('click',fecharCadastro);
 $('cadastro-form').addEventListener('submit',async e=>{
  e.preventDefault(); const f=e.currentTarget,b=$('cadastro-salvar');b.disabled=true;$('cadastro-status').textContent='Salvando interessado...';
