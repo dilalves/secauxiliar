@@ -50,6 +50,11 @@
     .proof-placeholder[hidden],.proof-frame[hidden],.proof-image[hidden]{display:none}
     .proof button.show-proof{border:0;background:#eaf2fb;color:#225c98;border-radius:7px;padding:8px 11px;font:inherit;font-size:12px;font-weight:750;white-space:nowrap;cursor:pointer}
     .proof button.show-proof:hover{background:#dceafa}
+    /* Uso integrado na pesquisa: reutiliza o modal original, sem mostrar a lista. */
+    body.modal-integrado main{display:none!important}
+    body.modal-integrado .shade{padding:0;background:transparent}
+    body.modal-integrado .drawer{width:100vw;height:100dvh;max-height:none;border-radius:0;box-shadow:none}
+    body.modal-integrado{overflow:hidden}
     @media(max-width:850px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.heading{align-items:flex-start}.toolbar{flex-wrap:wrap}.searchbox{flex-basis:100%}.result-count{margin-left:auto}.drawer-content{grid-template-columns:minmax(0,1fr) minmax(280px,.7fr);gap:14px;padding:14px}.drawer{width:97vw}.candidate-pane .detail-grid{grid-template-columns:1fr}.candidate-pane .detail-item.wide{grid-column:auto}}
     @media(max-width:600px){main{padding:24px 12px 36px}.heading{display:block}.heading-actions{justify-content:space-between;margin-top:15px}.summary{gap:9px}.stat{padding:14px}.stat-value{font-size:23px}.toolbar{padding:10px}.toolbar select{flex:1;min-width:140px}.shade{padding:0}.drawer{width:100vw;height:100dvh;max-height:100dvh;border-radius:0}.drawer-head,.drawer-content{padding-left:15px;padding-right:15px}.drawer-content{display:flex;flex-direction:column;overflow:auto}.candidate-pane{overflow:visible;flex:none}.proof-viewer{height:60vh;min-height:380px;max-width:100%;flex:none}.proof-image{width:100%;height:auto}.proof{align-items:flex-start;flex-direction:column}.proof button.show-proof{align-self:flex-start}.history-form{grid-template-columns:1fr}.history-form label:last-of-type{grid-column:auto}.history-message{grid-column:auto}.history-top{align-items:flex-start;flex-direction:column;gap:4px}}
   </style>
@@ -84,6 +89,10 @@
   const pageSize = 20;
   let page = 1, debounce, currentCount = 0;
   const labelsForQueue={novos:'Novos pedidos',em_andamento:'Pedidos em andamento',concluidos:'Pedidos concluídos',todos:'Todos os pedidos'};
+   const paramsInicio=new URLSearchParams(location.search);
+   const protocoloDireto=(paramsInicio.get('abrir_protocolo')||'').trim();
+   const modalIntegrado=paramsInicio.get('modal_integrado')==='1' && /^BD[A-Za-z0-9_-]{5,80}$/i.test(protocoloDireto);
+   if(modalIntegrado)document.body.classList.add('modal-integrado');
   const requestedQueue=new URLSearchParams(location.search).get('fila');
   if (requestedQueue && Object.hasOwn(labelsForQueue,requestedQueue)) $('queue-filter').value=requestedQueue;
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -165,13 +174,30 @@
   $('history-modal-close').addEventListener('click',closeHistoryModal);$('history-cancel').addEventListener('click',closeHistoryModal);
   $('history-modal-shade').addEventListener('click',e=>{if(e.target===$('history-modal-shade'))closeHistoryModal();});
   function openDrawer(){ $('shade').hidden=false; document.body.style.overflow='hidden'; $('close-drawer').focus(); }
-  function closeDrawer(){ $('shade').hidden=true; document.body.style.overflow=''; }
+   function closeDrawer(){ $('shade').hidden=true; document.body.style.overflow=''; if(modalIntegrado && window.parent!==window)window.parent.postMessage({source:'sec-bolsa-modal',action:'close'},location.origin); }
   rows.addEventListener('click', async e=>{ const button=e.target.closest('[data-detail]'); if(!button)return; $('drawer-content').innerHTML='<div class="loading">Carregando detalhes…</div>'; openDrawer(); try{const d=await request({action:'detail',id:button.dataset.detail});renderDetails(d.pedido);}catch(err){$('drawer-content').innerHTML=`<p class="error-state">${escapeHtml(err.message)}</p>`;} });
   $('refresh').addEventListener('click',load); $('previous').addEventListener('click',()=>{if(page>1){page--;load();}}); $('next-page').addEventListener('click',()=>{if(page*pageSize<currentCount){page++;load();}});
   $('status-filter').addEventListener('change',()=>{page=1;load();}); $('queue-filter').addEventListener('change',()=>{page=1;load();}); $('unit-filter').addEventListener('change',()=>{page=1;load();}); $('search').addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(()=>{page=1;load();},300);});
   $('close-drawer').addEventListener('click',closeDrawer); $('shade').addEventListener('click',e=>{if(e.target===$('shade'))closeDrawer();}); document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('history-modal-shade').hidden)closeHistoryModal();else if(e.key==='Escape'&&!$('shade').hidden)closeDrawer();});
   async function init(){try{const data=await request({action:'units'});const unitSelect=$('unit-filter');unitSelect.innerHTML='<option value="">Selecione a unidade</option>'+(data.unidades||[]).map(u=>`<option value="${escapeHtml(u.codigo)}">${escapeHtml(u.nome)}</option>`).join('');if(data.admin){unitSelect.hidden=false;}else if((data.unidades||[]).length){unitSelect.value=data.unidades[0].codigo;unitSelect.hidden=true;}if(!data.admin&&data.unidades?.length)$('unit-name').textContent=data.unidades[0].nome;if(data.admin)$('unit-name').textContent='Selecione uma unidade';if(!data.admin||unitSelect.value)load();else{rows.innerHTML='<tr><td colspan="8" class="empty"><strong>Selecione uma unidade</strong>Escolha a unidade para consultar os pedidos recebidos.</td></tr>'; $('result-count').textContent=''; $('page-label').textContent='';}}catch(error){showError(error.message);$('unit-name').textContent='Acesso necessário';}}
-  init();
+   async function abrirProtocoloIntegrado(){
+     if(!modalIntegrado)return;
+     $('drawer-content').innerHTML='<div class="loading">Carregando detalhes…</div>';
+     openDrawer();
+     try {
+       // A listagem existente filtra pela unidade autenticada. Não se usa ID informado pelo navegador.
+       const d=await request({action:'list',page:'1',limit:'20',busca:protocoloDireto,status:'',fila:'todos'});
+       const pedido=(d.pedidos||[]).find(p=>String(p.protocolo||'').toUpperCase()===protocoloDireto.toUpperCase());
+       if(!pedido)throw new Error('Pedido não encontrado na unidade autorizada.');
+       const detalhe=await request({action:'detail',id:String(pedido.id)});
+       if(String(detalhe.pedido?.protocolo||'').toUpperCase()!==protocoloDireto.toUpperCase())throw new Error('O protocolo retornado não corresponde ao solicitado.');
+       renderDetails(detalhe.pedido);
+     } catch(e){$('drawer-content').innerHTML=`<p class="error-state">${escapeHtml(e.message)}</p>`;}
+   }
+   if(modalIntegrado){
+     // Usa as mesmas regras de unidade e os mesmos métodos do painel de Telemarketing.
+     init().then(abrirProtocoloIntegrado);
+   }else init();
 })();
 </script>
 </body>
