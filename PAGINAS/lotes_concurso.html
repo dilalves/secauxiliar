@@ -52,4 +52,24 @@ carregar();
  document.getElementById('processar-pendentes').addEventListener('click',()=>{window.SECConcAuto?.resetErrors(); if(standalone)loop();else window.parent.postMessage({source:'sec-omr-request',type:'run'},location.origin);});
  if(standalone){setTimeout(loop,700);setInterval(loop,15000);}
 })();
+</script>
+<script>
+(()=>{
+  if(window.parent===window)return;
+  let last=0,scheduled=false;
+  function report(){
+    scheduled=false;
+    const main=document.querySelector('main.p');
+    const height=Math.max(main?.getBoundingClientRect().height||0,main?.scrollHeight||0,document.body.scrollHeight||0);
+    const h=Math.ceil(height);
+    if(h>0&&h!==last){last=h;window.parent.postMessage({source:'sec-lotes-altura',type:'resize',height:h},location.origin);}
+  }
+  function request(){if(!scheduled){scheduled=true;requestAnimationFrame(report);}}
+  if('ResizeObserver' in window){const ro=new ResizeObserver(request);ro.observe(document.querySelector('main.p'));}
+  window.addEventListener('load',request);
+  window.addEventListener('resize',request);
+  const mo=new MutationObserver(request);
+  mo.observe(document.querySelector('main.p'),{subtree:true,childList:true,characterData:true});
+  request();
+})();
 </script></body></html>
