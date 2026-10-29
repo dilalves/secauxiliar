@@ -1,6 +1,17 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pesquisa de candidatos — SEC-AUXILIAR</title>
 <script data-sec-auth-guard>(function(){document.documentElement.style.visibility='hidden';fetch('https://apisec.secauxiliar.com.br/sec/auth_me.php',{credentials:'include',cache:'no-store'}).then(async r=>{let d=await r.json();if(!r.ok||!d.ok||!d.user)throw Error('Sem sessão');document.documentElement.style.visibility='';}).catch(()=>location.replace('https://www.secauxiliar.com.br/'));})();</script>
-<style>:root{--blue:#10437f;--line:#d7e2ef;--ink:#17324d}*{box-sizing:border-box}body{margin:0;background:#f3f7fc;color:var(--ink);font:13px 'Segoe UI',Arial,sans-serif}.main{padding:10px 12px;width:100%;max-width:none;margin:0}.panel{background:#fff;border:1px solid var(--line);border-radius:9px;padding:16px;margin-bottom:13px}.title{font-size:19px;font-weight:700;margin:0 0 4px}.muted{color:#687b8d;font-size:12px}.bar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:15px}label{display:grid;gap:5px;font-size:12px;font-weight:600}input{font:inherit;padding:11px 12px;border:1px solid #bdcfe2;border-radius:6px;width:min(460px,calc(100vw - 70px))}button{border:0;border-radius:6px;background:var(--blue);color:white;padding:11px 16px;font:600 13px 'Segoe UI',Arial;cursor:pointer}button:disabled{opacity:.5}.tabs{display:flex;gap:8px}.tabs button{background:#e9eff7;color:#1a426a}.tabs button.active{background:var(--blue);color:white}.notice{padding:13px;background:#f0f5fc;border-radius:6px;margin-top:12px}.warn{color:#995a10}.err{color:#a32133}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:760px}th{text-align:left;background:#eaf1f9;padding:10px}td{border-bottom:1px solid #e6edf5;padding:10px}tbody tr:hover{background:#f8fbfe}.pill{display:inline-block;border-radius:14px;padding:4px 8px;background:#e8f6ec;color:#17633f;font-size:11px;font-weight:600}.pill.other{background:#fff0df;color:#865a17}.foot{margin-top:10px;color:#60758a;font-size:12px}/* Modal da Bolsa Desempenho incorporado sem duplicar seu conteúdo. */
+<style>:root{--blue:#10437f;--line:#d7e2ef;--ink:#17324d}*{box-sizing:border-box}body{margin:0;background:#f3f7fc;color:var(--ink);font:13px 'Segoe UI',Arial,sans-serif}.main{padding:10px 12px;width:100%;max-width:none;margin:0}.panel{background:#fff;border:1px solid var(--line);border-radius:9px;padding:16px;margin-bottom:13px}.title{font-size:19px;font-weight:700;margin:0 0 4px}.muted{color:#687b8d;font-size:12px}.bar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:15px}label{display:grid;gap:5px;font-size:12px;font-weight:600}input{font:inherit;padding:11px 12px;border:1px solid #bdcfe2;border-radius:6px;width:min(460px,calc(100vw - 70px))}button{border:0;border-radius:6px;background:var(--blue);color:white;padding:11px 16px;font:600 13px 'Segoe UI',Arial;cursor:pointer}button:disabled{opacity:.5}.tabs{display:flex;gap:8px}.tabs button{background:#e9eff7;color:#1a426a}.tabs button.active{background:var(--blue);color:white}.notice{padding:13px;background:#f0f5fc;border-radius:6px;margin-top:12px}.warn{color:#995a10}.err{color:#a32133}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:760px}th{text-align:left;background:#eaf1f9;padding:10px}td{border-bottom:1px solid #e6edf5;padding:10px}tbody tr:hover{background:#f8fbfe}.pill{display:inline-block;border-radius:14px;padding:4px 8px;background:#e8f6ec;color:#17633f;font-size:11px;font-weight:600}.pill.other{background:#fff0df;color:#865a17}.foot{margin-top:10px;color:#60758a;font-size:12px}/* Ficha de resultado: modal responsivo de largura máxima */
+.result-overlay{position:fixed;inset:0;background:#10243cb3;z-index:10001;display:grid;place-items:center;padding:1vh 1vw}
+.result-overlay[hidden]{display:none}.result-shell{width:98vw;height:98dvh;background:#f3f7fc;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.result-header{background:#12447d;color:white;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 17px}
+.result-header h2{font-size:19px;margin:0}.result-header button{background:white;color:#12447d;padding:8px 13px}
+.result-body{padding:12px 16px 30px;overflow-y:auto;flex:1}.result-card{background:white;border:1px solid #d8e4f0;border-radius:9px;padding:15px;margin-bottom:12px}
+.result-card h3{margin:0 0 12px;font-size:15px}.result-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.result-cell{background:#f1f5fb;padding:11px;border-radius:7px;min-width:0;overflow-wrap:anywhere}.result-cell small{display:block;color:#637b94;margin-bottom:5px}.result-cell strong{font-size:14px}
+.result-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:end}.result-form label{font-weight:600}.result-form select,.result-form input{font:inherit;width:100%;padding:10px;border:1px solid #c3d3e5;border-radius:7px}
+.result-table{min-width:800px}.result-note{color:#61768c;font-size:12px;margin-top:10px}.result-alert{background:#fff4df;color:#86591a;padding:12px;border-radius:7px}
+@media(max-width:850px){.result-grid,.result-form{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.result-overlay{padding:0}.result-shell{width:100vw;height:100dvh;border-radius:0}.result-grid,.result-form{grid-template-columns:1fr}}
+/* Modal da Bolsa Desempenho incorporado sem duplicar seu conteúdo. */
 .bolsa-backdrop{position:fixed;inset:0;z-index:9999;background:#10243c99;display:grid;place-items:center;padding:2vh 2vw}
 .bolsa-backdrop[hidden]{display:none}
 .bolsa-modal-shell{position:relative;width:min(1550px,98vw);height:95vh;background:#fff;border-radius:13px;overflow:hidden;box-shadow:0 20px 70px #061e3b55}
@@ -8,6 +19,15 @@
 .bolsa-close{position:absolute;right:14px;top:12px;z-index:2;background:white;color:#10437f;border:1px solid #ced8e4;padding:8px 12px}
 @media(max-width:700px){.bolsa-backdrop{padding:0}.bolsa-modal-shell{width:100vw;height:100dvh;border-radius:0}.bolsa-close{right:7px;top:7px}}
 </style></head><body><main class="main"><section class="panel"><h1 class="title">Pesquisa de candidatos</h1><div class="muted">Localize inscrições de Concursos de Bolsa e solicitações de Bolsa Desempenho. O acesso aos detalhes depende da unidade logada.</div><div class="bar"><div class="tabs"><button id="cpfTab" type="button">Por CPF</button><button id="nomeTab" type="button">Por nome</button></div><form id="form" class="bar" style="margin:0"><label id="label">CPF<input id="q" autocomplete="off" required></label><button id="pesquisar" type="submit">Pesquisar</button></form></div><div id="msg" class="notice" role="status">Informe o CPF ou nome para começar.</div></section><section class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 style="font-size:15px;margin:0 0 12px">Candidatos encontrados</h2><span class="muted" id="total"></span></div><div class="table-wrap"><table><thead><tr><th>Candidato</th><th>Origem</th><th>Inscrição / Protocolo</th><th>Concurso / Solicitação</th><th>Unidade</th><th>Acesso</th><th>Ação</th></tr></thead><tbody id="rows"><tr><td colspan="7">Nenhuma pesquisa realizada.</td></tr></tbody></table></div><div class="foot" id="bolsa-aviso">A pesquisa apresenta ambas as origens. Detalhes permanecem sujeitos à autorização da unidade no servidor.</div></section></main>
+<div class="result-overlay" id="resultado-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="resultado-title">
+<div class="result-shell"><header class="result-header"><h2 id="resultado-title">Resultado — Concurso de Bolsa</h2><button type="button" id="resultado-fechar">✕ Fechar</button></header>
+<div class="result-body"><div id="resultado-estado" class="result-card">Carregando resultado...</div>
+<section class="result-card" id="resultado-dados" hidden><h3>Candidato e concurso</h3><div class="result-grid" id="resultado-campos"></div></section>
+<section class="result-card" id="resultado-resultado" hidden><h3>Resultado da prova</h3><div id="resultado-kpis" class="result-grid"></div><div class="result-note">NOTA = 500 + 100 × (PONTOS − MD) / DP. Nota calculada na consulta, sem alterar o banco.</div></section>
+<section class="result-card" id="resultado-proposta" hidden><h3>Simulação comercial — unidade do login</h3>
+<div class="result-form"><label>Faixa<select id="res-faixa"><option value="1">Faixa 1</option></select></label><label>Grupo / período<select id="res-grupo"><option value="1">Manhã</option><option value="2">Tarde</option><option value="3">Noite</option></select></label><label>Quantidade de parcelas<input id="res-parcelas" type="number" min="1" max="60" value="14"></label><button id="res-calcular" type="button">Consultar valores</button></div>
+<div class="result-note" id="res-precos-estado">Selecione as condições e consulte os valores cadastrados.</div><div class="table-wrap"><table class="result-table"><thead><tr><th>Curso / turno</th><th>Valor contratual</th><th>Tipo de desconto</th><th>Desconto</th><th>Total com desconto</th><th>Valor da parcela</th></tr></thead><tbody id="res-precos-linhas"><tr><td colspan="6">Aguardando consulta.</td></tr></tbody></table></div><p class="result-note">Simulação informativa; não registra proposta, matrícula ou condições comerciais. Os horários específicos serão cadastrados em outra etapa.</p></section>
+</div></div></div>
 <div id="bolsa-overlay" class="bolsa-backdrop" hidden role="dialog" aria-modal="true" aria-label="Detalhes do pedido de Bolsa Desempenho"><div class="bolsa-modal-shell"><button id="bolsa-fechar" type="button" class="bolsa-close" aria-label="Fechar detalhes">✕ Fechar</button><iframe id="bolsa-frame" title="Detalhes de Bolsa Desempenho"></iframe></div></div>
 <script>
 'use strict';
@@ -22,11 +42,11 @@ $('form').onsubmit=async e=>{
  try{
   const r=await fetch(API+'?'+new URLSearchParams({tipo,q}),{credentials:'include',cache:'no-store'});
   const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Não foi possível pesquisar.');
-  const itens=[...(d.resultados||[]).map(x=>({nome:x.NomeCand,origem:'Concurso de Bolsa',codigo:x.NumeroInscricao||'—',referencia:x.Concurso||x.IdConcurso||'—',unidade:(x.UnidadeCodigo||'')+' — '+(x.UnidadeNome||''),acesso:!!x.acesso_detalhes,protocolo:null})),
-   ...(d.bolsas||[]).map(x=>({nome:x.candidato,origem:'Bolsa Desempenho',codigo:x.protocolo||'—',referencia:'Solicitação de bolsa',unidade:(x.unidade_codigo||'')+' — '+(x.unidade_nome||''),acesso:!!x.acesso_detalhes,protocolo:x.protocolo||null}))];
+  const itens=[...(d.resultados||[]).map(x=>({nome:x.NomeCand,origem:'Concurso de Bolsa',codigo:x.NumeroInscricao||'—',referencia:x.Concurso||x.IdConcurso||'—',unidade:(x.UnidadeCodigo||'')+' — '+(x.UnidadeNome||''),acesso:!!x.acesso_detalhes,protocolo:null,inscricao:x.NumeroInscricao,concurso:x.IdConcurso})),
+   ...(d.bolsas||[]).map(x=>({nome:x.candidato,origem:'Bolsa Desempenho',codigo:x.protocolo||'—',referencia:'Solicitação de bolsa',unidade:(x.unidade_codigo||'')+' — '+(x.unidade_nome||''),acesso:!!x.acesso_detalhes,protocolo:x.protocolo||null,inscricao:null,concurso:null}))];
   itens.sort((a,b)=>String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR',{sensitivity:'base'})||a.origem.localeCompare(b.origem));
   $('total').textContent=itens.length+' registro(s)';
-  $('rows').innerHTML=itens.length?itens.map(x=>`<tr><td>${esc(x.nome)}</td><td>${esc(x.origem)}</td><td>${esc(x.codigo)}</td><td>${esc(x.referencia)}</td><td>${esc(x.unidade)}</td><td><span class="pill ${x.acesso?'':'other'}">${x.acesso?'Sua unidade':'Outra unidade'}</span></td><td>${x.acesso&&x.protocolo?'<button type="button" class="abrir-bolsa" data-protocolo="'+esc(x.protocolo)+'">Ver pedido</button>':'—'}</td></tr>`).join(''):'<tr><td colspan="7">Nenhum registro encontrado.</td></tr>';
+  $('rows').innerHTML=itens.length?itens.map(x=>`<tr><td>${esc(x.nome)}</td><td>${esc(x.origem)}</td><td>${esc(x.codigo)}</td><td>${esc(x.referencia)}</td><td>${esc(x.unidade)}</td><td><span class="pill ${x.acesso?'':'other'}">${x.acesso?'Sua unidade':'Outra unidade'}</span></td><td>${x.acesso&&x.protocolo?'<button type="button" class="abrir-bolsa" data-protocolo="'+esc(x.protocolo)+'">Ver pedido</button>':x.acesso&&x.inscricao&&x.concurso?'<button type="button" class="abrir-resultado" data-inscricao="'+esc(x.inscricao)+'" data-concurso="'+esc(x.concurso)+'">Ver resultado</button>':'—'}</td></tr>`).join(''):'<tr><td colspan="7">Nenhum registro encontrado.</td></tr>';
   $('bolsa-aviso').textContent=d.aviso_bolsa||'Ver pedido abre os detalhes da Bolsa Desempenho nesta tela. Dados de outras unidades permanecem bloqueados.';
   $('msg').textContent='Pesquisa concluída: '+(d.total||0)+' inscrição(ões) e '+(d.total_bolsas||0)+' pedido(s) de Bolsa Desempenho.';
  }catch(err){$('msg').textContent=err.message;$('msg').classList.add('err');}finally{$('pesquisar').disabled=false;}
@@ -39,6 +59,7 @@ $('bolsa-overlay').addEventListener('click',e=>{if(e.target===$('bolsa-overlay')
 window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===$('bolsa-frame').contentWindow&&e.data?.source==='sec-bolsa-modal'&&e.data.action==='close')fecharPedido();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('bolsa-overlay').hidden)fecharPedido();});
 $('rows').addEventListener('click',e=>{
+ const rb=e.target.closest('.abrir-resultado');if(rb){abrirResultado(rb.dataset.inscricao,rb.dataset.concurso);return;}
  const b=e.target.closest('.abrir-bolsa');if(!b)return;
  const protocolo=b.dataset.protocolo||'';
  if(!/^BD[A-Za-z0-9_-]{5,80}$/i.test(protocolo))return;
@@ -46,5 +67,62 @@ $('rows').addEventListener('click',e=>{
  $('bolsa-frame').src='painel_bolsas_unidade.html?'+new URLSearchParams({modal_integrado:'1',abrir_protocolo:protocolo});
  $('bolsa-fechar').focus();
 });
+const RAPI='https://apisec.secauxiliar.com.br/sec/resultado_candidato_api.php';
+const PAPI='https://apisec.secauxiliar.com.br/sec/consultar_precos_atendimento.php';
+let ficha=null, precosResult=[];
+const dinheiro=n=>Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const numero=(n,casas=2)=>n===null||n===undefined?'—':Number(n).toLocaleString('pt-BR',{minimumFractionDigits:casas,maximumFractionDigits:casas});
+function resultCell(label,value){return `<div class="result-cell"><small>${esc(label)}</small><strong>${esc(value??'—')}</strong></div>`;}
+function fecharResultado(){$('resultado-overlay').hidden=true;document.body.style.overflow='';}
+$('resultado-fechar').onclick=fecharResultado;
+$('resultado-overlay').addEventListener('click',e=>{if(e.target===$('resultado-overlay'))fecharResultado();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('resultado-overlay').hidden)fecharResultado();});
+async function abrirResultado(inscricao,concurso){
+ $('resultado-overlay').hidden=false;document.body.style.overflow='hidden';
+ ['resultado-dados','resultado-resultado','resultado-proposta'].forEach(id=>$(id).hidden=true);
+ $('resultado-estado').hidden=false;$('resultado-estado').textContent='Carregando resultado...';
+ ficha=null;
+ try{
+  const r=await fetch(RAPI+'?'+new URLSearchParams({inscricao,concurso}),{credentials:'include',cache:'no-store'});
+  const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Falha ao consultar resultado.');
+  ficha=d.candidato;const x=ficha;
+  $('resultado-campos').innerHTML=[['Nome',x.NomeCand],['CPF',x.Cpf],['Inscrição',x.NumeroInscricao],['Telefone',x.TelefoneCelular||x.TelefoneResidencial],['Concurso',x.Descricao],['Data da prova',x.DataProva],['Horário',x.Hora],['Código da prova',x.CodProva],['Faixa do concurso',x.Faixa],['Unidade',x.UnidadeNome],['Curso pretendido',x.Curso||x.Carreira],['Período pretendido',x.Periodo]].map(a=>resultCell(...a)).join('');
+  $('resultado-dados').hidden=false;
+  if(!x.liberado){$('resultado-estado').className='result-card result-alert';$('resultado-estado').textContent=x.situacao+' — Resultado ainda não liberado.';return;}
+  $('resultado-estado').hidden=true;$('resultado-estado').className='result-card';
+  $('resultado-kpis').innerHTML=[['Pontos',x.pontos],['Média (MD)',numero(x.Md)],['Desvio (DP)',numero(x.Dp)],['Nota',numero(x.nota)]].map(a=>resultCell(...a)).join('');
+  $('resultado-resultado').hidden=false;$('resultado-proposta').hidden=false;
+  const faixa=String(x.Faixa??'1');$('res-faixa').replaceChildren(new Option('Faixa '+faixa,faixa));
+  const turno=String(x.Periodo||'').toLowerCase();$('res-grupo').value=turno.includes('manh')?'1':turno.includes('noit')?'3':'2';
+  $('res-precos-estado').textContent='Clique em Consultar valores para buscar os preços da sua unidade.';
+  $('res-precos-linhas').innerHTML='<tr><td colspan="6">Aguardando consulta.</td></tr>';
+ }catch(e){$('resultado-estado').hidden=false;$('resultado-estado').className='result-card result-alert';$('resultado-estado').textContent=e.message;}
+}
+async function consultarValores(){
+ if(!ficha?.liberado)return;
+ const faixa=$('res-faixa').value;const parcelas=Number($('res-parcelas').value);
+ if(!Number.isInteger(parcelas)||parcelas<1||parcelas>60){$('res-precos-estado').textContent='Parcelas devem estar entre 1 e 60.';return;}
+ $('res-calcular').disabled=true;$('res-precos-estado').textContent='Consultando tabela de preços...';
+ try{
+  const r=await fetch(PAPI+'?'+new URLSearchParams({faixa}),{credentials:'include',cache:'no-store'});
+  const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Falha na consulta de preços.');
+  const grupos={'1':['MANH','MATUT'],'2':['TARDE','VESPERT'],'3':['NOIT']};
+  const normal=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+  const selecionadas=(d.precos||[]).filter(p=>grupos[$('res-grupo').value].some(t=>normal(p.Turno).includes(t)));
+  const campos=[['Faixa A','Fa'],['Faixa B','Fb'],['Faixa C','Fc'],['Faixa D','Fd'],['Faixa E','Fe'],['Faixa 100','F100'],['Promoção','F0']];
+  const saida=[];
+  for(const p of selecionadas){for(const [titulo,chave] of campos){
+   if(p[chave]===null||p[chave]===undefined||String(p[chave]).trim()==='')continue;
+   const taxa=Number(p[chave]),contrato=Number(p.Contratual);
+   if(!Number.isFinite(taxa)||taxa<0||taxa>100||!Number.isFinite(contrato)||contrato<0)continue;
+   const total=contrato*(1-taxa/100);
+   saida.push(`<tr><td>${esc(p.Curso)} / ${esc(p.Turno)}<div class="muted">${esc(p.NomeTabela||'')}</div></td><td>${dinheiro(contrato)}</td><td>${esc(titulo)}</td><td>${numero(taxa)}%</td><td>${dinheiro(total)}</td><td><strong>${dinheiro(total/parcelas)}</strong></td></tr>`);
+  }}
+  $('res-precos-linhas').innerHTML=saida.join('')||'<tr><td colspan="6">Nenhuma condição encontrada nesta faixa e período.</td></tr>';
+  $('res-precos-estado').textContent=`${saida.length} condição(ões) da unidade ${d.unidade?.nome||''} · ${parcelas} parcela(s).`;
+ }catch(e){$('res-precos-estado').textContent=e.message;$('res-precos-linhas').innerHTML='<tr><td colspan="6">Não foi possível consultar os preços.</td></tr>';}
+ finally{$('res-calcular').disabled=false;}
+}
+$('res-calcular').addEventListener('click',consultarValores);
 setTipo(tipo);
 </script></body></html>
