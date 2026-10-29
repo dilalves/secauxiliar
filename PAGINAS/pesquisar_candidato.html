@@ -110,7 +110,22 @@ async function consultarValores(){
   const grupos={'1':['MANH','MATUT'],'2':['TARDE','VESPERT'],'3':['NOIT']};
   const normal=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
   const selecionadas=(d.precos||[]).filter(p=>grupos[$('res-grupo').value].some(t=>normal(p.Turno).includes(t)));
-  const campos=ficha.kea_permitido?[['KEA','Ea']]:[['Faixa A','Fa'],['Faixa B','Fb'],['Faixa C','Fc'],['Faixa D','Fd'],['Faixa E','Fe'],['Faixa 100','F100'],['Promoção','F0']];
+  // A nota oficial define uma unica letra. KEA permanece independente do resultado.
+  // Limites equivalentes a tabela de referencia do Access (2 casas decimais).
+  const nota=Number(ficha.nota);
+  let letra=null;
+  if(!ficha.kea_permitido){
+   if(!ficha.liberado || ficha.nota===null || ficha.nota===undefined || !Number.isFinite(nota))
+    throw Error('Resultado ainda não liberado para simulação por faixa.');
+   const notaCentavos=Math.round((nota+Number.EPSILON)*100);
+   if(notaCentavos>=40000 && notaCentavos<=50000)letra='A';
+   else if(notaCentavos>=50001 && notaCentavos<=60000)letra='B';
+   else if(notaCentavos>=60001 && notaCentavos<=70000)letra='C';
+   else if(notaCentavos>=70001 && notaCentavos<=80000)letra='D';
+   else if(notaCentavos>=80001 && notaCentavos<=100000)letra='E';
+   else throw Error('Nota fora das faixas A–E cadastradas. Consulte a administração antes de oferecer um desconto.');
+  }
+  const campos=ficha.kea_permitido?[['KEA','Ea']]:[[`Faixa ${letra}`,`F${letra.toLowerCase()}`]];
   const saida=[];
   for(const p of selecionadas){for(const [titulo,chave] of campos){
    if(p[chave]===null||p[chave]===undefined||String(p[chave]).trim()==='')continue;
@@ -120,7 +135,7 @@ async function consultarValores(){
    saida.push(`<tr><td>${esc(p.Curso)} / ${esc(p.Turno)}<div class="muted">${esc(p.NomeTabela||'')}</div></td><td>${dinheiro(contrato)}</td><td>${esc(titulo)}</td><td>${numero(taxa)}%</td><td>${dinheiro(total)}</td><td><strong>${dinheiro(total/parcelas)}</strong></td></tr>`);
   }}
   $('res-precos-linhas').innerHTML=saida.join('')||'<tr><td colspan="6">Nenhuma condição encontrada nesta faixa e período.</td></tr>';
-  $('res-precos-estado').textContent=`${saida.length} condição(ões) da unidade ${d.unidade?.nome||''} · ${parcelas} parcela(s).`;
+  $('res-precos-estado').textContent=`${saida.length} condição(ões) · ${ficha.kea_permitido?'KEA':`Faixa ${$('res-faixa').value}, letra ${letra} (nota ${numero(ficha.nota)})`} · unidade ${d.unidade?.nome||''} · ${parcelas} parcela(s).`;
  }catch(e){$('res-precos-estado').textContent=e.message;$('res-precos-linhas').innerHTML='<tr><td colspan="6">Não foi possível consultar os preços.</td></tr>';}
  finally{$('res-calcular').disabled=false;}
 }
