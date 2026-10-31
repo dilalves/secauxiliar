@@ -36,16 +36,39 @@
 .bolsa-modal-shell iframe{display:block;width:100%;height:100%;border:0}
 .bolsa-close{position:absolute;right:14px;top:12px;z-index:2;background:white;color:#10437f;border:1px solid #ced8e4;padding:8px 12px}
 @media(max-width:700px){.bolsa-backdrop{padding:0}.bolsa-modal-shell{width:100vw;height:100dvh;border-radius:0}.bolsa-close{right:7px;top:7px}}
+
+/* Historico matriculas: divisao da area inferior, sem alterar precos */
+.result-lower{display:grid;grid-template-columns:minmax(0,65fr) minmax(295px,35fr);gap:9px;align-items:start}
+.result-lower>#resultado-proposta,.result-lower>#resultado-matriculas{min-width:0;margin-bottom:0}
+#resultado-proposta .table-wrap{overflow-x:auto}
+#resultado-proposta .result-table{min-width:670px;font-size:11px}
+#resultado-proposta .result-table th,#resultado-proposta .result-table td{padding:8px 6px}
+#resultado-matriculas{padding:11px 12px}
+#resultado-matriculas h3{font-size:13px;margin:0 0 8px}
+#matriculas-lista{max-height:340px;overflow-y:auto}
+.mat-item{border-bottom:1px solid #e0e9f3;padding:9px 0}
+.mat-item:last-child{border-bottom:0}
+.mat-head{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.mat-head strong{font-size:12px}.mat-detail{font-size:11px;color:#5d7187;margin:4px 0}
+.mat-item button{font-size:11px;padding:6px 9px;white-space:nowrap}
+#parcelas-overlay{z-index:10003}
+#parcelas-overlay .result-shell{width:min(1050px,94vw);height:auto;max-height:88dvh}
+#parcelas-overlay .result-table{min-width:680px}
+#parcelas-overlay .result-header h2{font-size:17px}
+@media(max-width:1180px){.result-lower{grid-template-columns:1fr}#matriculas-lista{max-height:210px}}
+@media(max-width:700px){#parcelas-overlay .result-shell{width:100vw;max-height:100dvh;height:auto}#resultado-proposta .result-table{min-width:670px}}
 </style></head><body><main class="main"><section class="panel"><h1 class="title">Pesquisa de candidatos</h1><div class="muted">Localize inscrições de Concursos de Bolsa e solicitações de Bolsa Desempenho. O acesso aos detalhes depende da unidade logada.</div><div class="bar"><div class="tabs"><button id="cpfTab" type="button">Por CPF</button><button id="nomeTab" type="button">Por nome</button></div><form id="form" class="bar" style="margin:0"><label id="label">CPF<input id="q" autocomplete="off" required></label><button id="pesquisar" type="submit">Pesquisar</button></form></div><div style="margin-top:12px"><button id="abrir-cadastro" type="button" style="background:#e9eff7;color:#10437f">＋ Cadastrar interessado presencial</button></div><div id="msg" class="notice" role="status">Informe o CPF ou nome para começar.</div></section><section class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 style="font-size:15px;margin:0 0 12px">Candidatos encontrados</h2><span class="muted" id="total"></span></div><div class="table-wrap"><table><thead><tr><th>Candidato</th><th>Origem</th><th>Inscrição / Protocolo</th><th>Concurso / Solicitação</th><th>Unidade</th><th>Acesso</th><th>Ação</th></tr></thead><tbody id="rows"><tr><td colspan="7">Nenhuma pesquisa realizada.</td></tr></tbody></table></div><div class="foot" id="bolsa-aviso">A pesquisa apresenta ambas as origens. Detalhes permanecem sujeitos à autorização da unidade no servidor.</div></section></main>
 <div class="result-overlay" id="resultado-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="resultado-title">
 <div class="result-shell"><header class="result-header"><h2 id="resultado-title">Resultado — Concurso de Bolsa</h2><button type="button" id="resultado-fechar">✕ Fechar</button></header>
 <div class="result-body"><div id="resultado-estado" class="result-card">Carregando resultado...</div>
 <section class="result-card" id="resultado-dados" hidden><h3>Candidato e concurso</h3><div class="result-grid" id="resultado-campos"></div></section>
 <section class="result-card" id="resultado-resultado" hidden><h3>Resultado da prova</h3><div id="resultado-kpis" class="result-grid"></div><div class="result-note">NOTA = 500 + 100 × (PONTOS − MD) / DP. Nota calculada na consulta, sem alterar o banco.</div></section>
-<section class="result-card" id="resultado-proposta" hidden><h3>Simulação comercial — unidade do login</h3>
+<div class="result-lower"><section class="result-card" id="resultado-proposta" hidden><h3>Simulação comercial — unidade do login</h3>
 <div class="result-form"><label>Faixa<select id="res-faixa"><option value="1">Faixa 1</option></select></label><label>Grupo / período<select id="res-grupo"><option value="1">Manhã</option><option value="2">Tarde</option><option value="3">Noite</option></select></label><label>Quantidade de parcelas<input id="res-parcelas" type="number" min="1" max="60" value="14"></label><button id="res-calcular" type="button">Consultar valores</button></div>
 <div class="result-note" id="res-precos-estado">Selecione as condições e consulte os valores cadastrados.</div><div class="table-wrap"><table class="result-table"><thead><tr><th>Curso / turno</th><th>Valor contratual</th><th>Tipo de desconto</th><th>Desconto</th><th>Total com desconto</th><th>Valor da parcela</th></tr></thead><tbody id="res-precos-linhas"><tr><td colspan="6">Aguardando consulta.</td></tr></tbody></table></div><p class="result-note">Simulação informativa; não registra proposta, matrícula ou condições comerciais. Os horários específicos serão cadastrados em outra etapa.</p></section>
+<section class="result-card" id="resultado-matriculas" hidden><h3>Matrículas anteriores</h3><div class="result-note" id="matriculas-estado">Consultando...</div><div id="matriculas-lista"></div></section></div>
 </div></div></div>
+<div class="result-overlay" id="parcelas-overlay" hidden role="dialog" aria-modal="true" aria-label="Parcelas da matrícula"><div class="result-shell"><header class="result-header"><h2 id="parcelas-titulo">Parcelas da matrícula</h2><button id="parcelas-fechar" type="button">✕ Fechar</button></header><div class="result-body"><div class="result-note" id="parcelas-estado">Carregando...</div><div class="table-wrap"><table class="result-table"><thead><tr><th>Ano letivo</th><th>Parcela</th><th>Tipo</th><th>Valor da parcela</th><th>Vencimento</th><th>Pagamento</th></tr></thead><tbody id="parcelas-linhas"></tbody></table></div></div></div></div>
 <div class="result-overlay" id="cadastro-overlay" hidden role="dialog" aria-modal="true" aria-label="Cadastro de interessado presencial"><div class="result-shell" style="height:auto;max-height:98dvh"><header class="result-header"><h2>Cadastrar interessado — Atendimento presencial</h2><button id="cadastro-fechar" type="button">✕ Fechar</button></header><div class="result-body"><section class="result-card"><p class="result-note">Sem concurso e sem prova. A unidade será obtida automaticamente do usuário logado. Após gravar, o interessado poderá consultar valores com o desconto KEA.</p><form id="cadastro-form"><div class="result-form" style="grid-template-columns:repeat(2,minmax(0,1fr))"><label>CPF *<input name="cpf" maxlength="14" required placeholder="000.000.000-00" autocomplete="off"></label><label>Nome completo *<input name="nome" maxlength="60" required></label><label>Celular *<input name="celular" maxlength="20" required></label><label>E-mail (opcional)<input name="email" type="email" maxlength="120"></label><label>Curso pretendido (opcional)<input name="curso" maxlength="60" placeholder="Exatas, Medicina, Extensivo..."></label><button type="submit" id="cadastro-salvar">Cadastrar e abrir ficha</button></div></form><p id="cadastro-status" class="result-note" role="status"></p></section></div></div></div>
 <div id="bolsa-overlay" class="bolsa-backdrop" hidden role="dialog" aria-modal="true" aria-label="Detalhes do pedido de Bolsa Desempenho"><div class="bolsa-modal-shell"><button id="bolsa-fechar" type="button" class="bolsa-close" aria-label="Fechar detalhes">✕ Fechar</button><iframe id="bolsa-frame" title="Detalhes de Bolsa Desempenho"></iframe></div></div>
 <script>
@@ -92,19 +115,53 @@ let ficha=null, precosResult=[];
 const dinheiro=n=>Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const numero=(n,casas=2)=>n===null||n===undefined?'—':Number(n).toLocaleString('pt-BR',{minimumFractionDigits:casas,maximumFractionDigits:casas});
 function resultCell(label,value){return `<div class="result-cell"><small>${esc(label)}</small><strong>${esc(value??'—')}</strong></div>`;}
-function fecharResultado(){$('resultado-overlay').hidden=true;document.body.style.overflow='';}
+
+// Consultas independentes: o resultado e os precos nao dependem do historico.
+const HIST_API='https://apisec.secauxiliar.com.br/sec/historico_matriculas_api.php';
+let matriculasReq=0;
+function dataBr(s){if(!s)return '—';const v=String(s).slice(0,10),a=v.split('-');return a.length===3?a.reverse().join('/'):v;}
+async function carregarMatriculas(cpf){
+ const req=++matriculasReq;
+ $('resultado-matriculas').hidden=false;$('matriculas-estado').textContent='Consultando matrículas...';$('matriculas-lista').replaceChildren();
+ try{
+  const r=await fetch(HIST_API+'?'+new URLSearchParams({acao:'matriculas',cpf}),{credentials:'include',cache:'no-store',headers:{Accept:'application/json'}});
+  const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Falha ao consultar matrículas.');
+  if(req!==matriculasReq)return;
+  const lista=d.matriculas||[];
+  $('matriculas-estado').textContent=lista.length?`${lista.length} matrícula(s) encontrada(s). Clique para consultar as parcelas.`:'Nenhuma matrícula localizada para este CPF.';
+  $('matriculas-lista').innerHTML=lista.map(m=>`<div class="mat-item"><div class="mat-head"><strong>${esc(m.matricula)} · ${esc(m.turma||'Turma não informada')}</strong><button type="button" data-hmat="${esc(m.matricula)}">Ver parcelas</button></div><div class="mat-detail">${esc(m.nome_unidade||'')} · ${esc(m.desc_situacao||'Situação não informada')}</div></div>`).join('');
+ }catch(e){if(req===matriculasReq)$('matriculas-estado').textContent=e.message;}
+}
+function fecharParcelas(){$('parcelas-overlay').hidden=true;}
+$('parcelas-fechar').onclick=fecharParcelas;
+$('parcelas-overlay').addEventListener('click',e=>{if(e.target===$('parcelas-overlay'))fecharParcelas();});
+$('matriculas-lista').addEventListener('click',e=>{const b=e.target.closest('button[data-hmat]');if(b)abrirParcelas(b.dataset.hmat);});
+async function abrirParcelas(matricula){
+ $('parcelas-overlay').hidden=false;$('parcelas-titulo').textContent='Parcelas — matrícula '+matricula;
+ $('parcelas-estado').textContent='Consultando parcelas...';$('parcelas-linhas').replaceChildren();
+ try{
+  const r=await fetch(HIST_API+'?'+new URLSearchParams({acao:'parcelas',cpf:ficha?.Cpf||'',matricula}),{credentials:'include',cache:'no-store',headers:{Accept:'application/json'}});
+  const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Falha ao consultar parcelas.');
+  if($('parcelas-overlay').hidden || $('parcelas-titulo').textContent!=='Parcelas — matrícula '+matricula)return;
+  const ps=d.parcelas||[];
+  $('parcelas-estado').textContent=ps.length?`${ps.length} parcela(s). Valor exibido corresponde ao valor da parcela cadastrada, não necessariamente ao valor recebido.`:'Nenhuma parcela encontrada para esta matrícula.';
+  $('parcelas-linhas').innerHTML=ps.map(p=>`<tr><td>${esc(p.ano_letivo)}</td><td>${esc(p.parcela)}</td><td>${esc(p.desc_sico_parcela||p.tipo_parcela||'—')}</td><td>${dinheiro(p.valor_parcela)}</td><td>${esc(dataBr(p.data_vencimento))}</td><td>${esc(dataBr(p.data_pagamento))}</td></tr>`).join('');
+ }catch(e){$('parcelas-estado').textContent=e.message;}
+}
+
+function fecharResultado(){++matriculasReq;fecharParcelas();$('resultado-overlay').hidden=true;document.body.style.overflow='';}
 $('resultado-fechar').onclick=fecharResultado;
 $('resultado-overlay').addEventListener('click',e=>{if(e.target===$('resultado-overlay'))fecharResultado();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('resultado-overlay').hidden)fecharResultado();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('parcelas-overlay').hidden)fecharParcelas();else if(e.key==='Escape'&&!$('resultado-overlay').hidden)fecharResultado();});
 async function abrirResultado(inscricao,concurso){
  $('resultado-overlay').hidden=false;document.body.style.overflow='hidden';
  ['resultado-dados','resultado-resultado','resultado-proposta'].forEach(id=>$(id).hidden=true);
  $('resultado-estado').hidden=false;$('resultado-estado').textContent='Carregando resultado...';
- ficha=null;
+ ficha=null;$('resultado-matriculas').hidden=true;++matriculasReq;fecharParcelas();
  try{
   const r=await fetch(RAPI+'?'+new URLSearchParams({inscricao,concurso}),{credentials:'include',cache:'no-store'});
   const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Falha ao consultar resultado.');
-  ficha=d.candidato;const x=ficha;
+  ficha=d.candidato;const x=ficha;carregarMatriculas(x.Cpf);
   $('resultado-campos').innerHTML=[['Nome',x.NomeCand],['CPF',x.Cpf],['Inscrição',x.NumeroInscricao],['Telefone',x.TelefoneCelular||x.TelefoneResidencial],['Concurso',x.Descricao],['Data da prova',x.DataProva],['Horário',x.Hora],['Código da prova',x.CodProva],['Faixa do concurso',x.Faixa],['Unidade',x.UnidadeNome],['Curso pretendido',x.Curso||x.Carreira],['Período pretendido',x.Periodo]].map(a=>resultCell(...a)).join('');
   $('resultado-dados').hidden=false;
   if(!x.liberado){$('resultado-estado').className='result-card result-alert';$('resultado-estado').textContent=x.kea_permitido?'Sem pontuação registrada. A ficha permanece disponível para simulação comercial KEA.':x.situacao+' — Resultado ainda não liberado.';}
@@ -180,7 +237,7 @@ $('cadastro-form').addEventListener('submit',async e=>{
 });
 async function abrirResultadoPresencial(x){
  $('resultado-overlay').hidden=false;document.body.style.overflow='hidden';ficha={...x,pontos:null,liberado:false,kea_permitido:true};
- $('resultado-dados').hidden=false;$('resultado-resultado').hidden=false;$('resultado-proposta').hidden=(!x.liberado&&!x.kea_permitido);
+ carregarMatriculas(x.Cpf);$('resultado-dados').hidden=false;$('resultado-resultado').hidden=false;$('resultado-proposta').hidden=(!x.liberado&&!x.kea_permitido);
  $('resultado-estado').hidden=false;$('resultado-estado').className='result-card result-alert';$('resultado-estado').textContent='Atendimento presencial — sem prova. Condição comercial KEA.';
  $('resultado-campos').innerHTML=[['Nome',x.NomeCand],['CPF',x.Cpf],['Telefone',x.TelefoneCelular],['Curso pretendido',x.Curso],['Unidade',x.UnidadeNome],['Inscrição','0 — Cadastro presencial'],['Data da prova','Não se aplica'],['Horário','Não se aplica']].map(a=>resultCell(...a)).join('');
  $('resultado-kpis').innerHTML=[['Pontos','—'],['Média (MD)','—'],['Desvio (DP)','—'],['Nota','—']].map(a=>resultCell(...a)).join('');
