@@ -394,7 +394,7 @@
 
       transition:
 
-        background 0.12s ease,
+        *background* 0.12s ease,
 
         color 0.12s ease,
 
@@ -1086,7 +1086,7 @@
 
                 icon: '⇄',
 
-                module: 'Transferir interessado'
+                page: 'PAGINAS/transferir_interessado.html'
 
               }
 
@@ -2139,60 +2139,115 @@
        ========================================================= */
 
     // Menu sob o mouse em desktops; clique permanece disponível no toque/teclado.
+
     const hasHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+
     let menuCloseTimer = null;
+
     function cancelMenuClose() {
+
       if (menuCloseTimer !== null) { clearTimeout(menuCloseTimer); menuCloseTimer = null; }
+
     }
+
     function scheduleMenuClose() {
+
       if (!hasHover.matches) return;
+
       cancelMenuClose();
+
       menuCloseTimer = setTimeout(() => {
+
         menuCloseTimer = null;
+
         closeModuleDropdown();
+
       }, 160);
+
     }
+
     function selectModuleTab(button) {
+
       if (!button) return;
+
       cancelMenuClose();
+
       activeModule = button.dataset.module;
+
       tabsEl.querySelectorAll('[data-module]').forEach(tab => {
+
         tab.classList.toggle('active', tab === button);
+
       });
+
       openModuleDropdown(button);
+
     }
+
     function renderTabs() {
+
       tabsEl.innerHTML = modules.map(module => `
+
         <button
+
           class="module-tab ${module.id === activeModule ? 'active' : ''}"
+
           type="button"
+
           data-module="${escapeHtml(module.id)}"
+
           aria-haspopup="menu"
+
           aria-expanded="false"
+
         >${escapeHtml(module.label)}</button>
+
       `).join('');
+
       tabsEl.querySelectorAll('[data-module]').forEach(button => {
+
         button.addEventListener('mouseenter', () => {
+
           if (hasHover.matches) selectModuleTab(button);
+
         });
+
         button.addEventListener('click', event => {
+
           event.stopPropagation();
+
           const isSameOpen = moduleDropdown.classList.contains('open') && dropdownAnchor === button;
+
           if (isSameOpen && !hasHover.matches) {
+
             closeModuleDropdown();
+
             return;
+
           }
+
           selectModuleTab(button);
+
         });
+
         button.addEventListener('focus', () => {
+
           // Teclado abre via Enter/Espaço, sem deslocamentos involuntários de foco.
+
           cancelMenuClose();
+
         });
+
       });
+
     }
+
     tabsEl.addEventListener('mouseleave', scheduleMenuClose);
+
     tabsEl.addEventListener('mouseenter', cancelMenuClose);
+
     moduleDropdown.addEventListener('mouseenter', cancelMenuClose);
+
     moduleDropdown.addEventListener('mouseleave', scheduleMenuClose);
 
     /* =========================================================
@@ -2202,6 +2257,7 @@
        ========================================================= */
 
     function closeModuleDropdown() {
+
       cancelMenuClose();
 
       moduleDropdown.classList.remove('open');
@@ -2311,8 +2367,6 @@
                     </div>
 
                 ` : ''}
-
-
 
                 ${group.actions.map(
 
