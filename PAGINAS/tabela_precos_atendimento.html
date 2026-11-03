@@ -3,13 +3,41 @@
 <style>
 :root{--azul:#103d78;--azul2:#2161a4;--fundo:#f2f6fb;--linha:#d9e5f1;--texto:#173251;--cinza:#667b93}
 *{box-sizing:border-box}body{margin:0;font:14px Arial,Helvetica,sans-serif;color:var(--texto);background:var(--fundo)}.topo{background:linear-gradient(115deg,var(--azul),var(--azul2));color:white;padding:20px 24px}.topo h1{font-size:23px;margin:0 0 4px}.topo small{opacity:.85}.area{padding:14px 18px 32px}.cartao{background:#fff;border:1px solid var(--linha);border-radius:12px;box-shadow:0 10px 28px #0d355014;padding:16px;margin-bottom:13px}.filtros{display:grid;grid-template-columns:minmax(240px,2fr) minmax(120px,1fr);gap:12px;align-items:end}label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}input,select{width:100%;border:1px solid #c9d6e6;border-radius:8px;padding:10px;font:inherit;background:#fff;color:var(--texto)}button{border:0;border-radius:8px;padding:11px 14px;background:var(--azul);color:#fff;font-weight:700;cursor:pointer}button:disabled{opacity:.6}.estado{color:#60738b;font-size:12px;margin-top:12px}.erro{background:#fff0ee;color:#a32118;padding:11px;border-radius:8px;margin-bottom:12px}.aviso{background:#fff8e5;color:#825710;padding:11px;border-radius:8px;margin-bottom:12px}.cab{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}.cab h2{margin:0;font-size:18px}.contador{font-size:12px;color:var(--cinza)}.rolagem{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:1430px}th{font-size:12px;position:sticky;top:0;z-index:1;background:#eaf2fa;color:#24496e;text-align:right;padding:11px 8px;border-bottom:1px solid #c9d8e8}td{padding:11px 8px;border-bottom:1px solid #e5edf6;text-align:right;font-size:12px;white-space:nowrap}th:first-child,td:first-child{text-align:left;min-width:240px}tr:nth-child(even) td{background:#f8fbfe}.nome{font-weight:bold;color:#103f78}.sub{display:block;color:#6a8099;font-size:11px;margin-top:4px}.pct{display:block;font-size:11px;color:#57758f;margin-bottom:3px}.promo{background:#fdf4e6!important}.promoval{color:#a35100;font-weight:bold}.valor{font-weight:bold}.tag{font-size:11px;background:#eff4fa;border-radius:12px;padding:4px 9px}.tot{font-size:13px;color:var(--cinza)}.legenda{font-size:12px;color:#68798b;line-height:1.6;margin-top:12px}.vazio{padding:45px;text-align:center;color:var(--cinza)}@media(max-width:1050px){.filtros{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.filtros{grid-template-columns:1fr}.topo{padding:16px}.area{padding:10px}}
+
+/* Cálculo inverso de desconto — inclusão isolada */
+.cab-acoes{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.btn-desconto{background:#174980;white-space:nowrap}
+.calc-overlay{position:fixed;inset:0;z-index:9000;background:rgba(13,34,59,.64);display:flex;align-items:center;justify-content:center;padding:15px}
+.calc-overlay[hidden]{display:none!important}.calc-dialog{width:min(1440px,100%);max-height:calc(100vh - 30px);overflow:auto;background:#f3f7fc;border-radius:12px;box-shadow:0 20px 70px #10243f66}
+.calc-head{position:sticky;top:0;z-index:5;background:linear-gradient(110deg,#103d78,#2161a4);color:#fff;padding:15px 18px;display:flex;justify-content:space-between;align-items:center;gap:15px}
+.calc-head h2{margin:0;font-size:21px}.calc-head p{margin:5px 0 0;font-size:12px;opacity:.9}.calc-close{background:#fff;color:#123c70;padding:9px 14px}
+.calc-content{padding:15px}.calc-controls{display:grid;grid-template-columns:minmax(160px,1fr) minmax(160px,1fr) minmax(150px,1fr);gap:12px;align-items:end}
+.calc-controls .calc-explain{font-size:12px;color:#4e6480;line-height:1.45;align-self:center}.calc-summary{font-size:12px;color:#506b88;margin:12px 0}.calc-table{min-width:990px}.calc-table th{text-align:right;white-space:nowrap}.calc-table td{text-align:right}.calc-table td:first-child,.calc-table th:first-child{text-align:left}.calc-table tr.over-limit td{background:#fff5ed}.calc-table .exceed{color:#a13e16;font-weight:700}.calc-table .authorized{color:#157044;font-weight:700}.calc-table .money-green{color:#117246;font-weight:bold}.calc-table .money-red{color:#a52b36;font-weight:bold}.calc-tag{display:inline-block;border-radius:5px;background:#e9f1fa;padding:4px 6px;font-size:11px}.calc-note{font-size:12px;line-height:1.6;color:#60738b;margin-top:12px}.calc-empty{text-align:center!important;padding:28px!important;color:#6b7789}
+@media(max-width:850px){.calc-controls{grid-template-columns:1fr 1fr}.calc-controls .calc-explain{grid-column:span 2}}
+@media(max-width:520px){.calc-overlay{padding:5px}.calc-dialog{max-height:calc(100vh - 10px)}.calc-controls{grid-template-columns:1fr}.calc-controls .calc-explain{grid-column:1}.calc-content{padding:10px}}
 </style></head>
 <body><header class="topo"><h1>Consulta de Preços</h1><small>Atendimento • Simulação de descontos e parcelas</small></header>
 <main class="area"><section class="cartao"><div class="filtros">
 <div><label for="faixa">Curso (faixa)</label><select id="faixa"><option value="1">1 — Extensivo</option></select></div>
 <div><label for="parcelas">Parcelas</label><input id="parcelas" type="number" min="1" max="60" step="1" value="14"></div>
 </div><div class="estado" id="estado">Consultando os preços da sua unidade...</div></section>
-<div id="mensagem" aria-live="polite"></div><section class="cartao"><div class="cab"><h2>Cursos e condições de pagamento</h2><span class="contador" id="contador">0 curso(s)</span></div><div class="rolagem"><table><thead><tr><th>Curso / Turno</th><th>Contratual</th><th>Sem desconto</th><th class="promo">Promoção (0)</th><th>Pro/Trab</th><th>KEA</th><th>Faixa A</th><th>Faixa B</th><th>Faixa C</th><th>Faixa D</th><th>Faixa E</th><th>Faixa 100</th></tr></thead><tbody id="linhas"><tr><td colspan="12" class="vazio">Consultando os preços da unidade conectada.</td></tr></tbody></table></div><div class="legenda">Valores por parcela = valor contratual × (1 − desconto ÷ 100) ÷ número de parcelas. Promoção sem concurso utiliza o campo 0 (F0), para atendimento sem concurso. Faixas A–E e 100 utilizam os descontos cadastrados para concurso de bolsa. Valores são simulações e não alteram o cadastro.</div></section></main>
+<div id="mensagem" aria-live="polite"></div><section class="cartao"><div class="cab"><h2>Cursos e condições de pagamento</h2><div class="cab-acoes"><span class="contador" id="contador">0 curso(s)</span><button id="abrirCalculo" class="btn-desconto" type="button">Cálculo de desconto</button></div></div><div class="rolagem"><table><thead><tr><th>Curso / Turno</th><th>Contratual</th><th>Sem desconto</th><th class="promo">Promoção (0)</th><th>Pro/Trab</th><th>KEA</th><th>Faixa A</th><th>Faixa B</th><th>Faixa C</th><th>Faixa D</th><th>Faixa E</th><th>Faixa 100</th></tr></thead><tbody id="linhas"><tr><td colspan="12" class="vazio">Consultando os preços da unidade conectada.</td></tr></tbody></table></div><div class="legenda">Valores por parcela = valor contratual × (1 − desconto ÷ 100) ÷ número de parcelas. Promoção sem concurso utiliza o campo 0 (F0), para atendimento sem concurso. Faixas A–E e 100 utilizam os descontos cadastrados para concurso de bolsa. Valores são simulações e não alteram o cadastro.</div></section></main>
+
+<div id="calcOverlay" class="calc-overlay" hidden>
+  <section class="calc-dialog" role="dialog" aria-modal="true" aria-labelledby="calcTitulo">
+    <header class="calc-head"><div><h2 id="calcTitulo">Cálculo de desconto</h2><p>Quanto o aluno deseja pagar? Simulação dos cursos regulares da unidade</p></div><button type="button" id="fecharCalculo" class="calc-close">✕ Fechar</button></header>
+    <div class="calc-content">
+      <div class="cartao"><div class="calc-controls">
+        <div><label for="valorDesejado">Valor desejado — líquido com 5% de pontualidade (R$)</label><input id="valorDesejado" type="text" inputmode="decimal" autocomplete="off" value="800,00" placeholder="Ex.: 800,00"></div>
+        <div><label for="calcParcelas">Número de parcelas</label><input id="calcParcelas" type="number" min="1" max="60" step="1" value="14"></div>
+        <div class="calc-explain">O KEA é um <b>percentual inteiro</b>, calculado para aproximar o pagamento líquido desejado. Os valores se atualizam ao digitar.</div>
+      </div><div id="calcEstado" class="calc-summary" aria-live="polite"></div></div>
+      <div class="cartao"><div class="rolagem"><table class="calc-table"><thead><tr>
+        <th>Curso / período</th><th>Parcela normal</th><th>Desconto necessário</th><th>KEA inteiro</th><th>Desconto por parcela</th><th>Parcela com KEA</th><th>Até o 5º dia (−5%)</th><th>Máximo (Faixa E)</th><th>Situação</th>
+      </tr></thead><tbody id="calcLinhas"></tbody></table></div>
+      <div class="calc-note">Exibe somente cursos REGULARES e somente descontos não negativos. O percentual da Faixa E é o limite de referência cadastrado para o curso. <b>Acima desse limite, a simulação não autoriza a concessão:</b> é necessária a aprovação comercial aplicável. A diferença entre valor desejado e valor calculado decorre do arredondamento do KEA para inteiro. Os valores não são gravados no cadastro.</div></div>
+    </div>
+  </section>
+</div>
 <script>
 'use strict';
 const API_BASE='https://apisec.secauxiliar.com.br/sec/';
@@ -49,9 +77,39 @@ async function consultar(){
    $('faixa').replaceChildren(...escolhas.map(f=>option(f,f==='1'?'1 — Extensivo':`Faixa ${f}`)));
    $('faixa').value=faixa;
    $('estado').textContent=`Unidade do login: ${d.unidade.nome} (${d.unidade.idund}) • ${precos.length} curso(s) na faixa ${faixa}`;
-   render();
+   render();if(!calcOverlay.hidden)renderCalculo();
  }catch(e){if(k!==versao)return;precos=[];$('estado').textContent='Consulta indisponível';aviso(e.message,true);render();}
 }
+
+// Cálculo inverso — reutiliza precos já consultados, sem gravar dados nem mudar a consulta atual.
+const calcOverlay=$('calcOverlay');
+const parseMoedaBR=input=>{let s=String(input??'').trim().replace(/\s/g,'').replace(/^R\$/i,'');if(!s)return NaN;
+  if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');else if((s.match(/\./g)||[]).length===1&&/\.\d{3}$/.test(s))s=s.replace('.','');
+  if(!/^\d+(?:\.\d{1,2})?$/.test(s))return NaN;return Number(s)};
+const pct=n=>Number(n).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:2})+'%';
+function renderCalculo(){
+ const desired=parseMoedaBR($('valorDesejado').value),n=Number($('calcParcelas').value);
+ const rows=$('calcLinhas');
+ if(!(desired>0)||!Number.isInteger(n)||n<1||n>60){$('calcEstado').textContent='Informe um valor desejado positivo e entre 1 e 60 parcelas.';rows.innerHTML='<tr><td colspan="9" class="calc-empty">Confira o valor e o número de parcelas.</td></tr>';return;}
+ const cursos=precos.filter(p=>String(p.Tipo??'').trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase()==='REGULAR');
+ const results=cursos.map(p=>{
+  const contract=Number(p.Contratual),regular=contract/n,desiredNormal=desired/.95;
+  if(!Number.isFinite(contract)||contract<=0||regular<=0)return null;
+  const required=100*(1-desiredNormal/regular);
+  if(!Number.isFinite(required)||required<0||required>100)return null;
+  const kea=Math.round(required);const nominal=regular*(1-kea/100),saved=regular-nominal,paid=nominal*.95;
+  const maxRaw=p.Fe;const maxE=maxRaw===null||maxRaw===undefined||String(maxRaw).trim()===''?null:Number(maxRaw);
+  const hasMax=maxE!==null&&Number.isFinite(maxE)&&maxE>=0&&maxE<=100;
+  return {p,regular,required,kea,saved,nominal,paid,maxE:hasMax?maxE:null,over:hasMax?kea>maxE:null};
+ }).filter(Boolean);
+ $('calcEstado').textContent=`${results.length} curso(s) regular(es) com desconto não negativo · alvo: ${fmt(desired)} líquido em ${n} parcelas · mensalidade antes dos 5%: ${fmt(desired/.95)}.`;
+ rows.innerHTML=results.length?results.map(x=>`<tr class="${x.over?'over-limit':''}"><td><span class="nome">${texto(x.p.Curso)}</span><span class="sub">${texto(x.p.Turno)} · ${texto(x.p.NomeTabela)}</span></td><td>${fmt(x.regular)}</td><td>${pct(x.required)}</td><td><span class="calc-tag"><b>${x.kea}%</b></span></td><td>${fmt(x.saved)}</td><td class="money-red">${fmt(x.nominal)}</td><td class="money-green">${fmt(x.paid)}</td><td>${x.maxE===null?'Não informada':pct(x.maxE)}</td><td class="${x.over?'exceed':x.over===false?'authorized':''}">${x.over?'Acima do máximo — autorização':x.over===false?'Dentro do máximo':'Verificar limite'}</td></tr>`).join(''):'<tr><td colspan="9" class="calc-empty">Nenhum curso regular com desconto não negativo para esse valor desejado.</td></tr>';
+}
+$('abrirCalculo').addEventListener('click',()=>{ $('calcParcelas').value=$('parcelas').value;calcOverlay.hidden=false;renderCalculo();$('valorDesejado').focus();});
+$('fecharCalculo').addEventListener('click',()=>{calcOverlay.hidden=true;$('abrirCalculo').focus()});
+$('valorDesejado').addEventListener('input',renderCalculo);
+$('calcParcelas').addEventListener('input',renderCalculo);
+
 $('faixa').addEventListener('change',consultar);
 $('parcelas').addEventListener('input',render);
 consultar();
