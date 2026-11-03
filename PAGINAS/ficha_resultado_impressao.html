@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OBJETIVO — Ficha de Informações</title>
+<style>
+:root{--blue:#143f84;--line:#9daec7;--soft:#eef3fa;--ink:#172943}
+*{box-sizing:border-box}body{margin:0;background:#dce5ef;color:var(--ink);font:11px Arial,Helvetica,sans-serif}
+.toolbar{max-width:1100px;margin:15px auto;padding:10px 14px;background:#fff;border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:0 2px 14px #1d304c21}.toolbar strong{color:var(--blue);font-size:15px}.toolbar button{background:var(--blue);color:white;border:0;border-radius:5px;padding:10px 20px;font-weight:bold;cursor:pointer}.toolbar button:disabled{opacity:.5;cursor:default}
+.paper{width:210mm;min-height:297mm;margin:0 auto 30px;background:white;padding:12mm 11mm 10mm;box-shadow:0 8px 25px #132d4b30;display:flex;flex-direction:column;gap:8px}
+.top{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--blue);padding-bottom:7px;gap:12px}.brand{max-width:220px;max-height:67px;object-fit:contain}.toptext{text-align:right}.toptext h1{font:bold italic 22px Georgia,serif;color:var(--blue);margin:0}.toptext p{margin:4px 0 0;font-weight:bold;color:var(--blue);font-style:italic}
+.grid{display:grid;grid-template-columns:1fr 1.5fr 1.3fr 1fr;gap:8px;padding:5px 0}.field small{display:block;color:#62748c;font-size:9px;margin-bottom:2px}.field b{font-size:11px;overflow-wrap:anywhere}.result{display:flex;gap:12px;align-items:center;justify-content:space-between;border:1px solid #bed0e6;background:var(--soft);padding:8px;border-radius:4px}.result div{text-align:center}.result small{display:block;color:#536c8c;font-size:9px}.result strong{font-size:17px;color:var(--blue)}
+h2{color:var(--blue);font-size:13px;margin:8px 0 4px}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #d9e1ec;padding:7px 5px;text-align:left;vertical-align:middle}thead th{background:#e8f0f9;color:#153e7b;font-size:10px}td{font-size:10px}.money{text-align:right;white-space:nowrap}.deal-note{color:#536983;font-size:9px}.course-muted{display:block;color:#61758d;font-size:9px;margin-top:3px}.tag{font-weight:700;color:var(--blue)}
+.bottom{margin-top:auto}.bottom-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:9px}.panel{border:1px solid #bdcadd;min-width:0}.panel-title{background:#e5edf8;color:var(--blue);font-weight:bold;text-align:center;padding:6px;font-size:11px}.panel-body{padding:8px}.panel-body p{margin:3px 0 8px;line-height:1.3}.panel-body b{font-size:10px}.answer-meta{text-align:center;border-bottom:1px solid #d9e1ec;padding:8px 2px}.answer-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;padding:4px}.answer-col{min-width:0}.answer-item{padding:4px 2px;border-bottom:1px solid #eef2f7;white-space:nowrap;font-size:9px;text-align:center}.answer-item.error{color:#a62636;font-weight:bold}.answer-item.ok{color:#16613e}.answer-legend{font-size:8px;color:#516781;text-align:center;padding:4px 5px}.foot{border-top:2px solid var(--blue);padding-top:8px;margin-top:8px}.footline{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-top:7px}.footline span{min-width:0}.muted{color:#6b788b}.status{color:#8e2d39;padding:4px 0}.observacoes-cadastro{white-space:normal}.observacoes-cadastro p{margin:4px 0}.print-note{font-size:9px;color:#475f7e}.warn{background:#fff4df;border:1px solid #edca84;padding:7px;color:#845114}.hide{display:none!important}
+@page{size:A4 portrait;margin:0} @media print{html,body{background:#fff;margin:0;padding:0}.toolbar{display:none}.paper{margin:0;box-shadow:none;width:210mm;height:297mm;min-height:0;max-height:297mm;overflow:hidden;break-after:page;page-break-after:always}.paper:last-child{break-after:auto;page-break-after:auto}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+@media screen and (max-width:850px){.paper{transform-origin:top left;transform:scale(.8);margin-left:8px;margin-bottom:-55mm}.toolbar{margin:5px}}
+</style></head>
+<body>
+<div class="toolbar"><div><strong>Ficha de Informações — Concurso de Bolsa</strong><div id="status" class="muted">Consultando dados oficiais...</div></div><button id="print" type="button" disabled>Imprimir / Salvar PDF</button></div>
+<article class="paper">
+<header class="top"><img class="brand" src="logo_objetivo_ficha.jpg" alt="Curso Objetivo — Vestibulares"><div class="toptext"><h1>Ficha de Informações</h1><p>Resultado do Concurso de Bolsa</p></div></header>
+<section class="grid" id="identificacao"></section>
+<section class="result" id="resumo"></section>
+<section><h2>Planos de pagamento</h2><p class="deal-note" id="proposta-info"></p><table><thead><tr><th>Curso / período</th><th class="money">Contratual</th><th class="money">Desconto</th><th class="money">Total c/ desconto</th><th class="money">Parcelas</th><th class="money">Parcela</th></tr></thead><tbody id="propostas"><tr><td colspan="6">Consultando...</td></tr></tbody></table><p class="print-note">Cursos opcionais são independentes e não estão somados automaticamente ao curso regular. Valores informativos, sujeitos às condições comerciais vigentes.</p></section>
+<div class="bottom"><div class="bottom-grid">
+<section class="panel"><div class="panel-title">Observações</div><div class="panel-body observacoes-cadastro">
+<p><b>Estrutura</b><br>Laboratório e plantão de redação / Plantão de dúvidas / Sala de estudo / Secretaria de vestibulares / Resoluções comentadas / Programação pedagógica / Simulados / Central do aluno / Orientação vocacional / Aulas e palestras.</p>
+<p><b>Material didático</b><br>Cadernos de teoria e atividades / Cadernos de revisão / Fichas-resumo / Resumo e análise de obras dos vestibulares / Materiais preparatórios.</p>
+<p><b>Cursos opcionais</b><br>Aulas especiais de literatura / Turmas especiais de Medicina, Biológicas, ITA, Exatas e Humanidades, conforme oferta da unidade.</p>
+<p><b>Horários dos cursos</b><br><span id="horarios">Conforme informação da unidade.</span></p>
+<p><b>Início das aulas 2027</b><br>15/02/2027 (conforme calendário informado pela unidade).</p>
+<p><b>Documentos</b><br>Cópia do RG, CPF e comprovante de residência e uma foto 3×4.</p>
+<p><b>Forma de pagamento</b><br>No modelo de referência, a primeira parcela pode ser paga em até 2 dias da matrícula, as demais vencem no dia 10 e há indicação de 5% de desconto por pontualidade até o 5º dia útil. <b>Confirmar a vigência dessas condições antes da entrega.</b></p>
+</div></section>
+<section class="panel"><div class="panel-title">Gabarito do candidato</div><div class="answer-meta"><b>Prova: <span id="prova">—</span></b><div class="muted" id="folha-status">Consultando respostas...</div></div><div class="answer-grid" id="respostas"></div><div class="answer-legend">Formato: questão, alternativa marcada (gabarito oficial). Itens diferentes em vermelho.</div></section>
+</div>
+<footer class="foot"><div class="print-note">Nota = 500 + 100 × (Pontos − Média) ÷ Desvio-padrão. Mais informações: www.curso-objetivo.br</div><div class="footline"><span>Planos válidos até: _____/_____/_____</span><span id="emissao"></span></div><div class="footline"><span><b id="unidade">Unidade</b> — <span id="endereco">Endereço não cadastrado</span></span><span>Atendido por <b id="atendente">—</b></span></div></footer>
+</div>
+</article>
+<script>
+'use strict';
+const API='https://apisec.secauxiliar.com.br/sec/';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const brl=v=>Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const num=v=>Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const normal=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
+const dataBR=v=>{if(!v)return'—';const s=String(v).slice(0,10);const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${m[3]}/${m[2]}/${m[1]}`:s};
+const params=new URLSearchParams(location.search);
+const inscricao=params.get('inscricao')||'';
+const concurso=params.get('concurso')||'';
+const faixa=params.get('faixa')||'1';
+const grupo=params.get('grupo')||'2';
+const parcelas=Number(params.get('parcelas')||14);
+function item(label,value){return `<div class="field"><small>${esc(label)}</small><b>${esc(value??'—')}</b></div>`}
+async function loadJSON(file,values){const url=API+file+'?'+new URLSearchParams(values);const r=await fetch(url,{credentials:'include',cache:'no-store',headers:{Accept:'application/json'}});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Falha ao consultar '+file);return d}
+function getLetra(c){if(c.kea_permitido)return['KEA','Ea'];if(!c.liberado||c.nota==null)throw Error('O concurso ainda não possui resultado liberado para emissão.');const n=Math.round(Number(c.nota)*100);if(n>=40000&&n<=50000)return['Faixa A','Fa'];if(n>=50001&&n<=60000)return['Faixa B','Fb'];if(n>=60001&&n<=70000)return['Faixa C','Fc'];if(n>=70001&&n<=80000)return['Faixa D','Fd'];if(n>=80001&&n<=100000)return['Faixa E','Fe'];throw Error('Nota fora das faixas comerciais configuradas.')}
+function renderAnswers(extra){$('prova').textContent=extra.codigo_prova||'—';const a=extra.respostas||{},g=extra.gabarito||{};const available=Object.keys(a).length===50,official=Object.keys(g).length===50;
+ $('folha-status').textContent=available?'50 alternativas da folha corrigida': 'Folha de respostas não localizada/validada para esta inscrição.';
+ if(!official)$('folha-status').textContent+=' Gabarito oficial indisponível.';
+ $('respostas').innerHTML=Array.from({length:5},(_,col)=>'<div class="answer-col">'+Array.from({length:10},(_,row)=>{const i=col*10+row+1;const ans=a[i]||'—',ref=g[i]||'—';const mismatch=ans!=='—'&&ref!=='—'&&ans!==ref;return `<div class="answer-item ${mismatch?'error':ans===ref&&ans!=='—'?'ok':''}">${i} ${esc(ans)} (${esc(ref)})</div>`}).join('')+'</div>').join('');}
+async function main(){
+ if(!/^\d{1,15}$/.test(inscricao)||!/^\d{1,12}$/.test(concurso)||!Number.isInteger(parcelas)||parcelas<1||parcelas>60)throw Error('Parâmetros inválidos da ficha.');
+ const [res,extra,precos]=await Promise.all([loadJSON('resultado_candidato_api.php',{inscricao,concurso}),loadJSON('ficha_resultado_dados.php',{inscricao,concurso}),loadJSON('consultar_precos_atendimento.php',{faixa})]);
+ const c=res.candidato,un=extra.unidade||{};
+ $('identificacao').innerHTML=[item('Inscrição',c.NumeroInscricao),item('Nome',c.NomeCand),item('Data da prova',dataBR(c.DataProva)),item('Hora',c.Hora),item('CPF',c.Cpf),item('Concurso',c.Descricao),item('Curso pretendido',c.Curso||c.Carreira),item('Período pretendido',c.Periodo)].join('');
+ $('resumo').innerHTML=[['Pontos',c.liberado?c.pontos:'—'],['Média',c.liberado?num(c.Md):'—'],['Desvio-padrão',c.liberado?num(c.Dp):'—'],['Nota',c.liberado?num(c.nota):'—']].map(([l,v])=>`<div><small>${esc(l)}</small><strong>${esc(v)}</strong></div>`).join('');
+ $('unidade').textContent=un.nome||'UNIDADE';$('endereco').textContent=un.endereco||'Não cadastrado';$('horarios').textContent=un.horarios||'Conforme informações da unidade';$('atendente').textContent=extra.atendente||'—';$('emissao').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+ renderAnswers(extra);
+ const [rotulo,chave]=getLetra(c);
+ const grupos={'1':['MANH','MATUT'],'2':['TARDE','VESPERT'],'3':['NOIT']},escolha=grupos[grupo]||grupos['2'];
+ const linhas=(precos.precos||[]).filter(p=>{const tipo=normal(p.Tipo),turno=normal(p.Turno);if(tipo==='REGULAR')return escolha.some(v=>turno.includes(v));if(tipo==='OPCIONAL')return !(grupo==='2'&&turno==='TARDE');return false}).filter(p=>p[chave]!=null&&String(p[chave]).trim()!==''&&Number.isFinite(Number(p.Contratual))&&Number.isFinite(Number(p[chave]))&&Number(p[chave])>=0&&Number(p[chave])<=100).sort((a,b)=>Number(b.Contratual)-Number(a.Contratual));
+ $('proposta-info').textContent=`${rotulo} · ${parcelas} parcelas · Faixa ${faixa} · ${un.nome||''} · Valores consultados no cadastro da unidade.`;
+ $('propostas').innerHTML=linhas.length?linhas.map(p=>{const contratual=Number(p.Contratual),desconto=Number(p[chave]),total=contratual*(1-desconto/100);return `<tr><td><b>${esc(p.Curso)}</b><span class="course-muted">${esc(p.Turno)} · ${esc(p.Tipo)}</span></td><td class="money">${brl(contratual)}</td><td class="money">${num(desconto)}%</td><td class="money">${brl(total)}</td><td class="money">${parcelas}</td><td class="money tag">${brl(total/parcelas)}</td></tr>`}).join(''):'<tr><td colspan="6">Não há cursos compatíveis com a seleção.</td></tr>';
+ $('status').textContent=`${c.NomeCand} · Inscrição ${inscricao} · ${linhas.length} condição(ões). Confira a prévia e clique em imprimir.`;
+ $('print').disabled=false;
+}
+$('print').addEventListener('click',()=>window.print());
+main().catch(e=>{$('status').textContent='Erro: '+e.message;$('status').classList.add('status');$('propostas').innerHTML=`<tr><td colspan="6">${esc(e.message)}</td></tr>`;});
+</script></body></html>
