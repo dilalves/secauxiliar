@@ -368,7 +368,7 @@ form.addEventListener('submit', async event => {
     estado:value('estado'), cidade:value('cidade'), unidade:value('unidade'), curso:value('curso'), periodo:value('periodo'),
     exame:primeiroResultado.exame, ano:primeiroResultado.ano || new Date().getFullYear(), notas:primeiroResultado.notas || {},
     resultados:resultEntries.map(item=>({id:item.id})),
-    veracidade:$('veracidade').checked, manual:$('manual').checked, privacidade:$('privacidade').checked, marketing:$('marketing').checked
+    veracidade:$('veracidade').checked, privacidade:$('privacidade').checked, marketing:$('marketing').checked
   };
   const body = new FormData();
   body.set('csrf',csrf); body.set('payload',JSON.stringify(payload));
@@ -392,8 +392,6 @@ form.addEventListener('submit', async event => {
     if (!response.ok) throw new Error('O formulário ainda não está disponível.');
     catalog = await response.json(); csrf = catalog.csrf;
     options('unidade',catalog.units); options('curso',catalog.courses); options('periodo',catalog.periods); preencherCursosVestibular();
-    document.querySelector('#manual-link').href = catalog.legal.manual_url;
-    document.querySelector('#privacy-link').href = catalog.legal.privacy_url;
     $('ano').max = String(new Date().getFullYear());
     const staged=await fetch(API_BASE+'bolsa_registrar_resultado.php',{credentials:'include'});
     const stagedData=await staged.json(); if(!staged.ok) throw new Error(stagedData.erro || 'Não foi possível carregar os comprovantes.');
