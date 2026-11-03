@@ -78,6 +78,12 @@
       <form id="application" enctype="multipart/form-data" novalidate>
         <section class="panel" data-step="0"><span class="eyebrow">PASSO 01 DE 04</span><h2>Preencha seus dados pessoais</h2><p class="hint">Informe seus dados pessoais e de contato para iniciar a candidatura.</p>
           <div class="grid personal-grid"><label class="wide">Nome completo<input name="nome" autocomplete="name" required minlength="3" maxlength="160"></label><label>CPF<input name="cpf" inputmode="numeric" autocomplete="off" required placeholder="000.000.000-00"></label><label>Data de nascimento<input name="nascimento" type="date" required></label><label>E-mail<input name="email" type="email" autocomplete="email" required></label><label>Celular com DDD<input name="celular" type="tel" inputmode="tel" autocomplete="tel" required placeholder="(11) 99999-9999"></label><label>Estado (UF)<select name="estado" autocomplete="address-level1" required><option value="">Selecione...</option></select></label><label>Cidade<select name="cidade" autocomplete="address-level2" required disabled><option value="">Selecione o estado primeiro</option></select><small id="city-status" class="field-help" aria-live="polite"></small></label></div>
+          <div id="return-auth" class="ocr-box" hidden>
+            <strong>Já existe um pedido de bolsa em andamento</strong>
+            <p id="return-message" class="hint">Para consultar seus comprovantes, confirme o código enviado ao e-mail já cadastrado.</p>
+            <label>Código recebido por e-mail<input id="return-code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000"></label>
+            <div class="actions" style="border:0;padding-top:10px;margin-top:6px"><button class="button" type="button" id="return-verify">Validar código e continuar</button></div>
+          </div>
         </section>
         <section class="panel" data-step="1" hidden><span class="eyebrow">PASSO 02 DE 04</span><h2>Escolha seu curso</h2><p class="hint">Selecione a unidade, o curso e o período de seu interesse. A disponibilidade será confirmada na análise.</p><div class="grid course-grid"><label>Unidade<select name="unidade" required></select></label><label>Curso de interesse<select name="curso" required></select></label><label>Período<select name="periodo" required></select></label></div></section>
         <section class="panel" data-step="2" hidden><span class="eyebrow">PASSO 03 DE 04</span><h2>Envie seus comprovantes</h2><p class="hint">Escolha um tipo de resultado, informe as notas quando solicitado, anexe o comprovante e clique em “Enviar comprovante”. Cada tipo pode ser enviado uma vez.</p>
@@ -142,6 +148,9 @@ let catalog;
 let csrf;
 let resultEntries = [];
 let cityRequest = 0;
+let returning = false;
+let savedResults = [];
+let returnChecking = false;
 const UF_BR = [['AC','Acre'],['AL','Alagoas'],['AP','Amapá'],['AM','Amazonas'],['BA','Bahia'],['CE','Ceará'],['DF','Distrito Federal'],['ES','Espírito Santo'],['GO','Goiás'],['MA','Maranhão'],['MT','Mato Grosso'],['MS','Mato Grosso do Sul'],['MG','Minas Gerais'],['PA','Pará'],['PB','Paraíba'],['PR','Paraná'],['PE','Pernambuco'],['PI','Piauí'],['RJ','Rio de Janeiro'],['RN','Rio Grande do Norte'],['RS','Rio Grande do Sul'],['RO','Rondônia'],['RR','Roraima'],['SC','Santa Catarina'],['SP','São Paulo'],['SE','Sergipe'],['TO','Tocantins']];
 const CURSOS_VESTIBULAR = ['Administração','Arquitetura','Artes Cênicas','Artes Visuais','Astronomia','Audiovisual','Biblioteconomia e Ciência da Informação','Biotecnologia','Ciências Biológicas','Ciências Contábeis','Ciências da Natureza','Ciências dos Alimentos','Ciências Econômicas','Ciências Exatas','Ciências Sociais','Computação','Design','Direito','Editoração','Educação Física','Educomunicação','Enfermagem','Engenharia','Estatística','Farmácia','Filosofia','Finanças e Negócios','Física','Física Biomolecular','Física Computacional','Física Médica','Fisioterapia','Fonoaudiologia','Geociências e Educação Ambiental','Geofísica','Geografia','Geologia','Gerontologia','Gestão Ambiental','Gestão de Políticas Públicas','História','Informática Biomédica','Jornalismo','Letras','Marketing','Matemática','Matemática Aplicada','Medicina','Medicina Veterinária','Meteorologia','Música','Nutrição','Obstetrícia','Oceanografia','Odontologia','Pedagogia','Psicologia','Publicidade e Propaganda','Química','Relações Internacionais','Relações Públicas','Saúde Pública','Sistemas de Informação','Terapia Ocupacional','Têxtil e Moda','Treinamento (Biológicas)','Treinamento (Exatas)','Turismo','Zootecnia'];
 
@@ -212,7 +221,7 @@ function validate() {
   }
   if (step === 2) {
     if ($('exame').value || $('comprovante').files.length || [...document.querySelectorAll('#result-enem input,#result-enem select,#result-vestibular input,#result-vestibular select')].some(c=>!c.disabled && c.value.trim())) { error('Você começou um envio. Clique em “Enviar comprovante” antes de continuar.'); document.querySelector('#register-result').focus(); return false; }
-    if (resultEntries.length < 1) { error('Envie pelo menos um comprovante antes de continuar.'); document.querySelector('#register-result').focus(); return false; }
+    if (resultEntries.filter(item=>!item.salvo).length < 1) { error('Envie pelo menos um novo comprovante antes de continuar.'); document.querySelector('#register-result').focus(); return false; }
   }
   return true;
 }
@@ -355,13 +364,70 @@ function summary() {
     <h3>Curso de interesse</h3><dl>${pair('Unidade', catalog.units[value('unidade')])}${pair('Curso', catalog.courses[value('curso')])}${pair('Período', catalog.periods[value('periodo')])}</dl>
     <h3>Resultados e comprovantes</h3>${resultsHtml}`;
 }
-document.querySelector('#next').addEventListener('click', () => { if (validate()) { step++; render(); window.scrollTo({top:0,behavior:'smooth'}); } });
-document.querySelector('#back').addEventListener('click', () => { step--; render(); window.scrollTo({top:0,behavior:'smooth'}); });
+async function returnRequest(action, additional={}) {
+  const body=new FormData();
+  body.set('csrf',csrf);
+  body.set('action',action);
+  Object.entries(additional).forEach(([key,val])=>body.set(key,val));
+  const response=await fetch(API_BASE+'bolsa_retorno.php',{method:'POST',body,credentials:'include'});
+  const result=await response.json();
+  if(!response.ok) throw new Error(result.error || 'Não foi possível consultar a candidatura.');
+  return result;
+}
+async function continueFromPersonal() {
+  if(returnChecking || !validate()) return;
+  returnChecking=true;
+  const button=document.querySelector('#next');button.disabled=true;
+  try {
+    const result=await returnRequest('start',{cpf:digits(value('cpf'))});
+    if(result.mode==='new') { step=1; render(); window.scrollTo({top:0,behavior:'smooth'}); return; }
+    document.querySelector('#return-auth').hidden=false;
+    document.querySelector('#return-message').textContent=result.message+' ('+result.masked_email+')';
+    button.hidden=true;
+    document.querySelector('#return-code').focus();
+  } catch(e) {error(e.message);}
+  finally {returnChecking=false;button.disabled=false;}
+}
+document.querySelector('#next').addEventListener('click', () => {
+  if(step===0) {continueFromPersonal();return;}
+  if(validate()) {step++;render();window.scrollTo({top:0,behavior:'smooth'});}
+});
+document.querySelector('#return-verify').addEventListener('click',async()=>{
+  const button=document.querySelector('#return-verify');button.disabled=true;
+  try {
+    const result=await returnRequest('verify',{code:document.querySelector('#return-code').value.trim()});
+    returning=true; savedResults=result.records||[];
+    resultEntries=[...savedResults,...resultEntries.filter(item=>!item.salvo)];
+    $('unidade').value=result.unit; $('curso').value=result.course; $('periodo').value=result.period;
+    renderRegisteredResults();
+    step=2;render();
+    const notice=document.createElement('div');notice.className='notice';notice.id='return-note';
+    notice.textContent='Já existe um pedido de bolsa em andamento. Utilize esta página para o envio de novos boletins que ainda não tenham sido enviados. Protocolo: '+result.protocolo;
+    const earlier=document.querySelector('#return-note');if(earlier)earlier.remove();
+    panels[2].insertBefore(notice,panels[2].children[3]);
+    window.scrollTo({top:0,behavior:'smooth'});
+  } catch(e) {error(e.message);}
+  finally {button.disabled=false;}
+});
+document.querySelector('#back').addEventListener('click', () => { if(returning && step===2) {returning=false;savedResults=[];resultEntries=resultEntries.filter(item=>!item.salvo);step=0;} else {step--;} render(); window.scrollTo({top:0,behavior:'smooth'}); });
 form.addEventListener('submit', async event => {
   event.preventDefault();
   if (!validate()) return;
   const button = document.querySelector('#send');
   button.disabled = true; button.textContent = 'Enviando...'; clearError();
+  if(returning) {
+    try {
+      const novos=resultEntries.filter(item=>!item.salvo);
+      const result=await returnRequest('append',{ids:JSON.stringify(novos.map(item=>String(item.id)))});
+      document.querySelector('#protocol').textContent='Comprovantes adicionados';
+      document.querySelector('#email-message').textContent=result.message;
+      document.querySelector('#flow').hidden=true;
+      document.querySelector('#success').hidden=false;
+      window.scrollTo({top:0,behavior:'smooth'});
+    } catch(e) {error(e.message || 'Não foi possível complementar o pedido.');}
+    finally {button.disabled=false;button.textContent='Enviar candidatura';}
+    return;
+  }
   const primeiroResultado=resultEntries[0];
   const payload = {
     nome:value('nome'), cpf:value('cpf'), nascimento:value('nascimento'), email:value('email'), celular:value('celular'),
