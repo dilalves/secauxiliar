@@ -101,11 +101,11 @@ $('form').onsubmit=async e=>{
  try{
   const r=await fetch(API+'?'+new URLSearchParams({tipo,q}),{credentials:'include',cache:'no-store'});
   const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Não foi possível pesquisar.');
-  const itens=[...(d.resultados||[]).map(x=>({nome:x.NomeCand,origem:'Concurso de Bolsa',codigo:x.NumeroInscricao||'—',referencia:x.Concurso||x.IdConcurso||'—',unidade:(x.UnidadeCodigo||'')+' — '+(x.UnidadeNome||''),acesso:!!x.acesso_detalhes,protocolo:null,inscricao:x.NumeroInscricao,concurso:x.IdConcurso})),
+  const itens=[...(d.resultados||[]).map(x=>({nome:x.NomeCand,origem:'Concurso de Bolsa',codigo:x.NumeroInscricao||'—',referencia:x.Concurso||x.IdConcurso||'—',unidade:(x.UnidadeCodigo||'')+' — '+(x.UnidadeNome||''),acesso:!!x.acesso_detalhes,protocolo:null,inscricao:x.NumeroInscricao,concurso:x.IdConcurso,registro_id:x.IdRegistro||null})),
    ...(d.bolsas||[]).map(x=>({nome:x.candidato,origem:'Bolsa Desempenho',codigo:x.protocolo||'—',referencia:'Solicitação de bolsa',unidade:(x.unidade_codigo||'')+' — '+(x.unidade_nome||''),acesso:!!x.acesso_detalhes,protocolo:x.protocolo||null,inscricao:null,concurso:null}))];
   itens.sort((a,b)=>String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR',{sensitivity:'base'})||a.origem.localeCompare(b.origem));
   $('total').textContent=itens.length+' registro(s)';
-  $('rows').innerHTML=itens.length?itens.map(x=>`<tr><td>${esc(x.nome)}</td><td>${esc(x.origem)}</td><td>${esc(x.codigo)}</td><td>${esc(x.referencia)}</td><td>${esc(x.unidade)}</td><td><span class="pill ${x.acesso?'':'other'}">${x.acesso?'Sua unidade':'Outra unidade'}</span></td><td>${x.acesso&&x.protocolo?'<button type="button" class="abrir-bolsa" data-protocolo="'+esc(x.protocolo)+'">Ver pedido</button>':x.acesso&&x.inscricao&&x.concurso?'<button type="button" class="abrir-resultado" data-inscricao="'+esc(x.inscricao)+'" data-concurso="'+esc(x.concurso)+'">Ver resultado</button>':'—'}</td></tr>`).join(''):'<tr><td colspan="7">Nenhum registro encontrado.</td></tr>';
+  $('rows').innerHTML=itens.length?itens.map(x=>`<tr><td>${esc(x.nome)}</td><td>${esc(x.origem)}</td><td>${esc(x.codigo)}</td><td>${esc(x.referencia)}</td><td>${esc(x.unidade)}</td><td><span class="pill ${x.acesso?'':'other'}">${x.acesso?'Sua unidade':'Outra unidade'}</span></td><td>${x.acesso&&x.protocolo?'<button type="button" class="abrir-bolsa" data-protocolo="'+esc(x.protocolo)+'">Ver pedido</button>':x.acesso&&x.inscricao&&x.concurso?'<button type="button" class="abrir-resultado" data-inscricao="'+esc(x.inscricao)+'" data-concurso="'+esc(x.concurso)+'" data-registro="'+esc(x.registro_id||'')+'">Ver resultado</button>':'—'}</td></tr>`).join(''):'<tr><td colspan="7">Nenhum registro encontrado.</td></tr>';
   $('bolsa-aviso').textContent=d.aviso_bolsa||'Ver pedido abre os detalhes da Bolsa Desempenho nesta tela. Dados de outras unidades permanecem bloqueados.';
   $('msg').textContent='Pesquisa concluída: '+(d.total||0)+' inscrição(ões) e '+(d.total_bolsas||0)+' pedido(s) de Bolsa Desempenho.';
  }catch(err){$('msg').textContent=err.message;$('msg').classList.add('err');}finally{$('pesquisar').disabled=false;}
@@ -118,7 +118,7 @@ $('bolsa-overlay').addEventListener('click',e=>{if(e.target===$('bolsa-overlay')
 window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===$('bolsa-frame').contentWindow&&e.data?.source==='sec-bolsa-modal'&&e.data.action==='close')fecharPedido();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('bolsa-overlay').hidden)fecharPedido();});
 $('rows').addEventListener('click',e=>{
- const rb=e.target.closest('.abrir-resultado');if(rb){abrirResultado(rb.dataset.inscricao,rb.dataset.concurso);return;}
+ const rb=e.target.closest('.abrir-resultado');if(rb){abrirResultado(rb.dataset.inscricao,rb.dataset.concurso,rb.dataset.registro);return;}
  const b=e.target.closest('.abrir-bolsa');if(!b)return;
  const protocolo=b.dataset.protocolo||'';
  if(!/^BD[A-Za-z0-9_-]{5,80}$/i.test(protocolo))return;
@@ -170,13 +170,15 @@ function fecharResultado(){$('neg-overlay').hidden=true;$('neg-acoes').hidden=tr
 $('resultado-fechar').onclick=fecharResultado;
 $('resultado-overlay').addEventListener('click',e=>{if(e.target===$('resultado-overlay'))fecharResultado();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('parcelas-overlay').hidden)fecharParcelas();else if(e.key==='Escape'&&!$('resultado-overlay').hidden)fecharResultado();});
-async function abrirResultado(inscricao,concurso){
+async function abrirResultado(inscricao,concurso,registroId=''){
  $('resultado-overlay').hidden=false;document.body.style.overflow='hidden';
  ['resultado-dados','resultado-resultado','resultado-proposta'].forEach(id=>$(id).hidden=true);
  $('resultado-estado').hidden=false;$('resultado-estado').textContent='Carregando resultado...';
  ficha=null;$('neg-acoes').hidden=true;$('resultado-matriculas').hidden=true;++matriculasReq;fecharParcelas();
  try{
-  const r=await fetch(RAPI+'?'+new URLSearchParams({inscricao,concurso}),{credentials:'include',cache:'no-store'});
+  const params={inscricao,concurso};
+  if(String(inscricao)==='0' && String(concurso)==='0' && /^[1-9]\d*$/.test(String(registroId)))params.registro_id=String(registroId);
+  const r=await fetch(RAPI+'?'+new URLSearchParams(params),{credentials:'include',cache:'no-store'});
   const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Falha ao consultar resultado.');
   ficha=d.candidato;const x=ficha;$('neg-acoes').hidden=false;carregarMatriculas(x.Cpf);
   $('resultado-campos').innerHTML=[['Nome',x.NomeCand],['CPF',x.Cpf],['Inscrição',x.NumeroInscricao],['Telefone',x.TelefoneCelular||x.TelefoneResidencial],['Concurso',x.Descricao],['Data da prova',x.DataProva],['Horário',x.Hora],['Código da prova',x.CodProva],['Faixa do concurso',x.Faixa],['Unidade',x.UnidadeNome],['Curso pretendido',x.Curso||x.Carreira],['Período pretendido',x.Periodo]].map(a=>resultCell(...a)).join('');
@@ -273,18 +275,7 @@ async function atualizarNeg(){const el=$('neg-historico');el.textContent='Consul
 $('neg-registrar').onclick=()=>{if(!ficha)return;negEditing=null;$('neg-form').reset();$('neg-status').textContent='';$('neg-salvar').textContent='Confirmar registro';$('neg-overlay').hidden=false;atualizarNeg();};
 $('neg-historico').addEventListener('click',e=>{const btn=e.target.closest('[data-edit]');if(!btn)return;const h=($('neg-historico')._hist||[]).find(x=>String(x.id)===btn.dataset.edit);if(!h||!h.can_edit)return;negEditing=h.id;const f=$('neg-form');f.elements.canal.value=h.canal;f.elements.resultado.value=h.resultado;f.elements.observacao.value=h.observacao;$('neg-salvar').textContent='Salvar edição';$('neg-status').textContent='Edição permitida somente ao autor, até 10 minutos após o registro.';});
 $('neg-form').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,b=$('neg-salvar');b.disabled=true;$('neg-status').textContent='Gravando atendimento...';try{const payload={canal:f.elements.canal.value,resultado:f.elements.resultado.value,observacao:f.elements.observacao.value,...(negEditing?{historico_id:negEditing}:{})};await negRequest(negEditing?'editar_historico':'registrar_historico',payload);negEditing=null;f.reset();b.textContent='Confirmar registro';$('neg-status').textContent='Atendimento registrado com sucesso.';await atualizarNeg();}catch(err){$('neg-status').textContent=err.message;}finally{b.disabled=false;}});
-$('neg-imprimir').onclick=()=>{if(!ficha)return;
-// Para concursos reais, usar a ficha A4 com gabarito e dados da unidade.
-// Cadastro presencial (IdConcurso=0): preservar a impressão antiga de simulação.
-if(Number(ficha.IdConcurso)>0 && Number(ficha.NumeroInscricao)>0){
- const t=$('res-precos-linhas').querySelector('td');
- if(!t||/Aguardando|Nenhuma|Não foi|Consulte/.test(t.textContent)){alert('Consulte os valores antes de imprimir a ficha.');return;}
- const q=new URLSearchParams({inscricao:String(ficha.NumeroInscricao),concurso:String(ficha.IdConcurso),faixa:$('res-faixa').value,grupo:$('res-grupo').value,parcelas:$('res-parcelas').value});
- const aba=window.open('ficha_resultado_impressao.html?'+q.toString(),'_blank');
- if(!aba)alert('Permita janelas pop-up para abrir a ficha de informações.');
- return;
-}
-const v=$('res-precos-linhas').querySelector('td');if(!v||/Aguardando|Nenhuma|Não foi/.test(v.textContent)){alert('Consulte os valores antes de imprimir a simulação.');return;}const w=window.open('','_blank');if(!w){alert('Permita janelas pop-up para imprimir.');return;}const cells=[...$('resultado-campos').children].map(x=>x.innerHTML).join('');const prices=$('resultado-proposta').querySelector('table').outerHTML;const note=$('res-precos-estado').textContent;w.document.write('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Simulação comercial</title><style>body{font:12px Arial;margin:22mm 14mm;color:#18314c}h1,h2{color:#12447d}h1{font-size:22px}.dados{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:15px 0}.dados div{border:1px solid #dae4ef;padding:7px}small{display:block;color:#64748b}strong{display:block}table{width:100%;border-collapse:collapse;font-size:10px}td,th{padding:7px 4px;border-bottom:1px solid #dbe5f0;text-align:left}th{background:#eaf1f9}@page{size:A4;margin:14mm}</style></head><body><h1>OBJETIVO — Simulação comercial</h1><p>Documento informativo, não constitui contrato ou reserva de condições.</p><div class="dados">'+cells+'</div><h2>Condições consultadas</h2><p>'+esc(note)+'</p>'+prices+'<p>Os cursos opcionais possuem contratação independente.</p></body></html>');w.document.close();w.focus();w.print();};
+$('neg-imprimir').onclick=()=>{if(!ficha)return;const v=$('res-precos-linhas').querySelector('td');if(!v||/Aguardando|Nenhuma|Não foi/.test(v.textContent)){alert('Consulte os valores antes de imprimir a simulação.');return;}const w=window.open('','_blank');if(!w){alert('Permita janelas pop-up para imprimir.');return;}const cells=[...$('resultado-campos').children].map(x=>x.innerHTML).join('');const prices=$('resultado-proposta').querySelector('table').outerHTML;const note=$('res-precos-estado').textContent;w.document.write('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Simulação comercial</title><style>body{font:12px Arial;margin:22mm 14mm;color:#18314c}h1,h2{color:#12447d}h1{font-size:22px}.dados{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:15px 0}.dados div{border:1px solid #dae4ef;padding:7px}small{display:block;color:#64748b}strong{display:block}table{width:100%;border-collapse:collapse;font-size:10px}td,th{padding:7px 4px;border-bottom:1px solid #dbe5f0;text-align:left}th{background:#eaf1f9}@page{size:A4;margin:14mm}</style></head><body><h1>OBJETIVO — Simulação comercial</h1><p>Documento informativo, não constitui contrato ou reserva de condições.</p><div class="dados">'+cells+'</div><h2>Condições consultadas</h2><p>'+esc(note)+'</p>'+prices+'<p>Os cursos opcionais possuem contratação independente.</p></body></html>');w.document.close();w.focus();w.print();};
 
 setTipo(tipo);
 </script></body></html>
