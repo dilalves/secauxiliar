@@ -66,6 +66,20 @@
 @media(max-width:700px){#neg-overlay .result-shell{width:98vw;max-height:96dvh}#neg-overlay .result-body{padding:12px}#neg-overlay textarea{min-height:125px}#neg-historico{max-height:32dvh}}
 .neg-item{padding:9px 0;border-bottom:1px solid #e4edf5;font-size:12px;white-space:pre-wrap}.neg-meta{color:#637b94;font-size:11px;margin-bottom:4px}
 @media print{body>*{display:none!important}#neg-print{display:block!important;position:static!important}}
+
+/* Cadastro presencial: modal compacto, sem alterar a ficha comercial. */
+#cadastro-overlay .result-shell{width:min(850px,94vw);height:auto;max-height:88dvh!important}
+#cadastro-overlay .result-header{padding:10px 14px}
+#cadastro-overlay .result-header h2{font-size:17px}
+#cadastro-overlay .result-body{padding:10px 13px 12px}
+#cadastro-overlay .result-card{padding:12px;margin-bottom:0}
+#cadastro-overlay .result-note{margin:0 0 10px;line-height:1.45}
+#cadastro-overlay .result-form{gap:8px 12px}
+#cadastro-overlay .result-form label{gap:3px;font-size:11px}
+#cadastro-overlay .result-form input{height:35px;padding:7px 9px;font-size:12px}
+#cadastro-overlay #cadastro-salvar{padding:9px 12px;font-size:12px;height:35px}
+#cadastro-overlay #cadastro-status{margin:8px 0 0}
+@media(max-width:600px){#cadastro-overlay .result-shell{width:98vw;max-height:94dvh}#cadastro-overlay .result-form{grid-template-columns:1fr!important}}
 </style></head><body><main class="main"><section class="panel"><h1 class="title">Pesquisa de candidatos</h1><div class="muted">Localize inscrições de Concursos de Bolsa e solicitações de Bolsa Desempenho. O acesso aos detalhes depende da unidade logada.</div><div class="bar"><div class="tabs"><button id="cpfTab" type="button">Por CPF</button><button id="nomeTab" type="button">Por nome</button></div><form id="form" class="bar" style="margin:0"><label id="label">CPF<input id="q" autocomplete="off" required></label><button id="pesquisar" type="submit">Pesquisar</button></form></div><div style="margin-top:12px"><button id="abrir-cadastro" type="button" style="background:#e9eff7;color:#10437f">＋ Cadastrar interessado presencial</button></div><div id="msg" class="notice" role="status">Informe o CPF ou nome para começar.</div></section><section class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 style="font-size:15px;margin:0 0 12px">Candidatos encontrados</h2><span class="muted" id="total"></span></div><div class="table-wrap"><table><thead><tr><th>Candidato</th><th>Origem</th><th>Inscrição / Protocolo</th><th>Concurso / Solicitação</th><th>Unidade</th><th>Acesso</th><th>Ação</th></tr></thead><tbody id="rows"><tr><td colspan="7">Nenhuma pesquisa realizada.</td></tr></tbody></table></div><div class="foot" id="bolsa-aviso">A pesquisa apresenta ambas as origens. Detalhes permanecem sujeitos à autorização da unidade no servidor.</div></section></main>
 <div class="result-overlay" id="resultado-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="resultado-title">
 <div class="result-shell"><header class="result-header"><h2 id="resultado-title">Resultado — Concurso de Bolsa</h2><button type="button" id="resultado-fechar">✕ Fechar</button></header>
@@ -187,7 +201,7 @@ async function abrirResultado(inscricao,concurso,registroId=''){
   if(x.liberado){$('resultado-estado').hidden=true;$('resultado-estado').className='result-card';}
   $('resultado-kpis').innerHTML=[['Pontos',x.liberado?x.pontos:'—'],['Média (MD)',x.liberado?numero(x.Md):'—'],['Desvio (DP)',x.liberado?numero(x.Dp):'—'],['Nota',x.liberado?numero(x.nota):'—']].map(a=>resultCell(...a)).join('');
   $('resultado-resultado').hidden=false;$('resultado-proposta').hidden=(!x.liberado&&!x.kea_permitido);
-  const faixa=String(x.Faixa??'1');$('res-faixa').replaceChildren(new Option(x.kea_permitido?'Condição KEA':'Faixa '+faixa,faixa));
+  const faixa=String(x.Faixa??'1');$('res-faixa').replaceChildren(new Option(x.kea_permitido&&String(x.NumeroInscricao)==='0'?'Faixa 1 — Extensivo':'Faixa '+faixa,faixa));
   const turno=String(x.Periodo||'').toLowerCase();$('res-grupo').value=turno.includes('manh')?'1':turno.includes('noit')?'3':'2';
   $('res-precos-estado').textContent='Clique em Consultar valores para buscar os preços da sua unidade.';
   $('res-precos-linhas').innerHTML='<tr><td colspan="6">Aguardando consulta.</td></tr>';
@@ -251,18 +265,26 @@ if(new URLSearchParams(location.search).get('cadastro')==='1') $('abrir-cadastro
 $('cadastro-fechar').addEventListener('click',fecharCadastro);
 $('cadastro-form').addEventListener('submit',async e=>{
  e.preventDefault(); const f=e.currentTarget,b=$('cadastro-salvar');b.disabled=true;$('cadastro-status').textContent='Salvando interessado...';
- try{const params=Object.fromEntries(new FormData(f));const r=await fetch(CADAPI,{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(params)});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Não foi possível cadastrar.');$('cadastro-status').textContent='Cadastro realizado.';fecharCadastro();await abrirResultadoPresencial(d.candidato);f.reset();}
- catch(err){$('cadastro-status').textContent=err.message;}finally{b.disabled=false;}
+ try{const params=Object.fromEntries(new FormData(f));const r=await fetch(CADAPI,{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(params)});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Não foi possível cadastrar.');$('cadastro-status').textContent='Cadastro realizado.';fecharCadastro();f.reset();await abrirResultadoPresencial(d.candidato);}
+ catch(err){$('cadastro-status').textContent=err.message;if($('cadastro-overlay').hidden){$('msg').classList.add('err');$('msg').textContent=err.message;}}finally{b.disabled=false;}
 });
 async function abrirResultadoPresencial(x){
- $('resultado-overlay').hidden=false;document.body.style.overflow='hidden';ficha={...x,pontos:null,liberado:false,kea_permitido:true};
- $('neg-acoes').hidden=false;carregarMatriculas(x.Cpf);$('resultado-dados').hidden=false;$('resultado-resultado').hidden=false;$('resultado-proposta').hidden=(!x.liberado&&!x.kea_permitido);
- $('resultado-estado').hidden=false;$('resultado-estado').className='result-card result-alert';$('resultado-estado').textContent='Atendimento presencial — sem prova. Condição comercial KEA.';
- $('resultado-campos').innerHTML=[['Nome',x.NomeCand],['CPF',x.Cpf],['Telefone',x.TelefoneCelular],['Curso pretendido',x.Curso],['Unidade',x.UnidadeNome],['Inscrição','0 — Cadastro presencial'],['Data da prova','Não se aplica'],['Horário','Não se aplica']].map(a=>resultCell(...a)).join('');
- $('resultado-kpis').innerHTML=[['Pontos','—'],['Média (MD)','—'],['Desvio (DP)','—'],['Nota','—']].map(a=>resultCell(...a)).join('');
- $('res-faixa').replaceChildren(new Option('Condição KEA','1'));$('res-grupo').value='1';$('res-precos-estado').textContent='Selecione período e parcelas, depois consulte os preços KEA.';$('res-precos-linhas').innerHTML='<tr><td colspan="6">Aguardando consulta.</td></tr>';
+ // Reutiliza EXATAMENTE o fluxo da pesquisa por CPF, inclusive simulacao KEA.
+ // O ID vem da pesquisa autenticada e vinculada à unidade; nunca de um CPF isolado.
+ const cpf=String(x?.Cpf||x?.CPF||'').replace(/\D/g,'');
+ if(cpf.length!==11)throw Error('Cadastro gravado, mas o CPF não foi retornado. Pesquise o CPF para abrir a ficha.');
+ const r=await fetch(API+'?'+new URLSearchParams({tipo:'cpf',q:cpf}),{credentials:'include',cache:'no-store'});
+ const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Cadastro gravado, mas não foi possível localizar a ficha. Pesquise pelo CPF.');
+ const candidatos=(d.resultados||[]).filter(c=>
+   String(c.NumeroInscricao??'').trim()==='0' &&
+   ['0',''].includes(String(c.IdConcurso??'0').trim()) &&
+   c.acesso_detalhes && Number(c.IdRegistro)>0
+ );
+ const nome=String(x?.NomeCand||'').trim().toLocaleLowerCase('pt-BR');
+ const encontrados=nome?candidatos.filter(c=>String(c.NomeCand||'').trim().toLocaleLowerCase('pt-BR')===nome):candidatos;
+ if(encontrados.length!==1)throw Error('Cadastro gravado. Localize o candidato pela pesquisa por CPF para abrir a ficha correta.');
+ await abrirResultado('0','0',String(encontrados[0].IdRegistro));
 }
-
 // Atendimento compartilhado: a API valida a unidade e a inscricao no banco, nunca confia no CPF isolado.
 const NEGAPI='https://apisec.secauxiliar.com.br/sec/negociacao_concurso_api.php';
 let negEditing=null;
