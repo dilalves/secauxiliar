@@ -13,6 +13,18 @@
 .doc-actions button{font-size:10px;padding:6px 7px;min-height:28px;white-space:nowrap}
 @media(max-width:1150px){.doc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:630px){.doc-grid{grid-template-columns:1fr}}
+
+/* Modal exclusiva para criacao do arquivo digital. */
+#archiveDlg{position:fixed;inset:0;margin:auto;width:min(510px,calc(100vw - 28px));height:fit-content;max-height:calc(100dvh - 28px);padding:0;border:0;border-radius:15px;overflow:auto;box-shadow:0 18px 55px #061b3466;color:#163b68}
+#archiveDlg::backdrop{background:#061b3475}
+.archive-head{background:#10457f;color:#fff;padding:17px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.archive-head strong{font-size:17px}.archive-close{background:transparent;border:0;font-size:26px;padding:0 3px;line-height:1;color:#fff}
+.archive-body{padding:22px}.archive-intro{font-weight:700;font-size:15px;margin:0 0 7px;color:#163b68}.archive-caption{font-size:13px;margin:0 0 12px;color:#476581}
+.archive-info{font-size:13px;line-height:1.5;background:#eaf3fc;border-radius:8px;padding:12px;margin-bottom:16px;color:#244c76}
+.archive-field{width:100%;height:42px;border:1px solid #b8c8db;border-radius:8px;padding:9px 12px;font-size:17px;letter-spacing:1px}
+.archive-field:focus{outline:2px solid #72a6da;outline-offset:1px}
+.archive-buttons{display:flex;justify-content:flex-end;gap:8px;margin-top:19px}
+.archive-buttons button{font-size:13px}.archive-buttons .archive-cancel{background:#f1f5fb;color:#163b68;border:1px solid #d4deeb}
 </style></head><body>
 <div class="wrap">
  <div class="bar"><div><h1>Pré-Matrículas — Acompanhamento</h1><p class="small">Solicitações e conferência de documentos da unidade logada · versão 20261106J</p></div><button id="refresh">Atualizar solicitações</button></div>
@@ -20,11 +32,23 @@
 </div>
 <dialog id="dlg"><div class="modal"><div class="modalhead"><div><strong id="title">Conferência</strong><div id="summary" class="small"></div><div id="identity" class="identity"></div></div><button class="alt" id="close">Fechar</button></div><div class="modalbody"><div id="detailmsg" class="msg" role="status"></div><section class="data-section"><h3>Dados da negociação</h3><div id="negotiation" class="data-grid"></div></section><section class="data-section"><h3>Dados do aluno e contratante (responsável financeiro)</h3><div id="people" class="person-section"></div></section><div class="split"><section><h3>Documentos recebidos</h3><p class="small">Aprove individualmente ou registre o motivo da substituição. Nenhum documento é excluído por esta conferência.</p><div id="docs" class="doc-grid"></div><div id="stageHint" class="hint" hidden></div><div id="emailStatus" class="msg" role="status" aria-live="polite"></div><div class="actions"><button id="request" class="warn">Solicitar correções</button><button id="approve" class="ok">Aprovar conferência</button><button id="createArchive" class="alt" type="button" hidden>Criar Arquivo Digital</button></div><p class="small">Ao solicitar correções, o sistema registra a pendência, renova o link original e envia automaticamente o aviso por e-mail. O candidato utiliza o mesmo convite original.</p></section><aside><h3>Histórico de conferência</h3><div id="history" class="audit"></div></aside></div></div></div></dialog>
 <dialog id="reasonDlg" class="reason-dialog"><h3>Solicitar substituição do documento</h3><p id="reasonDoc" class="small"></p><label for="reasonText" class="small"><strong>Motivo da substituição</strong></label><textarea id="reasonText" maxlength="1000" placeholder="Ex.: imagem ilegível, documento cortado ou verso ausente"></textarea><div id="reasonError" class="msg" role="alert"></div><div class="actions"><button id="reasonCancel" type="button" class="alt">Cancelar</button><button id="reasonSend" type="button" class="warn">Solicitar reenvio</button></div><p class="small">Esta ação registra a pendência do documento. A devolução do pedido ao candidato é feita no botão “Solicitar correções” da conferência.</p></dialog>
+<dialog id="archiveDlg" aria-labelledby="archiveTitle">
+ <div class="archive-head"><strong id="archiveTitle">▱ Criar pasta do aluno</strong><button type="button" id="archiveClose" class="archive-close" aria-label="Fechar">×</button></div>
+ <form id="archiveForm" class="archive-body">
+  <p class="archive-intro">Informe a matrícula para criar a pasta do aluno.</p>
+  <p class="archive-caption">Utilize 7 dígitos para unidade própria e 11 dígitos para conveniada.</p>
+  <div class="archive-info">ⓘ Os documentos já aprovados serão associados à nova pasta, sem duplicar os arquivos do R2.</div>
+  <label class="small" for="archiveNumber"><strong>Número da matrícula</strong></label>
+  <input id="archiveNumber" class="archive-field" type="text" inputmode="numeric" autocomplete="off" maxlength="11" pattern="[0-9]{7}|[0-9]{11}" required aria-describedby="archiveError">
+  <div id="archiveError" class="msg" role="alert" aria-live="polite"></div>
+  <div class="archive-buttons"><button class="archive-cancel" type="button" id="archiveCancel">Cancelar</button><button class="ok" id="archiveSubmit" type="submit">▱ Criar pasta</button></div>
+ </form>
+</dialog>
 <script>
 'use strict';
 const API='https://apisec.secauxiliar.com.br/sec/pre_matricula_conferencia_api.php';
 const ARQUIVO_API='https://apisec.secauxiliar.com.br/sec/arquivo_matricula_criar_api.php';
-const UI_VERSION='20261106K';
+const UI_VERSION='20261109MODAL';
 const $=id=>document.getElementById(id);
 let dados=[],selected=null,busy=false;
 function notice(id,msg,bad=false){const el=$(id);el.textContent=msg;el.className='msg '+(bad?'bad':'good')}
@@ -71,21 +95,29 @@ $('reasonSend').onclick=()=>{if(!reasonDocument)return;const why=$('reasonText')
 function review(id,decisao,motivo){if(decisao==='CORRECAO_SOLICITADA' && motivo.trim().length<8){notice('detailmsg','Informe o motivo com pelo menos 8 caracteres.',true);return}mutation('revisar_documento',{documento_id:id,decisao,motivo})}
 $('request').onclick=()=>{const reenviar=$('request').textContent.includes('novamente');const msg=reenviar?'Tentar enviar novamente o aviso por e-mail? A pendência e o link não serão modificados.':'Registrar pendências, renovar o link original e enviar automaticamente o e-mail ao candidato?';if(confirm(msg))mutation(reenviar?'reenviar_aviso_correcao':'solicitar_correcao')};
 $('approve').onclick=()=>{if(confirm('Aprovar a conferência de todos os documentos?'))mutation('aprovar_solicitacao')};
-$('createArchive').onclick=async()=>{
+$('createArchive').onclick=()=>{
  if(busy||!selected)return;
- const m=prompt('Informe o número da matrícula (7 dígitos para unidade própria, 11 para conveniada):');
- if(m===null)return;
- const numero=m.trim();
- if(!/^\d{7}$|^\d{11}$/.test(numero)){notice('detailmsg','Informe uma matrícula com 7 ou 11 dígitos, sem pontuação.',true);return}
- if(!confirm('Vincular os documentos aprovados ao Arquivo Digital da matrícula '+numero+'?'))return;
- busy=true;$('createArchive').disabled=true;
+ $('archiveNumber').value='';notice('archiveError','');
+ $('archiveDlg').showModal();$('archiveNumber').focus();
+};
+function closeArchive(){if(!busy)$('archiveDlg').close()}
+$('archiveClose').onclick=closeArchive;
+$('archiveCancel').onclick=closeArchive;
+$('archiveDlg').addEventListener('cancel',e=>{if(busy)e.preventDefault()});
+$('archiveNumber').addEventListener('input',()=>notice('archiveError',''));
+$('archiveForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(busy||!selected)return;
+ const numero=$('archiveNumber').value.trim();
+ if(!/^(?:\d{7}|\d{11})$/.test(numero)){notice('archiveError','Informe uma matrícula com 7 ou 11 dígitos, sem pontuação.',true);return}
+ busy=true;$('archiveSubmit').disabled=true;$('archiveCancel').disabled=true;$('archiveClose').disabled=true;$('createArchive').disabled=true;
  try{
   const response=await fetch(ARQUIVO_API,{method:'POST',credentials:'include',cache:'no-store',headers:{'Accept':'application/json','Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:new URLSearchParams({id:String(selected),matricula:numero})});
   let j;try{j=await response.json()}catch{throw Error('Resposta inválida do servidor (HTTP '+response.status+').')}
   if(!response.ok||!j.ok)throw Error(j.error||'Erro ao criar o arquivo digital.');
+  $('archiveDlg').close();
   await reloadDetail();notice('detailmsg',j.message+' '+j.documentos+' documento(s) vinculado(s).');
- }catch(e){notice('detailmsg',e.message,true)}finally{busy=false;$('createArchive').disabled=false}
-};
+ }catch(e){notice('archiveError',e.message,true)}finally{busy=false;$('archiveSubmit').disabled=false;$('archiveCancel').disabled=false;$('archiveClose').disabled=false;$('createArchive').disabled=false}
+});
 
 $('close').onclick=()=>$('dlg').close();$('refresh').onclick=load;$('filter').oninput=render;load();
 </script></body></html>
