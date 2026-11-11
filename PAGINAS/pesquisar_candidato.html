@@ -298,7 +298,29 @@ async function atualizarNeg(){const el=$('neg-historico');el.textContent='Consul
 $('neg-registrar').onclick=()=>{if(!ficha)return;negEditing=null;$('neg-form').reset();$('neg-status').textContent='';$('neg-salvar').textContent='Confirmar registro';$('neg-overlay').hidden=false;atualizarNeg();};
 $('neg-historico').addEventListener('click',e=>{const btn=e.target.closest('[data-edit]');if(!btn)return;const h=($('neg-historico')._hist||[]).find(x=>String(x.id)===btn.dataset.edit);if(!h||!h.can_edit)return;negEditing=h.id;const f=$('neg-form');f.elements.canal.value=h.canal;f.elements.resultado.value=h.resultado;f.elements.observacao.value=h.observacao;$('neg-salvar').textContent='Salvar edição';$('neg-status').textContent='Edição permitida somente ao autor, até 10 minutos após o registro.';});
 $('neg-form').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,b=$('neg-salvar');b.disabled=true;$('neg-status').textContent='Gravando atendimento...';try{const payload={canal:f.elements.canal.value,resultado:f.elements.resultado.value,observacao:f.elements.observacao.value,...(negEditing?{historico_id:negEditing}:{})};await negRequest(negEditing?'editar_historico':'registrar_historico',payload);negEditing=null;f.reset();b.textContent='Confirmar registro';$('neg-status').textContent='Atendimento registrado com sucesso.';await atualizarNeg();}catch(err){$('neg-status').textContent=err.message;}finally{b.disabled=false;}});
-$('neg-imprimir').onclick=()=>{if(!ficha)return;const v=$('res-precos-linhas').querySelector('td');if(!v||/Aguardando|Nenhuma|Não foi/.test(v.textContent)){alert('Consulte os valores antes de imprimir a simulação.');return;}const w=window.open('','_blank');if(!w){alert('Permita janelas pop-up para imprimir.');return;}const cells=[...$('resultado-campos').children].map(x=>x.innerHTML).join('');const prices=$('resultado-proposta').querySelector('table').outerHTML;const note=$('res-precos-estado').textContent;w.document.write('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Simulação comercial</title><style>body{font:12px Arial;margin:22mm 14mm;color:#18314c}h1,h2{color:#12447d}h1{font-size:22px}.dados{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:15px 0}.dados div{border:1px solid #dae4ef;padding:7px}small{display:block;color:#64748b}strong{display:block}table{width:100%;border-collapse:collapse;font-size:10px}td,th{padding:7px 4px;border-bottom:1px solid #dbe5f0;text-align:left}th{background:#eaf1f9}@page{size:A4;margin:14mm}</style></head><body><h1>OBJETIVO — Simulação comercial</h1><p>Documento informativo, não constitui contrato ou reserva de condições.</p><div class="dados">'+cells+'</div><h2>Condições consultadas</h2><p>'+esc(note)+'</p>'+prices+'<p>Os cursos opcionais possuem contratação independente.</p></body></html>');w.document.close();w.focus();w.print();};
+// Abre a ficha de impressao dedicada. A pagina de destino deve validar a
+// sessao e obter os dados do candidato pelas suas APIs autenticadas.
+$('neg-imprimir').onclick=()=>{
+ if(!ficha)return;
+ const v=$('res-precos-linhas').querySelector('td');
+ if(!v||/Aguardando|Nenhuma|Não foi/.test(v.textContent)){
+  alert('Consulte os valores antes de imprimir a simulação.');return;
+ }
+ const params=new URLSearchParams({
+  inscricao:String(ficha.NumeroInscricao??''),
+  concurso:String(ficha.IdConcurso??''),
+  faixa:$('res-faixa').value,
+  grupo:$('res-grupo').value,
+  parcelas:$('res-parcelas').value
+ });
+ // Interessado presencial: o registro individual identifica corretamente a ficha.
+ if(String(ficha.NumeroInscricao??'')==='0' && String(ficha.IdConcurso??'0')==='0' && ficha.Id){
+  params.set('registro_id',String(ficha.Id));
+ }
+ const destino='ficha_resultado_impressao.html?'+params.toString();
+ const janela=window.open(destino,'_blank');
+ if(!janela)alert('Permita janelas pop-up para abrir a ficha de impressão.');
+};
 
 setTipo(tipo);
 </script></body></html>
