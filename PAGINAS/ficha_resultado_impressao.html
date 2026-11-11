@@ -26,13 +26,13 @@ h2{color:var(--blue);font-size:13px;margin:8px 0 4px}table{width:100%;border-col
 <p><b>Material didático</b><br>Cadernos de teoria e atividades / Cadernos de revisão / Fichas-resumo / Resumo e análise de obras dos vestibulares / Materiais preparatórios.</p>
 <p><b>Cursos opcionais</b><br>Aulas especiais de literatura / Turmas especiais de Medicina, Biológicas, ITA, Exatas e Humanidades, conforme oferta da unidade.</p>
 <p><b>Horários dos cursos</b><br><span id="horarios">Conforme informação da unidade.</span></p>
-<p><b>Início das aulas 2027</b><br>15/02/2027 (conforme calendário informado pela unidade).</p>
+<p><b>Início das aulas 2027</b><br>15/02/2027.</p>
 <p><b>Documentos</b><br>Cópia do RG, CPF e comprovante de residência e uma foto 3×4.</p>
 <p><b>Forma de pagamento</b><br>No modelo de referência, a primeira parcela pode ser paga em até 2 dias da matrícula, as demais vencem no dia 10 e há indicação de 5% de desconto por pontualidade até o 5º dia útil. <b>Confirmar a vigência dessas condições antes da entrega.</b></p>
 </div></section>
 <section class="panel"><div class="panel-title">Gabarito do candidato</div><div class="answer-meta"><b>Prova: <span id="prova">—</span></b><div class="muted" id="folha-status">Consultando respostas...</div></div><div class="answer-grid" id="respostas"></div><div class="answer-legend">Questão e alternativa marcada. Apenas erros mostram o gabarito oficial entre parênteses, em vermelho.</div></section>
 </div>
-<footer class="foot"><div class="print-note">Nota = 500 + 100 × (Pontos − Média) ÷ Desvio-padrão. Mais informações: www.curso-objetivo.br</div><div class="footline"><span>Planos válidos até: _____/_____/_____</span><span id="emissao"></span></div><div class="footline"><span><b id="unidade">Unidade</b> — <span id="endereco">Endereço não cadastrado</span></span><span>Atendido por <b id="atendente">—</b></span></div></footer>
+<footer class="foot"><div class="print-note">Nota = 500 + 100 × (Pontos − Média) ÷ Desvio-padrão. Mais informações: www.curso-objetivo.br</div><div class="footline"><span>Planos válidos até: _____/_____/_____</span><span id="emissao"></span></div><div class="footline"><span><b id="unidade">Unidade</b><span id="endereco-bloco"> — <span id="endereco">Endereço não cadastrado</span></span></span><span>Atendido por <b id="atendente">—</b></span></div></footer>
 </div>
 </article>
 <script>
@@ -64,10 +64,11 @@ async function main(){
  if(presencial&&!/^[1-9]\d*$/.test(registroId))throw Error('Identificação do atendimento presencial não informada.');
  // Para atendimento presencial, a API identifica o candidato pelo registro_id.
  // Não consultar ficha_resultado_dados.php: não existe prova/folha de respostas.
- const [res,extra,precos]=await Promise.all([
+ const [res,extra,precos,sessao]=await Promise.all([
   loadJSON('resultado_candidato_api.php',{inscricao,concurso,...(presencial?{registro_id:registroId}:{})}),
   presencial?Promise.resolve({}):loadJSON('ficha_resultado_dados.php',{inscricao,concurso}),
-  loadJSON('consultar_precos_atendimento.php',{faixa})
+  loadJSON('consultar_precos_atendimento.php',{faixa}),
+  presencial?loadJSON('auth_me.php',{}).catch(()=>({})):Promise.resolve({})
  ]);
  const c=res.candidato,un=presencial?(precos.unidade||{}):(extra.unidade||{});
  if(!c)throw Error('Dados do candidato não disponíveis.');
@@ -89,6 +90,7 @@ async function main(){
   $('folha-status').textContent='Atendimento presencial sem concurso de bolsa.';
   $('respostas').innerHTML='';
   document.querySelector('.answer-legend').textContent='Simulação comercial com a condição KEA, sem resultado de prova.';
+  document.querySelector('.foot .print-note').textContent='Simulação comercial informativa. Valores sujeitos às condições comerciais vigentes.';
  }else{
   $('identificacao').innerHTML=[
    item('Inscrição',c.NumeroInscricao),item('Nome',c.NomeCand),
@@ -104,9 +106,12 @@ async function main(){
   renderAnswers(extra);
  }
  $('unidade').textContent=un.nome||c.UnidadeNome||'UNIDADE';
- $('endereco').textContent=un.endereco||'Não cadastrado';
+ const endereco=un.endereco||un.Endereco||'';
+ $('endereco').textContent=endereco||'Não cadastrado';
+ if(presencial&&!endereco)$('endereco-bloco').style.display='none';
  $('horarios').textContent=un.horarios||'Conforme informações da unidade';
- $('atendente').textContent=extra.atendente||'—';
+ const usuario=sessao.user||{};
+ $('atendente').textContent=extra.atendente||(presencial?(usuario.nome||usuario.Nome||usuario.name||usuario.Name||usuario.usuario_nome||usuario.display_name||'—'):'—');
  $('emissao').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
  const [rotulo,chave]=presencial?['KEA','Ea']:getLetra(c);
  const grupos={'1':['MANH','MATUT'],'2':['TARDE','VESPERT'],'3':['NOIT']},escolha=grupos[grupo]||grupos['2'];
