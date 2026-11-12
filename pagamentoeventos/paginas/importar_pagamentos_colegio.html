@@ -334,6 +334,21 @@
 
             <div id="nomeArquivo" class="subtitulo"></div>
 
+            <div id="correcaoData" style="display:none; margin:16px 0; padding:16px; background:#fff8e1; border:1px solid #f0d68b; border-radius:8px;">
+                <strong>Data de pagamento não identificada</strong>
+                <p style="margin:8px 0 12px; font-size:13px;">
+                    Se a data não foi lida no PDF, informe a data correta abaixo.
+                    Ela será aplicada apenas aos recibos sem data identificada.
+                </p>
+                <div style="display:flex; align-items:end; gap:12px; flex-wrap:wrap;">
+                    <label for="dataPagamentoManual" style="font-size:13px;">
+                        Data do pagamento<br>
+                        <input type="date" id="dataPagamentoManual" style="padding:9px; margin-top:5px; border:1px solid #b0bec5; border-radius:6px; font:inherit;">
+                    </label>
+                    <button type="button" id="btnCorrigirData" class="btn-azul" onclick="corrigirDataPagamento()">APLICAR DATA</button>
+                </div>
+            </div>
+
             <div class="resumo-grid">
 
                 <div class="resumo-item">
@@ -404,6 +419,7 @@ const API_URL =
 
 let tokenImportacao = null;
 let existemErros = false;
+let recibosAnalisados = [];
 
 
 /* =========================================================
@@ -659,6 +675,9 @@ function montarResumo(dados) {
 ========================================================= */
 
 function montarRecibos(recibos) {
+    recibosAnalisados = recibos;
+    const datasPendentes = recibos.some(r => !r.data_pagamento);
+    document.getElementById('correcaoData').style.display = datasPendentes ? 'block' : 'none';
 
     const area =
         document.getElementById('listaRecibos');
@@ -853,6 +872,58 @@ function montarRecibos(recibos) {
 
 
 /* =========================================================
+   CORRIGIR DATA DO PAGAMENTO
+========================================================= */
+
+async function corrigirDataPagamento() {
+    limparMensagem();
+    const data = document.getElementById('dataPagamentoManual').value;
+    if (!tokenImportacao || !data) {
+        mostrarMensagem('Informe uma data válida para corrigir os recibos.', 'erro');
+        return;
+    }
+
+    const btn = document.getElementById('btnCorrigirData');
+    btn.disabled = true;
+    btn.textContent = 'APLICANDO...';
+
+    try {
+        const form = new FormData();
+        form.append('acao', 'corrigir_data');
+        form.append('token', tokenImportacao);
+        form.append('data_pagamento', data);
+
+        const resposta = await fetch(API_URL, {
+            method: 'POST', body: form, credentials: 'include'
+        });
+        const texto = await resposta.text();
+        let dados;
+        try { dados = JSON.parse(texto); }
+        catch { throw new Error('O servidor não retornou JSON válido. ' + texto.substring(0, 300)); }
+
+        if (!resposta.ok || !dados.ok) {
+            throw new Error(dados.erro || 'Falha ao corrigir a data.');
+        }
+
+        montarResumo(dados);
+        montarRecibos(dados.recibos || []);
+        document.getElementById('dataPagamentoManual').value = '';
+        mostrarMensagem(
+            Number(dados.resumo?.paginas_com_erro || 0) === 0
+                ? 'Data aplicada. Todos os recibos estão prontos para importação.'
+                : 'Data aplicada. Verifique as outras pendências antes de importar.',
+            'sucesso'
+        );
+    } catch (erro) {
+        mostrarMensagem(erro.message || 'Não foi possível aplicar a data.', 'erro');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'APLICAR DATA';
+    }
+}
+
+
+/* =========================================================
    CONFIRMAR IMPORTAÇÃO
 ========================================================= */
 
@@ -1003,6 +1074,9 @@ function novaImportacao() {
 
     tokenImportacao = null;
     existemErros = false;
+    recibosAnalisados = [];
+    document.getElementById('correcaoData').style.display = 'none';
+    document.getElementById('dataPagamentoManual').value = '';
 
     document.getElementById(
         'arquivoPdf'
