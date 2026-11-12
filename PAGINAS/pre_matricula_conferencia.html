@@ -44,6 +44,19 @@
   <div class="archive-buttons"><button class="archive-cancel" type="button" id="archiveCancel">Cancelar</button><button class="ok" id="archiveSubmit" type="submit">▱ Criar pasta</button></div>
  </form>
 </dialog>
+<dialog id="resendDlg" class="reason-dialog" aria-labelledby="resendTitle">
+ <form id="resendForm">
+  <h3 id="resendTitle">Alterar e-mail / Reenviar link</h3>
+  <p class="small">Confirme o destino do novo acesso ao mesmo protocolo. Validade: 7 dias.</p>
+  <label for="resendEmail" class="small"><strong>E-mail de destino</strong></label>
+  <input id="resendEmail" type="email" required maxlength="254" autocomplete="off" class="filter" style="display:block;max-width:none;margin:7px 0 14px">
+  <label for="resendConfirm" class="small"><strong>Confirme o e-mail</strong></label>
+  <input id="resendConfirm" type="email" required maxlength="254" autocomplete="off" class="filter" style="display:block;max-width:none;margin-top:7px">
+  <p class="small">Se o endereço mudar, os links anteriores serão desativados após o novo envio. O protocolo, os documentos e a situação serão preservados.</p>
+  <div id="resendError" class="msg" role="status" aria-live="polite"></div>
+  <div class="actions"><button id="resendCancel" type="button" class="alt">Cancelar</button><button id="resendSubmit" type="submit">Salvar e reenviar link</button></div>
+ </form>
+</dialog>
 <script>
 'use strict';
 const API='https://apisec.secauxiliar.com.br/sec/pre_matricula_conferencia_api.php';
@@ -67,7 +80,11 @@ function render(){let q=$('filter').value.trim().toLowerCase();$('rows').replace
 }
 async function load(){try{const r=await request('listar');dados=r.solicitacoes||[];render();notice('msg',dados.length+' solicitação(ões) carregada(s).')}catch(e){notice('msg',e.message,true);$('rows').replaceChildren()}}
 async function abrirConferencia(id){selected=id;$('detailmsg').textContent='';$('docs').replaceChildren();$('negotiation').replaceChildren();$('people').replaceChildren();$('history').replaceChildren();notice('emailStatus','');$('dlg').showModal();await reloadDetail()}
-async function reloadDetail(){if(!selected)return;try{const j=await request('detalhes',null,{id:selected});$('title').textContent='Protocolo '+j.solicitacao.protocolo;$('summary').textContent=[j.solicitacao.curso,j.solicitacao.periodo,j.solicitacao.status].filter(Boolean).join(' • ');$('identity').textContent=[j.solicitacao.nome||'Nome ainda não informado',j.solicitacao.cpf?'CPF: '+j.solicitacao.cpf:'CPF ainda não informado'].join(' • ');notice('detailmsg','');$('docs').replaceChildren();$('negotiation').replaceChildren();$('people').replaceChildren();if(!Array.isArray(j.negociacao)||!Array.isArray(j.pessoas)){notice('detailmsg','A API respondeu com uma versao antiga, sem os dados completos. Publique tambem o PHP deste ZIP.',true)}for(const f of (j.negociacao||[])){const cell=el('div',undefined,'data-cell');cell.append(el('div',f.rotulo,'data-label'),el('div',f.valor,'data-value'));$('negotiation').append(cell)}if(!(j.negociacao||[]).length)$('negotiation').append(el('p','Dados da negociação ainda indisponíveis.','small'));for(let i=0;i<(j.pessoas||[]).length;i++){const p=j.pessoas[i];const sec=el('section');const role=(p.campos||[]).find(f=>/identifica|tipo|papel|vínculo|vinculo/i.test(f.rotulo));sec.append(el('h4',role?role.valor:'Pessoa '+(i+1),'person-header'));addFields(sec,p.campos||[]);$('people').append(sec)}if(!(j.pessoas||[]).length)$('people').append(el('p','Dados das pessoas ainda não encontrados no cadastro.','small'));
+async function reloadDetail(){if(!selected)return;try{const j=await request('detalhes',null,{id:selected});$('title').textContent='Protocolo '+j.solicitacao.protocolo;$('summary').textContent=[j.solicitacao.curso,j.solicitacao.periodo,j.solicitacao.status].filter(Boolean).join(' • ');$('identity').textContent=[j.solicitacao.nome||'Nome ainda não informado',j.solicitacao.cpf?'CPF: '+j.solicitacao.cpf:'CPF ainda não informado'].join(' • ');notice('detailmsg','');$('docs').replaceChildren();$('negotiation').replaceChildren();$('people').replaceChildren();if(!Array.isArray(j.negociacao)||!Array.isArray(j.pessoas)){notice('detailmsg','A API respondeu com uma versao antiga, sem os dados completos. Publique tambem o PHP deste ZIP.',true)}for(const f of (j.negociacao||[])){const cell=el('div',undefined,'data-cell');cell.append(el('div',f.rotulo,'data-label'),el('div',f.valor,'data-value'));if(f.rotulo==='E-mail de envio'){
+ const resend=el('button','Alterar e-mail / Reenviar link','alt');resend.type='button';resend.style.marginTop='8px';
+ resend.disabled=['CANCELADA','MATRICULADA'].includes(j.solicitacao.status);
+ resend.addEventListener('click',()=>showResend(f.valor));cell.append(resend);
+ }$('negotiation').append(cell)}if(!(j.negociacao||[]).length)$('negotiation').append(el('p','Dados da negociação ainda indisponíveis.','small'));for(let i=0;i<(j.pessoas||[]).length;i++){const p=j.pessoas[i];const sec=el('section');const role=(p.campos||[]).find(f=>/identifica|tipo|papel|vínculo|vinculo/i.test(f.rotulo));sec.append(el('h4',role?role.valor:'Pessoa '+(i+1),'person-header'));addFields(sec,p.campos||[]);$('people').append(sec)}if(!(j.pessoas||[]).length)$('people').append(el('p','Dados das pessoas ainda não encontrados no cadastro.','small'));
  for(const d of j.documentos){
   const box=el('div',undefined,'doc'),line=el('div',undefined,'doc-main'),n=el('strong',d.rotulo||d.tipo||'Documento');line.append(n);
   const btns=el('div',undefined,'doc-actions');
@@ -88,6 +105,29 @@ async function reloadDetail(){if(!selected)return;try{const j=await request('det
  const allowed=['AGUARDANDO_CONFERENCIA','COM_PENDENCIA'].includes(j.solicitacao.status);const current=j.documentos.filter(d=>!d.substituido);const rejected=current.filter(d=>d.situacao==='CORRECAO_SOLICITADA');const allApproved=current.length>0&&current.every(d=>d.situacao==='APROVADO');$('request').disabled=!['AGUARDANDO_CONFERENCIA','COM_PENDENCIA'].includes(j.solicitacao.status)||!rejected.length;$('request').textContent=j.solicitacao.status==='COM_PENDENCIA'?'✉ Tentar enviar aviso novamente':'Solicitar correções';$('approve').disabled=!allowed||!allApproved;const arquivoCriado=(j.historico||[]).some(h=>h.acao==='ARQUIVO_DIGITAL_CRIADO');$('createArchive').hidden=j.solicitacao.status!=='APTA_MATRICULA';$('createArchive').disabled=arquivoCriado;$('createArchive').textContent=arquivoCriado?'✓ Arquivo Digital criado':'Criar Arquivo Digital';$('createArchive').title=arquivoCriado?'Este pedido já possui Arquivo Digital vinculado.':'';const hint=$('stageHint');hint.hidden=allowed&&current.length>0;hint.textContent=!allowed?'Solicitação em '+j.solicitacao.status+': a conferência só é liberada após o envio final do candidato.':current.length===0?'Aguardando os documentos do candidato. Não é possível aprovar ou devolver sem documentos.':'';
  }catch(e){notice('detailmsg',e.message,true)}}
 async function mutation(acao,extra={}){if(busy)return;busy=true;try{const r=await request(acao,{id:selected,...extra});await reloadDetail();await load();notice('detailmsg',r.message||'Operação registrada.',r.email_enviado===false);if(acao==='solicitar_correcao'||acao==='reenviar_aviso_correcao')notice('emailStatus',r.message||'Confira a resposta do servidor.',r.email_enviado!==true)}catch(e){notice('detailmsg',e.message,true);if(acao==='solicitar_correcao'||acao==='reenviar_aviso_correcao')notice('emailStatus',e.message,true)}finally{busy=false}}
+let resendTarget=null;
+function showResend(email){
+ if(busy||!selected)return;
+ resendTarget={id:selected,email:String(email||'')};
+ $('resendEmail').value=resendTarget.email;$('resendConfirm').value='';
+ notice('resendError','');$('resendDlg').showModal();$('resendEmail').focus();
+}
+$('resendCancel').onclick=()=>$('resendDlg').close();
+$('resendDlg').addEventListener('cancel',e=>{if(busy)e.preventDefault()});
+$('resendForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(busy||!resendTarget)return;
+ const email=$('resendEmail').value.trim(),confirmation=$('resendConfirm').value.trim();
+ if(email!==confirmation){notice('resendError','A confirmação do e-mail não confere.',true);$('resendConfirm').focus();return}
+ const target={...resendTarget};busy=true;
+ for(const key of ['resendSubmit','resendCancel','resendEmail','resendConfirm'])$(key).disabled=true;
+ notice('resendError','Enviando… Aguarde.');
+ try{
+  const r=await request('alterar_email_reenviar',{id:target.id,email,email_confirmacao:confirmation,email_atual:target.email});
+  if(r.email_enviado!==true){notice('resendError',r.message||'O envio não foi aceito.',true);return}
+  $('resendDlg').close();await reloadDetail();notice('detailmsg',r.message);
+ }catch(err){notice('resendError',err.message+' Se houve falha de conexão, confira o histórico antes de tentar novamente.',true)}
+ finally{busy=false;for(const key of ['resendSubmit','resendCancel','resendEmail','resendConfirm'])$(key).disabled=false}
+});
 let reasonDocument=null;
 function showReason(d){reasonDocument=d;$('reasonDoc').textContent=d.rotulo||d.tipo||'Documento';$('reasonText').value=d.motivo||'';notice('reasonError','');$('reasonDlg').showModal();$('reasonText').focus()}
 $('reasonCancel').onclick=()=>$('reasonDlg').close();
