@@ -15,11 +15,13 @@
 #find-inscricao{width:100%;margin:5px 0 0}
 @media(min-width:900px){.top{padding:5px 10px}.toolbarline{padding:4px 10px}.sheetbar{padding:4px 10px}.zoom{height:122px}.right h3{margin-bottom:5px}}
 
+
+.proofbox{border:1px solid #bfcee0;border-radius:6px;padding:9px;margin-bottom:10px;background:#f3f7fc}.proofbox b{font-family:Consolas,monospace;font-size:16px}.proofbox div{margin:4px 0}.proofbox button{margin-top:5px;width:100%}.proofbox.mismatch{border-color:#d68a72;background:#fff5ee}.audit{margin-top:12px;border-top:1px solid #ced8e4;padding-top:10px}.audit table{width:100%;border-collapse:collapse;font-size:12px}.audit th,.audit td{padding:5px;border-bottom:1px solid #e3eaf3;text-align:left}.audit button{padding:4px 6px}.audit-scroll{max-height:280px;overflow:auto}.audit .changed{background:#fff3cd}
 </style></head><body>
 <div class="top"><div><b>Verificação de folhas — Concurso de Bolsa</b><div class="sub" id="subtitle">Estação de verificação · pendências do concurso/unidade</div></div><div class="mini"><span class="pill" id="total">Carregando...</span><button id="refresh">Atualizar</button><button id="fullscreen">Tela cheia (F11)</button></div></div>
 <div class="queuearea"><table class="queue"><thead><tr><th>#</th><th>Lote</th><th>Imagem</th><th>Inscrição</th><th>Conferência</th><th>Status</th><th>Ação</th></tr></thead><tbody id="queue"></tbody></table></div>
 <div class="toolbarline"><span class="status" id="current">Selecione uma folha para começar.</span><span class="muted" id="reason"></span><span class="spacer"></span><button id="minus">−</button><button id="fit">Ajustar imagem</button><button id="plus">+</button><span class="pill" id="scale">100%</span><button id="release">Fechar folha</button></div>
-<div class="station" id="station"><div class="viewer" id="viewer"><div id="viewer-placeholder" class="viewer-placeholder">Nenhuma folha aberta no momento.</div><div class="paper" id="paper"><img id="image" class="hidden" alt=""><div class="marker" id="marker" hidden></div></div></div><aside class="right"><div class="identline">OMR — inscrição: <span id="ident-read">—</span><div>Conferindo: <span id="ident-edit">—</span></div><button type="button" id="find-inscricao">Pesquisar inscrição por nome</button></div><h3 id="step">Campo em conferência</h3><div class="hint" id="info">Selecione uma imagem na lista superior.</div><div id="zoom-placeholder" class="zoom-placeholder">Ampliação do campo em conferência</div><img class="zoom hidden" id="zoom" alt=""><label class="field" id="value-label" for="value">Valor correto</label><input id="value" autocomplete="off" spellcheck="false" disabled><div id="choices" class="choices"></div><div class="controls"><button id="prev">← Anterior</button><button id="next" class="primary">F4 · Próximo</button></div><div class="hint" id="progress"></div><div class="hint">F4 avança pelos campos; TAB vai ao próximo. Para resolver uma dúvida, selecione ou digite o valor correto. Ao concluir todas, salva e passa para a próxima folha automaticamente.</div><div class="fields" id="fields"></div><div style="margin-top:12px"><button id="save" class="primary">Salvar folha revisada</button></div></aside></div>
+<div class="station" id="station"><div class="viewer" id="viewer"><div id="viewer-placeholder" class="viewer-placeholder">Nenhuma folha aberta no momento.</div><div class="paper" id="paper"><img id="image" class="hidden" alt=""><div class="marker" id="marker" hidden></div></div></div><aside class="right"><div class="proofbox" id="proofbox"><strong>Código da prova</strong><div>OMR original: <b id="proof-original">—</b></div><div>Em conferência: <b id="proof-current">—</b></div><div>Esperado no concurso: <b id="proof-expected">—</b></div><div id="proof-status" class="hint">Abra uma folha.</div><button type="button" id="edit-proof">Conferir / corrigir código</button></div><div class="identline">OMR — inscrição: <span id="ident-read">—</span><div>Conferindo: <span id="ident-edit">—</span></div><button type="button" id="find-inscricao">Pesquisar inscrição por nome</button></div><h3 id="step">Campo em conferência</h3><div class="hint" id="info">Selecione uma imagem na lista superior.</div><div id="zoom-placeholder" class="zoom-placeholder">Ampliação do campo em conferência</div><img class="zoom hidden" id="zoom" alt=""><label class="field" id="value-label" for="value">Valor correto</label><input id="value" autocomplete="off" spellcheck="false" disabled><div id="choices" class="choices"></div><div class="controls"><button id="prev">← Anterior</button><button id="next" class="primary">F4 · Próximo</button></div><div class="hint" id="progress"></div><div class="hint">F4 avança pelos campos; TAB vai ao próximo. Para resolver uma dúvida, selecione ou digite o valor correto. Ao concluir todas, salva e passa para a próxima folha automaticamente.</div><div class="fields" id="fields"></div><div style="margin-top:12px"><button id="save" class="primary">Salvar folha revisada</button></div><details class="audit" id="audit"><summary>Consultar leitura e revisar qualquer campo</summary><p class="hint">Compare o OMR original com os valores em conferência. As alterações só são gravadas ao salvar a folha.</p><button type="button" id="edit-registration">Conferir inscrição completa</button><div class="audit-scroll"><table><thead><tr><th>Questão</th><th>OMR</th><th>Atual</th><th></th></tr></thead><tbody id="audit-answers"></tbody></table></div></details></aside></div>
 <div id="lookup-shade" class="hidden" role="dialog" aria-modal="true" aria-label="Buscar inscrito do concurso"><div id="lookup-box"><div id="lookup-top"><strong>Localizar candidato — inscritos desta unidade e concurso</strong><button id="lookup-close" type="button">Fechar</button></div><div style="padding:12px 15px"><input id="lookup-search" type="search" autocomplete="off" placeholder="Digite parte do nome ou número da inscrição"><div class="sub" style="margin-top:5px">Escolha o candidato correto para preencher a inscrição. Nenhum cadastro é criado nesta tela.</div></div><div id="lookup-list"></div><div class="lookup-footer" id="lookup-footer">Selecione um resultado para continuar a conferência.</div></div></div><div class="feedback" id="message" role="status"></div><div class="footer">Imagem do R2 · OMR original preservado · trava exclusiva durante a conferência</div>
 <script>
 'use strict';
@@ -38,16 +40,18 @@ async function api(acao,data={},method='POST'){
  if(!r.ok||!out.ok)throw Error(out.error||'Falha HTTP '+r.status);return out;
 }
 function stopRenew(){if(renew){clearInterval(renew);renew=null}}
-function cleanup(){stopRenew();if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl='';}$('image').removeAttribute('src');$('zoom').removeAttribute('src');$('marker').hidden=true;atual=null;etapas=[];pos=0;$('value').disabled=true;$('fields').innerHTML='';$('choices').innerHTML='';$('current').textContent='Selecione uma folha para começar.';$('reason').textContent='';$('ident-read').textContent='—';$('ident-edit').textContent='—';showPlaceholders(false);}
+function cleanup(){stopRenew();if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl='';}$('image').removeAttribute('src');$('zoom').removeAttribute('src');$('marker').hidden=true;atual=null;etapas=[];pos=0;$('value').disabled=true;$('fields').innerHTML='';$('choices').innerHTML='';$('current').textContent='Selecione uma folha para começar.';$('reason').textContent='';$('ident-read').textContent='—';$('ident-edit').textContent='—';showPlaceholders(false);renderAudit();}
 async function carregar(){try{const d=await api('fila',{IdConcurso:contest},'GET');fila=d.pendentes||[];$('total').textContent=fila.length+' pendente(s)';$('queue').innerHTML=fila.length?fila.map((l,i)=>`<tr class="${atual?.id==l.id?'current':''} ${l.trava_usuario?'locked':''}"><td>${i+1}</td><td>${esc(l.lote_id)}</td><td>${esc(l.upload_id)}</td><td>${esc(l.inscricao_lida)}</td><td class="reason">${esc(l.motivo_pendencia||'Pendente')}</td><td>${esc(l.trava_usuario?'Em edição':'Pendente')}</td><td>${l.trava_usuario&&!atual?'Bloqueada':`<button data-open="${Number(l.id)}">Abrir</button>`}</td></tr>`).join(''):'<tr><td colspan="7">Nenhuma pendência nesta unidade/concurso.</td></tr>';if(!fila.length&&!atual)msg('Todas as folhas já foram conferidas.');return fila;}catch(e){msg(e.message,true);return []}}
 async function liberar(){if(!atual||busy)return;const old=atual;cleanup();try{await api('liberar',{leitura_id:old.id,token:old.token})}catch(e){msg('A trava já pode ter expirado: '+e.message,true)}await carregar()}
 async function abrir(id){if(busy)return;busy=true;try{
  if(atual){const old=atual;cleanup();try{await api('liberar',{leitura_id:old.id,token:old.token})}catch{}}
- const data=await api('abrir',{leitura_id:String(id)});atual={...data.leitura,token:data.token,respostas:{...(data.leitura.respostas||{})},inscricaoOriginal:String(data.leitura.inscricao??'')};
+ const data=await api('abrir',{leitura_id:String(id)});atual={...data.leitura,token:data.token,respostas:{...(data.leitura.respostas||{})},inscricaoOriginal:String(data.leitura.inscricao??''),codigoOriginal:String(data.leitura.cod_prova??''),respostasOriginais:{...(data.leitura.respostas||{})}};
  const rev=Array.isArray(atual.revisao)?atual.revisao:[];
  etapas=rev.map(r=>({tipo:r.tipo,item:Number(r.item||r.questao||0),r,resolvido:false})).filter(e=>['inscricao','codigo_prova','questao'].includes(e.tipo)&&e.item>0);
  if(!/^\d{7}$/.test(atual.inscricao)&&!etapas.some(e=>e.tipo==='inscricao'))etapas.unshift({tipo:'inscricao_completa',item:0,r:{},resolvido:false});
  if(!/^\d{5}$/.test(atual.cod_prova)&&!etapas.some(e=>e.tipo==='codigo_prova'))etapas.unshift({tipo:'prova_completa',item:0,r:{},resolvido:false});
+ const provaDivergente=String(atual.cod_prova??'').trim()!==String(atual.cod_esperado??'').trim();
+ if(provaDivergente&&!etapas.some(e=>e.tipo==='prova_completa'))etapas.unshift({tipo:'prova_completa',item:0,r:{},resolvido:false});
  if(!etapas.length)etapas=[{tipo:'validacao',item:0,r:{},resolvido:true}];
  pos=0;$('current').textContent=`Lote ${atual.lote_id} · Imagem ${atual.upload_id}`;$('reason').textContent=atual.motivo||'';
  const response=await fetch(API,{method:'POST',credentials:'include',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({acao:'imagem',leitura_id:String(id),token:atual.token})});
@@ -63,8 +67,12 @@ function setVal(v){const e=etapas[pos];if(!atual||!e||busy)return;v=String(v).to
  if(t==='questao'){if(!['','A','B','C','D','E'].includes(v))return;atual.respostas[String(e.item)]=v;}
  else if(t==='inscricao'||t==='codigo_prova'){if(!/^\d$/.test(v))return;const key=t==='inscricao'?'inscricao':'cod_prova',size=t==='inscricao'?7:5;let s=String(atual[key]||'').padEnd(size,'?').slice(0,size);atual[key]=s.slice(0,e.item-1)+v+s.slice(e.item);}
  else if(t==='inscricao_completa'||t==='prova_completa'){if(!/^\d*$/.test(v))return;const key=t==='inscricao_completa'?'inscricao':'cod_prova';atual[key]=v.slice(0,t==='inscricao_completa'?7:5)}
- e.resolvido=true;$('value').value=v;$('ident-edit').textContent=atual.inscricao||'—';paint();}
-function paint(){const options=opts(),v=getVal();$('choices').innerHTML=options.map(x=>`<button type="button" data-v="${esc(x)}" class="${v===x?'active':''}">${esc(x||'—')}</button>`).join('');$('fields').innerHTML=etapas.map((e,i)=>`<button data-step="${i}" class="${i===pos?'active':''} ${e.resolvido?'resolved':''}">${esc(label(e))} ${e.resolvido?'✓':''}</button>`).join('');}
+ e.resolvido=t==='prova_completa'?/^\d{5}$/.test(atual.cod_prova):t==='inscricao_completa'?/^\d{7}$/.test(atual.inscricao):true;
+ if(t==='prova_completa'&&e.resolvido)etapas.forEach(x=>{if(x.tipo==='codigo_prova')x.resolvido=true});
+ if(t==='inscricao_completa'&&e.resolvido)etapas.forEach(x=>{if(x.tipo==='inscricao')x.resolvido=true});
+ if(t==='codigo_prova')etapas.forEach(x=>{if(x.tipo==='prova_completa')x.resolvido=/^\d{5}$/.test(atual.cod_prova)&&etapas.filter(y=>y.tipo==='codigo_prova').every(y=>y===e||y.resolvido)});
+$('value').value=v;$('ident-edit').textContent=atual.inscricao||'—';paint();}
+function paint(){renderAudit();const options=opts(),v=getVal();$('choices').innerHTML=options.map(x=>`<button type="button" data-v="${esc(x)}" class="${v===x?'active':''}">${esc(x||'—')}</button>`).join('');$('fields').innerHTML=etapas.map((e,i)=>`<button data-step="${i}" class="${i===pos?'active':''} ${e.resolvido?'resolved':''}">${esc(label(e))} ${e.resolvido?'✓':''}</button>`).join('');}
 function label(e){return e.tipo==='questao'?'Q'+e.item:e.tipo==='inscricao'?'Inscrição '+e.item:e.tipo==='codigo_prova'?'Prova '+e.item:e.tipo==='inscricao_completa'?'Inscrição completa':e.tipo==='prova_completa'?'Prova completa':'Validação'}
 function region(){const r=etapas[pos]?.r?.regiao;if(!r)return null;const q={x:Number(r.x),y:Number(r.y),w:Number(r.w),h:Number(r.h)};return Object.values(q).every(Number.isFinite)&&q.w>0&&q.h>0?q:null}
 function crop(r){const img=$('image');if(!r||!img.naturalWidth)return;const c=document.createElement('canvas'),px=r.w*.6,py=Math.max(r.h*2,.019),x=Math.max(0,r.x-px),y=Math.max(0,r.y-py),x2=Math.min(1,r.x+r.w+px),y2=Math.min(1,r.y+r.h+py),w=(x2-x)*img.naturalWidth,h=(y2-y)*img.naturalHeight;c.width=Math.max(1,Math.min(900,Math.round(w)));c.height=Math.max(1,Math.round(c.width*h/w));c.getContext('2d').drawImage(img,x*img.naturalWidth,y*img.naturalHeight,w,h,0,0,c.width,c.height);$('zoom').src=c.toDataURL('image/jpeg',.86);$('zoom').classList.remove('hidden');$('zoom-placeholder').classList.add('hidden')}
@@ -74,11 +82,12 @@ function drawScale(){$('paper').style.width=Math.round(($('image').naturalWidth|
 function avancar(){if(!atual||busy)return;const e=etapas[pos];const raw=$('value').value.trim().toUpperCase();if(e.tipo==='validacao')e.resolvido=true;
  else if(e.resolvido){if(raw!==getVal())setVal(raw)}
  else if(raw!==getVal()&&raw!=='' )setVal(raw);
- const n=etapas.length;if(etapas.every(x=>x.resolvido)){salvar(true);return}
+ const n=etapas.length;if(etapas.every(x=>x.resolvido)){if(e.opcional){mostrar();msg('Revisão atualizada. Use Salvar folha revisada para concluir.');return}salvar(true);return}
  pos=(pos+1)%n;mostrar();if(pos===0)msg('Ainda existem dúvidas não resolvidas. F4 continua navegando; escolha o valor para concluir.');}
 async function salvar(auto=false){if(!atual||busy)return;const faltam=etapas.filter(x=>!x.resolvido);if(faltam.length){msg('Ainda faltam '+faltam.length+' campo(s). F4 navega; selecione a resposta para resolver.',true);pos=etapas.indexOf(faltam[0]);mostrar();return}
  if(!/^\d{7}$/.test(atual.inscricao)||!/^\d{5}$/.test(atual.cod_prova)){msg('Inscrição e código da prova precisam estar completos.',true);return}
  for(let i=1;i<=50;i++)if(!['','A','B','C','D','E'].includes(String(atual.respostas[String(i)]??''))){msg('Q'+i+' ainda não tem leitura válida.',true);return}
+ if(String(atual.cod_prova)!==String(atual.cod_esperado).trim()){editarCampo('prova_completa');msg('Código em conferência '+atual.cod_prova+' difere do esperado '+atual.cod_esperado+'. Confira a folha e corrija o campo.',true);return}
  busy=true;$('save').disabled=true;try{const d=await api('salvar',{leitura_id:atual.id,token:atual.token,inscricao:atual.inscricao,cod_prova:atual.cod_prova,respostas:JSON.stringify(atual.respostas)});msg('Folha '+atual.upload_id+' concluída · '+d.pontos+' pontos. Abrindo a próxima.');cleanup();const f=await carregar();const next=f.find(x=>!x.trava_usuario);if(next){busy=false;await abrir(Number(next.id));}else msg('Todas as pendências disponíveis foram concluídas.');}catch(e){msg('Não foi possível salvar: '+e.message,true)}finally{busy=false;$('save').disabled=false}}
 function closeLookup(){ $('lookup-shade').classList.add('hidden');$('lookup-search').value=''; }
 function renderLookup(){
@@ -115,8 +124,30 @@ $('choices').onclick=e=>{const b=e.target.closest('button[data-v]');if(b)setVal(
 $('value').oninput=()=>{if(atual){const v=$('value').value;if(tipo()==='questao'||tipo().endsWith('_completa')||/^\d$/.test(v))setVal(v)}};
 $('minus').onclick=()=>{scale=Math.max(.09,scale*.8);drawScale()};$('plus').onclick=()=>{scale=Math.min(1.5,scale*1.25);drawScale()};$('fit').onclick=ajustar;
 $('fullscreen').onclick=()=>{if(window.self!==window.top)window.open(location.href,'_blank','noopener');else{const root=document.documentElement;if(!document.fullscreenElement&&root.requestFullscreen)root.requestFullscreen();else if(document.exitFullscreen)document.exitFullscreen()}};
-window.addEventListener('keydown',e=>{if(!atual||busy)return;if(e.key==='F4'){e.preventDefault();avancar();return}if(e.key==='Tab'){e.preventDefault();avancar();return}if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&opts().length){e.preventDefault();const o=opts();let i=o.indexOf($('value').value.toUpperCase());if(i<0)i=0;setVal(o[(i+(e.key==='ArrowRight'?1:-1)+o.length)%o.length]);return}if(e.key==='Enter'&&e.target.id==='value'){e.preventDefault();avancar()}});
+window.addEventListener('keydown',e=>{if(!atual||busy||!$('lookup-shade').classList.contains('hidden'))return;if(e.key==='F4'){e.preventDefault();avancar();return}if(e.key==='Tab'){e.preventDefault();avancar();return}if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&opts().length){e.preventDefault();const o=opts();let i=o.indexOf($('value').value.toUpperCase());if(i<0)i=0;setVal(o[(i+(e.key==='ArrowRight'?1:-1)+o.length)%o.length]);return}if(e.key==='Enter'&&e.target.id==='value'){e.preventDefault();avancar()}});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('lookup-shade').classList.contains('hidden')){e.preventDefault();closeLookup();}});
+
+function renderAudit(){
+ const a=atual;
+ $('proof-original').textContent=a?.codigoOriginal||'—';
+ $('proof-current').textContent=a?.cod_prova||'—';
+ $('proof-expected').textContent=a?.cod_esperado||'—';
+ const diferente=!!a&&String(a.cod_prova)!==String(a.cod_esperado).trim();
+ $('proofbox').classList.toggle('mismatch',diferente);
+ $('proof-status').textContent=!a?'Abra uma folha.':diferente?'Divergência: confira o código marcado na imagem.':'Código coincide com o cadastro do concurso.';
+ $('edit-proof').disabled=!a;$('edit-registration').disabled=!a;
+ $('audit-answers').innerHTML=!a?'':Array.from({length:50},(_,i)=>{const q=String(i+1),o=String(a.respostasOriginais[q]??''),v=String(a.respostas[q]??'');return `<tr class="${o!==v?'changed':''}"><td>Q${q}</td><td>${esc(o||'—')}</td><td>${esc(v||'—')}</td><td><button type="button" data-review-q="${q}">Revisar</button></td></tr>`}).join('');
+}
+function editarCampo(t,item=0){
+ if(!atual||busy)return;
+ let n=etapas.findIndex(e=>e.tipo===t&&e.item===item);
+ if(n<0){etapas.push({tipo:t,item,r:{status:'consulta manual — região indisponível'},resolvido:true,opcional:true});n=etapas.length-1}
+ pos=n;mostrar();
+}
+$('edit-proof').onclick=()=>editarCampo('prova_completa');
+$('edit-registration').onclick=()=>editarCampo('inscricao_completa');
+$('audit-answers').onclick=e=>{const b=e.target.closest('button[data-review-q]');if(b)editarCampo('questao',Number(b.dataset.reviewQ))};
+
 window.addEventListener('pagehide',stopRenew);window.addEventListener('resize',()=>{if(atual&&scale<1)ajustar()});cleanup();carregar();
 
 </script></body></html>
