@@ -886,6 +886,12 @@
                 label: 'Gabarito',
                 page: 'PAGINAS/gabaritos.html',
                 nivel: 'admin'
+              },
+              {
+                label: 'Reabrir lote',
+                page: 'PAGINAS/reabrir_lote_admin.html',
+                nivel: 'admin',
+                adminOnly: true
               }
             ]
           },
@@ -1152,7 +1158,7 @@
                     </div>
                 ` : ''}
                 ${group.actions.map(
-                (action, actionIndex) => `
+                (action, actionIndex) => action.adminOnly && String(window.usuario?.nivel || '').trim().toLowerCase() !== 'admin' ? '' : `
                   <button
                     class="dropdown-action"
                     type="button"
