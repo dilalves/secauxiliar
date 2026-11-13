@@ -1,5 +1,5 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pesquisa de candidatos — SEC-AUXILIAR</title>
-<script data-sec-auth-guard>(function(){document.documentElement.style.visibility='hidden';fetch('https://apisec.secauxiliar.com.br/sec/auth_me.php',{credentials:'include',cache:'no-store'}).then(async r=>{let d=await r.json();if(!r.ok||!d.ok||!d.user)throw Error('Sem sessão');document.documentElement.style.visibility='';}).catch(()=>location.replace('https://www.secauxiliar.com.br/'));})();</script>
+<script data-sec-auth-guard>(function(){document.documentElement.style.visibility='hidden';window.secSessao=fetch('https://apisec.secauxiliar.com.br/sec/auth_me.php',{credentials:'include',cache:'no-store'}).then(async r=>{let d=await r.json();if(!r.ok||!d.ok||!d.user)throw Error('Sem sessão');document.documentElement.style.visibility='';return d.user;}).catch(()=>{location.replace('https://www.secauxiliar.com.br/');return null;});})();</script>
 <style>:root{--blue:#10437f;--line:#d7e2ef;--ink:#17324d}*{box-sizing:border-box}body{margin:0;background:#f3f7fc;color:var(--ink);font:13px 'Segoe UI',Arial,sans-serif}.main{padding:10px 12px;width:100%;max-width:none;margin:0}.panel{background:#fff;border:1px solid var(--line);border-radius:9px;padding:16px;margin-bottom:13px}.title{font-size:19px;font-weight:700;margin:0 0 4px}.muted{color:#687b8d;font-size:12px}.bar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:15px}label{display:grid;gap:5px;font-size:12px;font-weight:600}input{font:inherit;padding:11px 12px;border:1px solid #bdcfe2;border-radius:6px;width:min(460px,calc(100vw - 70px))}button{border:0;border-radius:6px;background:var(--blue);color:white;padding:11px 16px;font:600 13px 'Segoe UI',Arial;cursor:pointer}button:disabled{opacity:.5}.tabs{display:flex;gap:8px}.tabs button{background:#e9eff7;color:#1a426a}.tabs button.active{background:var(--blue);color:white}.notice{padding:13px;background:#f0f5fc;border-radius:6px;margin-top:12px}.warn{color:#995a10}.err{color:#a32133}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:760px}th{text-align:left;background:#eaf1f9;padding:10px}td{border-bottom:1px solid #e6edf5;padding:10px}tbody tr:hover{background:#f8fbfe}.pill{display:inline-block;border-radius:14px;padding:4px 8px;background:#e8f6ec;color:#17633f;font-size:11px;font-weight:600}.pill.other{background:#fff0df;color:#865a17}.foot{margin-top:10px;color:#60758a;font-size:12px}/* Ficha de resultado: modal responsivo de largura máxima */
 .result-overlay{position:fixed;inset:0;background:#10243cb3;z-index:10001;display:grid;place-items:center;padding:1vh 1vw}
 .result-overlay[hidden]{display:none}.result-shell{width:98vw;height:98dvh;background:#f3f7fc;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
@@ -101,7 +101,7 @@
 <section class="result-card" id="resultado-resultado" hidden><h3>Resultado da prova</h3><div id="resultado-kpis" class="result-grid"></div><div class="result-note">NOTA = 500 + 100 × (PONTOS − MD) / DP. Nota calculada na consulta, sem alterar o banco.</div></section>
 <div class="result-lower"><section class="result-card" id="resultado-proposta" hidden><h3>Simulação comercial — unidade do login</h3>
 <div class="result-form"><label>Faixa<select id="res-faixa"><option value="1">Faixa 1</option></select></label><label>Grupo / período<select id="res-grupo"><option value="1">Manhã</option><option value="2">Tarde</option><option value="3">Noite</option></select></label><label>Quantidade de parcelas<input id="res-parcelas" type="number" min="1" max="60" value="14"></label><button id="res-calcular" type="button">Consultar valores</button></div>
-<div class="result-note" id="res-precos-estado">Selecione as condições e consulte os valores cadastrados.</div><div class="table-wrap"><table class="result-table"><thead id="res-precos-cabecalho"><tr><th>Curso / turno</th><th>Contratual</th><th>Sem desconto</th><th>KEA</th><th>Faixa A</th><th>Faixa B</th><th>Faixa C</th><th>Faixa D</th><th>Faixa E</th><th>Faixa 100</th></tr></thead><tbody id="res-precos-linhas"><tr><td colspan="10">Aguardando consulta.</td></tr></tbody></table></div><p class="result-note">Simulação informativa; não registra proposta, matrícula ou condições comerciais. Os horários específicos serão cadastrados em outra etapa.</p></section>
+<div class="result-note" id="res-precos-estado">Selecione as condições e consulte os valores cadastrados.</div><div class="table-wrap"><table class="result-table"><thead id="res-precos-cabecalho"><tr><th>Curso / turno</th><th>Contratual</th><th>Sem desconto</th><th>KEA</th><th>Faixa A</th><th>Faixa B</th><th>Faixa C</th><th>Faixa D</th><th>Faixa E</th></tr></thead><tbody id="res-precos-linhas"><tr><td colspan="9">Aguardando consulta.</td></tr></tbody></table></div><p class="result-note">Simulação informativa; não registra proposta, matrícula ou condições comerciais. Os horários específicos serão cadastrados em outra etapa.</p></section>
 <section class="result-card" id="resultado-matriculas" hidden><h3>Matrículas anteriores</h3><div class="result-note" id="matriculas-estado">Consultando...</div><div id="matriculas-lista"></div></section></div>
 <div id="neg-acoes" hidden><button type="button" id="neg-registrar">Registrar atendimento</button><button type="button" class="soft" id="neg-imprimir">Imprimir simulação</button></div>
 </div></div></div>
@@ -218,7 +218,7 @@ async function abrirResultado(inscricao,concurso,registroId=''){
   const turno=String(x.Periodo||'').toLowerCase();$('res-grupo').value=turno.includes('manh')?'1':turno.includes('noit')?'3':'2';
   $('res-precos-cabecalho').querySelectorAll('.faixa-aluno').forEach(th=>{th.classList.remove('faixa-aluno');th.querySelector('.aluno-tag')?.remove();});
   $('res-precos-estado').textContent='Clique em Consultar valores para buscar os preços da sua unidade.';
-  $('res-precos-linhas').innerHTML='<tr><td colspan="10">Aguardando consulta.</td></tr>';
+  $('res-precos-linhas').innerHTML='<tr><td colspan="9">Aguardando consulta.</td></tr>';
  }catch(e){$('resultado-estado').hidden=false;$('resultado-estado').className='result-card result-alert';$('resultado-estado').textContent=e.message;}
 }
 async function consultarValores(){
@@ -258,7 +258,10 @@ async function consultarValores(){
    else throw Error('Nota fora das faixas A–E cadastradas. Consulte a administração antes de oferecer um desconto.');
   }
   const winning=ficha.kea_permitido?'Ea':`F${letra.toLowerCase()}`;
-  const campos=[['KEA','Ea'],['Faixa A','Fa'],['Faixa B','Fb'],['Faixa C','Fc'],['Faixa D','Fd'],['Faixa E','Fe'],['Faixa 100','F100']];
+  const campos=[['KEA','Ea'],['Faixa A','Fa'],['Faixa B','Fb'],['Faixa C','Fc'],['Faixa D','Fd'],['Faixa E','Fe']];
+  const sessao=await window.secSessao;
+  if(!sessao)throw Error('Sessão inválida. Entre novamente no sistema.');
+  if(String(sessao.nivel||'').trim().toLowerCase()==='coordenacao')campos.push(['Faixa F','F100']);
   $('res-precos-cabecalho').innerHTML='<tr><th>Curso / turno</th><th>Contratual</th><th>Sem desconto</th>'+campos.map(([titulo,chave])=>`<th${chave===winning?' class="faixa-aluno"':''}>${titulo}${chave===winning?'<span class="aluno-tag">Faixa do aluno</span>':''}</th>`).join('')+'</tr>';
   const cell=(p,chave)=>{
    const raw=p[chave],taxa=Number(raw),contrato=Number(p.Contratual),classe=chave===winning?' class="faixa-aluno"':'';
@@ -270,9 +273,9 @@ async function consultarValores(){
    const raw=p.Contratual,contrato=Number(raw),valido=raw!==null&&raw!==undefined&&String(raw).trim()!==''&&Number.isFinite(contrato)&&contrato>=0;
    return `<tr><td>${esc(p.Curso)} / ${esc(p.Turno)}<div class="muted">${esc(p.NomeTabela||'')}</div></td><td>${valido?dinheiro(contrato):'—'}</td><td>${valido?`<span class="preco-parcela">${dinheiro(contrato/parcelas)}</span>`:'—'}</td>${campos.map(([,chave])=>cell(p,chave)).join('')}</tr>`;
   });
-  $('res-precos-linhas').innerHTML=saida.join('')||'<tr><td colspan="10">Nenhuma condição encontrada nesta faixa e período.</td></tr>';
+  $('res-precos-linhas').innerHTML=saida.join('')||`<tr><td colspan="${campos.length+3}">Nenhuma condição encontrada nesta faixa e período.</td></tr>`;
   $('res-precos-estado').textContent=`${saida.length} curso(s) · ${ficha.kea_permitido?'KEA':`Faixa ${$('res-faixa').value}, letra ${letra} (nota ${numero(ficha.nota)})`} · unidade ${d.unidade?.nome||''} · ${parcelas} parcela(s). Coluna azul: faixa do aluno. Valores em destaque nas células: valor da parcela; abaixo, total com desconto. As demais faixas são referências para negociação.`;
- }catch(e){$('res-precos-estado').textContent=e.message;$('res-precos-linhas').innerHTML='<tr><td colspan="10">Não foi possível consultar os preços.</td></tr>';}
+ }catch(e){$('res-precos-estado').textContent=e.message;$('res-precos-linhas').innerHTML=`<tr><td colspan="${$('res-precos-cabecalho').querySelectorAll('th').length}">Não foi possível consultar os preços.</td></tr>`;}
  finally{$('res-calcular').disabled=false;}
 }
 $('res-calcular').addEventListener('click',consultarValores);
