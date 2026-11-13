@@ -102,7 +102,9 @@
       .candidate-pane .course-details{grid-template-columns:repeat(2,minmax(0,1fr))}
       .proof-viewer{height:60vh;min-height:360px}
     }
-  </style>
+  
+.protocol-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}.contest-open{border:1px solid #b6cde9;background:#edf4ff;color:#174b87;border-radius:8px;padding:9px 13px;font:700 12px Inter,Arial,sans-serif;cursor:pointer}.contest-open:hover{background:#dceafb}.contest-open:disabled{opacity:.45;cursor:default}.contest-shade{position:fixed;inset:0;z-index:40;background:#10243c88;display:flex;align-items:center;justify-content:center;padding:22px}.contest-shade[hidden]{display:none}.contest-modal{width:min(850px,96vw);max-height:85vh;background:#fff;border:1px solid #dce6f2;border-radius:16px;box-shadow:0 18px 65px #132d4f40;display:flex;flex-direction:column;overflow:hidden}.contest-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;padding:22px 24px;border-bottom:1px solid #e2eaf5}.contest-head h3{margin:6px 0;color:#173d73;font-size:23px}.contest-head p{margin:0;color:#718198;font-size:12px}.contest-content{padding:18px 24px;overflow:auto;min-height:100px}.contest-table{min-width:540px;width:100%}.contest-table th{background:#f3f7fc}.contest-table td{padding:14px 15px}.contest-table .number{text-align:right;font-variant-numeric:tabular-nums}.contest-none{color:#916012;background:#fff4d9;display:inline-block;border-radius:99px;padding:5px 9px;font-size:11px;white-space:nowrap}.contest-footer{padding:13px 24px;background:#f7f9fc;border-top:1px solid #e3ebf4;font-size:11px;color:#73859b}.contest-empty{text-align:center;padding:32px 12px;color:#718198;font-size:13px}.contest-empty strong{display:block;color:#284d77;margin-bottom:8px}@media(max-width:600px){.contest-shade{padding:10px}.contest-head,.contest-content{padding:16px}.protocol-actions{gap:8px}}
+</style>
 </head>
 <body>
   <main>
@@ -122,8 +124,9 @@
     </section>
     <section class="table-card"><div class="table-scroll"><table><thead><tr><th>Protocolo</th><th>Candidato</th><th>Telefone</th><th>E-mail</th><th>Data de envio</th><th>Curso e período</th><th>Situação</th><th></th></tr></thead><tbody id="rows"><tr><td colspan="8" class="loading">Carregando pedidos da sua unidade…</td></tr></tbody></table></div><div class="pagination"><span id="page-label">—</span><div><button id="previous" type="button" disabled>Anterior</button> <button id="next-page" type="button" disabled>Próxima</button></div></div></section>
   </main>
-  <div class="shade" id="shade" hidden><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title"><div class="drawer-head"><div><span class="eyebrow">DETALHES DO PEDIDO</span><h2 id="drawer-title">Candidatura</h2><p id="drawer-subtitle"></p></div><button class="close" id="close-drawer" type="button" aria-label="Fechar">×</button></div><div class="drawer-content" id="drawer-content"><div class="loading">Carregando detalhes…</div></div></aside></div>
+  <div class="shade" id="shade" hidden><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title"><div class="drawer-head"><div><span class="eyebrow">DETALHES DO PEDIDO</span><div class="protocol-actions"><h2 id="drawer-title">Candidatura</h2><button type="button" id="open-contests" class="contest-open" disabled>Concursos de bolsa</button></div><p id="drawer-subtitle"></p></div><button class="close" id="close-drawer" type="button" aria-label="Fechar">×</button></div><div class="drawer-content" id="drawer-content"><div class="loading">Carregando detalhes…</div></div></aside></div>
   <div class="history-modal-shade" id="history-modal-shade" hidden><section class="history-modal" role="dialog" aria-modal="true" aria-labelledby="history-modal-title"><div class="history-modal-head"><div><h3 id="history-modal-title">Registrar atendimento</h3><p id="history-modal-subtitle">Confira os dados antes de confirmar.</p></div><button class="close" id="history-modal-close" type="button" aria-label="Fechar">×</button></div><form id="history-form" class="history-form"><label>Canal<select name="canal" required><option value="TELEFONE">Telefone</option><option value="WHATSAPP">WhatsApp</option><option value="EMAIL">E-mail</option><option value="OUTRO">Outro</option></select></label><label>Resultado<select name="resultado" required><option value="CONTATO_REALIZADO">Contato realizado</option><option value="SEM_RESPOSTA">Sem resposta</option><option value="RETORNAR_CONTATO">Retornar contato</option><option value="DOCUMENTO_PENDENTE">Documento pendente</option><option value="ORIENTACAO_ENVIADA">Orientação enviada</option></select></label><label>Resumo do atendimento<textarea name="observacao" rows="5" maxlength="3000" required placeholder="Registre o contato, orientações e próximos passos..."></textarea></label><p class="history-message" id="history-message" role="status"></p><div class="history-modal-actions"><button class="history-cancel" id="history-cancel" type="button">Cancelar</button><button class="history-confirm" type="submit">Confirmar registro</button></div></form></section></div>
+  <div id="contest-shade" class="contest-shade" hidden><section class="contest-modal" role="dialog" aria-modal="true" aria-labelledby="contest-title" aria-describedby="contest-subtitle"><header class="contest-head"><div><span class="eyebrow">HISTÓRICO DO CANDIDATO</span><h3 id="contest-title">Concursos de bolsa</h3><p id="contest-subtitle"></p></div><button type="button" class="close" id="contest-close" aria-label="Fechar concursos de bolsa">×</button></header><div id="contest-content" class="contest-content" aria-live="polite"></div><footer class="contest-footer">Sem resultado: inscrição sem pontuação registrada. Pode haver correção pendente.</footer></section></div>
   <div class="toast" id="toast" role="status" hidden></div>
 <script>
 (() => {
@@ -180,7 +183,7 @@
   }
   function renderDetails(d) {
     selectedProof=null;
-    currentApplicationId=Number(d.id); window.currentHistoryEntries=d.historico||[];
+    currentApplicationId=Number(d.id);$('open-contests').disabled=false; window.currentHistoryEntries=d.historico||[];
     $('drawer-title').textContent=d.protocolo || 'Candidatura'; $('drawer-subtitle').textContent=`Enviado em ${fmtDate(d.criado_em)} · ${statusLabel(d.status)}`;
     const results=(d.resultados||[]).map(r=>{const labels={categoria:'Categoria',acertos_primeira_fase:'Acertos na primeira fase',curso:'Curso',linguagens:'Linguagens',humanas:'Ciências Humanas',natureza:'Ciências da Natureza',matematica:'Matemática',redacao:'Redação'};let details=[];for(const [key,val] of Object.entries(r.dados||{})){if(val&&typeof val==='object'&&!Array.isArray(val)){for(const [sub,value] of Object.entries(val))details.push(`${labels[sub]||sub}: ${value}`);}else details.push(`${labels[key]||key}: ${val}`);}const info=details.length?`<span>${escapeHtml(details.join(' · '))}</span>`:'';const unitQuery=$('unit-filter').value?`&unidade=${encodeURIComponent($('unit-filter').value)}`:'';const proofUrl=`${API}?action=arquivo&id=${encodeURIComponent(r.id)}${unitQuery}`;return `<div class="proof"><div class="proof-info"><strong>${escapeHtml(r.tipo_label||r.tipo)}${r.ano?` · ${escapeHtml(r.ano)}`:''}</strong><span>${escapeHtml(r.nome_original)} · ${escapeHtml(r.tamanho_formatado||'')}</span>${info}</div><button class="show-proof" type="button" data-proof-url="${escapeHtml(proofUrl)}" data-proof-mime="${escapeHtml(r.mime||'')}" data-proof-name="${escapeHtml(r.nome_original||'comprovante')}">Mostrar comprovante</button></div>`}).join('');
     const historyLabels={TELEFONE:'Telefone',WHATSAPP:'WhatsApp',EMAIL:'E-mail',OUTRO:'Outro'};
@@ -240,12 +243,41 @@
   });
   $('history-modal-close').addEventListener('click',closeHistoryModal);$('history-cancel').addEventListener('click',closeHistoryModal);
   $('history-modal-shade').addEventListener('click',e=>{if(e.target===$('history-modal-shade'))closeHistoryModal();});
-  function openDrawer(){ $('shade').hidden=false; document.body.style.overflow='hidden'; $('close-drawer').focus(); }
-   function closeDrawer(){ selectedProof=null; $('shade').hidden=true; document.body.style.overflow=''; if(modalIntegrado && window.parent!==window)window.parent.postMessage({source:'sec-bolsa-modal',action:'close'},location.origin); }
+  function openDrawer(){currentApplicationId=null;$('open-contests').disabled=true; $('shade').hidden=false; document.body.style.overflow='hidden'; $('close-drawer').focus(); }
+   function closeDrawer(){closeContests(false); selectedProof=null; $('shade').hidden=true; document.body.style.overflow=''; if(modalIntegrado && window.parent!==window)window.parent.postMessage({source:'sec-bolsa-modal',action:'close'},location.origin); }
   rows.addEventListener('click', async e=>{ const button=e.target.closest('[data-detail]'); if(!button)return; $('drawer-content').innerHTML='<div class="loading">Carregando detalhes…</div>'; openDrawer(); try{const d=await request({action:'detail',id:button.dataset.detail});renderDetails(d.pedido);}catch(err){$('drawer-content').innerHTML=`<p class="error-state">${escapeHtml(err.message)}</p>`;} });
   $('refresh').addEventListener('click',load); $('previous').addEventListener('click',()=>{if(page>1){page--;load();}}); $('next-page').addEventListener('click',()=>{if(page*pageSize<currentCount){page++;load();}});
   $('status-filter').addEventListener('change',()=>{page=1;load();}); $('queue-filter').addEventListener('change',()=>{page=1;load();}); $('unit-filter').addEventListener('change',()=>{page=1;load();}); $('search').addEventListener('input',()=>{clearTimeout(debounce);debounce=setTimeout(()=>{page=1;load();},300);});
-  $('close-drawer').addEventListener('click',closeDrawer); $('shade').addEventListener('click',e=>{if(e.target===$('shade'))closeDrawer();}); document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('history-modal-shade').hidden)closeHistoryModal();else if(e.key==='Escape'&&!$('shade').hidden)closeDrawer();});
+  $('close-drawer').addEventListener('click',closeDrawer); $('shade').addEventListener('click',e=>{if(e.target===$('shade'))closeDrawer();}); document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('contest-shade').hidden)closeContests();else if(e.key==='Escape'&&!$('history-modal-shade').hidden)closeHistoryModal();else if(e.key==='Escape'&&!$('shade').hidden)closeDrawer();});
+  let contestRequest=0;
+  function closeContests(restore=true){contestRequest++;const wasOpen=!$('contest-shade').hidden;$('contest-shade').hidden=true;if(wasOpen&&restore)$('open-contests').focus();}
+  function contestDate(v){const m=String(v??'').match(/^(\d{4})-(\d{2})-(\d{2})/);return m?`${m[3]}/${m[2]}/${m[1]}`:'—';}
+  function contestNumber(v){if(v===null||v===undefined||String(v).trim()==='')return '—';const n=Number(String(v).replace(',','.'));return Number.isFinite(n)?new Intl.NumberFormat('pt-BR',{maximumFractionDigits:6}).format(n):String(v);}
+  async function openContests(){
+    if(!currentApplicationId)return;
+    const id=currentApplicationId,ticket=++contestRequest;
+    $('contest-subtitle').textContent='Consultando inscrições vinculadas ao CPF deste pedido…';
+    $('contest-content').innerHTML='<div class="loading">Carregando concursos…</div>';
+    $('contest-shade').hidden=false;$('contest-close').focus();
+    try{
+      const d=await request({action:'concursos_cpf',id:String(id)});
+      if(ticket!==contestRequest||currentApplicationId!==id)return;
+      $('contest-subtitle').textContent=`${d.nome||'Candidato'} · CPF ${d.cpf_mascarado||'—'} · ${d.total??0} inscrição(ões)`;
+      const list=d.concursos||[];
+      $('contest-content').innerHTML=list.length?`<table class="contest-table"><thead><tr><th>Data</th><th>Concurso</th><th class="number">Pontuação</th><th class="number">Nota</th></tr></thead><tbody>${list.map(c=>`<tr><td>${escapeHtml(contestDate(c.data))}</td><td><strong>${escapeHtml(c.concurso)}</strong><small class="muted" style="display:block;margin-top:4px">Concurso ${escapeHtml(c.id_concurso)}</small></td><td class="number">${c.tem_resultado?escapeHtml(contestNumber(c.pontuacao)):'<span class="contest-none">Sem resultado</span>'}</td><td class="number">${c.tem_resultado?escapeHtml(contestNumber(c.nota)):'—'}</td></tr>`).join('')}</tbody></table>`:'<div class="contest-empty"><strong>Nenhuma inscrição encontrada</strong>Nenhuma inscrição em concurso de bolsa encontrada para este CPF.</div>';
+    }catch(e){if(ticket===contestRequest)$('contest-content').innerHTML=`<div class="error-state">${escapeHtml(e.message)}<br><button type="button" class="contest-open" id="contest-retry" style="margin-top:14px">Tentar novamente</button></div>`;}
+  }
+  $('open-contests').addEventListener('click',openContests);
+  $('contest-close').addEventListener('click',()=>closeContests());
+  $('contest-shade').addEventListener('click',e=>{if(e.target===$('contest-shade'))closeContests();});
+  $('contest-content').addEventListener('click',e=>{if(e.target.closest('#contest-retry'))openContests();});
+  document.addEventListener('keydown',e=>{
+    if($('contest-shade').hidden||e.key!=='Tab')return;
+    const items=Array.from($('contest-shade').querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]'));
+    const first=items[0],last=items[items.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  });
+
   async function init(){try{const data=await request({action:'units'});const unitSelect=$('unit-filter');unitSelect.innerHTML='<option value="">Selecione a unidade</option>'+(data.unidades||[]).map(u=>`<option value="${escapeHtml(u.codigo)}">${escapeHtml(u.nome)}</option>`).join('');if(data.admin){unitSelect.hidden=false;}else if((data.unidades||[]).length){unitSelect.value=data.unidades[0].codigo;unitSelect.hidden=true;}if(!data.admin&&data.unidades?.length)$('unit-name').textContent=data.unidades[0].nome;if(data.admin)$('unit-name').textContent='Selecione uma unidade';if(!data.admin||unitSelect.value)load();else{rows.innerHTML='<tr><td colspan="8" class="empty"><strong>Selecione uma unidade</strong>Escolha a unidade para consultar os pedidos recebidos.</td></tr>'; $('result-count').textContent=''; $('page-label').textContent='';}}catch(error){showError(error.message);$('unit-name').textContent='Acesso necessário';}}
    async function abrirProtocoloIntegrado(){
      if(!modalIntegrado)return;
