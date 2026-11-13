@@ -81,6 +81,18 @@
 #cadastro-overlay #cadastro-salvar{padding:9px 12px;font-size:12px;height:35px}
 #cadastro-overlay #cadastro-status{margin:8px 0 0}
 @media(max-width:600px){#cadastro-overlay .result-shell{width:98vw;max-height:94dvh}#cadastro-overlay .result-form{grid-template-columns:1fr!important}}
+
+/* Comparação das faixas: preserva a faixa conquistada como destaque. */
+#resultado-proposta .result-table{min-width:1080px}
+#resultado-proposta .result-table th{white-space:nowrap}
+#resultado-proposta .result-table td{vertical-align:top}
+#resultado-proposta .result-table .faixa-aluno{background:#124b88;color:#fff}
+#resultado-proposta .result-table th.faixa-aluno{box-shadow:inset 0 3px #68a9f0}
+#resultado-proposta .result-table .faixa-aluno small{color:#dcecff}
+#resultado-proposta .result-table .preco-parcela{display:block;white-space:nowrap;font-size:12px;font-weight:700;margin-top:5px}
+#resultado-proposta .result-table .preco-detalhe{display:block;font-size:10px;color:#657c95;line-height:1.5}
+#resultado-proposta .result-table .faixa-aluno .preco-detalhe{color:#e5efff}
+#resultado-proposta .result-table .aluno-tag{display:block;font-size:9px;font-weight:400;margin-top:3px}
 </style></head><body><main class="main"><section class="panel"><h1 class="title">Pesquisa de candidatos</h1><div class="muted">Localize inscrições de Concursos de Bolsa e solicitações de Bolsa Desempenho. O acesso aos detalhes depende da unidade logada.</div><div class="bar"><div class="tabs"><button id="cpfTab" type="button">Por CPF</button><button id="nomeTab" type="button">Por nome</button></div><form id="form" class="bar" style="margin:0"><label id="label">CPF<input id="q" autocomplete="off" required></label><button id="pesquisar" type="submit">Pesquisar</button></form></div><div style="margin-top:12px"><button id="abrir-cadastro" type="button" style="background:#e9eff7;color:#10437f">＋ Cadastrar interessado presencial</button></div><div id="msg" class="notice" role="status">Informe o CPF ou nome para começar.</div></section><section class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 style="font-size:15px;margin:0 0 12px">Candidatos encontrados</h2><span class="muted" id="total"></span></div><div class="table-wrap"><table><thead><tr><th>Candidato</th><th>Origem</th><th>Inscrição / Protocolo</th><th>Concurso / Solicitação</th><th>Unidade</th><th>Acesso</th><th>Ação</th></tr></thead><tbody id="rows"><tr><td colspan="7">Nenhuma pesquisa realizada.</td></tr></tbody></table></div><div class="foot" id="bolsa-aviso">A pesquisa apresenta ambas as origens. Detalhes permanecem sujeitos à autorização da unidade no servidor.</div></section></main>
 <div class="result-overlay" id="resultado-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="resultado-title">
 <div class="result-shell"><header class="result-header"><h2 id="resultado-title">Resultado — Concurso de Bolsa</h2><button type="button" id="resultado-fechar">✕ Fechar</button></header>
@@ -89,7 +101,7 @@
 <section class="result-card" id="resultado-resultado" hidden><h3>Resultado da prova</h3><div id="resultado-kpis" class="result-grid"></div><div class="result-note">NOTA = 500 + 100 × (PONTOS − MD) / DP. Nota calculada na consulta, sem alterar o banco.</div></section>
 <div class="result-lower"><section class="result-card" id="resultado-proposta" hidden><h3>Simulação comercial — unidade do login</h3>
 <div class="result-form"><label>Faixa<select id="res-faixa"><option value="1">Faixa 1</option></select></label><label>Grupo / período<select id="res-grupo"><option value="1">Manhã</option><option value="2">Tarde</option><option value="3">Noite</option></select></label><label>Quantidade de parcelas<input id="res-parcelas" type="number" min="1" max="60" value="14"></label><button id="res-calcular" type="button">Consultar valores</button></div>
-<div class="result-note" id="res-precos-estado">Selecione as condições e consulte os valores cadastrados.</div><div class="table-wrap"><table class="result-table"><thead><tr><th>Curso / turno</th><th>Valor contratual</th><th>Tipo de desconto</th><th>Desconto</th><th>Total com desconto</th><th>Valor da parcela</th></tr></thead><tbody id="res-precos-linhas"><tr><td colspan="6">Aguardando consulta.</td></tr></tbody></table></div><p class="result-note">Simulação informativa; não registra proposta, matrícula ou condições comerciais. Os horários específicos serão cadastrados em outra etapa.</p></section>
+<div class="result-note" id="res-precos-estado">Selecione as condições e consulte os valores cadastrados.</div><div class="table-wrap"><table class="result-table"><thead id="res-precos-cabecalho"><tr><th>Curso / turno</th><th>Contratual</th><th>Sem desconto</th><th>KEA</th><th>Faixa A</th><th>Faixa B</th><th>Faixa C</th><th>Faixa D</th><th>Faixa E</th><th>Faixa 100</th></tr></thead><tbody id="res-precos-linhas"><tr><td colspan="10">Aguardando consulta.</td></tr></tbody></table></div><p class="result-note">Simulação informativa; não registra proposta, matrícula ou condições comerciais. Os horários específicos serão cadastrados em outra etapa.</p></section>
 <section class="result-card" id="resultado-matriculas" hidden><h3>Matrículas anteriores</h3><div class="result-note" id="matriculas-estado">Consultando...</div><div id="matriculas-lista"></div></section></div>
 <div id="neg-acoes" hidden><button type="button" id="neg-registrar">Registrar atendimento</button><button type="button" class="soft" id="neg-imprimir">Imprimir simulação</button></div>
 </div></div></div>
@@ -204,8 +216,9 @@ async function abrirResultado(inscricao,concurso,registroId=''){
   $('resultado-resultado').hidden=false;$('resultado-proposta').hidden=(!x.liberado&&!x.kea_permitido);
   const faixa=String(x.Faixa??'1');$('res-faixa').replaceChildren(new Option(x.kea_permitido&&String(x.NumeroInscricao)==='0'?'Faixa 1 — Extensivo':'Faixa '+faixa,faixa));
   const turno=String(x.Periodo||'').toLowerCase();$('res-grupo').value=turno.includes('manh')?'1':turno.includes('noit')?'3':'2';
+  $('res-precos-cabecalho').querySelectorAll('.faixa-aluno').forEach(th=>{th.classList.remove('faixa-aluno');th.querySelector('.aluno-tag')?.remove();});
   $('res-precos-estado').textContent='Clique em Consultar valores para buscar os preços da sua unidade.';
-  $('res-precos-linhas').innerHTML='<tr><td colspan="6">Aguardando consulta.</td></tr>';
+  $('res-precos-linhas').innerHTML='<tr><td colspan="10">Aguardando consulta.</td></tr>';
  }catch(e){$('resultado-estado').hidden=false;$('resultado-estado').className='result-card result-alert';$('resultado-estado').textContent=e.message;}
 }
 async function consultarValores(){
@@ -244,18 +257,22 @@ async function consultarValores(){
    else if(notaCentavos>=80001 && notaCentavos<=100000)letra='E';
    else throw Error('Nota fora das faixas A–E cadastradas. Consulte a administração antes de oferecer um desconto.');
   }
-  const campos=ficha.kea_permitido?[['KEA','Ea']]:[[`Faixa ${letra}`,`F${letra.toLowerCase()}`]];
-  const saida=[];
-  for(const p of selecionadas){for(const [titulo,chave] of campos){
-   if(p[chave]===null||p[chave]===undefined||String(p[chave]).trim()==='')continue;
-   const taxa=Number(p[chave]),contrato=Number(p.Contratual);
-   if(!Number.isFinite(taxa)||taxa<0||taxa>100||!Number.isFinite(contrato)||contrato<0)continue;
+  const winning=ficha.kea_permitido?'Ea':`F${letra.toLowerCase()}`;
+  const campos=[['KEA','Ea'],['Faixa A','Fa'],['Faixa B','Fb'],['Faixa C','Fc'],['Faixa D','Fd'],['Faixa E','Fe'],['Faixa 100','F100']];
+  $('res-precos-cabecalho').innerHTML='<tr><th>Curso / turno</th><th>Contratual</th><th>Sem desconto</th>'+campos.map(([titulo,chave])=>`<th${chave===winning?' class="faixa-aluno"':''}>${titulo}${chave===winning?'<span class="aluno-tag">Faixa do aluno</span>':''}</th>`).join('')+'</tr>';
+  const cell=(p,chave)=>{
+   const raw=p[chave],taxa=Number(raw),contrato=Number(p.Contratual),classe=chave===winning?' class="faixa-aluno"':'';
+   if(p.Contratual===null||p.Contratual===undefined||String(p.Contratual).trim()===''||raw===null||raw===undefined||String(raw).trim()===''||!Number.isFinite(taxa)||taxa<0||taxa>100||!Number.isFinite(contrato)||contrato<0)return `<td${classe}>—</td>`;
    const total=contrato*(1-taxa/100);
-   saida.push(`<tr><td>${esc(p.Curso)} / ${esc(p.Turno)}<div class="muted">${esc(p.NomeTabela||'')}</div></td><td>${dinheiro(contrato)}</td><td>${esc(titulo)}</td><td>${numero(taxa)}%</td><td>${dinheiro(total)}</td><td><strong>${dinheiro(total/parcelas)}</strong></td></tr>`);
-  }}
-  $('res-precos-linhas').innerHTML=saida.join('')||'<tr><td colspan="6">Nenhuma condição encontrada nesta faixa e período.</td></tr>';
-  $('res-precos-estado').textContent=`${saida.length} condição(ões) · ${ficha.kea_permitido?'KEA':`Faixa ${$('res-faixa').value}, letra ${letra} (nota ${numero(ficha.nota)})`} · unidade ${d.unidade?.nome||''} · ${parcelas} parcela(s).`;
- }catch(e){$('res-precos-estado').textContent=e.message;$('res-precos-linhas').innerHTML='<tr><td colspan="6">Não foi possível consultar os preços.</td></tr>';}
+   return `<td${classe}><span class="preco-detalhe">${numero(taxa)}% de desconto</span><span class="preco-parcela">${dinheiro(total/parcelas)}</span><span class="preco-detalhe">Total ${dinheiro(total)}</span></td>`;
+  };
+  const saida=selecionadas.map(p=>{
+   const raw=p.Contratual,contrato=Number(raw),valido=raw!==null&&raw!==undefined&&String(raw).trim()!==''&&Number.isFinite(contrato)&&contrato>=0;
+   return `<tr><td>${esc(p.Curso)} / ${esc(p.Turno)}<div class="muted">${esc(p.NomeTabela||'')}</div></td><td>${valido?dinheiro(contrato):'—'}</td><td>${valido?`<span class="preco-parcela">${dinheiro(contrato/parcelas)}</span>`:'—'}</td>${campos.map(([,chave])=>cell(p,chave)).join('')}</tr>`;
+  });
+  $('res-precos-linhas').innerHTML=saida.join('')||'<tr><td colspan="10">Nenhuma condição encontrada nesta faixa e período.</td></tr>';
+  $('res-precos-estado').textContent=`${saida.length} curso(s) · ${ficha.kea_permitido?'KEA':`Faixa ${$('res-faixa').value}, letra ${letra} (nota ${numero(ficha.nota)})`} · unidade ${d.unidade?.nome||''} · ${parcelas} parcela(s). Coluna azul: faixa do aluno. Valores em destaque nas células: valor da parcela; abaixo, total com desconto. As demais faixas são referências para negociação.`;
+ }catch(e){$('res-precos-estado').textContent=e.message;$('res-precos-linhas').innerHTML='<tr><td colspan="10">Não foi possível consultar os preços.</td></tr>';}
  finally{$('res-calcular').disabled=false;}
 }
 $('res-calcular').addEventListener('click',consultarValores);
