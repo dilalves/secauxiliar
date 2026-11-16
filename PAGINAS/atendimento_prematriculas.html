@@ -76,7 +76,11 @@ function showDelivery(y){
  }
 }
 $('form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget;const btn=f.querySelector('button[type=submit]');if(btn)btn.disabled=true;
- try{const x=Object.fromEntries(new FormData(f).entries());const y=await req('create',x,'POST');pendingId=y.emailed?null:y.id;showDelivery(y);}
+ try{const x=Object.fromEntries(new FormData(f).entries());const y=await req('create',x,'POST');pendingId=y.emailed?null:y.id;showDelivery(y);
+  if(y.historico_automatico?.aviso)feedback($('feedback').textContent+'\n'+y.historico_automatico.aviso,true);
+  try{const h=await req('find',{cpf:x.cpf});showHistory(h.history);}catch{showHistory(null);}}
  catch(e){feedback(e.message,true);}finally{if(btn)btn.disabled=false;}
 };
+const cpfInicial=new URLSearchParams(location.search).get('cpf')||'';
+if(/^\d{11}$/.test(cpfInicial)){$('form').elements.cpf.value=cpfInicial;lookupCpf();}
 </script></body></html>

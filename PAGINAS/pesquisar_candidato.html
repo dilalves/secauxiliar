@@ -138,12 +138,13 @@ $('form').onsubmit=async e=>{
   const r=await fetch(API+'?'+new URLSearchParams({tipo,q}),{credentials:'include',cache:'no-store'});
   const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Não foi possível pesquisar.');
   const itens=[...(d.resultados||[]).map(x=>({nome:x.NomeCand,origem:'Concurso de Bolsa',codigo:x.NumeroInscricao||'—',referencia:referenciaConcurso(x),unidade:(x.UnidadeCodigo||'')+' — '+(x.UnidadeNome||''),acesso:!!x.acesso_detalhes,protocolo:null,inscricao:x.NumeroInscricao,concurso:x.IdConcurso,registro_id:x.IdRegistro||null})),
-   ...(d.bolsas||[]).map(x=>({nome:x.candidato,origem:'Bolsa Desempenho',codigo:x.protocolo||'—',referencia:'Solicitação de bolsa',unidade:(x.unidade_codigo||'')+' — '+(x.unidade_nome||''),acesso:!!x.acesso_detalhes,protocolo:x.protocolo||null,inscricao:null,concurso:null}))];
+   ...(d.bolsas||[]).map(x=>({nome:x.candidato,origem:'Bolsa Desempenho',codigo:x.protocolo||'—',referencia:'Solicitação de bolsa',unidade:(x.unidade_codigo||'')+' — '+(x.unidade_nome||''),acesso:!!x.acesso_detalhes,protocolo:x.protocolo||null,inscricao:null,concurso:null})),
+   ...(d.prematriculas||[]).map(x=>({nome:x.nome,origem:'Pré-matrícula',codigo:x.protocolo,referencia:[x.curso,x.periodo].filter(Boolean).join(' / '),unidade:x.unidade_codigo,acesso:true,protocolo:null,inscricao:null,concurso:null,cpf_pm:x.cpf}))];
   itens.sort((a,b)=>String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR',{sensitivity:'base'})||a.origem.localeCompare(b.origem));
   $('total').textContent=itens.length+' registro(s)';
-  $('rows').innerHTML=itens.length?itens.map(x=>`<tr><td>${esc(x.nome)}</td><td>${esc(x.origem)}</td><td>${esc(x.codigo)}</td><td>${esc(x.referencia)}</td><td>${esc(x.unidade)}</td><td><span class="pill ${x.acesso?'':'other'}">${x.acesso?'Sua unidade':'Outra unidade'}</span></td><td>${x.acesso&&x.protocolo?'<button type="button" class="abrir-bolsa" data-protocolo="'+esc(x.protocolo)+'">Ver pedido</button>':x.acesso&&x.inscricao&&x.concurso?'<button type="button" class="abrir-resultado" data-inscricao="'+esc(x.inscricao)+'" data-concurso="'+esc(x.concurso)+'" data-registro="'+esc(x.registro_id||'')+'">Ver resultado</button>':'—'}</td></tr>`).join(''):'<tr><td colspan="7">Nenhum registro encontrado.</td></tr>';
-  $('bolsa-aviso').textContent=d.aviso_bolsa||'Ver pedido abre os detalhes da Bolsa Desempenho nesta tela. Dados de outras unidades permanecem bloqueados.';
-  $('msg').textContent='Pesquisa concluída: '+(d.total||0)+' inscrição(ões) e '+(d.total_bolsas||0)+' pedido(s) de Bolsa Desempenho.';
+  $('rows').innerHTML=itens.length?itens.map(x=>`<tr><td>${esc(x.nome)}</td><td>${esc(x.origem)}</td><td>${esc(x.codigo)}</td><td>${esc(x.referencia)}</td><td>${esc(x.unidade)}</td><td><span class="pill ${x.acesso?'':'other'}">${x.acesso?'Sua unidade':'Outra unidade'}</span></td><td>${x.cpf_pm?'<button type="button" class="abrir-pre-atendimento" data-cpf="'+esc(x.cpf_pm)+'">Ver atendimento</button>':x.acesso&&x.protocolo?'<button type="button" class="abrir-bolsa" data-protocolo="'+esc(x.protocolo)+'">Ver pedido</button>':x.acesso&&x.inscricao&&x.concurso?'<button type="button" class="abrir-resultado" data-inscricao="'+esc(x.inscricao)+'" data-concurso="'+esc(x.concurso)+'" data-registro="'+esc(x.registro_id||'')+'">Ver resultado</button>':'—'}</td></tr>`).join(''):'<tr><td colspan="7">Nenhum registro encontrado.</td></tr>';
+  $('bolsa-aviso').textContent=d.aviso_prematricula||d.aviso_bolsa||'Ver pedido abre os detalhes da Bolsa Desempenho nesta tela. Dados de outras unidades permanecem bloqueados.';
+  $('msg').textContent='Pesquisa concluída: '+(d.total||0)+' inscrição(ões) e '+(d.total_bolsas||0)+' pedido(s) de Bolsa Desempenho'+((d.total_prematriculas||0)?' e '+d.total_prematriculas+' pré-matrícula(s).':'.');
  }catch(err){$('msg').textContent=err.message;$('msg').classList.add('err');}finally{$('pesquisar').disabled=false;}
 };
 function fecharPedido(){
@@ -154,6 +155,7 @@ $('bolsa-overlay').addEventListener('click',e=>{if(e.target===$('bolsa-overlay')
 window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===$('bolsa-frame').contentWindow&&e.data?.source==='sec-bolsa-modal'&&e.data.action==='close')fecharPedido();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('bolsa-overlay').hidden)fecharPedido();});
 $('rows').addEventListener('click',e=>{
+ const pm=e.target.closest('.abrir-pre-atendimento');if(pm){window.open('atendimento_prematriculas.html?'+new URLSearchParams({cpf:pm.dataset.cpf}),'_blank','noopener');return;}
  const rb=e.target.closest('.abrir-resultado');if(rb){abrirResultado(rb.dataset.inscricao,rb.dataset.concurso,rb.dataset.registro);return;}
  const b=e.target.closest('.abrir-bolsa');if(!b)return;
  const protocolo=b.dataset.protocolo||'';
