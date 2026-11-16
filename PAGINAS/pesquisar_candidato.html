@@ -121,6 +121,15 @@ const $=id=>document.getElementById(id);
 const API='https://apisec.secauxiliar.com.br/sec/pesquisar_candidato_api.php';
 let tipo=new URLSearchParams(location.search).get('tipo')==='nome'?'nome':'cpf';
 function esc(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+// Data da prova recebida da pesquisa; formatação civil sem conversão de fuso.
+function referenciaConcurso(x){
+ const nome=x.Concurso||x.IdConcurso||'—';
+ const m=String(x.DataProva??'').trim().match(/^(\d{4})-(\d{2})-(\d{2})(?:$|[T\s])/);
+ if(!m)return nome;
+ const [ano,mes,dia]=m.slice(1).map(Number),data=new Date(Date.UTC(ano,mes-1,dia));
+ if(data.getUTCFullYear()!==ano||data.getUTCMonth()!==mes-1||data.getUTCDate()!==dia)return nome;
+ return `${m[3]}/${m[2]}/${m[1]} · ${nome}`;
+}
 function setTipo(v){tipo=v;$('cpfTab').classList.toggle('active',v==='cpf');$('nomeTab').classList.toggle('active',v==='nome');$('label').firstChild.textContent=v==='cpf'?'CPF':'Nome do candidato';$('q').placeholder=v==='cpf'?'000.000.000-00':'Digite pelo menos 3 letras';$('q').value='';$('q').focus();}
 $('cpfTab').onclick=()=>setTipo('cpf');$('nomeTab').onclick=()=>setTipo('nome');
 $('form').onsubmit=async e=>{
@@ -128,7 +137,7 @@ $('form').onsubmit=async e=>{
  try{
   const r=await fetch(API+'?'+new URLSearchParams({tipo,q}),{credentials:'include',cache:'no-store'});
   const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Não foi possível pesquisar.');
-  const itens=[...(d.resultados||[]).map(x=>({nome:x.NomeCand,origem:'Concurso de Bolsa',codigo:x.NumeroInscricao||'—',referencia:x.Concurso||x.IdConcurso||'—',unidade:(x.UnidadeCodigo||'')+' — '+(x.UnidadeNome||''),acesso:!!x.acesso_detalhes,protocolo:null,inscricao:x.NumeroInscricao,concurso:x.IdConcurso,registro_id:x.IdRegistro||null})),
+  const itens=[...(d.resultados||[]).map(x=>({nome:x.NomeCand,origem:'Concurso de Bolsa',codigo:x.NumeroInscricao||'—',referencia:referenciaConcurso(x),unidade:(x.UnidadeCodigo||'')+' — '+(x.UnidadeNome||''),acesso:!!x.acesso_detalhes,protocolo:null,inscricao:x.NumeroInscricao,concurso:x.IdConcurso,registro_id:x.IdRegistro||null})),
    ...(d.bolsas||[]).map(x=>({nome:x.candidato,origem:'Bolsa Desempenho',codigo:x.protocolo||'—',referencia:'Solicitação de bolsa',unidade:(x.unidade_codigo||'')+' — '+(x.unidade_nome||''),acesso:!!x.acesso_detalhes,protocolo:x.protocolo||null,inscricao:null,concurso:null}))];
   itens.sort((a,b)=>String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR',{sensitivity:'base'})||a.origem.localeCompare(b.origem));
   $('total').textContent=itens.length+' registro(s)';
