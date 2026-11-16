@@ -20,7 +20,7 @@
 <div><label for="faixa">Curso (faixa)</label><select id="faixa"><option value="1">1 — Extensivo</option></select></div>
 <div><label for="parcelas">Parcelas</label><input id="parcelas" type="number" min="1" max="60" step="1" value="14"></div>
 </div><div class="estado" id="estado">Consultando os preços da sua unidade...</div></section>
-<div id="mensagem" aria-live="polite"></div><section class="cartao"><div class="cab"><h2>Cursos e condições de pagamento</h2><div class="cab-acoes"><span class="contador" id="contador">0 curso(s)</span><button id="abrirCalculo" class="btn-desconto" type="button">Cálculo de desconto</button></div></div><div class="rolagem"><table><thead><tr><th>Curso / Turno</th><th>Contratual</th><th>Sem desconto</th><th class="promo">Promoção (0)</th><th>Pro/Trab</th><th>KEA</th><th>Faixa A</th><th>Faixa B</th><th>Faixa C</th><th>Faixa D</th><th>Faixa E</th><th>Faixa 100</th></tr></thead><tbody id="linhas"><tr><td colspan="12" class="vazio">Consultando os preços da unidade conectada.</td></tr></tbody></table></div><div class="legenda">Valores por parcela = valor contratual × (1 − desconto ÷ 100) ÷ número de parcelas. Promoção sem concurso utiliza o campo 0 (F0), para atendimento sem concurso. Faixas A–E e 100 utilizam os descontos cadastrados para concurso de bolsa. Valores são simulações e não alteram o cadastro.</div></section></main>
+<div id="mensagem" aria-live="polite"></div><section class="cartao"><div class="cab"><h2>Cursos e condições de pagamento</h2><div class="cab-acoes"><span class="contador" id="contador">0 curso(s)</span><button id="abrirCalculo" class="btn-desconto" type="button">Cálculo de desconto</button></div></div><div class="rolagem"><table><thead><tr><th>Curso / Turno</th><th>Contratual</th><th>Sem desconto</th><th class="promo">Promoção (0)</th><th>Pro/Trab</th><th>KEA</th><th>Faixa A</th><th>Faixa B</th><th>Faixa C</th><th>Faixa D</th><th id="cabFaixaE">Faixa E</th></tr></thead><tbody id="linhas"><tr><td colspan="11" class="vazio">Consultando os preços da unidade conectada.</td></tr></tbody></table></div><div class="legenda">Valores por parcela = valor contratual × (1 − desconto ÷ 100) ÷ número de parcelas. Promoção sem concurso utiliza o campo 0 (F0), para atendimento sem concurso. Faixas A–E<span id="legendaFaixaF"></span> utilizam os descontos cadastrados para concurso de bolsa. Valores são simulações e não alteram o cadastro.</div></section></main>
 
 <div id="calcOverlay" class="calc-overlay" hidden>
   <section class="calc-dialog" role="dialog" aria-modal="true" aria-labelledby="calcTitulo">
@@ -43,7 +43,7 @@
 const API_BASE='https://apisec.secauxiliar.com.br/sec/';
 const API=API_BASE+'consultar_precos_atendimento.php';
 const $=id=>document.getElementById(id);
-let precos=[], versao=0;
+let precos=[], versao=0, podeFaixaF=false;
 const fmt=n=>Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 function texto(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function aviso(t,erro=false){$('mensagem').innerHTML=t?`<div class="${erro?'erro':'aviso'}">${texto(t)}</div>`:'';}
@@ -56,11 +56,11 @@ function celula(p,key,n,css=''){
   return `<td class="${css}"><span class="pct">${d.toLocaleString('pt-BR')}%</span><span class="valor">${fmt(valor)}</span></td>`;
 }
 function render(){
-  const n=parcelas();$('contador').textContent=`${precos.length} curso(s)`;
-  if(!n){aviso('Informe entre 1 e 60 parcelas.',true);$('linhas').innerHTML='<tr><td colspan="12" class="vazio">Número de parcelas inválido.</td></tr>';return;}
-  if(!precos.length){$('linhas').innerHTML='<tr><td colspan="12" class="vazio">Nenhum curso cadastrado nessa faixa para sua unidade.</td></tr>';return;}
+  const n=parcelas(),colunas=podeFaixaF?12:11;$('contador').textContent=`${precos.length} curso(s)`;
+  if(!n){aviso('Informe entre 1 e 60 parcelas.',true);$('linhas').innerHTML=`<tr><td colspan="${colunas}" class="vazio">Número de parcelas inválido.</td></tr>`;return;}
+  if(!precos.length){$('linhas').innerHTML=`<tr><td colspan="${colunas}" class="vazio">Nenhum curso cadastrado nessa faixa para sua unidade.</td></tr>`;return;}
   aviso(precos.some(p=>Number(p.TabelaAtiva)!==1)?'Alguns preços pertencem a tabelas inativas (planejamento). A consulta não autoriza matrícula.':'');
-  $('linhas').innerHTML=precos.map(p=>`<tr><td><span class="nome">${texto(p.Curso)}</span><span class="sub">${texto(p.Turno)} • ${texto(p.Tipo)} • ${texto(p.NomeTabela)}${Number(p.TabelaAtiva)!==1?' (inativa)':''}</span></td><td class="valor">${fmt(p.Contratual)}</td><td>${fmt(Number(p.Contratual)/n)}</td>${celula(p,'F0',n,'promo')}${celula(p,'Cc',n)}${celula(p,'Ea',n)}${celula(p,'Fa',n)}${celula(p,'Fb',n)}${celula(p,'Fc',n)}${celula(p,'Fd',n)}${celula(p,'Fe',n)}${celula(p,'F100',n)}</tr>`).join('');
+  $('linhas').innerHTML=precos.map(p=>`<tr><td><span class="nome">${texto(p.Curso)}</span><span class="sub">${texto(p.Turno)} • ${texto(p.Tipo)} • ${texto(p.NomeTabela)}${Number(p.TabelaAtiva)!==1?' (inativa)':''}</span></td><td class="valor">${fmt(p.Contratual)}</td><td>${fmt(Number(p.Contratual)/n)}</td>${celula(p,'F0',n,'promo')}${celula(p,'Cc',n)}${celula(p,'Ea',n)}${celula(p,'Fa',n)}${celula(p,'Fb',n)}${celula(p,'Fc',n)}${celula(p,'Fd',n)}${celula(p,'Fe',n)}${podeFaixaF?celula(p,'F100',n):''}</tr>`).join('');
 }
 async function consultar(){
  const k=++versao;const faixa=$('faixa').value;
@@ -112,5 +112,19 @@ $('calcParcelas').addEventListener('input',renderCalculo);
 
 $('faixa').addEventListener('change',consultar);
 $('parcelas').addEventListener('input',render);
-consultar();
+// A coluna F é somente de coordenação; o campo de preço continua F100.
+async function iniciar(){
+ try{
+  const r=await fetch(API_BASE+'auth_me.php',{credentials:'include',cache:'no-store'});
+  const d=await r.json();
+  if(!r.ok||!d.ok||!d.user)throw Error('Sessão inválida. Entre novamente no sistema.');
+  podeFaixaF=String(d.user.nivel||'').trim().toLowerCase()==='coordenacao';
+  if(podeFaixaF){
+   const th=document.createElement('th');th.textContent='Faixa F';
+   $('cabFaixaE').after(th);$('legendaFaixaF').textContent=' e F';
+  }
+  await consultar();
+ }catch(e){$('estado').textContent='Consulta indisponível';aviso(e.message,true);render();}
+}
+iniciar();
 </script></body></html>
