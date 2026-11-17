@@ -19,11 +19,19 @@ body{padding:8px;font-size:13px}header{padding:10px 14px;margin-bottom:8px}h1{fo
 #student{white-space:normal;font-size:12px;line-height:1.4}#newSection #previousAck .msg{padding:5px;margin:5px 0;font-size:11px}#message{padding:8px;margin:7px 0;font-size:12px}#classInfo:empty,#calcInfo:empty{display:none}
 @media(max-width:1050px) and (min-width:801px){#studentSections{grid-template-columns:1fr 1fr}#newSection .metrics{grid-template-columns:1fr}#newSection .metric{display:flex;justify-content:space-between;align-items:center;padding:6px 8px}#newSection .metric strong{margin:0;font-size:15px}}
 @media(max-width:800px){#studentSections{display:block}#requestForm{display:block}#newSection>.panel>.grid,#studentSections>.two{grid-template-columns:1fr}#newSection .table{max-height:160px}}
+
+/* Ajuste visual somente da identificacao do aluno. */
+#newSection>.panel>.student-lookup{grid-template-columns:max-content minmax(0,1fr);align-items:end;gap:12px 16px}
+#newSection .student-lookup>.inline{flex-wrap:nowrap}
+#newSection .student-lookup>.inline>div{flex:0 0 auto}
+#newSection #mat{width:calc(7ch + 20px);min-width:0;font-variant-numeric:tabular-nums}
+#newSection #student{font-size:18px;font-weight:700;color:#0b4c92;line-height:1.4;white-space:normal;overflow-wrap:anywhere;margin:0;min-height:31px;display:flex;align-items:center}
+@media(max-width:560px){#newSection>.panel>.student-lookup{grid-template-columns:1fr}#newSection #student{font-size:16px}}
 </style></head><body>
 <header><div><h1>Pedidos de bolsa</h1><div class="muted" id="unit">Identificando sua unidade…</div></div><div class="tabs"><button id="tabNew">Novo pedido</button><button id="tabList" class="alt">Acompanhar pedidos</button></div></header>
 <div id="message" class="msg" role="status" aria-live="polite"></div>
 <section id="newSection">
-<div class="panel"><h2>1. Identificar aluno</h2><div class="grid"><div class="inline"><div><label for="mat">Matrícula</label><input id="mat" maxlength="7" inputmode="numeric" placeholder="7 dígitos"></div><button id="search" type="button">Consultar</button></div><div><label>Aluno / situação / turma atual</label><div id="student" class="pre muted">Consulte a matrícula para começar.</div></div></div></div>
+<div class="panel"><h2>1. Identificar aluno</h2><div class="grid student-lookup"><div class="inline"><div><label for="mat">Matrícula</label><input id="mat" maxlength="7" inputmode="numeric" placeholder="7 dígitos"></div><button id="search" type="button">Consultar</button></div><div><label>Aluno / situação / turma atual</label><div id="student" class="pre muted">Consulte a matrícula para começar.</div></div></div></div>
 <div id="studentSections" hidden>
 <div class="two"><div class="panel"><h2>Pedidos anteriores</h2><div id="previous" class="table"></div><div id="previousAck" hidden><p class="msg bad">Já existe pedido para esta matrícula. Confira o andamento antes de continuar.</p><label class="check"><input id="ack" type="checkbox">Conferi os pedidos anteriores e desejo fazer um novo pedido.</label></div></div><div class="panel"><h2>Parcelas lançadas</h2><div id="installments" class="table"></div></div></div>
 <form id="requestForm">
