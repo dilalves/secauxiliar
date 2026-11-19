@@ -39,6 +39,7 @@ h2{color:var(--blue);font-size:13px;margin:8px 0 4px}table{width:100%;border-col
 'use strict';
 const API='https://apisec.secauxiliar.com.br/sec/';
 const $=id=>document.getElementById(id);
+const nomeMaiusculo=value=>String(value??'').toLocaleUpperCase('pt-BR');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const brl=v=>Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const num=v=>Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -54,7 +55,7 @@ const registroId=params.get('registro_id')||'';
 const presencial=inscricao==='0'&&concurso==='0';
 function item(label,value){return `<div class="field"><small>${esc(label)}</small><b>${esc(value??'—')}</b></div>`}
 async function loadJSON(file,values){const url=API+file+'?'+new URLSearchParams(values);const r=await fetch(url,{credentials:'include',cache:'no-store',headers:{Accept:'application/json'}});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Falha ao consultar '+file);return d}
-function getLetra(c){if(c.kea_permitido)return['KEA','Ea'];if(!c.liberado||c.nota==null)throw Error('O concurso ainda não possui resultado liberado para emissão.');const n=Math.round(Number(c.nota)*100);if(n>=40000&&n<=50000)return['Faixa A','Fa'];if(n>=50001&&n<=60000)return['Faixa B','Fb'];if(n>=60001&&n<=70000)return['Faixa C','Fc'];if(n>=70001&&n<=80000)return['Faixa D','Fd'];if(n>=80001&&n<=100000)return['Faixa E','Fe'];throw Error('Nota fora das faixas comerciais configuradas.')}
+function getLetra(c){if(c.kea_permitido)return['KEA','Ea'];if(!c.liberado||c.nota==null||String(c.nota).trim()===''||!Number.isFinite(Number(c.nota)))throw Error('O concurso ainda não possui resultado liberado para emissão.');const n=Math.round((Number(c.nota)+Number.EPSILON)*100);if(n<40000)return['Faixa 0','F0'];if(n>=40000&&n<=50000)return['Faixa A','Fa'];if(n>=50001&&n<=60000)return['Faixa B','Fb'];if(n>=60001&&n<=70000)return['Faixa C','Fc'];if(n>=70001&&n<=80000)return['Faixa D','Fd'];if(n>=80001&&n<=100000)return['Faixa E','Fe'];throw Error('Nota fora das faixas comerciais configuradas.')}
 function renderAnswers(extra){$('prova').textContent=extra.codigo_prova||'—';const a=extra.respostas||{},g=extra.gabarito||{};const available=Object.keys(a).length===50,official=Object.keys(g).length===50;
  $('folha-status').textContent=available?'50 alternativas da folha corrigida': 'Folha de respostas não localizada/validada para esta inscrição.';
  if(!official)$('folha-status').textContent+=' Gabarito oficial indisponível.';
@@ -76,7 +77,7 @@ async function main(){
   $('subtitulo-ficha').textContent='Simulação comercial — Atendimento presencial';
   document.querySelector('.toolbar strong').textContent='Ficha de Informações — Atendimento presencial';
   $('identificacao').innerHTML=[
-   item('Atendimento','Presencial'),item('Nome',c.NomeCand),
+   item('Atendimento','Presencial'),item('Nome',nomeMaiusculo(c.NomeCand)),
    item('Unidade',un.nome||c.UnidadeNome||'—'),item('Telefone',c.TelefoneCelular||c.TelefoneResidencial||'—'),
    item('CPF',c.Cpf),item('Concurso','Não se aplica'),
    item('Curso pretendido',c.Curso||c.Carreira||'—'),item('Período pretendido',c.Periodo||'—')
@@ -93,7 +94,7 @@ async function main(){
   document.querySelector('.foot .print-note').textContent='Simulação comercial informativa. Valores sujeitos às condições comerciais vigentes.';
  }else{
   $('identificacao').innerHTML=[
-   item('Inscrição',c.NumeroInscricao),item('Nome',c.NomeCand),
+   item('Inscrição',c.NumeroInscricao),item('Nome',nomeMaiusculo(c.NomeCand)),
    item('Data da prova',dataBR(c.DataProva)),item('Hora',c.Hora),
    item('CPF',c.Cpf),item('Concurso',c.Descricao),
    item('Curso pretendido',c.Curso||c.Carreira),
@@ -119,8 +120,8 @@ async function main(){
  $('proposta-info').textContent=`${rotulo} · ${parcelas} parcelas · Faixa ${faixa} · ${un.nome||''} · Valores consultados no cadastro da unidade.`;
  $('propostas').innerHTML=linhas.length?linhas.map(p=>{const contratual=Number(p.Contratual),desconto=Number(p[chave]),total=contratual*(1-desconto/100);return `<tr><td><b>${esc(p.Curso)}</b><span class="course-muted">${esc(p.Turno)} · ${esc(p.Tipo)}</span></td><td class="money">${brl(contratual)}</td><td class="money">${num(desconto)}%</td><td class="money">${brl(total)}</td><td class="money">${parcelas}</td><td class="money tag">${brl(total/parcelas)}</td></tr>`}).join(''):'<tr><td colspan="6">Não há cursos compatíveis com a seleção.</td></tr>';
  $('status').textContent=presencial
-  ? `${c.NomeCand} · Atendimento presencial · ${linhas.length} condição(ões) KEA. Confira a prévia e clique em imprimir.`
-  : `${c.NomeCand} · Inscrição ${inscricao} · ${linhas.length} condição(ões). Confira a prévia e clique em imprimir.`;
+  ? `${nomeMaiusculo(c.NomeCand)} · Atendimento presencial · ${linhas.length} condição(ões) KEA. Confira a prévia e clique em imprimir.`
+  : `${nomeMaiusculo(c.NomeCand)} · Inscrição ${inscricao} · ${linhas.length} condição(ões). Confira a prévia e clique em imprimir.`;
  $('print').disabled=false;
 }
 $('print').addEventListener('click',()=>window.print());
