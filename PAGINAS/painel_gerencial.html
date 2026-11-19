@@ -22,11 +22,11 @@
 .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .modal-head h2{margin:0;color:#123b72}
 .modal-close{background:#edf3fb;border:0;border-radius:7px;padding:9px 13px;cursor:pointer;font-weight:bold}
-.period-chart{display:grid;grid-template-columns:110px 1fr 100px;gap:8px;align-items:center;margin:10px 0;font-size:12px}
+.period-chart{display:grid;grid-template-columns:160px minmax(0,1fr);gap:8px;align-items:center;margin:10px 0;font-size:12px}
 .period-track{display:flex;flex-direction:column;gap:3px}
-.period-line{height:13px;border-radius:3px}
-.period-line.prev{background:#9e78d4}.period-line.curr{background:#2274ce}
-@media(max-width:600px){.modal-window{padding:10px}.period-chart{grid-template-columns:70px 1fr 75px}}
+.period-line{height:16px;border-radius:3px;min-width:2px;position:relative}
+.period-track{padding-right:48px}.period-value{position:absolute;left:calc(100% + 7px);top:0;font-size:12px;font-weight:700;color:#243b55;white-space:nowrap;line-height:16px}.period-line.prev{background:#9e78d4}.period-line.curr{background:#2274ce}
+@media(max-width:600px){.modal-window{padding:10px}.period-chart{grid-template-columns:105px minmax(0,1fr)}}
 </style></head><body><main><div class="top"><div><h1>📊 Painel Gerencial</h1><p>Direção · Estatísticas consolidadas e comparativo entre unidades</p></div><span class="muted" id="scope">Aguardando consulta</span></div>
 <section class="card"><div class="filters"><div class="field"><label for="unidade">UNIDADE</label><select id="unidade"><option value="TODAS">Todas as unidades</option></select></div><div class="field"><label for="ano">ANO LETIVO</label><select id="ano"></select></div><div class="field"><label for="curso">CURSO</label><select id="curso"><option>EXTENSIVO</option><option>INTENSIVO</option><option>REVISÃO</option><option>SEMI DE AGOSTO</option><option>SEMI COLÉGIO</option><option>SEMIEXTENSIVO</option><option>TURMAS DE MAIO</option><option>OUTRO</option></select></div><div class="field"><label for="periodo">PERÍODO</label><select id="periodo"><option value="GERAL">Geral</option><option value="MANHA">Manhã</option><option value="TARDE">Tarde</option><option value="VESPERTINO">Vespertino</option><option value="NOITE">Noite</option></select></div><div class="field"><label for="data">DATA DE REFERÊNCIA</label><input id="data" type="date"></div><button class="btn" id="consultar">Atualizar painel</button></div><div id="status" class="stats-note" role="status"></div></section>
 <div class="stats-cards" id="primary"></div><div class="stats-cards secondary" id="secondary"></div>
@@ -149,8 +149,8 @@ async function openUnit(unit){
    const row=document.createElement('div');row.className='period-chart';
    const name=document.createElement('b');name.textContent=r.nome;
    const track=document.createElement('div');track.className='period-track';
-   for(const [key,cl] of [['anterior','prev'],['atual','curr']]){const line=document.createElement('div');line.className='period-line '+cl;line.style.width=Math.max(0,100*(r[key]||0)/max)+'%';line.title=key+': '+statsNum(r[key]);track.append(line)}
-   const values=document.createElement('span');values.textContent=statsNum(r.anterior)+' / '+statsNum(r.atual);row.append(name,track,values);body.append(row);
+   for(const [key,cl] of [['anterior','prev'],['atual','curr']]){const line=document.createElement('div');line.className='period-line '+cl;line.style.width=Math.max(0,100*(r[key]||0)/max)+'%';line.title=key+': '+statsNum(r[key]);const number=document.createElement('span');number.className='period-value';number.textContent=statsNum(r[key]);line.append(number);track.append(line)}
+   row.append(name,track);body.append(row);
   }
   const table=document.createElement('table');table.className='compare-table';table.innerHTML='<thead><tr><th>Período</th><th>Anterior</th><th>Atual</th><th>Variação</th><th>Meta</th><th>Projeção</th></tr></thead>';
   const tb=document.createElement('tbody');for(const r of data.periodos){const tr=document.createElement('tr');[r.nome,statsNum(r.anterior),statsNum(r.atual),r.variacao_pct===null?'—':r.variacao_pct+'%',statsNum(r.meta),statsNum(r.projecao)].forEach(v=>cell(tr,v));tb.append(tr)}table.append(tb);body.append(table);
