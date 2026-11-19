@@ -11,9 +11,13 @@
 .unit-column{flex:1 0 68px;min-width:68px;text-align:center;cursor:pointer;border:0;background:transparent;color:inherit}
 .unit-pair{height:185px;display:flex;align-items:flex-end;justify-content:center;gap:5px;border-bottom:1px solid #d1deed}
 .unit-bar{width:34%;min-height:1px;border-radius:4px 4px 0 0;position:relative}
-.unit-bar.prev{background:#9e78d4}.unit-bar.curr{background:#2274ce}
+.unit-bar.prev{background:#a5d9b1}.unit-bar.curr{background:#2274ce}
 .unit-name{font-size:10px;font-weight:750;line-height:1.2;margin-top:7px;overflow-wrap:anywhere}
-.unit-numbers{font-size:10px;color:#52657c;margin-top:4px}
+.unit-numbers{font-size:11px;font-weight:750;margin-top:5px;white-space:nowrap}
+.unit-numbers.pos{color:#148045}.unit-numbers.neg{color:#c0392b}.unit-numbers.neutral{color:#52657c}
+.unit-bar{overflow:visible}.unit-bar-number{position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);font-size:12px;font-weight:800;color:#203b59;white-space:nowrap}
+.unit-pair{padding-top:20px;height:210px}
+.unit-bars{min-height:285px}
 .bar-legend{display:flex;gap:18px;font-size:11px;color:#52657c}
 .bar-legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px}
 .modal-backdrop{position:fixed;inset:0;background:#10263d9c;z-index:99;display:flex;align-items:center;justify-content:center;padding:14px}
@@ -25,7 +29,7 @@
 .period-chart{display:grid;grid-template-columns:160px minmax(0,1fr);gap:8px;align-items:center;margin:10px 0;font-size:12px}
 .period-track{display:flex;flex-direction:column;gap:3px}
 .period-line{height:16px;border-radius:3px;min-width:2px;position:relative}
-.period-track{padding-right:48px}.period-value{position:absolute;left:calc(100% + 7px);top:0;font-size:12px;font-weight:700;color:#243b55;white-space:nowrap;line-height:16px}.period-line.prev{background:#9e78d4}.period-line.curr{background:#2274ce}
+.period-track{padding-right:48px}.period-value{position:absolute;left:calc(100% + 7px);top:0;font-size:13px;font-weight:800;color:#243b55;white-space:nowrap;line-height:16px}.period-line.prev{background:#a5d9b1}.period-line.curr{background:#2274ce}
 @media(max-width:600px){.modal-window{padding:10px}.period-chart{grid-template-columns:105px minmax(0,1fr)}}
 </style></head><body><main><div class="top"><div><h1>📊 Painel Gerencial</h1><p>Direção · Estatísticas consolidadas e comparativo entre unidades</p></div><span class="muted" id="scope">Aguardando consulta</span></div>
 <section class="card"><div class="filters"><div class="field"><label for="unidade">UNIDADE</label><select id="unidade"><option value="TODAS">Todas as unidades</option></select></div><div class="field"><label for="ano">ANO LETIVO</label><select id="ano"></select></div><div class="field"><label for="curso">CURSO</label><select id="curso"><option>EXTENSIVO</option><option>INTENSIVO</option><option>REVISÃO</option><option>SEMI DE AGOSTO</option><option>SEMI COLÉGIO</option><option>SEMIEXTENSIVO</option><option>TURMAS DE MAIO</option><option>OUTRO</option></select></div><div class="field"><label for="periodo">PERÍODO</label><select id="periodo"><option value="GERAL">Geral</option><option value="MANHA">Manhã</option><option value="TARDE">Tarde</option><option value="VESPERTINO">Vespertino</option><option value="NOITE">Noite</option></select></div><div class="field"><label for="data">DATA DE REFERÊNCIA</label><input id="data" type="date"></div><button class="btn" id="consultar">Atualizar painel</button></div><div id="status" class="stats-note" role="status"></div></section>
@@ -91,17 +95,21 @@ function unitName(r){return String(r.nome||r.codigo).replace(/^CURSO\\s+/i,'').t
 function drawBars(rows){
  const target=$('bars');target.replaceChildren();
  if(!rows.length){target.textContent='Sem unidades com lançamentos para os filtros selecionados.';return}
- const legend=document.createElement('div');legend.className='bar-legend';legend.innerHTML='<span><i style="background:#9e78d4"></i>Ano anterior</span><span><i style="background:#2274ce"></i>Atual</span>';
+ const legend=document.createElement('div');legend.className='bar-legend';legend.innerHTML='<span><i style="background:#a5d9b1"></i>Ano anterior</span><span><i style="background:#2274ce"></i>Atual</span>';
  const chart=document.createElement('div');chart.className='unit-bars';
  const max=Math.max(1,...rows.flatMap(r=>[Number(r.atual)||0,Number(r.anterior)||0]));
  for(const r of [...rows].sort((a,b)=>b.atual-a.atual)){
   const col=document.createElement('button');col.type='button';col.className='unit-column';col.title='Detalhar '+unitName(r);col.onclick=()=>openUnit(r);
   const pair=document.createElement('div');pair.className='unit-pair';
   for(const [kind,value] of [['prev',r.anterior],['curr',r.atual]]){
-   const bar=document.createElement('div');bar.className='unit-bar '+kind;bar.style.height=Math.max(1,185*(Number(value)||0)/max)+'px';bar.title=(kind==='prev'?'Anterior: ':'Atual: ')+statsNum(value);pair.append(bar);
+   const bar=document.createElement('div');bar.className='unit-bar '+kind;bar.style.height=Math.max(1,185*(Number(value)||0)/max)+'px';bar.title=(kind==='prev'?'Anterior: ':'Atual: ')+statsNum(value);
+   const num=document.createElement('span');num.className='unit-bar-number';num.textContent=statsNum(value);bar.append(num);pair.append(bar);
   }
   const name=document.createElement('div');name.className='unit-name';name.textContent=unitName(r);
-  const numbers=document.createElement('div');numbers.className='unit-numbers';numbers.textContent=statsNum(r.anterior)+' / '+statsNum(r.atual);
+  const numbers=document.createElement('div');numbers.className='unit-numbers';const diff=Number(r.atual)-Number(r.anterior);
+  const pct=Number(r.anterior)>0?((diff/Number(r.anterior))*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%':(Number(r.atual)>0?'novo':'0%');
+  numbers.classList.add(diff>0?'pos':diff<0?'neg':'neutral');
+  numbers.textContent=pct+' ('+(diff>0?'+':'')+statsNum(diff)+')';
   col.append(pair,name,numbers);chart.append(col);
  }
  target.append(legend,chart);
@@ -142,8 +150,8 @@ async function openUnit(unit){
    data.periodos=periods;
   }
   if(token!==modalRequest||modal.hidden)return;
-  const body=$('modalBody');body.replaceChildren();
-  const legend=document.createElement('div');legend.className='bar-legend';legend.innerHTML='<span><i style="background:#9e78d4"></i>Ano anterior</span><span><i style="background:#2274ce"></i>Atual</span>';body.append(legend);
+  const body=$('modalBody');body.replaceChildren();if(data.rateio_estimado){const note=document.createElement('p');note.className='stats-note';note.textContent='Meta e projeção por categoria: rateio estimado conforme a distribuição de matrículas do ano anterior. O total Geral mantém o cálculo sazonal original.';body.append(note);}
+  const legend=document.createElement('div');legend.className='bar-legend';legend.innerHTML='<span><i style="background:#a5d9b1"></i>Ano anterior</span><span><i style="background:#2274ce"></i>Atual</span>';body.append(legend);
   const max=Math.max(1,...data.periodos.flatMap(r=>[r.anterior||0,r.atual||0]));
   for(const r of data.periodos){
    const row=document.createElement('div');row.className='period-chart';
