@@ -29,6 +29,35 @@
 .stats-kpi{border:1px solid #d5e1f0;border-radius:10px;padding:12px;background:#f8fbff;min-width:0}.stats-kpi span{display:block;font-size:12px;font-weight:700;color:#425c7c}.stats-kpi strong{display:block;font-size:26px;margin:6px 0;color:#123b72}.stats-kpi small{font-size:11px;color:#71829a}.stats-kpi.goal{background:#ecfbf1;border-color:#b9e6c9}.stats-kpi.goal strong{color:#147038}
 .stats-columns{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin:12px 0}.stats-panel{border:1px solid #d5e1f0;border-radius:12px;padding:13px;min-width:0}.stats-panel h3{margin:0 0 10px;font-size:16px;color:#123b72}.stats-panel svg{display:block;width:100%;height:auto}.stats-table{width:100%;border-collapse:collapse;font-size:12px}.stats-table th{background:#edf3fb}.stats-table td,.stats-table th{padding:9px 6px;border-bottom:1px solid #e4ebf5;text-align:right}.stats-table td:first-child,.stats-table th:first-child{text-align:left}.stats-note{font-size:11px;color:#60738b;line-height:1.5;margin-top:8px}.stats-ticket{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.stats-ticket .stats-kpi strong{font-size:21px}.stats-error{color:#a52d36;font-weight:700;font-size:12px}
 @media(max-width:950px){.stats-cards,.stats-cards.secondary,.stats-ticket{grid-template-columns:repeat(2,minmax(0,1fr))}.stats-columns{grid-template-columns:1fr}}@media(max-width:560px){.stats-dialog{padding:10px}.stats-top h2{font-size:18px}.stats-kpi strong{font-size:21px}}
+
+/* Ajuste visual da modal de estatísticas — preserva as demais telas e funcionalidades. */
+.stats-overlay{padding:6px}
+.stats-dialog{width:100%;max-width:none;height:calc(100dvh - 12px);max-height:calc(100dvh - 12px);border-radius:11px;padding:10px 14px;overflow:auto;scrollbar-gutter:stable}
+.stats-top{padding-bottom:7px;gap:8px}.stats-top h2{font-size:19px;line-height:1.15}.stats-top p{font-size:10px;margin-top:2px}
+.stats-top .close{width:29px;height:29px;flex-shrink:0}
+.stats-controls{margin:7px 0;gap:7px;font-size:11px}.stats-controls select{padding:4px 7px;font-size:11px;height:29px}
+.stats-cards{gap:7px;margin-bottom:7px}.stats-kpi{padding:7px 9px;border-radius:8px;min-height:67px;display:flex;flex-direction:column;justify-content:center}
+.stats-kpi span{font-size:10px;line-height:1.2}.stats-kpi strong{font-size:21px;line-height:1.1;margin:3px 0}.stats-kpi small{font-size:9px;line-height:1.2}
+.stats-cards.secondary .stats-kpi{min-height:62px}
+.stats-columns{gap:8px;margin:7px 0;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+.stats-panel{padding:9px 11px;border-radius:9px}.stats-panel h3{font-size:13px;margin:0 0 6px}
+.stats-panel svg{width:100%;max-height:205px}
+.stats-table{font-size:10px}.stats-table td,.stats-table th{padding:5px 5px}
+.stats-note{font-size:9px;line-height:1.3;margin-top:4px}
+.stats-ticket{gap:7px}.stats-ticket .stats-kpi{min-height:58px}.stats-ticket .stats-kpi strong{font-size:17px}
+.stats-error{font-size:11px}
+@media(max-height:750px) and (min-width:951px){
+ .stats-dialog{padding:7px 11px}.stats-top{padding-bottom:5px}.stats-top h2{font-size:17px}
+ .stats-controls{margin:5px 0}.stats-cards{gap:5px;margin-bottom:5px}
+ .stats-kpi{min-height:54px;padding:5px 8px}.stats-cards.secondary .stats-kpi{min-height:51px}
+ .stats-kpi strong{font-size:19px;margin:2px 0}.stats-columns{margin:5px 0;gap:6px}
+ .stats-panel{padding:7px 9px}.stats-panel h3{margin-bottom:4px}
+ .stats-panel svg{max-height:170px}.stats-table td,.stats-table th{padding:4px}
+ .stats-ticket .stats-kpi{min-height:49px}.stats-ticket .stats-kpi strong{font-size:16px}
+ .stats-note{font-size:8.5px;margin-top:3px}
+}
+@media(max-width:950px){.stats-dialog{height:calc(100dvh - 10px);max-height:calc(100dvh - 10px)}.stats-columns{grid-template-columns:1fr}.stats-cards,.stats-cards.secondary,.stats-ticket{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.stats-overlay{padding:3px}.stats-dialog{height:calc(100dvh - 6px);max-height:calc(100dvh - 6px);padding:9px}.stats-top h2{font-size:16px}.stats-kpi strong{font-size:19px}}
 </style></head><body>
 <main class="page"><div class="title"><h1>Contagem de Matrículas</h1><p>Registro diário de matrículas · Unidade <strong id="nomeUnidade">identificando...</strong></p></div>
 <section class="card direction" id="directionPanel" hidden>
@@ -94,7 +123,7 @@ let statsReq=0;
 const statsNum=v=>v===null||v===undefined?'—':Number(v).toLocaleString('pt-BR');
 const statsMoney=v=>v===null||v===undefined?'—':Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 function statsKpi(label,value,sub='',goal=false){const e=document.createElement('div');e.className='stats-kpi'+(goal?' goal':'');const l=document.createElement('span');l.textContent=label;const v=document.createElement('strong');v.textContent=value;const sm=document.createElement('small');sm.textContent=sub;e.append(l,v,sm);return e;}
-function statsPlot(target,points){target.replaceChildren();if(!points?.length)return;const svgNS='http://www.w3.org/2000/svg',svg=document.createElementNS(svgNS,'svg');svg.setAttribute('viewBox','0 0 760 310');svg.setAttribute('role','img');svg.setAttribute('aria-label','Gráfico de evolução das matrículas');const W=760,H=310,left=52,right=18,top=32,bottom=45;
+function statsPlot(target,points){target.replaceChildren();if(!points?.length)return;const svgNS='http://www.w3.org/2000/svg',svg=document.createElementNS(svgNS,'svg');svg.setAttribute('viewBox','0 0 760 235');svg.setAttribute('role','img');svg.setAttribute('aria-label','Gráfico de evolução das matrículas');const W=760,H=235,left=52,right=18,top=28,bottom=38;
  const lines=[['real','#1976f3','Real'],['anterior','#974bd6','Ano anterior'],['projecao','#f18a15','Projeção'],['meta','#159449','Meta +5%']];const values=points.flatMap(p=>lines.map(x=>p[x[0]])).filter(v=>v!==null&&Number.isFinite(Number(v))).map(Number);if(!values.length){target.textContent='Sem dados para gráfico.';return;}const min=Math.max(0,Math.floor(Math.min(...values)*.9/10)*10),max=Math.max(min+10,Math.ceil(Math.max(...values)*1.06/10)*10);const xx=i=>left+i*(W-left-right)/Math.max(1,points.length-1),yy=v=>top+(max-v)*(H-top-bottom)/(max-min);
  const el=(tag,attrs,text)=>{const n=document.createElementNS(svgNS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,String(v));if(text!==undefined)n.textContent=text;svg.append(n);return n;};for(let i=0;i<=4;i++){const val=min+(max-min)*i/4,y=yy(val);el('line',{x1:left,y1:y,x2:W-right,y2:y,stroke:'#e3eaf3'});el('text',{x:5,y:y+4,fill:'#61738b','font-size':12},Math.round(val));}
  points.forEach((p,i)=>el('text',{x:xx(i),y:H-17,fill:'#52657c','font-size':12,'text-anchor':'middle'},p.mes.slice(0,2)+'/'+p.mes.slice(-2)));
