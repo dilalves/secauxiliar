@@ -152,7 +152,7 @@
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
       <span class="pill-year">
-        Cadastro <span id="anoSpan">2025</span>
+        Listagem 2027
       </span>
     </div>
   </div>
@@ -160,11 +160,6 @@
   <div class="card">
     <div class="card-content">
       <div class="filters-row">
-        <div class="input-field">
-          <input id="filtroAno" type="number" value="2025" min="2000" max="2100">
-          <label class="active" for="filtroAno">Cadastro</label>
-        </div>
-
         <div class="input-field">
           <select id="filtroStatus">
             <option value="P" selected>Pendentes</option>
@@ -194,6 +189,7 @@
               <th>Unidade</th>
               <th>Aluno</th>
               <th>Série</th>
+              <th>Cadastro</th>
               <th>Curso (texto)</th>
               <th>Instituição (texto)</th>
               <th>Cls</th>
@@ -352,12 +348,10 @@ async function mostrarCursosVest(vest) {
 /* ==================== Lista de aprovações_unidade ==================== */
 
 async function carregarAprovacoesUnidade(){
-  const anoInput   = document.getElementById('filtroAno');
   const statusSel  = document.getElementById('filtroStatus');
   const undInput   = document.getElementById('filtroUnidade');
   const tbody      = document.getElementById('tbody-aprov');
   const msg        = document.getElementById('infoResumo');
-  const ano        = parseInt(anoInput.value || '2025', 10);
   const status     = statusSel.value || 'P';
   const codunidade = undInput.value ? parseInt(undInput.value, 10) : 0;
 
@@ -365,7 +359,6 @@ async function carregarAprovacoesUnidade(){
   msg.textContent = 'Carregando...';
 
   const params = new URLSearchParams({
-    ano: String(ano),
     status: status,
   });
   if (codunidade > 0) {
@@ -408,6 +401,7 @@ async function carregarAprovacoesUnidade(){
         <td>${unidade}</td>
         <td>${aluno}</td>
         <td>${serie}</td>
+        <td>${r.cadastro ?? ''}</td>
         <td class="col-curso-txt">${cursoTxt}</td>
         <td class="col-inst-txt">${instTxt}</td>
         <td>${cls}</td>
@@ -536,14 +530,6 @@ async function importarAprovacao(id) {
 document.addEventListener('DOMContentLoaded', () => {
   const selects = document.querySelectorAll('select');
   M.FormSelect.init(selects);
-
-  const anoSpan  = document.getElementById('anoSpan');
-  const anoInput = document.getElementById('filtroAno');
-  anoSpan.textContent = anoInput.value;
-
-  anoInput.addEventListener('change', () => {
-    anoSpan.textContent = anoInput.value;
-  });
 
   carregarAprovacoesUnidade();
 });
