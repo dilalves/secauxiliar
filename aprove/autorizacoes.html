@@ -422,7 +422,7 @@
       const j = await r.json();
       if(!j.ok) throw new Error(j.error || 'Falha ao salvar');
 
-      toast('Autorização salva. Pasta pronta.');
+      toast('Autorização salva.');
       cardUpload.style.display = '';
       cpfInfo.style.display = '';
       cpfInfo.textContent = maskCPF(cpf);
@@ -477,7 +477,7 @@
         progressBar.style.width = pct+'%';
         progressText.textContent = `Enviado ${fmtBytes(loaded)} de ${fmtBytes(total)} (${pct}%)`;
       });
-      toast('Upload concluído.');
+      toast('Envio concluído.');
       await loadFilesByCPF(cpf);
     }catch(e){ toast('Erro no upload: '+e.message); }
     finally{ progressWrap.style.display = 'none'; fileInput.value=''; }
@@ -544,7 +544,7 @@
           <a class="btn-flat tooltipped" data-tooltip="Abrir em nova aba" href="${url}" target="_blank">
             <i class="material-icons">open_in_new</i>
           </a>
-          <a class="btn-flat tooltipped" data-tooltip="Baixar" href="${url}" download>
+          <a class="btn-flat tooltipped" data-tooltip="Baixar" href="${url}&amp;baixar=1" download>
             <i class="material-icons">download</i>
           </a>
         </div>
@@ -674,7 +674,7 @@
                   <a class="btn-flat" href="${url}" target="_blank" rel="noopener" title="Abrir">
                     <i class="material-icons">open_in_new</i>
                   </a>
-                  <a class="btn-flat" href="${url}" download title="Baixar">
+                  <a class="btn-flat" href="${url}&amp;baixar=1" download title="Baixar">
                     <i class="material-icons">download</i>
                   </a>
                 </div>
