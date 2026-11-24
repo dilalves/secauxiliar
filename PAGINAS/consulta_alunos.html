@@ -19,17 +19,12 @@
 @media(max-width:650px){.searches .search-panel{padding:13px}.search-panel-row{align-items:stretch}.search-mode{width:100%}.search-mode button{flex:1}.search-form{flex:1 1 100%}}
 .parcelas-body{padding:9px 11px}.parcelas-body .section-intro{font-size:10px;margin:0 0 6px}.parcelas-table-wrap{overflow-x:auto}.parcelas-table{width:100%;border-collapse:collapse;font-size:10px;white-space:nowrap}.parcelas-table th,.parcelas-table td{padding:6px 5px;border-bottom:1px solid #e6edf5;text-align:left}.parcelas-table th{background:#f1f5fa;color:#49617e;font-weight:700}
 
-/* Ajuste visual: três painéis lado a lado, sem alterar a lógica da consulta. */
+/* Colunas independentes para que o painel de parcelas fique imediatamente abaixo do desempenho. */
 .student{gap:18px;padding:15px 20px}
 .avatar{width:82px;height:82px;font-size:38px}
 .avatar img{border-radius:13px}
 .workspace{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
-.workspace>.col{display:contents}
-.workspace>.col:first-child>section:first-child{grid-column:1;grid-row:1}
-.workspace>.col:first-child>section:nth-child(2){grid-column:2;grid-row:1}
-.workspace>.col:first-child>section:nth-child(3){grid-column:2;grid-row:2}
-.workspace>.col:nth-child(2)>section:first-child{grid-column:3;grid-row:1}
-.workspace>.col:nth-child(2)>section:nth-child(2){grid-column:3;grid-row:2}
+.workspace>.col{display:flex;flex-direction:column;gap:12px;min-width:0}
 .workspace .section-head{padding:12px 13px;gap:7px}
 .workspace .section-head h3{font-size:13px}
 .workspace .section-body{padding:12px}
@@ -44,19 +39,11 @@
 .note-buttons button{padding:11px}
 @media(max-width:1200px){
  .workspace{grid-template-columns:repeat(2,minmax(0,1fr))}
- .workspace>.col:first-child>section:first-child{grid-column:1;grid-row:1}
- .workspace>.col:first-child>section:nth-child(2){grid-column:1;grid-row:2}
- .workspace>.col:first-child>section:nth-child(3){grid-column:1;grid-row:3}
- .workspace>.col:nth-child(2)>section:first-child{grid-column:2;grid-row:1}
- .workspace>.col:nth-child(2)>section:nth-child(2){grid-column:2;grid-row:2}
+ .workspace>.col:nth-child(3){grid-column:1/-1}
 }
 @media(max-width:760px){
  .workspace{grid-template-columns:minmax(0,1fr)}
- .workspace>.col:first-child>section:first-child{grid-column:1;grid-row:1}
- .workspace>.col:first-child>section:nth-child(2){grid-column:1;grid-row:2}
- .workspace>.col:first-child>section:nth-child(3){grid-column:1;grid-row:3}
- .workspace>.col:nth-child(2)>section:first-child{grid-column:1;grid-row:4}
- .workspace>.col:nth-child(2)>section:nth-child(2){grid-column:1;grid-row:5}
+ .workspace>.col:nth-child(3){grid-column:auto}
  .avatar{width:72px;height:72px}
 }
 </style></head><body><main class="page">
@@ -85,7 +72,7 @@
 <div id="msg" class="message" aria-live="polite"></div>
 <div id="resultadoNome" class="card search-results hide"><div class="section-head"><h3>Resultados da pesquisa por nome</h3><button class="secondary" id="fecharBusca" type="button">Fechar</button></div><div style="overflow-x:auto"><table><thead><tr><th>Matrícula</th><th>Nome</th><th>Turma</th><th>Ano letivo</th><th>Unidade</th><th></th></tr></thead><tbody id="listaNome"></tbody></table></div></div>
 <div id="conteudo" class="hide"><section class="card student"><div class="avatar"><img id="alunoFoto" alt="Foto do aluno" class="hide"><span id="alunoAvatar">👤</span></div><div style="flex:1;min-width:0"><h2 id="alunoNome">—</h2><div id="alunoDetalhes" class="sub"></div><div id="alunoEspeciais" class="pills"></div></div></section>
-<div class="workspace"><div class="col"><section class="card"><div class="section-head"><h3>📅 Calendário de aulas e presenças</h3><div class="calendar-head"><button id="mesAnterior" type="button" class="secondary">‹</button><strong id="mesAtual" style="font-size:12px;min-width:105px;text-align:center"></strong><button id="mesSeguinte" type="button" class="secondary">›</button></div></div><div id="calendario" class="calendar"></div><div class="legend">🔵 Previsto &nbsp; 🟢 Presente &nbsp; 🔴 Ausente &nbsp; ⚪ Cancelado &nbsp; 📌 Evento<br>Domingos e feriados destacados em vermelho.</div></section><section class="card"><div class="section-head"><h3>📈 Desempenho acadêmico</h3></div><div class="section-body"><p class="section-intro">Consulte as notas por modalidade. Disponível para todos os usuários autenticados.</p><div class="note-buttons"><button data-nota="enem">ENEM</button><button data-nota="fuvestao">FUVESTÃO</button><button data-nota="testes">TESTES</button><button data-nota="dissertativos">DISSERTATIVOS</button><button data-nota="redacao">REDAÇÃO</button></div></div></section><section class="card"><div class="section-head"><h3>💳 Parcelas</h3></div><div class="section-body parcelas-body"><p id="parcelasEstado" class="section-intro">Consultando parcelas...</p><div class="parcelas-table-wrap"><table class="parcelas-table"><thead><tr><th>Ano letivo</th><th>Parcela</th><th>Tipo</th><th>Valor</th><th>Vencimento</th><th>Pagamento</th></tr></thead><tbody id="parcelasLinhas"></tbody></table></div></div></section></div>
+<div class="workspace"><div class="col"><section class="card"><div class="section-head"><h3>📅 Calendário de aulas e presenças</h3><div class="calendar-head"><button id="mesAnterior" type="button" class="secondary">‹</button><strong id="mesAtual" style="font-size:12px;min-width:105px;text-align:center"></strong><button id="mesSeguinte" type="button" class="secondary">›</button></div></div><div id="calendario" class="calendar"></div><div class="legend">🔵 Previsto &nbsp; 🟢 Presente &nbsp; 🔴 Ausente &nbsp; ⚪ Cancelado &nbsp; 📌 Evento<br>Domingos e feriados destacados em vermelho.</div></section></div><div class="col"><section class="card"><div class="section-head"><h3>📈 Desempenho acadêmico</h3></div><div class="section-body"><p class="section-intro">Consulte as notas por modalidade. Disponível para todos os usuários autenticados.</p><div class="note-buttons"><button data-nota="enem">ENEM</button><button data-nota="fuvestao">FUVESTÃO</button><button data-nota="testes">TESTES</button><button data-nota="dissertativos">DISSERTATIVOS</button><button data-nota="redacao">REDAÇÃO</button></div></div></section><section class="card"><div class="section-head"><h3>💳 Parcelas</h3></div><div class="section-body parcelas-body"><p id="parcelasEstado" class="section-intro">Consultando parcelas...</p><div class="parcelas-table-wrap"><table class="parcelas-table"><thead><tr><th>Ano letivo</th><th>Parcela</th><th>Tipo</th><th>Valor</th><th>Vencimento</th><th>Pagamento</th></tr></thead><tbody id="parcelasLinhas"></tbody></table></div></div></section></div>
 <div class="col"><section class="card"><div class="section-head"><h3>📁 Arquivo Digital da Matrícula</h3><span id="docStatus" class="pill">Verificando acesso...</span></div><div class="section-body"><div id="acessoBloqueado" class="locked hide"></div><div id="acessoPermitido" class="hide"><p class="section-intro">Documentos existentes e novos arquivos ficam vinculados à matrícula, sem duplicação dos anexos da pré-matrícula.</p><div id="listaDocumentos"></div><div class="uploadzone"><strong style="font-size:13px">Adicionar documento à pasta</strong><p class="muted" style="margin:7px 0 12px">Contrato, autorização de imagem ou outro documento. PDF, JPG, PNG e WEBP; até 10 MB.</p><form id="formUpload" class="uploadform"><div><label for="tipoDoc">Tipo de documento</label><select id="tipoDoc" required><option value="">Selecione</option><option>Contrato</option><option>Autorização de imagem</option><option>Documento pessoal</option><option>Comprovante de residência</option><option>Outro documento</option></select></div><div><label for="fileDoc">Arquivo</label><input id="fileDoc" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" required></div><div class="full"><button id="enviarDoc" type="submit">Enviar documento</button></div></form></div></div></div></section><section class="card"><div class="section-head"><h3>ℹ️ Informações de acesso</h3></div><div class="section-body muted">Os dados gerais e as notas podem ser consultados por usuários autenticados de qualquer unidade. A lista, a abertura e o envio de documentos dependem da unidade responsável pela matrícula, validada no servidor em cada operação.</div></section></div></div></div></main>
 <dialog id="modalNotas"><div class="modalhead"><h3 id="tituloNotas">Notas</h3><button type="button" class="secondary" id="fecharNotas">Fechar</button></div><div class="modalbody" id="notesBody"></div></dialog>
 <script>
