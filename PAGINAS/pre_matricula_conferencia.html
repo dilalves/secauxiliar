@@ -158,30 +158,6 @@ async function reloadDetail(){if(!selected)return;try{const j=await request('det
   };
   cell.append(copyEmail,copyFeedback,copyField);
  }
- if(['CRIADA','ENVIADA','EM_ANDAMENTO','COM_PENDENCIA'].includes(j.solicitacao.status)){
-  const actions=el('div');
-  actions.style.marginTop='8px';
-  const generate=el('button','Gerar link para compartilhar','alt');generate.type='button';
-  const link=el('input');link.type='text';link.readOnly=true;link.hidden=true;
-  link.style.width='100%';link.setAttribute('aria-label','Link da pré-matrícula');
-  const copy=el('button','Copiar link','alt');copy.type='button';copy.hidden=true;
-  const feedback=el('div',undefined,'small');feedback.setAttribute('role','status');
-  generate.onclick=async()=>{
-   generate.disabled=true;
-   feedback.textContent='Gerando link…';
-   try{
-    const r=await request('gerar_link_manual',{id:j.solicitacao.id});
-    link.value=r.url;link.hidden=false;copy.hidden=false;generate.hidden=true;
-    feedback.textContent='Válido por 7 dias. Compartilhe somente com o destinatário confirmado.';
-    copy.focus();
-   }catch(e){feedback.textContent=e.message;generate.disabled=false}
-  };
-  copy.onclick=async()=>{
-   try{await navigator.clipboard.writeText(link.value);feedback.textContent='Link copiado.'}
-   catch{link.focus();link.select();feedback.textContent='Use Ctrl+C ou a opção Copiar do dispositivo.'}
-  };
-  actions.append(generate,link,copy,feedback);cell.append(actions);
- }
  }$('negotiation').append(cell)}if(!(j.negociacao||[]).length)$('negotiation').append(el('p','Dados da negociação ainda indisponíveis.','small'));for(let i=0;i<(j.pessoas||[]).length;i++){const p=j.pessoas[i];const sec=el('section');const role=(p.campos||[]).find(f=>/identifica|tipo|papel|vínculo|vinculo/i.test(f.rotulo));sec.append(el('h4',role?role.valor:'Pessoa '+(i+1),'person-header'));addFields(sec,p.campos||[]);$('people').append(sec)}if(!(j.pessoas||[]).length)$('people').append(el('p','Dados das pessoas ainda não encontrados no cadastro.','small'));
  for(const d of j.documentos){
   const box=el('div',undefined,'doc'),line=el('div',undefined,'doc-main'),n=el('strong',d.rotulo||d.tipo||'Documento');line.append(n);
