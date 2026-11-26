@@ -25,13 +25,26 @@
 'use strict';
 const API='https://apisec.secauxiliar.com.br/sec/consultar_concursos_unidade.php';
 const PROVA_DOWNLOAD='https://apisec.secauxiliar.com.br/sec/gabarito_prova_download.php';
+const GABARITO_DOWNLOAD='https://apisec.secauxiliar.com.br/sec/concurso_gabarito_pdf.php';
+let gabaritosDisponiveis=new Set();
+async function carregarGabaritos(){try{const r=await fetch(GABARITO_DOWNLOAD+'?modo=disponiveis',{credentials:'include',cache:'no-store'});const d=await r.json();if(r.ok&&d.ok&&Array.isArray(d.concursos)){gabaritosDisponiveis=new Set(d.concursos.map(String));render();}}catch(e){console.warn('Gabaritos indisponíveis',e);}}
+function gabaritoLink(c){
+  if(!gabaritosDisponiveis.has(String(c.IdConcurso)))return '';
+  const data=String(c.Data??'').split(/[ T]/)[0];
+  const hoje=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const dia=Object.fromEntries(hoje.map(p=>[p.type,p.value]));
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data)||data>`${dia.year}-${dia.month}-${dia.day}`)return '';
+  if(!/^[A-Za-z0-9_-]{1,50}$/.test(String(c.IdConcurso??''))||!/^\d{5}$/.test(String(c.CodProva??'')))return '';
+  return `<a class="btn btn-download" href="${GABARITO_DOWNLOAD}?IdConcurso=${encodeURIComponent(c.IdConcurso)}" target="_blank" rel="noopener" title="Baixar o gabarito ${esc(c.CodProva)} em PDF">⬇ Gabarito PDF</a>`;
+}
 const $=id=>document.getElementById(id);let concursos=[];
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function dateBR(v){const s=String(v||'').split(' ')[0].split('-');return s.length===3?`${s[2]}/${s[1]}/${s[0]}`:'—';}
 function showError(msg){$('error').textContent=msg;$('error').classList.remove('hide');}
 async function load(){try{const r=await fetch(API,{credentials:'include',cache:'no-store'});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||d.msg||'Falha na consulta');concursos=d.concursos||[];$('unit').textContent=`${d.unidade.idund} — ${d.unidade.nome}`;render();}catch(e){showError(e.message);$('rows').innerHTML='<tr><td colspan="10" class="empty">Não foi possível carregar os concursos.</td></tr>';}}
-function render(){const q=$('search').value.trim().toLowerCase();const a=concursos.filter(c=>[c.IdConcurso,c.Descricao,c.CodProva].some(x=>String(x??'').toLowerCase().includes(q)));$('rows').innerHTML=a.length?a.map(c=>`<tr><td><div class="title">${esc(c.IdConcurso)}</div><div class="muted">${esc(c.Descricao)}</div></td><td>${dateBR(c.Data)}</td><td>${esc(c.Hora)}</td><td>${esc(c.Faixa)}</td><td>${esc(c.CodProva)}</td><td>${Number(c.Inscritos)||0}</td><td>${Number(c.Presentes)||0}</td><td>${Number(c.ComPontos)||0}</td><td><span class="chip ${Number(c.Concluido)?'':'pending'}">${Number(c.Concluido)?'Sim':'Não'}</span></td><td><div class="actions"><button type="button" class="btn" data-concurso="${esc(c.IdConcurso)}">Abrir concurso</button>${/^[1-9]\d*$/.test(String(c.ProvaPdfId??''))?`<a class="btn btn-download" href="${PROVA_DOWNLOAD}?IdGabarito=${encodeURIComponent(c.ProvaPdfId)}" target="_blank" rel="noopener" title="Baixar a prova ${esc(c.CodProva)} em PDF">⬇ Prova PDF</a>`:''}</div></td></tr>`).join(''):'<tr><td colspan="10" class="empty">Nenhum concurso encontrado.</td></tr>';$('count').textContent=`${a.length} concurso(s)`;}
+function render(){const q=$('search').value.trim().toLowerCase();const a=concursos.filter(c=>[c.IdConcurso,c.Descricao,c.CodProva].some(x=>String(x??'').toLowerCase().includes(q)));$('rows').innerHTML=a.length?a.map(c=>`<tr><td><div class="title">${esc(c.IdConcurso)}</div><div class="muted">${esc(c.Descricao)}</div></td><td>${dateBR(c.Data)}</td><td>${esc(c.Hora)}</td><td>${esc(c.Faixa)}</td><td>${esc(c.CodProva)}</td><td>${Number(c.Inscritos)||0}</td><td>${Number(c.Presentes)||0}</td><td>${Number(c.ComPontos)||0}</td><td><span class="chip ${Number(c.Concluido)?'':'pending'}">${Number(c.Concluido)?'Sim':'Não'}</span></td><td><div class="actions"><button type="button" class="btn" data-concurso="${esc(c.IdConcurso)}">Abrir concurso</button>${/^[1-9]\d*$/.test(String(c.ProvaPdfId??''))?`<a class="btn btn-download" href="${PROVA_DOWNLOAD}?IdGabarito=${encodeURIComponent(c.ProvaPdfId)}" target="_blank" rel="noopener" title="Baixar a prova ${esc(c.CodProva)} em PDF">⬇ Prova PDF</a>`:''}${gabaritoLink(c)}</div></td></tr>`).join(''):'<tr><td colspan="10" class="empty">Nenhum concurso encontrado.</td></tr>';$('count').textContent=`${a.length} concurso(s)`;}
 $('search').addEventListener('input',render);
 $('rows').addEventListener('click',e=>{const b=e.target.closest('button[data-concurso]');if(!b)return;const id=b.dataset.concurso;if(!/^[A-Za-z0-9_-]{1,50}$/.test(id))return;window.location.href='operacao_concurso.html?IdConcurso='+encodeURIComponent(id);});
 load();
+carregarGabaritos();
 </script></body></html>
