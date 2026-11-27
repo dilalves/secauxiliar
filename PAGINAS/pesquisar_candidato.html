@@ -102,6 +102,8 @@
 .pm-read-item{padding:12px 0;border-bottom:1px solid #dfe7f1}
 .pm-read-footer{padding:12px 16px;border-top:1px solid #d8e4f0;background:#fff;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 @media(max-width:850px){.pm-read-columns{grid-template-columns:1fr}}
+
+#rows button.busy-lock{background:#8da5bf;color:white;opacity:1;cursor:not-allowed}.pesquisa-lock-owner{display:block;color:#687b8d;font-size:11px;margin-top:4px}
 </style></head><body><main class="main"><section class="panel"><h1 class="title">Pesquisa de candidatos</h1><div class="muted">Localize inscrições de Concursos de Bolsa e solicitações de Bolsa Desempenho. O acesso aos detalhes depende da unidade logada.</div><div class="bar"><div class="tabs"><button id="cpfTab" type="button">Por CPF</button><button id="nomeTab" type="button">Por nome</button></div><form id="form" class="bar" style="margin:0"><label id="label">CPF<input id="q" autocomplete="off" required></label><button id="pesquisar" type="submit">Pesquisar</button></form></div><div style="margin-top:12px"><button id="abrir-cadastro" type="button" style="background:#e9eff7;color:#10437f">＋ Cadastrar interessado presencial</button></div><div id="msg" class="notice" role="status">Informe o CPF ou nome para começar.</div></section><section class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 style="font-size:15px;margin:0 0 12px">Candidatos encontrados</h2><span class="muted" id="total"></span></div><div class="table-wrap"><table><thead><tr><th>Candidato</th><th>Origem</th><th>Inscrição / Protocolo</th><th>Concurso / Solicitação</th><th>Unidade</th><th>Acesso</th><th>Ação</th></tr></thead><tbody id="rows"><tr><td colspan="7">Nenhuma pesquisa realizada.</td></tr></tbody></table></div><div class="foot" id="bolsa-aviso">A pesquisa apresenta ambas as origens. Detalhes permanecem sujeitos à autorização da unidade no servidor.</div></section></main>
 <div class="result-overlay" id="resultado-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="resultado-title">
 <div class="result-shell"><header class="result-header"><h2 id="resultado-title">Resultado — Concurso de Bolsa</h2><button type="button" id="resultado-fechar">✕ Fechar</button></header>
@@ -141,19 +143,41 @@ function referenciaConcurso(x){
  if(data.getUTCFullYear()!==ano||data.getUTCMonth()!==mes-1||data.getUTCDate()!==dia)return nome;
  return `${m[3]}/${m[2]}/${m[1]} · ${nome}`;
 }
+let pesquisaLocks=null, pesquisaLockVersion=0, pesquisaLockRunning=false;
+function aplicarBloqueios(d){
+ if(!d.bloqueios_ok)return;
+ for(const b of $('rows').querySelectorAll('button[data-lock-id]')){
+  const locks=d.bloqueios?.[b.dataset.lockOrigin]||{};
+  const busy=Object.prototype.hasOwnProperty.call(locks,b.dataset.lockId);
+  b.disabled=busy;b.classList.toggle('busy-lock',busy);
+  b.textContent=busy?'🔒 Em atendimento':b.dataset.normalLabel;
+  let owner=b.parentElement.querySelector('.pesquisa-lock-owner');
+  if(!owner){owner=document.createElement('span');owner.className='pesquisa-lock-owner';b.after(owner);}
+  owner.textContent=busy?String(locks[b.dataset.lockId]||'') : '';owner.hidden=!busy;
+ }
+}
+async function atualizarBloqueiosPesquisa(){
+ if(!pesquisaLocks||pesquisaLockRunning||document.hidden||$('pesquisar').disabled)return;
+ if(!$('rows').querySelector('button[data-lock-id]'))return;
+ const v=pesquisaLockVersion;pesquisaLockRunning=true;
+ try{const r=await fetch(API+'?'+new URLSearchParams(pesquisaLocks),{credentials:'include',cache:'no-store'});const d=await r.json();if(r.ok&&d.ok&&v===pesquisaLockVersion)aplicarBloqueios(d);}catch(e){}finally{pesquisaLockRunning=false;}
+}
+setInterval(atualizarBloqueiosPesquisa,15000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)atualizarBloqueiosPesquisa();});
 function setTipo(v){tipo=v;$('cpfTab').classList.toggle('active',v==='cpf');$('nomeTab').classList.toggle('active',v==='nome');$('label').firstChild.textContent=v==='cpf'?'CPF':'Nome do candidato';$('q').placeholder=v==='cpf'?'000.000.000-00':'Digite pelo menos 3 letras';$('q').value='';$('q').focus();}
 $('cpfTab').onclick=()=>setTipo('cpf');$('nomeTab').onclick=()=>setTipo('nome');
 $('form').onsubmit=async e=>{
- e.preventDefault();const q=$('q').value.trim();$('pesquisar').disabled=true;$('msg').classList.remove('err');$('msg').textContent='Pesquisando...';
+ e.preventDefault();const q=$('q').value.trim();const consulta={tipo,q};++pesquisaLockVersion;pesquisaLocks=null;$('pesquisar').disabled=true;$('msg').classList.remove('err');$('msg').textContent='Pesquisando...';
  try{
-  const r=await fetch(API+'?'+new URLSearchParams({tipo,q}),{credentials:'include',cache:'no-store'});
+  const r=await fetch(API+'?'+new URLSearchParams(consulta),{credentials:'include',cache:'no-store'});
   const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Não foi possível pesquisar.');
   const itens=[...(d.resultados||[]).map(x=>({nome:x.NomeCand,origem:'Concurso de Bolsa',codigo:x.NumeroInscricao||'—',referencia:referenciaConcurso(x),unidade:(x.UnidadeCodigo||'')+' — '+(x.UnidadeNome||''),acesso:!!x.acesso_detalhes,protocolo:null,inscricao:x.NumeroInscricao,concurso:x.IdConcurso,registro_id:x.IdRegistro||null})),
-   ...(d.bolsas||[]).map(x=>({nome:x.candidato,origem:'Bolsa Desempenho',codigo:x.protocolo||'—',referencia:'Solicitação de bolsa',unidade:(x.unidade_codigo||'')+' — '+(x.unidade_nome||''),acesso:!!x.acesso_detalhes,protocolo:x.protocolo||null,inscricao:null,concurso:null})),
+   ...(d.bolsas||[]).map(x=>({nome:x.candidato,origem:'Bolsa Desempenho',codigo:x.protocolo||'—',referencia:'Solicitação de bolsa',unidade:(x.unidade_codigo||'')+' — '+(x.unidade_nome||''),acesso:!!x.acesso_detalhes,protocolo:x.protocolo||null,inscricao:null,concurso:null,lock_id:x.id_bloqueio})),
    ...(d.prematriculas||[]).map(x=>({nome:x.nome,origem:'Pré-matrícula',codigo:x.protocolo,referencia:[x.curso,x.periodo].filter(Boolean).join(' / '),unidade:x.unidade_codigo,acesso:true,protocolo:null,inscricao:null,concurso:null,pm_id:x.id}))];
   itens.sort((a,b)=>String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR',{sensitivity:'base'})||a.origem.localeCompare(b.origem));
   $('total').textContent=itens.length+' registro(s)';
-  $('rows').innerHTML=itens.length?itens.map(x=>`<tr><td>${esc(nomeMaiusculo(x.nome))}</td><td>${esc(x.origem)}</td><td>${esc(x.codigo)}</td><td>${esc(x.referencia)}</td><td>${esc(x.unidade)}</td><td><span class="pill ${x.acesso?'':'other'}">${x.acesso?'Sua unidade':'Outra unidade'}</span></td><td>${x.pm_id?'<button type="button" class="abrir-pre-atendimento" data-id="'+esc(x.pm_id)+'">Ver atendimento</button>':x.acesso&&x.protocolo?'<button type="button" class="abrir-bolsa" data-protocolo="'+esc(x.protocolo)+'">Ver pedido</button>':x.acesso&&x.inscricao&&x.concurso?'<button type="button" class="abrir-resultado" data-inscricao="'+esc(x.inscricao)+'" data-concurso="'+esc(x.concurso)+'" data-registro="'+esc(x.registro_id||'')+'">Ver resultado</button>':'—'}</td></tr>`).join(''):'<tr><td colspan="7">Nenhum registro encontrado.</td></tr>';
+  $('rows').innerHTML=itens.length?itens.map(x=>`<tr><td>${esc(nomeMaiusculo(x.nome))}</td><td>${esc(x.origem)}</td><td>${esc(x.codigo)}</td><td>${esc(x.referencia)}</td><td>${esc(x.unidade)}</td><td><span class="pill ${x.acesso?'':'other'}">${x.acesso?'Sua unidade':'Outra unidade'}</span></td><td>${x.pm_id?'<button type="button" class="abrir-pre-atendimento" data-id="'+esc(x.pm_id)+'">Ver atendimento</button>':x.acesso&&x.protocolo?'<button type="button" class="abrir-bolsa" data-protocolo="'+esc(x.protocolo)+'" data-lock-origin="BOLSA_DESEMPENHO" data-lock-id="'+esc(x.lock_id||'')+'" data-normal-label="Ver pedido">Ver pedido</button>':x.acesso&&x.inscricao&&x.concurso?'<button type="button" class="abrir-resultado" data-inscricao="'+esc(x.inscricao)+'" data-concurso="'+esc(x.concurso)+'" data-registro="'+esc(x.registro_id||'')+'" data-lock-origin="CONCURSO_BOLSA" data-lock-id="'+esc(x.registro_id||'')+'" data-normal-label="Ver resultado">Ver resultado</button>':'—'}</td></tr>`).join(''):'<tr><td colspan="7">Nenhum registro encontrado.</td></tr>';
+  pesquisaLocks=consulta;aplicarBloqueios(d);
   $('bolsa-aviso').textContent=d.aviso_prematricula||d.aviso_bolsa||'Ver pedido abre os detalhes da Bolsa Desempenho nesta tela. Dados de outras unidades permanecem bloqueados.';
   $('msg').textContent='Pesquisa concluída: '+(d.total||0)+' inscrição(ões) e '+(d.total_bolsas||0)+' pedido(s) de Bolsa Desempenho'+((d.total_prematriculas||0)?' e '+d.total_prematriculas+' pré-matrícula(s).':'.');
  }catch(err){$('msg').textContent=err.message;$('msg').classList.add('err');}finally{$('pesquisar').disabled=false;}
@@ -202,6 +226,7 @@ $('bolsa-overlay').addEventListener('click',e=>{if(e.target===$('bolsa-overlay')
 window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===$('bolsa-frame').contentWindow&&e.data?.source==='sec-bolsa-modal'&&e.data.action==='close')fecharPedido();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('bolsa-overlay').hidden)fecharPedido();});
 $('rows').addEventListener('click',e=>{
+ if(e.target.closest('button')?.disabled)return;
  const pm=e.target.closest('.abrir-pre-atendimento');if(pm){abrirPreAtendimento(pm.dataset.id);return;}
  const rb=e.target.closest('.abrir-resultado');if(rb){abrirResultado(rb.dataset.inscricao,rb.dataset.concurso,rb.dataset.registro);return;}
  const b=e.target.closest('.abrir-bolsa');if(!b)return;
