@@ -398,12 +398,13 @@
                             <th>DP</th>
                             <th>Descrição</th>
                             <th>Cód. prova</th>
+                            <th>Grupo estatístico</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tbody">
                         <tr>
-                            <td colspan="9" class="loading">Carregando...</td>
+                            <td colspan="10" class="loading">Carregando...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -480,6 +481,11 @@
                     <div class="field">
                         <label for="CodProva">Código da prova *</label>
                         <input type="number" id="CodProva" name="CodProva" min="1" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="GrupoEstatistico">Grupo estatístico (opcional)</label>
+                        <input type="number" id="GrupoEstatistico" name="GrupoEstatistico" min="1" max="4294967295" step="1">
                     </div>
 
                     <div class="field">
@@ -622,7 +628,7 @@
             if (registros.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="9" class="empty">Nenhum concurso encontrado.</td>
+                        <td colspan="10" class="empty">Nenhum concurso encontrado.</td>
                     </tr>
                 `;
                 return;
@@ -641,6 +647,7 @@
                     <td>${escapar(valorOuVazio(item.Dp))}</td>
                     <td>${escapar(item.Descricao)}</td>
                     <td>${escapar(item.CodProva)}</td>
+                    <td>${escapar(valorOuVazio(item.GrupoEstatistico))}</td>
                     <td>
                         <div class="actions">
                             <button
@@ -749,7 +756,7 @@
         async function carregar() {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="loading">Carregando...</td>
+                    <td colspan="10" class="loading">Carregando...</td>
                 </tr>
             `;
 
@@ -769,7 +776,7 @@
             } catch (erro) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="9" class="empty">${escapar(erro.message)}</td>
+                        <td colspan="10" class="empty">${escapar(erro.message)}</td>
                     </tr>
                 `;
                 exibirStatus(erro.message, 'error');
@@ -800,6 +807,7 @@
             document.getElementById('Dp').value = valorOuVazio(item.Dp);
             document.getElementById('Descricao').value = valorOuVazio(item.Descricao);
             document.getElementById('CodProva').value = valorOuVazio(item.CodProva);
+            document.getElementById('GrupoEstatistico').value = valorOuVazio(item.GrupoEstatistico);
 
             modal.showModal();
         };
